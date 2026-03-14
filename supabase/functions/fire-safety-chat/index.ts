@@ -1448,8 +1448,7 @@ async function fetchSBCContextVector(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "models/text-embedding-004",
-          content: { parts: [{ text: query.substring(0, 8000) }] },
+          content: { role: "user", parts: [{ text: query.substring(0, 8000) }] },
         }),
       }
     );

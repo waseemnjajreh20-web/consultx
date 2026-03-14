@@ -24,8 +24,7 @@ async function getEmbedding(text, retries = 3) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: `models/${EMBEDDING_MODEL}`,
-            content: { parts: [{ text: truncated }] },
+            content: { role: "user", parts: [{ text: truncated }] },
           }),
         }
       );
