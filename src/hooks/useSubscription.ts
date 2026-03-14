@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -19,16 +19,20 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
 
   const checkSubscription = useCallback(async () => {
     if (!user || !session) {
       setSubscription(null);
       setLoading(false);
+      hasLoadedOnce.current = false;
       return;
     }
 
     try {
-      setLoading(true);
+      // Only show loading on FIRST check to prevent ChatInterface unmount on token refresh
+      if (!hasLoadedOnce.current) setLoading(true);
+
       const { data, error: fnError } = await supabase.functions.invoke("check-subscription", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -36,10 +40,12 @@ export function useSubscription() {
       if (fnError) throw fnError;
       setSubscription(data as SubscriptionStatus);
       setError(null);
+      hasLoadedOnce.current = true;
     } catch (err: any) {
       console.error("Subscription check error:", err);
       setError(err.message);
-      setSubscription(null);
+      // Don't null-out subscription on background re-check errors (prevents UI flicker)
+      if (!hasLoadedOnce.current) setSubscription(null);
     } finally {
       setLoading(false);
     }

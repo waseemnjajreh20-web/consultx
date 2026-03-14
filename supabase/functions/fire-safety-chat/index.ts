@@ -1270,27 +1270,36 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
     { role: "user", content: userContent },
   ]);
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction,
-        contents,
-        generationConfig: { temperature: 0.7 },
-      }),
-    }
-  );
+  // Try gemini-2.5-pro first, fallback to flash if quota exceeded
+  const models = ["gemini-2.5-pro", "gemini-2.5-flash"];
+  for (const model of models) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction,
+          contents,
+          generationConfig: { temperature: 0.7 },
+        }),
+      }
+    );
 
-  if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    }
+
     const errorText = await response.text();
-    console.error(`AI non-streaming error: ${response.status}`, errorText);
+    if ((response.status === 429 || response.status === 404) && model !== models[models.length - 1]) {
+      console.log(`[Gemini] Non-streaming ${model} returned ${response.status}, trying next model`);
+      continue;
+    }
+    console.error(`[Gemini] Non-streaming error: ${response.status} | Model: ${model} | ${errorText.slice(0, 300)}`);
     throw new Error(`AI call failed: ${response.status}`);
   }
-
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  throw new Error("All Gemini models failed");
 }
 
 function getVisionPlanningPrompt(language: string): string {
@@ -1640,15 +1649,20 @@ serve(async (req) => {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });
     }
 
-    const geminiModel = mode === "primary" ? "gemini-2.5-flash-preview-05-20" : "gemini-2.5-pro-preview-05-06";
+    // Model selection: use stable versions (preview models expire!)
+    // Primary → gemini-2.5-flash (fast), Standard/Analysis → gemini-2.5-pro (with flash fallback)
+    const preferredModel = mode === "primary" ? "gemini-2.5-flash" : "gemini-2.5-pro";
+    const fallbackModel = "gemini-2.5-flash";
+
     const { systemInstruction, contents } = convertToGeminiFormat([
       ...systemMessages,
       ...finalMessages,
     ]);
 
-    console.log("Calling Gemini API with model:", geminiModel, "contents:", contents.length, "messages");
+    console.log(`[Gemini] Model: ${preferredModel} | Mode: ${mode} | Messages: ${contents.length} | API Key exists: ${!!GEMINI_API_KEY}`);
 
-    const response = await fetch(
+    let geminiModel = preferredModel;
+    let response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
       {
         method: "POST",
@@ -1661,18 +1675,38 @@ serve(async (req) => {
       }
     );
 
+    // Auto-fallback: if preferred model fails with 429 (quota) or 404 (deprecated), try fallback
+    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404)) {
+      console.log(`[Gemini] ${geminiModel} returned ${response.status}, falling back to ${fallbackModel}`);
+      geminiModel = fallbackModel;
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction,
+            contents,
+            generationConfig: { temperature: 0.7 },
+          }),
+        }
+      );
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
+      console.error(`[Gemini] API error: ${response.status} | Model: ${geminiModel} | Error: ${errorText.slice(0, 500)}`);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later" }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      return new Response(JSON.stringify({ error: "Service error occurred" }), {
+      return new Response(JSON.stringify({ error: `Service error: ${response.status}` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
 
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
     const transformStream = new TransformStream({

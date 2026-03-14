@@ -73,7 +73,8 @@ const Index = () => {
     setShowChat(true);
   };
 
-  if (loading || (user && subLoading)) {
+  // Don't show spinner when chat is already visible (prevents unmount on token refresh)
+  if ((loading || (user && subLoading)) && !showChat) {
     return <LoadingSpinner />;
   }
 
