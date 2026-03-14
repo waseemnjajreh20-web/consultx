@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 import { isCorporateEmail, isPromoActive } from "@/lib/corporatePromo";
-import { lovable } from "@/integrations/lovable/index";
 
 const CYAN = "hsl(195 85% 50%)";
 const AMBER = "#FF8C00";
@@ -142,30 +141,37 @@ const Auth = () => {
         } else {
           const { data: { session: newSession } } = await supabase.auth.getSession();
           if (newSession) {
+            // Session available = auto-confirmed or confirmed user
             await activateAutoTrial(newSession.access_token);
             await activateCorporateTrial(newSession.access_token);
-          }
-          toast({ title: t("accountCreated"), description: t("signupSuccess") });
+            toast({ title: t("accountCreated"), description: t("signupSuccess") });
 
-          // Check for post-auth redirect
-          const params = new URLSearchParams(window.location.search);
-          const redirect = params.get("redirect");
-          const plan = params.get("plan");
-          const billing = params.get("billing") || "annual";
+            // Check for post-auth redirect
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get("redirect");
+            const plan = params.get("plan");
+            const billing = params.get("billing") || "annual";
 
-          if (redirect === "subscribe" && plan && newSession) {
-            try {
-              const { data: checkoutData } = await supabase.functions.invoke("create-checkout", {
-                body: { plan, billing_cycle: billing },
-                headers: { Authorization: `Bearer ${newSession.access_token}` },
-              });
-              if (checkoutData?.checkout_url) {
-                window.location.href = checkoutData.checkout_url;
-                return;
-              }
-            } catch (_e) { /* fall through */ }
+            if (redirect === "subscribe" && plan) {
+              try {
+                const { data: checkoutData } = await supabase.functions.invoke("create-checkout", {
+                  body: { plan, billing_cycle: billing },
+                  headers: { Authorization: `Bearer ${newSession.access_token}` },
+                });
+                if (checkoutData?.checkout_url) {
+                  window.location.href = checkoutData.checkout_url;
+                  return;
+                }
+              } catch (_e) { /* fall through */ }
+            }
+            navigate("/");
+          } else {
+            // No session = email confirmation required
+            toast({
+              title: "تم إنشاء الحساب بنجاح",
+              description: "تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى فتح البريد والضغط على الرابط لتفعيل حسابك.",
+            });
           }
-          navigate("/");
         }
       }
     } catch {
@@ -458,9 +464,13 @@ const Auth = () => {
             onClick={async () => {
               setIsLoading(true);
               try {
-                await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: window.location.origin,
+                  },
                 });
+                if (error) throw error;
               } catch (e) {
                 toast({ title: t("unexpectedError"), variant: "destructive" });
               } finally {
