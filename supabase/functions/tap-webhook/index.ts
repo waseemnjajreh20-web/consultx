@@ -128,6 +128,35 @@ serve(async (req) => {
             new_status: updateData.status || "(unchanged)",
             charge_id: chargeId,
           });
+
+          // Sync profiles.plan_type when subscription becomes active
+          if (updateData.status === "active" && transaction.user_id) {
+            // Fetch the plan's target to map to plan_type
+            const { data: planInfo } = await adminClient
+              .from("subscription_plans")
+              .select("target")
+              .eq("id", sub.plan_id)
+              .single();
+
+            // Map subscription_plans.target → profiles.plan_type
+            const targetToPlanType: Record<string, string> = {
+              individual: "engineer",
+              corporate: "enterprise",
+              contractor: "enterprise",
+            };
+            const planType = targetToPlanType[planInfo?.target || ""] || "engineer";
+
+            const { error: profileError } = await adminClient
+              .from("profiles")
+              .update({ plan_type: planType })
+              .eq("user_id", transaction.user_id);
+
+            if (profileError) {
+              console.error("Failed to update profiles.plan_type:", profileError);
+            } else {
+              console.log(`profiles.plan_type updated to '${planType}' for user ${transaction.user_id}`);
+            }
+          }
         }
       }
     } else if (status === "FAILED" && transaction.subscription_id) {

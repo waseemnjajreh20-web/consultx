@@ -54,8 +54,9 @@ const Subscribe = () => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
+  // Redirect users who already have an active/trialing subscription to chat
   useEffect(() => {
-    if (!subLoading && subscription?.status === "active") navigate("/");
+    if (!subLoading && subscription?.active) navigate("/");
   }, [subscription, subLoading, navigate]);
 
   // Fetch plans

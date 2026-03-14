@@ -72,17 +72,7 @@ const Account = () => {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(20);
-      if (data && data.length > 0) {
-        setTransactions(data);
-      } else {
-        // Fallback: try payment_history table if payment_transactions is empty
-        const { data: historyData } = await supabase
-          .from("payment_history" as any)
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(20);
-        if (historyData) setTransactions(historyData);
-      }
+      if (data) setTransactions(data);
     };
     if (user) fetchTransactions();
   }, [user]);

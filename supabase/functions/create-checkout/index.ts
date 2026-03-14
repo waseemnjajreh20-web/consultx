@@ -45,8 +45,8 @@ serve(async (req) => {
 
     // Price map in SAR (whole units, not halalas)
     const prices: Record<string, Record<string, number>> = {
-      engineer: { monthly: 149, annual: 1188 },   // 99*12
-      enterprise: { monthly: 499, annual: 4188 },  // 349*12
+      engineer: { monthly: 99, annual: 948 },       // 99*12 = 1188 → discounted 948
+      enterprise: { monthly: 349, annual: 3348 },   // 349*12 = 4188 → discounted 3348
     };
 
     const amount = prices[plan]?.[billing_cycle];
@@ -61,11 +61,11 @@ serve(async (req) => {
       enterprise: "باقة مؤسسة — ConsultX",
     };
 
-    const origin = req.headers.get("origin") || "https://www.consultx.app";
+    const origin = "https://www.consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
     const webhookUrl = projectRef
-      ? `https://${projectRef}.supabase.co/functions/v1/payment-webhook`
-      : `${supabaseUrl}/functions/v1/payment-webhook`;
+      ? `https://${projectRef}.supabase.co/functions/v1/tap-webhook`
+      : `${supabaseUrl}/functions/v1/tap-webhook`;
 
     const tapResponse = await fetch("https://api.tap.company/v2/charges", {
       method: "POST",
@@ -105,16 +105,15 @@ serve(async (req) => {
       });
     }
 
-    // Log the payment attempt in payment_history
+    // Log the payment attempt in payment_transactions
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    await adminClient.from("payment_history").insert({
+    await adminClient.from("payment_transactions").insert({
       user_id: user.id,
       tap_charge_id: tapData.id,
       amount,
       currency: "SAR",
-      plan,
-      billing_cycle,
-      status: "INITIATED",
+      status: "initiated",
+      payment_type: "checkout",
     });
 
     return new Response(JSON.stringify({ checkout_url: tapData.transaction.url, charge_id: tapData.id }), {

@@ -23,11 +23,12 @@ serve(async (req) => {
     const status = body.status;
     const { user_id, plan, billing_cycle } = body.metadata || {};
 
-    // Always update payment_history if we have a charge id
+    // Always update payment_transactions if we have a charge id
     if (chargeId) {
+      const mappedStatus = status === "CAPTURED" ? "captured" : status === "FAILED" ? "failed" : "initiated";
       await adminClient
-        .from("payment_history")
-        .update({ status })
+        .from("payment_transactions")
+        .update({ status: mappedStatus })
         .eq("tap_charge_id", chargeId);
     }
 

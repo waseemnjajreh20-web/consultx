@@ -104,6 +104,16 @@ function getModeButtonActiveStyle(mode: ChatMode) {
   return { background: "rgba(220,20,60,0.15)", color: "#DC143C", boxShadow: "0 0 10px rgba(220,20,60,0.3)" };
 }
 
+// ===== SOURCE NAME FORMATTER =====
+function formatSourceName(fileName: string): string {
+  const clean = fileName.replace('.json', '').replace(/_extracted_chunks$/, '').replace(/_/g, ' ');
+  const match = clean.match(/SBC\s*(\d+).*?-(\d+)-(\d+)/);
+  if (match) {
+    return `📖 SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
+  }
+  return `📖 ${clean}`;
+}
+
 // ===== SWITCH MARKER PARSER =====
 const SWITCH_PATTERN = /\[SWITCH:(استشاري|تحليلي)\]/g;
 
@@ -1006,7 +1016,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                           <div className="flex items-center gap-2 pt-3 border-t border-border/30">
                             <BookOpen className="w-4 h-4 text-primary/70" />
                             <span className="text-xs text-muted-foreground">
-                              {t("sourcesLabel")} {message.sources.map(s => s.replace('.json', '').replace(/_/g, ' ')).join(language === "ar" ? '، ' : ', ')}
+                              {t("sourcesLabel")} {message.sources.map(s => formatSourceName(s)).join(language === "ar" ? '، ' : ', ')}
                             </span>
                           </div>
                         )}

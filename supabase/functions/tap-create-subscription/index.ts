@@ -91,7 +91,7 @@ serve(async (req) => {
       anyPriorSub && (anyPriorSub.status === "expired" || anyPriorSub.status === "cancelled");
 
     // Create Tap Charge (1 SAR verification)
-    const origin = req.headers.get("origin") || "https://www.consultx.app";
+    const origin = "https://www.consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
     const webhookUrl = projectRef
       ? `https://${projectRef}.supabase.co/functions/v1/tap-webhook`
