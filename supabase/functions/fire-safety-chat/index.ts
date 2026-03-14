@@ -1481,7 +1481,7 @@ serve(async (req) => {
   }
 
   try {
-    const isTestMode = req.headers.get("X-Test-Mode") === "lovable-internal-test";
+    const isTestMode = req.headers.get("X-Test-Mode") === "consultx-internal-test";
     let userId = "test-user";
 
     if (!isTestMode) {
