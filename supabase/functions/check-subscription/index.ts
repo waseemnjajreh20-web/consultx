@@ -38,7 +38,7 @@ serve(async (req) => {
           active: true,
           status: "active",
           trial_days_remaining: 0,
-          plan: { id: "admin", name_ar: "أدمن", name_en: "Admin", price_amount: 0, currency: "SAR" },
+          plan: { id: "enterprise", name_ar: "مؤسسة", name_en: "Enterprise", price_amount: 34900, currency: "SAR" },
           expires_at: null,
           card_brand: null,
           card_last_four: null,

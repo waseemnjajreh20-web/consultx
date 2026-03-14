@@ -1807,30 +1807,48 @@ serve(async (req) => {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
-      // Get subscription status
-      const { data: sub } = await adminClient
-        .from("user_subscriptions")
-        .select("status, trial_end, current_period_end")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
+      // Check profiles.plan_type first (covers admins + direct DB assignments)
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("plan_type, email")
+        .eq("id", userId)
         .maybeSingle();
 
-      let dailyLimit = 10; // free/expired default
-      const now = new Date();
-      if (sub?.status === "trialing" && sub.trial_end && now < new Date(sub.trial_end)) {
-        dailyLimit = 20;
-      } else if (sub?.status === "active" && sub.current_period_end && now < new Date(sub.current_period_end)) {
-        dailyLimit = 9999; // unlimited
+      // Admin bypass + enterprise/engineer bypass via plan_type
+      const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+      const isAdmin = profile?.email && ADMIN_EMAILS.includes(profile.email);
+      const isUnlimitedPlan = profile?.plan_type === "enterprise" || profile?.plan_type === "engineer";
+
+      let dailyLimit = 9999; // default unlimited for admins/paid users
+
+      if (!isAdmin && !isUnlimitedPlan) {
+        // Only check subscription for non-admin, non-paid users
+        const { data: sub } = await adminClient
+          .from("user_subscriptions")
+          .select("status, trial_end, current_period_end")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        dailyLimit = 10; // free/expired default
+        const now = new Date();
+        if (sub?.status === "trialing" && sub.trial_end && now < new Date(sub.trial_end)) {
+          dailyLimit = 20;
+        } else if (sub?.status === "active" && sub.current_period_end && now < new Date(sub.current_period_end)) {
+          dailyLimit = 9999; // unlimited
+        }
       }
 
-      // Increment and check
-      const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
-      if (currentCount && currentCount > dailyLimit) {
-        return new Response(
-          JSON.stringify({ error: "تجاوزت الحد اليومي للرسائل / Daily message limit exceeded", limit: dailyLimit }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (dailyLimit < 9999) {
+        // Only increment and check for limited users
+        const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
+        if (currentCount && currentCount > dailyLimit) {
+          return new Response(
+            JSON.stringify({ error: "تجاوزت الحد اليومي للرسائل / Daily message limit exceeded", limit: dailyLimit }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
     }
 
