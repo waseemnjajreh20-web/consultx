@@ -761,6 +761,56 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "سلامة": ["safety", "life safety"],
   "تلقائي": ["automatic", "auto"],
   "يدوي": ["manual", "hand-operated"],
+  // --- Added terms for better RAG matching ---
+  "قسم": ["section", "division"],
+  "مجموعة": ["group", "occupancy group"],
+  "مقاومة حريق": ["fire resistance", "fire-resistance rating"],
+  "مقاومة": ["resistance", "rating"],
+  "حمل إشغال": ["occupant load", "occupancy load"],
+  "إشغال": ["occupancy", "occupant", "use"],
+  "مسافة سفر": ["travel distance", "exit travel"],
+  "سفر": ["travel", "travel distance"],
+  "كاشف دخان": ["smoke detector", "smoke detection"],
+  "كاشف": ["detector", "sensor"],
+  "كاشف حرارة": ["heat detector", "thermal detector"],
+  "نظام رش": ["sprinkler system", "automatic sprinkler"],
+  "رش": ["sprinkler", "spray"],
+  "رشاش": ["sprinkler", "sprinkler head", "nozzle"],
+  "رشاشات": ["sprinklers", "sprinkler system", "automatic sprinkler"],
+  "إنذار حريق": ["fire alarm", "fire alarm system"],
+  "إنذار": ["alarm", "notification", "alert"],
+  "مضخة حريق": ["fire pump", "fire pump system"],
+  "مضخة": ["pump", "fire pump"],
+  "صاعد": ["standpipe", "riser", "vertical pipe"],
+  "صاعد مائي": ["standpipe", "standpipe system"],
+  "مخرج طوارئ": ["emergency exit", "exit"],
+  "مخرج": ["exit", "means of egress", "egress"],
+  "طوارئ": ["emergency", "emergency exit"],
+  "ممر": ["corridor", "hallway", "passage"],
+  "درج": ["stair", "stairway", "staircase"],
+  "سلم": ["stair", "stairway", "ladder"],
+  "مصعد": ["elevator", "lift"],
+  "حاجز حريق": ["fire barrier", "fire wall", "fire separation"],
+  "جدار حريق": ["fire wall", "firewall", "fire barrier"],
+  "فاصل حريق": ["fire separation", "fire partition"],
+  "تصنيف": ["classification", "rating", "type"],
+  "نوع إنشاء": ["construction type", "type of construction"],
+  "إنشاء": ["construction", "building construction"],
+  "ارتفاع": ["height", "building height", "rise"],
+  "مساحة": ["area", "floor area", "allowable area"],
+  "مساحة أرضية": ["floor area", "allowable area"],
+  "طابق": ["story", "floor", "level"],
+  "طوابق": ["stories", "floors", "levels"],
+  "تحكم دخان": ["smoke control", "smoke management"],
+  "دخان": ["smoke", "smoke control"],
+  "مانع دخان": ["smoke barrier", "smoke partition"],
+  "فتحة": ["opening", "penetration"],
+  "فتحات": ["openings", "penetrations"],
+  "مقاومة للحريق": ["fire-rated", "fire resistant", "fire resistance"],
+  "مسار هروب": ["means of egress", "escape route", "exit path"],
+  "هروب": ["egress", "escape", "evacuation"],
+  "إخلاء": ["evacuation", "egress"],
+  "تصريح": ["permit", "approval"],
 };
 
 // ---- Smart Chunk Scoring (OPTIMIZED) ----
@@ -799,7 +849,39 @@ function buildQueryKeywords(query: string): string[] {
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
   }
-  
+
+  // --- Auto-extract section numbers (e.g., 903.2, 1006.3.4) ---
+  const sectionNumRegex = /\b(\d{3,4}\.\d{1,2}(?:\.\d{1,2})?)\b/g;
+  let sMatch;
+  while ((sMatch = sectionNumRegex.exec(raw)) !== null) {
+    tokens.push(sMatch[1]); // "903.2"
+    const parent = sMatch[1].split(".").slice(0, 2).join(".");
+    if (parent !== sMatch[1]) tokens.push(parent); // parent "903.2" from "903.2.1"
+    tokens.push("section " + sMatch[1]);
+  }
+
+  // --- Auto-extract table references (e.g., "table 903.2", "جدول 903") ---
+  const tableRefRegex = /(?:table|جدول)\s*(\d{1,4}(?:\.\d{1,2})?)/gi;
+  let tMatch;
+  while ((tMatch = tableRefRegex.exec(raw)) !== null) {
+    tokens.push("table " + tMatch[1].toLowerCase());
+    tokens.push(tMatch[1].toLowerCase());
+  }
+
+  // --- Auto-extract occupancy groups (e.g., "Group B", "مجموعة A-2") ---
+  const groupRegex = /(?:group|مجموعة)\s*([a-u](?:-\d)?)/gi;
+  let gMatch;
+  while ((gMatch = groupRegex.exec(raw)) !== null) {
+    tokens.push("group " + gMatch[1].toLowerCase());
+  }
+
+  // --- Auto-extract construction types (e.g., "Type V-B", "نوع I-A") ---
+  const typeRegex = /(?:type|نوع)\s*((?:i{1,3}|iv|v)(?:-[ab])?)/gi;
+  let cMatch;
+  while ((cMatch = typeRegex.exec(raw)) !== null) {
+    tokens.push("type " + cMatch[1].toLowerCase());
+  }
+
   const uniqueTokens = [...new Set(tokens)];
   
   console.log(`🔤 Keywords: ${uniqueTokens.length} (${arabicTokens.length} ar + ${englishTokens.length} en)`);
@@ -807,7 +889,77 @@ function buildQueryKeywords(query: string): string[] {
   return uniqueTokens;
 }
 
-function scoreChunk(chunkText: string, keywords: string[]): number {
+// ---- QueryMeta for structured scoring ----
+interface QueryMeta {
+  sectionNumbers: string[];   // ["903.2", "1006.3"]
+  tableRefs: string[];        // ["table 903.2", "903"]
+  occupancyGroups: string[];  // ["group b"]
+  constructionTypes: string[]; // ["type v-b"]
+  exactPhrases: string[];     // ["automatic sprinkler", "نظام رش"]
+}
+
+const DOMAIN_PHRASES = [
+  "automatic sprinkler", "fire alarm", "fire alarm system", "fire barrier",
+  "fire wall", "fire separation", "fire resistance", "fire-resistance rating",
+  "fire pump", "fire pump system", "fire protection", "fire department",
+  "means of egress", "travel distance", "exit access", "exit discharge",
+  "occupant load", "occupancy group", "smoke control", "smoke detector",
+  "smoke barrier", "standpipe system", "standpipe", "construction type",
+  "type of construction", "floor area", "building height", "allowable area",
+  "fire command", "emergency exit",
+  "نظام رش", "نظام إنذار", "إنذار حريق", "مسافة سفر", "حمل إشغال",
+  "مقاومة حريق", "حاجز حريق", "جدار حريق", "كاشف دخان", "مضخة حريق",
+  "مخرج طوارئ", "تحكم دخان", "صاعد مائي", "نظام رش تلقائي",
+  "مسار هروب", "فاصل حريق", "مقاومة للحريق",
+];
+
+function buildQueryMeta(query: string): QueryMeta {
+  const raw = query.toLowerCase();
+  const meta: QueryMeta = {
+    sectionNumbers: [],
+    tableRefs: [],
+    occupancyGroups: [],
+    constructionTypes: [],
+    exactPhrases: [],
+  };
+
+  // Extract section numbers
+  const secRegex = /\b(\d{3,4}\.\d{1,2}(?:\.\d{1,2})?)\b/g;
+  let m;
+  while ((m = secRegex.exec(raw)) !== null) {
+    meta.sectionNumbers.push(m[1]);
+  }
+
+  // Extract table references
+  const tblRegex = /(?:table|جدول)\s*(\d{1,4}(?:\.\d{1,2})?)/gi;
+  while ((m = tblRegex.exec(raw)) !== null) {
+    meta.tableRefs.push("table " + m[1].toLowerCase());
+  }
+
+  // Extract occupancy groups
+  const grpRegex = /(?:group|مجموعة)\s*([a-u](?:-\d)?)/gi;
+  while ((m = grpRegex.exec(raw)) !== null) {
+    meta.occupancyGroups.push("group " + m[1].toLowerCase());
+  }
+
+  // Extract construction types
+  const typRegex = /(?:type|نوع)\s*((?:i{1,3}|iv|v)(?:-[ab])?)/gi;
+  while ((m = typRegex.exec(raw)) !== null) {
+    meta.constructionTypes.push("type " + m[1].toLowerCase());
+  }
+
+  // Extract domain exact phrases
+  for (const phrase of DOMAIN_PHRASES) {
+    if (raw.includes(phrase.toLowerCase())) {
+      meta.exactPhrases.push(phrase.toLowerCase());
+    }
+  }
+
+  console.log(`🔍 QueryMeta: sections=${meta.sectionNumbers.join(",")}, tables=${meta.tableRefs.join(",")}, groups=${meta.occupancyGroups.join(",")}, types=${meta.constructionTypes.join(",")}, phrases=${meta.exactPhrases.length}`);
+  return meta;
+}
+
+function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta): number {
   const lower = chunkText.toLowerCase();
   let score = 0;
   
@@ -834,23 +986,65 @@ function scoreChunk(chunkText: string, keywords: string[]): number {
   if (sectionMatches && sectionMatches.length > 0) {
     score += Math.min(sectionMatches.length * 2, 10);
   }
-  
+
+  // --- QueryMeta-based precision scoring (backward compatible) ---
+  if (queryMeta) {
+    // 1. Section Number Exact Match (×5 per match)
+    for (const sec of queryMeta.sectionNumbers) {
+      const secEscaped = sec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(`\\b${secEscaped}\\b`).test(lower)) {
+        score += 5;
+      }
+    }
+
+    // 2. Table Reference Match (×4 per match)
+    for (const tbl of queryMeta.tableRefs) {
+      const tblEscaped = tbl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(tblEscaped, "i").test(lower)) {
+        score += 4;
+      }
+    }
+
+    // 3. Exact Phrase Match (×3 per phrase)
+    for (const phrase of queryMeta.exactPhrases) {
+      if (lower.includes(phrase)) {
+        score += 3;
+      }
+    }
+
+    // 4. Occupancy Group Match (×3 per match)
+    for (const grp of queryMeta.occupancyGroups) {
+      const grpEscaped = grp.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(grpEscaped, "i").test(lower)) {
+        score += 3;
+      }
+    }
+
+    // 5. Construction Type Match (×3 per match)
+    for (const typ of queryMeta.constructionTypes) {
+      const typEscaped = typ.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(typEscaped, "i").test(lower)) {
+        score += 3;
+      }
+    }
+  }
+
   // Bonus for chapter headings
   if (/\bchapter\s+\d+/i.test(lower) || /الفصل\s+\d+/.test(lower)) {
     score += 3;
   }
-  
+
   return score;
 }
 
-function extractAndScoreChunks(rawJson: string, fileName: string, keywords: string[]): ScoredChunk[] {
+function extractAndScoreChunks(rawJson: string, fileName: string, keywords: string[], queryMeta?: QueryMeta): ScoredChunk[] {
   const scored: ScoredChunk[] = [];
-  
+
   try {
     const parsed = JSON.parse(rawJson);
-    
+
     let chunks: any[] = [];
-    
+
     if (Array.isArray(parsed)) {
       chunks = parsed;
     } else if (parsed.chunks && Array.isArray(parsed.chunks)) {
@@ -862,29 +1056,29 @@ function extractAndScoreChunks(rawJson: string, fileName: string, keywords: stri
       chunks = sections.map((s: string) => ({ text: s, content: s }));
     } else {
       const text = JSON.stringify(parsed);
-      const s = scoreChunk(text, keywords);
+      const s = scoreChunk(text, keywords, queryMeta);
       if (s > 0) scored.push({ text: text.slice(0, 5000), score: s, source: fileName });
       return scored;
     }
-    
+
     for (const chunk of chunks) {
-      const text = typeof chunk === "string" 
-        ? chunk 
+      const text = typeof chunk === "string"
+        ? chunk
         : (chunk.text || chunk.content || chunk.body || JSON.stringify(chunk));
-      
+
       if (!text || text.length < 20) continue;
-      
-      const s = scoreChunk(text, keywords);
+
+      const s = scoreChunk(text, keywords, queryMeta);
       // Only include chunks with score > 0 (skip irrelevant chunks)
       if (s > 0) {
         scored.push({ text, score: s, source: fileName });
       }
     }
   } catch {
-    const s = scoreChunk(rawJson, keywords);
+    const s = scoreChunk(rawJson, keywords, queryMeta);
     if (s > 0) scored.push({ text: rawJson.slice(0, 5000), score: s, source: fileName });
   }
-  
+
   return scored;
 }
 
@@ -1076,8 +1270,8 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       .sort((a, b) => b.score - a.score);
     
     // Select top files: max balanced between codes (increased for better coverage)
-    const max201 = Math.min(scored201.length, sbc201Chapters.length > 0 ? 4 : 2);
-    const max801 = Math.min(scored801.length, sbc801Chapters.length > 0 ? 4 : 2);
+    const max201 = Math.min(scored201.length, sbc201Chapters.length > 0 ? 6 : 3);
+    const max801 = Math.min(scored801.length, sbc801Chapters.length > 0 ? 6 : 3);
 
     let selectedFiles = [
       ...scored201.slice(0, max201).map(s => s.file),
@@ -1085,23 +1279,26 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     ];
     
     // Ensure at least some files
-    if (selectedFiles.length < 2) {
+    if (selectedFiles.length < 3) {
       const remaining = candidateFiles.filter(f => !selectedFiles.includes(f));
-      selectedFiles = [...selectedFiles, ...remaining.slice(0, 4 - selectedFiles.length)];
+      selectedFiles = [...selectedFiles, ...remaining.slice(0, 5 - selectedFiles.length)];
     }
-    
-    // Cap at 7 files max (increased from 5 for better coverage)
-    selectedFiles = selectedFiles.slice(0, 7);
+
+    // Cap at 12 files max (increased from 7 for better coverage)
+    selectedFiles = selectedFiles.slice(0, 12);
     
     console.log(`🎯 Selected ${selectedFiles.length} files: ${selectedFiles.map((f: any) => f.name).join(", ")}`);
     
-    const MAX_TOTAL_CONTEXT = 80000; // Reduced from 120,000
+    const MAX_TOTAL_CONTEXT = 120000; // Increased for better RAG coverage (Gemini supports 1M tokens)
     let keywords = buildQueryKeywords(query);
     
     if (extraKeywords && extraKeywords.length > 0) {
       keywords = [...new Set([...keywords, ...extraKeywords])];
     }
-    
+
+    // Build structured query metadata for precision scoring
+    const queryMeta = buildQueryMeta(query);
+
     // Download files in parallel
     const downloadPromises = selectedFiles.map(async (file: any) => {
       try {
@@ -1140,7 +1337,7 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     // Extract and score chunks - only keeps scored > 0
     let allScoredChunks: ScoredChunk[] = [];
     for (const dl of validDownloads) {
-      const chunks = extractAndScoreChunks(dl.raw, dl.fileName, keywords);
+      const chunks = extractAndScoreChunks(dl.raw, dl.fileName, keywords, queryMeta);
       allScoredChunks.push(...chunks);
     }
     
