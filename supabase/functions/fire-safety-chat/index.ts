@@ -1443,12 +1443,13 @@ async function fetchSBCContextVector(
 
     // 1. Generate query embedding
     const embResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: { role: "user", parts: [{ text: query.substring(0, 8000) }] },
+          outputDimensionality: 768,
         }),
       }
     );

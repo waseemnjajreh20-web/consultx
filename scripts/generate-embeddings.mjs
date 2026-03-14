@@ -7,7 +7,7 @@ const SUPABASE_URL = 'https://hrnltxmwoaphgejckutk.supabase.co';
 const SUPABASE_SERVICE_KEY = process.argv[2]; // passed as argument
 const GEMINI_API_KEY = process.argv[3]; // passed as argument
 const CHUNKS_DIR = 'C:\\Users\\TOSHIBA\\Downloads\\قاعدة بيانات الكود السعودي\\قاعدة بيانات الكود السعودي PDF\\output_processed';
-const EMBEDDING_MODEL = 'text-embedding-004';
+const EMBEDDING_MODEL = 'gemini-embedding-001';
 const BATCH_SIZE = 50;
 const DELAY_MS = 1000;
 
@@ -25,6 +25,7 @@ async function getEmbedding(text, retries = 3) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             content: { role: "user", parts: [{ text: truncated }] },
+            outputDimensionality: 768,
           }),
         }
       );
