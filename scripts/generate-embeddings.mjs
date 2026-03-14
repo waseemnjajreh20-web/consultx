@@ -8,13 +8,14 @@ const SUPABASE_SERVICE_KEY = process.argv[2]; // passed as argument
 const GEMINI_API_KEY = process.argv[3]; // passed as argument
 const CHUNKS_DIR = 'C:\\Users\\TOSHIBA\\Downloads\\قاعدة بيانات الكود السعودي\\قاعدة بيانات الكود السعودي PDF\\output_processed';
 const EMBEDDING_MODEL = 'gemini-embedding-001';
-const BATCH_SIZE = 50;
-const DELAY_MS = 1000;
+const BATCH_SIZE = 5;
+const DELAY_MS = 12000;
+const PER_REQUEST_DELAY = 2000;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // === Helper: Generate embedding ===
-async function getEmbedding(text, retries = 3) {
+async function getEmbedding(text, retries = 5) {
   const truncated = text.substring(0, 8000);
   for (let i = 0; i < retries; i++) {
     try {
@@ -30,16 +31,20 @@ async function getEmbedding(text, retries = 3) {
         }
       );
       if (response.status === 429) {
-        console.log(`  ⏳ Rate limit, waiting ${(i + 1) * 5}s...`);
-        await new Promise(r => setTimeout(r, (i + 1) * 5000));
+        const waitSec = (i + 1) * 15;
+        console.log(`  ⏳ Rate limit (429), waiting ${waitSec}s... (retry ${i + 1}/${retries})`);
+        await new Promise(r => setTimeout(r, waitSec * 1000));
         continue;
       }
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      if (!response.ok) {
+        const errBody = await response.text().catch(() => '');
+        throw new Error(`API error: ${response.status} - ${errBody.slice(0, 200)}`);
+      }
       const data = await response.json();
       return data.embedding.values;
     } catch (err) {
       if (i === retries - 1) throw err;
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 5000));
     }
   }
 }
@@ -81,16 +86,31 @@ async function main() {
     console.log(`\n📄 ${file} (${chunks.length} chunks, ${codeType})`);
     totalChunks += chunks.length;
 
+    // Resume: check which chunks are already uploaded
+    const { data: existing } = await supabase
+      .from('sbc_documents')
+      .select('chunk_index')
+      .eq('file_name', file);
+    const uploadedSet = new Set((existing || []).map(e => e.chunk_index));
+    if (uploadedSet.size > 0) {
+      console.log(`  ⏩ Skipping ${uploadedSet.size} already-uploaded chunks`);
+    }
+
     // Process in batches
     for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
       const batch = chunks.slice(i, i + BATCH_SIZE);
       const rows = [];
 
       for (const [idx, chunk] of batch.entries()) {
+        const globalIdx = i + idx;
+        if (uploadedSet.has(globalIdx)) continue; // skip already uploaded
+
         const content = chunk.content || '';
         if (content.length < 20) continue;
 
         try {
+          // Per-request delay to avoid rate limits
+          if (idx > 0) await new Promise(r => setTimeout(r, PER_REQUEST_DELAY));
           const embedding = await getEmbedding(content);
           rows.push({
             content: content,
