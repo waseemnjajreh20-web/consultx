@@ -1,0 +1,43 @@
+project_id = "uoxowtndribnxhyabqva"
+
+[functions.fire-safety-chat]
+verify_jwt = false
+
+[functions.tap-create-subscription]
+verify_jwt = false
+
+[functions.tap-webhook]
+verify_jwt = false
+
+[functions.tap-charge-subscription]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.auto-trial]
+verify_jwt = false
+
+[functions.sbc-graph-indexer]
+verify_jwt = false
+
+[functions.fire-safety-chat-v2]
+verify_jwt = false
+
+[functions.cancel-subscription]
+verify_jwt = false
+
+[functions.admin-stats]
+verify_jwt = false
+
+[functions.corporate-trial]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
