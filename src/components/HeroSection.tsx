@@ -152,7 +152,7 @@ const HeroSection = ({ onStartChat, isLoggedIn }: HeroSectionProps) => {
                 borderRadius: 0,
                 display: "block",
               }}
-              src="/lovable-uploads/ee6d6730-a1f2-46b6-957c-92b8ed26eb64.png"
+              src={consultxIcon}
               loading="eager"
             />
           </div>

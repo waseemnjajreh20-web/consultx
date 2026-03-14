@@ -61,7 +61,7 @@ serve(async (req) => {
       enterprise: "باقة مؤسسة — ConsultX",
     };
 
-    const origin = req.headers.get("origin") || "https://consultx.lovable.app";
+    const origin = req.headers.get("origin") || "https://www.consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
     const webhookUrl = projectRef
       ? `https://${projectRef}.supabase.co/functions/v1/payment-webhook`
