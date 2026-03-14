@@ -1422,6 +1422,91 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   }
 }
 
+// ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
+
+async function fetchSBCContextVector(
+  query: string,
+  mode: string,
+  extraKeywords?: string[]
+): Promise<{ context: string; files: string[] }> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+
+    if (!supabaseUrl || !serviceRoleKey || !GEMINI_API_KEY) {
+      console.error("[Vector RAG] Missing env vars, falling back to keyword search");
+      return fetchSBCContext(query, extraKeywords);
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
+    // 1. Generate query embedding
+    const embResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "models/text-embedding-004",
+          content: { parts: [{ text: query.substring(0, 8000) }] },
+        }),
+      }
+    );
+
+    if (!embResponse.ok) {
+      console.error("[Vector RAG] Embedding failed:", embResponse.status);
+      return fetchSBCContext(query, extraKeywords);
+    }
+
+    const embData = await embResponse.json();
+    const queryEmbedding = embData.embedding?.values;
+    if (!queryEmbedding) {
+      console.error("[Vector RAG] No embedding returned, falling back");
+      return fetchSBCContext(query, extraKeywords);
+    }
+
+    // 2. Detect code type filter
+    let filterCode: string | null = null;
+    if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
+      filterCode = 'SBC801';
+    } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
+      filterCode = 'SBC201';
+    }
+
+    // 3. Vector search
+    const matchCount = mode === 'primary' ? 10 : 25;
+    const { data: matches, error } = await supabaseAdmin.rpc('match_sbc_documents', {
+      query_embedding: queryEmbedding,
+      match_count: matchCount,
+      filter_code: filterCode,
+    });
+
+    if (error || !matches?.length) {
+      console.error("[Vector RAG] Search error:", error?.message || "no matches");
+      return fetchSBCContext(query, extraKeywords);
+    }
+
+    console.log(`[Vector RAG] Found ${matches.length} matches, top similarity: ${matches[0]?.similarity?.toFixed(3)}`);
+
+    // 4. Build context
+    const usedFiles = [...new Set(matches.map((m: any) => m.file_name))] as string[];
+    let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
+    const contextLimit = 120000;
+
+    for (const match of matches) {
+      const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
+      if (context.length + entry.length > contextLimit) break;
+      context += entry;
+    }
+
+    return { context, files: usedFiles };
+  } catch (err) {
+    console.error("[Vector RAG] Fatal error:", err);
+    return fetchSBCContext(query, extraKeywords);
+  }
+}
+
 // ==================== GEMINI FORMAT CONVERTER ====================
 
 function convertToGeminiFormat(messages: any[]) {
@@ -1657,7 +1742,7 @@ async function runVisionPipeline(
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
   const enhancedQuery = `${userQuery} ${planningResult}`;
-  const { context: sbcContext, files: usedFiles } = await fetchSBCContext(enhancedQuery, searchKeywords);
+  const { context: sbcContext, files: usedFiles } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
   console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
   // Stage 4 & 5 combined
@@ -1818,7 +1903,7 @@ serve(async (req) => {
       const userQuery = lastUserMessage?.content || "";
       
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
-      const { context: sbcContext, files } = await fetchSBCContext(userQuery);
+      const { context: sbcContext, files } = await fetchSBCContextVector(userQuery, mode);
       usedFiles = files;
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
       
