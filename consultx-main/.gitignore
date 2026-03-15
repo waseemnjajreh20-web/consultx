@@ -30,6 +30,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Claude AI session files
-.claude/
