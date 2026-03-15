@@ -293,10 +293,12 @@ const Subscribe = () => {
                             {(plan.price_amount / 100).toFixed(0)}
                             <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
                           </div>
-                          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3 text-primary" />
-                            <span>{t("freeTrialDays")}</span>
-                          </div>
+                          {plan.price_amount > 0 && (
+                            <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
+                              <Clock className="w-3 h-3 me-1" />
+                              3 أيام تجربة مجانية
+                            </Badge>
+                          )}
                           {selected && (
                             <div className="mt-2">
                               <CheckCircle className="w-5 h-5 text-primary mx-auto" />

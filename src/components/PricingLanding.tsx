@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Compass, HardHat, Building, Check, X, ChevronDown,
   ShieldCheck, CreditCard, RefreshCw, Building2, Loader2,
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+// Switch removed — single monthly price display
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -103,7 +103,6 @@ function AnimatedPrice({ value }: { value: string }) {
 
 /* ─────────────── main component ─────────────── */
 const PricingLanding = () => {
-  const [annual, setAnnual] = useState(true);
   const [tableOpen, setTableOpen] = useState(false);
   const [engineerLoading, setEngineerLoading] = useState(false);
   const navigate = useNavigate();
@@ -145,11 +144,11 @@ const PricingLanding = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate(`/auth?redirect=subscribe&plan=engineer&billing=${annual ? "annual" : "monthly"}`);
+        navigate(`/auth?redirect=subscribe&plan=engineer&billing=monthly`);
         return;
       }
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan: "engineer", billing_cycle: annual ? "annual" : "monthly" },
+        body: { plan: "engineer", billing_cycle: "monthly" },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error || !data?.checkout_url) {
@@ -189,39 +188,8 @@ const PricingLanding = () => {
         </p>
       </div>
 
-      {/* Toggle */}
-      <div className="flex items-center justify-center gap-4 mb-10">
-        <span
-          className="text-sm font-medium"
-          style={{ color: !annual ? cyanColor : "rgba(200,220,240,0.55)" }}
-        >
-          شهري
-        </span>
-        <Switch
-          checked={annual}
-          onCheckedChange={setAnnual}
-          className="data-[state=checked]:bg-primary"
-        />
-        <span
-          className="text-sm font-medium"
-          style={{ color: annual ? cyanColor : "rgba(200,220,240,0.55)" }}
-        >
-          سنوي
-        </span>
-        {annual && (
-          <span
-            className="text-xs font-semibold px-3 py-1 rounded-full animate-fade-in"
-            style={{
-              background: "rgba(255,140,0,0.15)",
-              border: "1px solid rgba(255,140,0,0.4)",
-              color: amberColor,
-              boxShadow: "0 0 12px rgba(255,140,0,0.15)",
-            }}
-          >
-            وفّر حتى 33%
-          </span>
-        )}
-      </div>
+      {/* spacer */}
+      <div className="mb-10" />
 
       {/* Cards grid — on mobile: engineer card first, then explorer, then enterprise */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
@@ -264,7 +232,7 @@ const PricingLanding = () => {
             }}
           >
             <Building2 size={12} strokeWidth={1.5} />
-            <span>تجربة 3 أيام مجاناً للبريد المؤسسي</span>
+            <span>تجربة مجانية 3 أيام</span>
           </div>
 
           {/* icon */}
@@ -284,22 +252,17 @@ const PricingLanding = () => {
           <div className="mb-6">
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-4xl font-bold text-foreground">
-                <AnimatedPrice value={annual ? "99" : "149"} />
+                <AnimatedPrice value="99" />
               </span>
               <span className="text-lg font-medium" style={{ color: "rgba(200,220,240,0.6)" }}>
                 ر.س/شهر
               </span>
-              {annual && (
-                <span
-                  className="text-sm line-through"
-                  style={{ color: "rgba(200,220,240,0.35)" }}
-                >
-                  149 ر.س
-                </span>
-              )}
             </div>
             <p className="text-xs mt-1" style={{ color: "rgba(200,220,240,0.4)" }}>
-              {annual ? "~$26 USD" : "~$39 USD"}
+              ~$26 USD
+            </p>
+            <p className="text-xs mt-1 font-medium" style={{ color: cyanColor }}>
+              تجربة مجانية 3 أيام
             </p>
           </div>
 
@@ -449,22 +412,17 @@ const PricingLanding = () => {
           <div className="mb-6">
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-4xl font-bold text-foreground">
-                <AnimatedPrice value={annual ? "349" : "499"} />
+                <AnimatedPrice value="349" />
               </span>
               <span className="text-lg font-medium" style={{ color: "rgba(200,220,240,0.6)" }}>
                 ر.س/شهر
               </span>
-              {annual && (
-                <span
-                  className="text-sm line-through"
-                  style={{ color: "rgba(200,220,240,0.35)" }}
-                >
-                  499 ر.س
-                </span>
-              )}
             </div>
             <p className="text-xs mt-1" style={{ color: "rgba(200,220,240,0.4)" }}>
-              {annual ? "~$90 USD" : "~$129 USD"}
+              ~$90 USD
+            </p>
+            <p className="text-xs mt-1 font-medium" style={{ color: amberColor }}>
+              تجربة مجانية 3 أيام
             </p>
           </div>
 
@@ -604,11 +562,11 @@ const PricingLanding = () => {
           }}
         >
           <Building2 size={14} strokeWidth={1.5} />
-          <span>بريد مؤسسي؟ جرّب باقة مهندس 3 أيام مجاناً</span>
+          <span>جرّب باقة مهندس أو مؤسسة 3 أيام مجاناً</span>
         </div>
 
         <p className="text-xs text-center" style={{ color: "rgba(200,220,240,0.35)" }}>
-          جميع الباقات تشمل تجربة مجانية لمدة 7 أيام. بدون بطاقة ائتمان.
+          الباقات المدفوعة تشمل تجربة مجانية لمدة 3 أيام.
         </p>
       </div>
     </section>

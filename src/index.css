@@ -381,6 +381,12 @@
 
 
 
+/* Hero breathing float */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 /* ===== PERFORMANCE ===== */
 .animate-marquee,
 .animate-marquee-reverse {
@@ -408,6 +414,12 @@
     .card:active {
       transform: translateY(-2px) !important;
     }
+  }
+
+  /* Reduce floating amplitude on mobile */
+  @keyframes heroFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
   }
 
   /* Hero heading mobile size */

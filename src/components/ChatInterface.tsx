@@ -10,14 +10,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getSuggestedQuestionKeys } from "@/lib/suggestions";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
 import AnalysisResultCard, { isVisionAnalysisResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
+import BottomNav from "./BottomNav";
 import { useConversations } from "@/hooks/useConversations";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -106,12 +109,13 @@ function getModeButtonActiveStyle(mode: ChatMode) {
 
 // ===== SOURCE NAME FORMATTER =====
 function formatSourceName(fileName: string): string {
-  const clean = fileName.replace('.json', '').replace(/_extracted_chunks$/, '').replace(/_/g, ' ');
-  const match = clean.match(/SBC\s*(\d+).*?-(\d+)-(\d+)/);
+  // "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json" → "SBC 201 — صفحات 251-500"
+  // "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json" → "SBC 801 — صفحات 1-200"
+  const match = fileName.match(/SBC\s*(\d+).*?-(\d+)-(\d+)/);
   if (match) {
-    return `📖 SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
+    return `SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
   }
-  return `📖 ${clean}`;
+  return fileName.replace('.json', '').replace(/_/g, ' ');
 }
 
 // ===== SWITCH MARKER PARSER =====
@@ -325,6 +329,7 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
 const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
   const { subscription, refetch: refetchSub } = useSubscription();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
@@ -360,25 +365,23 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   // Only real messages (not dividers)
   const messages = chatItems.filter((item): item is Message => !("type" in item));
 
-  const primaryQuestions = [
-    { icon: <BookOpen className="w-5 h-5" />, text: t("q1Primary") },
-    { icon: <Flame className="w-5 h-5" />, text: t("q2Primary") },
-    { icon: <AlertTriangle className="w-5 h-5" />, text: t("q3Primary") },
-  ];
+  // Dynamic suggestion cards — randomly selected from expanded pool per mode
+  const [suggestionKeys] = useState(() => ({
+    primary: getSuggestedQuestionKeys("primary", 3),
+    standard: getSuggestedQuestionKeys("standard", 3),
+    analysis: getSuggestedQuestionKeys("analysis", 3),
+  }));
 
-  const standardQuestions = [
-    { icon: <Flame className="w-5 h-5" />, text: t("q1Standard") },
-    { icon: <FileText className="w-5 h-5" />, text: t("q2Standard") },
-    { icon: <AlertTriangle className="w-5 h-5" />, text: t("q3Standard") },
-  ];
+  const modeIcons = [BookOpen, Flame, AlertTriangle, FileText, FlaskConical, ClipboardList];
+  const getIcon = (i: number) => {
+    const Icon = modeIcons[i % modeIcons.length];
+    return <Icon className="w-5 h-5" />;
+  };
 
-  const analysisQuestions = [
-    { icon: <FlaskConical className="w-5 h-5" />, text: t("q1Analysis") },
-    { icon: <FileText className="w-5 h-5" />, text: t("q2Analysis") },
-    { icon: <AlertTriangle className="w-5 h-5" />, text: t("q3Analysis") },
-  ];
-
-  const suggestedQuestions = chatMode === "analysis" ? analysisQuestions : chatMode === "primary" ? primaryQuestions : standardQuestions;
+  const suggestedQuestions = suggestionKeys[chatMode].map((key, i) => ({
+    icon: getIcon(i),
+    text: t(key as any),
+  }));
 
   const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
   useEffect(() => { scrollToBottom(); }, [chatItems]);
@@ -395,11 +398,14 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     }
     const timer1 = setTimeout(() => setLoadingStage("thinking"), 1000);
     const timer2 = setTimeout(() => setLoadingStage("writing"), 3000);
-    return () => { clearTimeout(timer1); clearTimeout(timer2); };
+    const timer3 = setTimeout(() => setLoadingStage("processing" as any), 6000);
+    return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3); };
   }, [isLoading, isVisionRequest]);
 
   const visionStageIndex = { vision_1: 0, vision_2: 1, vision_3: 2, vision_4: 3, vision_5: 4 } as const;
+  const textStageIndex: Record<string, number> = { connecting: 0, thinking: 1, writing: 2, processing: 3 };
   const isVisionStage = loadingStage.startsWith("vision_");
+  const isTextStage = !isVisionStage && isLoading;
 
   const getLoadingMessage = () => {
     switch (loadingStage) {
@@ -731,7 +737,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const modeLabelText = chatMode === "primary" ? t("primary") : chatMode === "standard" ? t("standard") : t("analysis");
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[100dvh] bg-background">
       {/* Image Lightbox */}
       {expandedImage && (
         <div
@@ -772,8 +778,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           </Button>
           <LanguageToggle />
 
-          {/* Mode selector with per-mode colors */}
-          <div className="relative flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
+          {/* Mode selector — hidden on mobile (BottomNav handles it) */}
+          <div className="relative hidden md:flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
             {(["primary", "standard", "analysis"] as ChatMode[]).map((mode) => {
               const isActive = chatMode === mode;
               const icon = mode === "primary" ? <MessageSquare className="w-4 h-4" /> : mode === "standard" ? <ClipboardList className="w-4 h-4" /> : <FlaskConical className="w-4 h-4" />;
@@ -1047,13 +1053,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                       {waitingLevel > 0 ? (
                         <span className="text-sm font-medium animate-pulse" style={{ color: getModeDotColor(chatMode) }}>{getWaitingMessage()}</span>
                       ) : (
-                        <span className="text-muted-foreground text-sm">{getLoadingMessage()}</span>
+                        <span className="text-muted-foreground text-sm animate-fade-in" key={loadingStage}>{getLoadingMessage()}</span>
                       )}
                     </div>
-                    {isVisionStage && (
+                    {/* Progress bar — vision stages (5 steps) or text stages (4 steps) */}
+                    {(isVisionStage || isTextStage) && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        {[0, 1, 2, 3, 4].map(i => {
-                          const currentIdx = visionStageIndex[loadingStage as keyof typeof visionStageIndex] ?? 0;
+                        {(isVisionStage ? [0, 1, 2, 3, 4] : [0, 1, 2, 3]).map(i => {
+                          const currentIdx = isVisionStage
+                            ? (visionStageIndex[loadingStage as keyof typeof visionStageIndex] ?? 0)
+                            : (textStageIndex[loadingStage] ?? 0);
                           const isDone = i < currentIdx;
                           const isCurrent = i === currentIdx;
                           return (
@@ -1140,6 +1149,20 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <BottomNav
+          chatMode={chatMode}
+          onModeSwitch={(mode) => handleModeSwitch(mode)}
+          onToggleHistory={() => setShowHistory(true)}
+          onScrollToInput={() => textareaRef.current?.focus()}
+          isFreePlan={isFreePlan()}
+        />
+      )}
+
+      {/* Bottom padding for mobile nav */}
+      {isMobile && <div className="h-16" />}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import TechnologySection from "@/components/TechnologySection";
@@ -78,56 +79,71 @@ const Index = () => {
     return <LoadingSpinner />;
   }
 
-  if (showChat && user) {
-    return (
-      <Suspense fallback={<LoadingSpinner />}>
-        <ChatInterface onBack={() => setShowChat(false)} />
-      </Suspense>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-background">
-      {/* Welcome modal for new corporate trial users */}
-      {welcomeTrialEnd && (
-        <WelcomeEngineerModal
-          trialEnd={welcomeTrialEnd}
-          onClose={() => setWelcomeTrialEnd(null)}
-        />
+    <AnimatePresence mode="wait">
+      {showChat && user ? (
+        <motion.div
+          key="chat"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
+          <Suspense fallback={<LoadingSpinner />}>
+            <ChatInterface onBack={() => setShowChat(false)} />
+          </Suspense>
+        </motion.div>
+      ) : (
+        <motion.main
+          key="landing"
+          className="min-h-screen bg-background"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
+          {/* Welcome modal for new corporate trial users */}
+          {welcomeTrialEnd && (
+            <WelcomeEngineerModal
+              trialEnd={welcomeTrialEnd}
+              onClose={() => setWelcomeTrialEnd(null)}
+            />
+          )}
+
+          {/* 1. Navbar + Brand Marquee + Hero */}
+          <HeroSection onStartChat={handleStartChat} isLoggedIn={!!user} />
+
+          {/* 2. How It Works */}
+          <div id="how-it-works">
+            <HowItWorksSection />
+          </div>
+
+          {/* 3. Technology / Agent Architecture */}
+          <TechnologySection />
+
+          {/* 4. Stats/Numbers */}
+          <StatsSection />
+
+          {/* 5. Pricing */}
+          <PricingLanding />
+
+          {/* 6. Tech Standards Marquee (reverse direction) */}
+          <TechMarquee />
+
+          {/* 7. Testimonials */}
+          <TestimonialsSection />
+
+          {/* 8. FAQ */}
+          <FAQSection />
+
+          {/* 9. Final CTA */}
+          <CTASection />
+
+          {/* 10. Footer */}
+          <LandingFooter />
+        </motion.main>
       )}
-
-      {/* 1. Navbar + Brand Marquee + Hero */}
-      <HeroSection onStartChat={handleStartChat} isLoggedIn={!!user} />
-
-      {/* 2. How It Works */}
-      <div id="how-it-works">
-        <HowItWorksSection />
-      </div>
-
-      {/* 3. Technology / Agent Architecture */}
-      <TechnologySection />
-
-      {/* 4. Stats/Numbers */}
-      <StatsSection />
-
-      {/* 5. Pricing */}
-      <PricingLanding />
-
-      {/* 6. Tech Standards Marquee (reverse direction) */}
-      <TechMarquee />
-
-      {/* 7. Testimonials */}
-      <TestimonialsSection />
-
-      {/* 8. FAQ */}
-      <FAQSection />
-
-      {/* 9. Final CTA */}
-      <CTASection />
-
-      {/* 10. Footer */}
-      <LandingFooter />
-    </main>
+    </AnimatePresence>
   );
 };
 

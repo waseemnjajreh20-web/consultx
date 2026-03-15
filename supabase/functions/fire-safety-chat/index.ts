@@ -1774,6 +1774,7 @@ serve(async (req) => {
   try {
     const isTestMode = req.headers.get("X-Test-Mode") === "consultx-internal-test";
     let userId = "test-user";
+    let userEmail = "";
 
     if (!isTestMode) {
       const authHeader = req.headers.get("Authorization");
@@ -1799,6 +1800,7 @@ serve(async (req) => {
         );
       }
       userId = user.id;
+      userEmail = user.email || "";
     }
     console.log(`✅ ${isTestMode ? "⚠️ TEST MODE" : "Authenticated"} user: ${userId}`);
 
@@ -1810,14 +1812,16 @@ serve(async (req) => {
       // Check profiles.plan_type first (covers admins + direct DB assignments)
       const { data: profile } = await adminClient
         .from("profiles")
-        .select("plan_type, email")
+        .select("plan_type")
         .eq("id", userId)
         .maybeSingle();
 
       // Admin bypass + enterprise/engineer bypass via plan_type
       const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
-      const isAdmin = profile?.email && ADMIN_EMAILS.includes(profile.email);
+      const isAdmin = userEmail && ADMIN_EMAILS.includes(userEmail);
       const isUnlimitedPlan = profile?.plan_type === "enterprise" || profile?.plan_type === "engineer";
+
+      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan);
 
       let dailyLimit = 9999; // default unlimited for admins/paid users
 

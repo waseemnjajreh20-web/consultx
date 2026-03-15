@@ -79,11 +79,11 @@ export const translations = {
     sourcesLabel: "المصادر:",
     referencesNote: "ConsultX يستخدم SBC 201، SBC 801، NFPA كمراجع أساسية",
     
-    // Loading states
-    connecting: "جاري الاتصال...",
-    thinking: "جاري التحليل...",
-    writing: "جاري كتابة الرد...",
-    processing: "جاري المعالجة...",
+    // Loading states (domain-specific thinking indicators)
+    connecting: "يتصل بقاعدة المعرفة...",
+    thinking: "يقرأ الكود السعودي...",
+    writing: "يقارن مع معايير NFPA...",
+    processing: "يصيغ التقرير...",
     retrying: "إعادة المحاولة",
     
     // Conversations list
@@ -98,21 +98,51 @@ export const translations = {
     yesterday: "أمس",
     daysAgo: "منذ {days} أيام",
     
-    // Suggested questions - Primary
+    // Suggested questions - Primary (legacy keys)
     q1Primary: "استفسار عن فقرة بالكود",
     q2Primary: "عندي مشروع محدد",
     q3Primary: "مشكلة في موقع العمل",
-    
+
     // Suggested questions - Standard (Advisory)
     q1Standard: "ما هي متطلبات نظام الإطفاء التلقائي للمباني السكنية؟",
     q2Standard: "متطلبات مساحة فتحات التعويض عن الهواء في نظام مراوح ضغط السلالم",
     q3Standard: "ما هي تصنيفات الإشغال وفق SBC 201؟",
-    
+
     // Suggested questions - Analysis
     q1Analysis: "في مبنى إداري 5 طوابق، مساحة كل طابق 1,200 م²، كيف أحسب عرض السلالم والمخارج المطلوبة؟",
     q2Analysis: "لدي مبنى سكني متعدد الأسر، ما هي أنظمة الحماية المطلوبة وهل يلزم نظام رش تلقائي؟",
     q3Analysis: "أحتاج تحليلاً شاملاً لمتطلبات الحماية من الحريق لمستودع بمساحة 5000 م² يحوي مواد قابلة للاشتعال",
-    
+
+    // Dynamic suggestion pools — Primary
+    suggestion_primary_1: "استفسار عن فقرة بالكود",
+    suggestion_primary_2: "عندي مشروع محدد",
+    suggestion_primary_3: "مشكلة في موقع العمل",
+    suggestion_primary_4: "ما الفرق بين SBC 201 و SBC 801؟",
+    suggestion_primary_5: "كيف أحسب الحمل الإشغالي؟",
+    suggestion_primary_6: "متطلبات إنذار الحريق",
+    suggestion_primary_7: "مواد التشطيب المقاومة للحريق",
+    suggestion_primary_8: "إجراءات إخلاء المبنى",
+
+    // Dynamic suggestion pools — Standard
+    suggestion_standard_1: "ما هي متطلبات نظام الإطفاء التلقائي للمباني السكنية؟",
+    suggestion_standard_2: "متطلبات مساحة فتحات التعويض عن الهواء في نظام مراوح ضغط السلالم",
+    suggestion_standard_3: "ما هي تصنيفات الإشغال وفق SBC 201؟",
+    suggestion_standard_4: "ما هي المسافات القصوى لمسارات الهروب في المباني التجارية؟",
+    suggestion_standard_5: "متطلبات المقاومة للحريق للعناصر الإنشائية حسب نوع البناء",
+    suggestion_standard_6: "متى يُطلب نظام إنذار آلي وفق الكود السعودي؟",
+    suggestion_standard_7: "ما الفرق بين الحماية الفعالة والسلبية من الحريق؟",
+    suggestion_standard_8: "متطلبات خزانات المياه وأنظمة الضخ لأنظمة الرش",
+
+    // Dynamic suggestion pools — Analysis
+    suggestion_analysis_1: "في مبنى إداري 5 طوابق، مساحة كل طابق 1,200 م²، كيف أحسب عرض السلالم والمخارج المطلوبة؟",
+    suggestion_analysis_2: "لدي مبنى سكني متعدد الأسر، ما هي أنظمة الحماية المطلوبة وهل يلزم نظام رش تلقائي؟",
+    suggestion_analysis_3: "أحتاج تحليلاً شاملاً لمتطلبات الحماية من الحريق لمستودع بمساحة 5000 م² يحوي مواد قابلة للاشتعال",
+    suggestion_analysis_4: "فندق 10 طوابق و200 غرفة، ما أنظمة الحماية اللازمة وفق SBC 801 و NFPA 101؟",
+    suggestion_analysis_5: "مستشفى 3 طوابق، كيف أصمم مسارات الإخلاء ونظام التحكم بالدخان؟",
+    suggestion_analysis_6: "مبنى مختلط (تجاري + سكني)، كيف أطبق الفصل بالحريق بين الاستخدامات؟",
+    suggestion_analysis_7: "مواقف سيارات تحت الأرض بمساحة 8000 م²، ما متطلبات التهوية والإطفاء؟",
+    suggestion_analysis_8: "مصنع كيماويات، ما تصنيف الخطورة وأنظمة الحماية المطلوبة وفق NFPA 30؟",
+
     // Error messages
     errorTitle: "خطأ",
     connectionError: "حدث خطأ في الاتصال",
@@ -230,6 +260,28 @@ export const translations = {
     cardSaved: "تم حفظ بطاقتك بنجاح",
     subscriptionWillStart: "سيبدأ اشتراكك تلقائياً بعد انتهاء الفترة التجريبية",
     verificationChargeReturning: "سيتم خصم 1 ريال للتحقق من البطاقة وتفعيل الاشتراك فوراً (يُسترد تلقائياً)",
+
+    // Preferences Hub
+    prefsTab_account: "الحساب",
+    prefsTab_brain: "عقل ConsultX",
+    prefsMemoryTitle: "مستوى الذاكرة",
+    prefsMemoryNone: "بدون ذاكرة",
+    prefsMemoryNoneDesc: "كل جلسة مستقلة تماماً",
+    prefsMemorySession: "ذاكرة الجلسة",
+    prefsMemorySessionDesc: "يتذكر السياق خلال المحادثة الحالية فقط",
+    prefsMemoryPersistent: "ذاكرة مستمرة",
+    prefsMemoryPersistentDesc: "يتذكر مشاريعك وتفضيلاتك بين الجلسات",
+    prefsOutputTitle: "تنسيق المخرجات",
+    prefsOutputConcise: "مختصر",
+    prefsOutputConciseDesc: "نقاط حاسمة مباشرة",
+    prefsOutputDetailed: "مفصل",
+    prefsOutputDetailedDesc: "شرح هندسي مع مراجع الأكواد",
+    prefsOutputReport: "تقرير",
+    prefsOutputReportDesc: "تقرير رسمي كامل مع التوصيات",
+    prefsStandardsTitle: "الأكواد المفضلة",
+    prefsClearMemory: "مسح الذاكرة",
+    prefsClearMemoryDesc: "حذف جميع المحادثات السابقة",
+    prefsSaved: "تم حفظ التفضيلات",
   },
   en: {
     // Common
@@ -309,11 +361,11 @@ export const translations = {
     sourcesLabel: "Sources:",
     referencesNote: "ConsultX uses SBC 201, SBC 801, NFPA as primary references",
     
-    // Loading states
-    connecting: "Connecting...",
-    thinking: "Analyzing...",
-    writing: "Writing response...",
-    processing: "Processing...",
+    // Loading states (domain-specific thinking indicators)
+    connecting: "Connecting to knowledge base...",
+    thinking: "Reading Saudi Building Code...",
+    writing: "Cross-referencing NFPA standards...",
+    processing: "Drafting the report...",
     retrying: "Retrying",
     
     // Conversations list
@@ -328,21 +380,51 @@ export const translations = {
     yesterday: "Yesterday",
     daysAgo: "{days} days ago",
     
-    // Suggested questions - Primary
+    // Suggested questions - Primary (legacy keys)
     q1Primary: "Query about a code section",
     q2Primary: "I have a specific project",
     q3Primary: "Issue at the job site",
-    
+
     // Suggested questions - Standard (Advisory)
     q1Standard: "What are the automatic fire suppression requirements for residential buildings?",
     q2Standard: "Air compensation opening area requirements for stairwell pressurization fan systems",
     q3Standard: "What are the occupancy classifications according to SBC 201?",
-    
+
     // Suggested questions - Analysis
     q1Analysis: "For a 5-story office building, 1,200 m² per floor, how do I calculate the required stair width and exits?",
     q2Analysis: "I have a multi-family residential building, what protection systems are required and is an automatic sprinkler system needed?",
     q3Analysis: "I need a comprehensive analysis of fire protection requirements for a 5000 m² warehouse containing flammable materials",
-    
+
+    // Dynamic suggestion pools — Primary
+    suggestion_primary_1: "Query about a code section",
+    suggestion_primary_2: "I have a specific project",
+    suggestion_primary_3: "Issue at the job site",
+    suggestion_primary_4: "What's the difference between SBC 201 and SBC 801?",
+    suggestion_primary_5: "How do I calculate occupant load?",
+    suggestion_primary_6: "Fire alarm requirements",
+    suggestion_primary_7: "Fire-resistant finishing materials",
+    suggestion_primary_8: "Building evacuation procedures",
+
+    // Dynamic suggestion pools — Standard
+    suggestion_standard_1: "What are the automatic fire suppression requirements for residential buildings?",
+    suggestion_standard_2: "Air compensation opening area requirements for stairwell pressurization fan systems",
+    suggestion_standard_3: "What are the occupancy classifications according to SBC 201?",
+    suggestion_standard_4: "What are the maximum travel distances for means of egress in commercial buildings?",
+    suggestion_standard_5: "Fire-resistance rating requirements for structural elements by construction type",
+    suggestion_standard_6: "When is an automatic fire alarm system required per Saudi Building Code?",
+    suggestion_standard_7: "What's the difference between active and passive fire protection?",
+    suggestion_standard_8: "Water tank and pump system requirements for sprinkler systems",
+
+    // Dynamic suggestion pools — Analysis
+    suggestion_analysis_1: "For a 5-story office building, 1,200 m² per floor, how do I calculate the required stair width and exits?",
+    suggestion_analysis_2: "I have a multi-family residential building, what protection systems are required and is an automatic sprinkler system needed?",
+    suggestion_analysis_3: "I need a comprehensive analysis of fire protection requirements for a 5000 m² warehouse containing flammable materials",
+    suggestion_analysis_4: "10-story hotel with 200 rooms, what protection systems are required per SBC 801 and NFPA 101?",
+    suggestion_analysis_5: "3-story hospital, how do I design evacuation routes and smoke control systems?",
+    suggestion_analysis_6: "Mixed-use building (commercial + residential), how do I apply fire separation between uses?",
+    suggestion_analysis_7: "Underground parking 8000 m², what are the ventilation and fire suppression requirements?",
+    suggestion_analysis_8: "Chemical plant, what is the hazard classification and protection systems required per NFPA 30?",
+
     // Error messages
     errorTitle: "Error",
     connectionError: "Connection error occurred",
@@ -460,6 +542,28 @@ export const translations = {
     cardSaved: "Your card has been saved successfully",
     subscriptionWillStart: "Your subscription will auto-start after the trial ends",
     verificationChargeReturning: "A 1 SAR verification charge will activate your subscription immediately (automatically refunded)",
+
+    // Preferences Hub
+    prefsTab_account: "Account",
+    prefsTab_brain: "ConsultX Brain",
+    prefsMemoryTitle: "Memory Level",
+    prefsMemoryNone: "No Memory",
+    prefsMemoryNoneDesc: "Each session is completely independent",
+    prefsMemorySession: "Session Memory",
+    prefsMemorySessionDesc: "Remembers context within the current conversation only",
+    prefsMemoryPersistent: "Persistent Memory",
+    prefsMemoryPersistentDesc: "Remembers your projects and preferences across sessions",
+    prefsOutputTitle: "Output Format",
+    prefsOutputConcise: "Concise",
+    prefsOutputConciseDesc: "Direct, decisive bullet points",
+    prefsOutputDetailed: "Detailed",
+    prefsOutputDetailedDesc: "Engineering explanation with code references",
+    prefsOutputReport: "Report",
+    prefsOutputReportDesc: "Full formal report with recommendations",
+    prefsStandardsTitle: "Preferred Standards",
+    prefsClearMemory: "Clear Memory",
+    prefsClearMemoryDesc: "Delete all previous conversations",
+    prefsSaved: "Preferences saved",
   },
 } as const;
 
