@@ -18,6 +18,7 @@ import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
 import AnalysisResultCard, { isVisionAnalysisResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
+import CosmicBackground from "./CosmicBackground";
 import { useConversations } from "@/hooks/useConversations";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -752,7 +753,11 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const modeLabelText = chatMode === "primary" ? t("primary") : chatMode === "standard" ? t("standard") : t("analysis");
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-background">
+    <div className="flex flex-col h-[100dvh] bg-background relative">
+      {/* Deep Space Cosmic Background */}
+      <CosmicBackground />
+
+      <div className="relative z-10 flex flex-col h-full">
       {/* Image Lightbox */}
       {expandedImage && (
         <div
@@ -776,7 +781,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       )}
 
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card/30 backdrop-blur-xl">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-primary/10 bg-card/20 backdrop-blur-2xl">
         <div className="flex items-center gap-4">
           <img src={consultxIcon} alt="ConsultX" className="w-10 h-10 object-contain" />
           <div>
@@ -1180,6 +1185,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
       {/* Bottom padding for mobile nav */}
       {isMobile && <div className="h-16" />}
+    </div>
     </div>
   );
 };

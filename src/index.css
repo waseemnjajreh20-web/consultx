@@ -111,6 +111,182 @@
   }
 }
 
+/* ===== COSMIC BACKGROUND ===== */
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(100, 60, 180, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(0, 212, 255, 0.02) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(80, 40, 160, 0.025) 0%, transparent 45%),
+    linear-gradient(180deg, hsl(220, 40%, 4%) 0%, hsl(220, 45%, 6%) 50%, hsl(225, 35%, 5%) 100%);
+}
+
+/* ===== SHOOTING STARS ===== */
+.shooting-star {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.9), rgba(0, 212, 255, 0.4), transparent);
+  border-radius: 999px;
+  transform: rotate(-45deg);
+  animation: shooting-star-move var(--star-duration, 3s) var(--star-delay, 0s) ease-in infinite;
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
+  pointer-events: none;
+}
+
+@keyframes shooting-star-move {
+  0% { transform: rotate(-45deg) translateX(0); opacity: 0; width: 60px; }
+  3% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { transform: rotate(-45deg) translateX(-900px); opacity: 0; width: 200px; }
+}
+
+.shooting-star:nth-child(1) { top: 8%;  right: -5%;  --star-duration: 2.8s; --star-delay: 1s; }
+.shooting-star:nth-child(2) { top: 22%; right: -10%; --star-duration: 3.5s; --star-delay: 4.2s; }
+.shooting-star:nth-child(3) { top: 4%;  right: 15%;  --star-duration: 2.4s; --star-delay: 7.8s; }
+.shooting-star:nth-child(4) { top: 38%; right: -5%;  --star-duration: 4s;   --star-delay: 2.5s; }
+.shooting-star:nth-child(5) { top: 12%; right: 35%;  --star-duration: 3s;   --star-delay: 9.5s; }
+.shooting-star:nth-child(6) { top: 52%; right: -15%; --star-duration: 3.2s; --star-delay: 5.5s; }
+.shooting-star:nth-child(7) { top: 65%; right: 10%;  --star-duration: 2.6s; --star-delay: 12s; }
+.shooting-star:nth-child(8) { top: 30%; right: 50%;  --star-duration: 3.8s; --star-delay: 15s; }
+
+/* ===== COSMIC DUST (box-shadow particle technique) ===== */
+.cosmic-dust {
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: transparent;
+  animation: dust-drift-slow 45s ease-in-out infinite;
+  pointer-events: none;
+  box-shadow:
+    120px 80px 0 0.5px rgba(0, 212, 255, 0.18),
+    350px 200px 0 0.8px rgba(255, 255, 255, 0.12),
+    600px 150px 0 1px rgba(0, 212, 255, 0.1),
+    900px 400px 0 0.5px rgba(255, 255, 255, 0.1),
+    200px 500px 0 1px rgba(0, 212, 255, 0.08),
+    750px 100px 0 0.6px rgba(255, 255, 255, 0.16),
+    1100px 300px 0 1px rgba(0, 212, 255, 0.12),
+    450px 650px 0 0.5px rgba(255, 255, 255, 0.1),
+    1300px 500px 0 0.8px rgba(0, 212, 255, 0.1),
+    80px 350px 0 1px rgba(255, 255, 255, 0.08),
+    550px 50px 0 0.5px rgba(0, 212, 255, 0.16),
+    1000px 600px 0 1px rgba(255, 255, 255, 0.12),
+    300px 300px 0 0.6px rgba(0, 212, 255, 0.1),
+    850px 250px 0 0.5px rgba(255, 255, 255, 0.1),
+    1200px 100px 0 1px rgba(0, 212, 255, 0.08),
+    1400px 200px 0 0.5px rgba(255, 255, 255, 0.14),
+    700px 700px 0 0.8px rgba(0, 212, 255, 0.09);
+}
+
+.cosmic-dust-2 {
+  position: absolute;
+  top: 0; left: 0;
+  width: 1px; height: 1px;
+  border-radius: 50%;
+  background: transparent;
+  animation: dust-drift-slow 60s ease-in-out infinite reverse;
+  pointer-events: none;
+  box-shadow:
+    180px 120px 0 0.5px rgba(0, 212, 255, 0.12),
+    420px 380px 0 1px rgba(255, 255, 255, 0.08),
+    700px 50px 0 0.5px rgba(0, 212, 255, 0.1),
+    1050px 500px 0 0.8px rgba(255, 255, 255, 0.12),
+    250px 600px 0 1px rgba(0, 212, 255, 0.06),
+    980px 180px 0 0.5px rgba(255, 255, 255, 0.1),
+    50px 450px 0 1px rgba(0, 212, 255, 0.1),
+    1180px 350px 0 0.5px rgba(255, 255, 255, 0.08),
+    500px 280px 0 0.8px rgba(100, 60, 180, 0.1),
+    800px 550px 0 0.6px rgba(100, 60, 180, 0.08);
+}
+
+@keyframes dust-drift-slow {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(18px, -25px); }
+  66% { transform: translate(-14px, 20px); }
+}
+
+/* ===== BLUEPRINT GRID (GLOWING VARIANT) ===== */
+.blueprint-grid-glow {
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(0, 212, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.025) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+/* ===== GLASSMORPHISM SYSTEM ===== */
+.glass-card {
+  background: rgba(10, 15, 28, 0.4);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.glass-card-interactive {
+  position: relative;
+  overflow: hidden;
+  background: rgba(10, 15, 28, 0.4);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card-interactive:hover {
+  border-color: rgba(0, 212, 255, 0.18);
+}
+
+/* Mouse-tracking radial glow */
+.glass-card-interactive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 212, 255, 0.1),
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.glass-card-interactive:hover::before {
+  opacity: 1;
+}
+
+/* ===== TYPEWRITER CURSOR ===== */
+.typewriter-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 0.9em;
+  background: #00D4FF;
+  margin-inline-start: 2px;
+  vertical-align: text-bottom;
+  animation: typewriter-blink 0.75s step-end infinite;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
+@keyframes typewriter-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -398,6 +574,17 @@
   /* Disable particles on mobile */
   .particles-container {
     display: none;
+  }
+
+  /* Disable cosmic effects on mobile for performance */
+  .shooting-star { display: none; }
+  .cosmic-dust, .cosmic-dust-2 { display: none; }
+  .blueprint-grid-glow { display: none; }
+  .glass-card-interactive::before { display: none; }
+  .glass-card,
+  .glass-card-interactive {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   /* Reduce all glow box-shadows on mobile for GPU/battery */

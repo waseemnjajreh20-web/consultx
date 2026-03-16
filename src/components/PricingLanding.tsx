@@ -116,11 +116,18 @@ const PricingLanding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  /* mouse-tracking glow handler for glass cards */
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  };
+
   /* card styles */
   const cardBase: React.CSSProperties = {
-    background: "rgba(17, 24, 39, 0.6)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
+    background: "rgba(10, 15, 28, 0.4)",
+    backdropFilter: "blur(24px) saturate(1.2)",
+    WebkitBackdropFilter: "blur(24px) saturate(1.2)",
     borderRadius: "16px",
     transition: "all 0.3s ease",
   };
@@ -213,7 +220,8 @@ const PricingLanding = () => {
         {/* ── Card 2: مهندس (popular) — shown first on mobile ── */}
         <div
           style={engineerCard}
-          className="pricing-popular-card p-6 flex flex-col relative order-first md:order-none"
+          className="pricing-popular-card glass-card-interactive p-6 flex flex-col relative order-first md:order-none"
+          onMouseMove={handleMouseMove}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLDivElement).style.transform = "scale(1.03) translateY(-4px)";
             (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 60px rgba(0,212,255,0.22), 0 0 100px rgba(0,212,255,0.1)";
@@ -317,7 +325,8 @@ const PricingLanding = () => {
         {/* ── Card 1: مستكشف ── */}
         <div
           style={explorerCard}
-          className="p-6 flex flex-col group"
+          className="glass-card-interactive p-6 flex flex-col group"
+          onMouseMove={handleMouseMove}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
             (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(0,212,255,0.25)";
@@ -383,7 +392,8 @@ const PricingLanding = () => {
         {/* ── Card 3: مؤسسة ── */}
         <div
           style={enterpriseCard}
-          className="p-6 flex flex-col"
+          className="glass-card-interactive p-6 flex flex-col"
+          onMouseMove={handleMouseMove}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
             (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,140,0,0.55)";

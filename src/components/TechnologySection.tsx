@@ -86,16 +86,22 @@ function AgentNode({ Icon, titleAr, titleEn, subtitleAr, subtitleEn, descAr, des
     >
       {/* Node circle */}
       <div
-        className="flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-center"
+        className="glass-card-interactive flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-center"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+          e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        }}
         style={{
-          background: `radial-gradient(ellipse at top, ${glowColor}, transparent 70%), rgba(17,24,39,0.9)`,
+          background: `radial-gradient(ellipse at top, ${glowColor}, transparent 70%), rgba(10,15,28,0.5)`,
           border: `1.5px solid ${hovered ? accentColor : borderColor}`,
           boxShadow: hovered
             ? `0 0 28px -4px ${shadowColor}, 0 0 60px -12px ${shadowColor}40, inset 0 0 12px -6px ${glowColor}`
             : `0 0 14px -6px ${shadowColor}`,
           minWidth: large ? "140px" : "96px",
           maxWidth: large ? "180px" : "136px",
-          backdropFilter: "blur(8px)",
+          backdropFilter: "blur(20px) saturate(1.2)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.2)",
           transition: "all 0.3s ease",
           transform: hovered ? "scale(1.08) translateY(-2px)" : "scale(1)",
         }}

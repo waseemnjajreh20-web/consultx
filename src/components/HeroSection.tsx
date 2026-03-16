@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Flame, LogOut, User, ChevronDown, ShieldCheck, ScanEye, FlameKindling, Menu, X } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,39 @@ function MagneticButton({ children, className, ...props }: React.ComponentProps<
         {children}
       </Button>
     </motion.div>
+  );
+}
+
+// ===== TYPEWRITER TEXT (Phase 6 — Deep Space) =====
+function TypewriterText({ text, speed = 45, className, style }: {
+  text: string;
+  speed?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(interval);
+        setDone(true);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return (
+    <span className={className} style={style}>
+      {displayed}
+      {!done && <span className="typewriter-cursor" />}
+    </span>
   );
 }
 
@@ -211,7 +244,7 @@ const HeroSection = ({ onStartChat, isLoggedIn }: HeroSectionProps) => {
 
         {/* Title */}
         <h1
-          className="hero-heading text-3xl md:text-5xl font-bold text-center mb-4 animate-fade-up px-3 py-2"
+          className="hero-heading font-sans text-3xl md:text-5xl font-bold text-center mb-4 animate-fade-up px-3 py-2"
           style={{
             background: "linear-gradient(135deg, #00D4FF 0%, #ffffff 60%, #00D4FF 100%)",
             WebkitBackgroundClip: "text",
@@ -220,7 +253,7 @@ const HeroSection = ({ onStartChat, isLoggedIn }: HeroSectionProps) => {
             filter: "drop-shadow(0 0 18px rgba(0,212,255,0.35))",
           }}
         >
-          {t("heroTitle")}
+          <TypewriterText text={t("heroTitle")} speed={40} />
         </h1>
 
         {/* Subtitle */}
@@ -315,11 +348,18 @@ const FeatureCard = ({
   glowColor: string;
 }) => (
   <div
-    className="group p-5 md:p-6 rounded-xl transition-all duration-300 hover:-translate-y-1"
+    className="group glass-card-interactive p-5 md:p-6 rounded-xl transition-all duration-300 hover:-translate-y-1"
     style={{
-      background: `radial-gradient(ellipse at top, ${glowColor}, transparent 70%), rgba(17,24,39,0.8)`,
+      background: `radial-gradient(ellipse at top, ${glowColor}, transparent 70%), rgba(10,15,28,0.4)`,
       border: `1px solid ${borderColor}`,
       boxShadow: `0 0 18px -6px ${borderColor}`,
+      backdropFilter: "blur(24px) saturate(1.2)",
+      WebkitBackdropFilter: "blur(24px) saturate(1.2)",
+    }}
+    onMouseMove={(e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
     }}
     onMouseEnter={(e) => {
       (e.currentTarget as HTMLElement).style.boxShadow = `0 0 28px -4px ${borderColor}`;
