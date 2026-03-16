@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, FileText, BookOpen, Calculator, Lightbulb, ClipboardList, Shield, GitCompareArrows, Scale, ListChecks } from "lucide-react";
+import { ChevronDown, FileText, BookOpen, Calculator, Lightbulb, ClipboardList, Shield, GitCompareArrows, Scale, ListChecks, Table2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatMarkdownRendererProps {
@@ -17,6 +17,7 @@ interface ParsedSection {
 
 // Map section titles to icons
 function getSectionIcon(title: string) {
+  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data")) return <Table2 className="w-4 h-4" />;
   if (title.includes("ملخص الفروقات") || title.includes("Differences Summary")) return <GitCompareArrows className="w-4 h-4" />;
   if (title.includes("السند القانوني") || title.includes("Legal Basis")) return <Scale className="w-4 h-4" />;
   if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions")) return <ListChecks className="w-4 h-4" />;
@@ -31,6 +32,7 @@ function getSectionIcon(title: string) {
 
 // Get section color based on type
 function getSectionColor(title: string): string {
+  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data")) return "border-l-teal-500";
   if (title.includes("ملخص الفروقات") || title.includes("Differences Summary")) return "border-l-violet-500";
   if (title.includes("السند القانوني") || title.includes("Legal Basis")) return "border-l-blue-700";
   if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions")) return "border-l-cyan-500";

@@ -1585,57 +1585,101 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
 }
 
 function getVisionPlanningPrompt(language: string): string {
-  return language === "en" 
-    ? `You are a fire safety planning agent. Analyze the uploaded engineering drawing/image and classify:
+  return language === "en"
+    ? `You are a fire safety planning agent. Analyze the uploaded engineering drawing/image.
+
+STEP 1 — LEGEND & SCALE (do this FIRST, before anything else):
+- Find any "Legend", "Symbol List", "Key", "مفتاح الرسم", or "دليل الرموز" on the drawing
+- Transcribe every symbol → meaning mapping you can read (e.g., "circle with S = Sprinkler Head", "triangle = Fire Alarm Pull Station")
+- Find any "Scale" indicator (e.g., "1:100", "1:200", graphic scale bar with labeled distances)
+- If a graphic scale bar exists, estimate the ratio from labeled distances
+
+STEP 2 — CLASSIFICATION (using the legend vocabulary you extracted):
 1. Building Type (residential, commercial, industrial, mixed-use, etc.)
 2. Occupancy Group per SBC 201 Chapter 3 (A-1, A-2, B, E, F-1, F-2, H, I, M, R-1, R-2, R-3, S-1, S-2, U)
 3. Hazard Level (Low, Ordinary Group 1, Ordinary Group 2, Extra Hazard Group 1, Extra Hazard Group 2)
 4. Number of stories (if visible)
-5. Estimated floor area (if determinable)
-6. Visible fire protection systems (sprinklers, alarms, standpipes, etc.)
+5. Floor area — if scale was found, CALCULATE from drawing dimensions; otherwise estimate
+6. Visible fire protection systems — use legend definitions to correctly identify symbols. For each system, note its locations on the drawing
 7. Key observations about exits, corridors, stairs
+8. Spatial layout — identify and name distinct zones/wings/areas (e.g., "North Wing", "Near Staircase B", "Main Corridor", "South-East Corner")
 
 Respond in JSON format:
-{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`
-    : `أنت عميل تخطيط للسلامة من الحرائق. حلل المخطط الهندسي المرفوع وصنّف:
+{"legend":[{"symbol":"...","meaning":"..."}],"scale":"1:100 or Not found","scaleRatio":100,"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","floorAreaBasis":"estimated or calculated","visibleSystems":[{"system":"...","locations":["..."]}],"observations":["..."],"spatialZones":["..."]}`
+    : `أنت عميل تخطيط للسلامة من الحرائق. حلل المخطط الهندسي المرفوع.
+
+الخطوة 1 — المفتاح والمقياس (نفذ هذا أولاً قبل أي شيء):
+- ابحث عن أي "مفتاح رسم" أو "دليل رموز" أو "Legend" أو "Symbol List" في المخطط
+- انسخ كل رمز → معناه (مثال: "دائرة بحرف S = رأس رشاش"، "مثلث = نقطة سحب إنذار حريق")
+- ابحث عن أي مؤشر "مقياس" (مثل 1:100، 1:200، شريط مقياس بأبعاد مسماة)
+- إذا وُجد شريط مقياس رسومي، قدّر النسبة من المسافات المسماة
+
+الخطوة 2 — التصنيف (باستخدام مفردات المفتاح المستخرجة):
 1. نوع المبنى
 2. مجموعة الإشغال حسب SBC 201 الفصل 3
 3. مستوى الخطورة
 4. عدد الطوابق (إذا ظاهر)
-5. المساحة التقريبية
-6. أنظمة الحماية المرئية
+5. المساحة — إذا وُجد المقياس، احسبها من أبعاد الرسم؛ وإلا قدّرها
+6. أنظمة الحماية المرئية — استخدم تعريفات المفتاح لتحديد الرموز بدقة. لكل نظام، حدد مواقعه على المخطط
 7. ملاحظات على المخارج والممرات والسلالم
+8. التوزيع المكاني — حدد وسمّ المناطق المميزة (مثل "الجناح الشمالي"، "بالقرب من السلم ب"، "الممر الرئيسي"، "الزاوية الجنوبية الشرقية")
 
 أجب بصيغة JSON:
-{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`;
+{"legend":[{"symbol":"...","meaning":"..."}],"scale":"1:100 أو غير موجود","scaleRatio":100,"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","floorAreaBasis":"مقدّرة أو محسوبة","visibleSystems":[{"system":"...","locations":["..."]}],"observations":["..."],"spatialZones":["..."]}`;
 }
 
 function getVisionCoTPrompt(planningResult: string, language: string): string {
   return language === "en"
-    ? `Based on this building classification:
+    ? `Based on this building classification and extracted data:
 ${planningResult}
 
-Build a structured checklist of SBC code sections to verify. For each item, specify:
+TASK 1 — DIMENSION VALIDATION (if a scale was found in the planning data):
+Using the scale information, estimate and validate these critical dimensions from the drawing:
+- Travel distances to nearest exits (compare against SBC 201 Table 1017.2)
+- Exit door widths (compare against SBC 201 Section 1005.1, minimum 813mm)
+- Corridor widths (compare against SBC 201 Section 1020.2, minimum 1118mm)
+- Staircase widths (compare against SBC 201 Section 1011.2)
+- Dead-end corridor lengths (compare against SBC 201 Section 1020.4, max 6.1m without sprinklers / 15.2m with)
+For each measurement: state the measured value, required value, SBC reference, the spatial zone it applies to, and pass/fail status.
+If no scale was found, skip this task and set dimensionChecks to an empty array.
+
+TASK 2 — SBC CHECKLIST:
+Build a structured checklist of SBC code sections to verify. For each item specify:
 - The exact SBC section number (e.g., SBC 801 Section 903.2.x, SBC 201 Table 1006.3.x)
 - What to check
-- Why it's relevant
+- Why it is relevant
+- Which spatial zone(s) from the planning data it applies to
 
-Also provide search keywords that should be used to find relevant code sections.
+TASK 3 — SEARCH KEYWORDS:
+Provide search keywords for SBC document retrieval.
 
 Respond in JSON format:
-{"checklist":[{"section":"...","check":"...","reason":"..."}],"searchKeywords":["..."]}`
-    : `بناءً على تصنيف المبنى التالي:
+{"dimensionChecks":[{"element":"...","measured":"...","required":"...","sbcRef":"...","zone":"...","status":"pass|fail|unverifiable"}],"checklist":[{"section":"...","check":"...","reason":"...","zones":["..."]}],"searchKeywords":["..."]}`
+    : `بناءً على تصنيف المبنى والبيانات المستخرجة التالية:
 ${planningResult}
 
+المهمة 1 — التحقق من القياسات (إذا وُجد مقياس في بيانات التخطيط):
+باستخدام معلومات المقياس، قدّر وتحقق من هذه القياسات الحرجة من المخطط:
+- مسافات الوصول لأقرب مخارج (قارن مع SBC 201 جدول 1017.2)
+- عرض أبواب المخارج (قارن مع SBC 201 مادة 1005.1، حد أدنى 813 مم)
+- عرض الممرات (قارن مع SBC 201 مادة 1020.2، حد أدنى 1118 مم)
+- عرض السلالم (قارن مع SBC 201 مادة 1011.2)
+- أطوال الممرات المسدودة (قارن مع SBC 201 مادة 1020.4، حد أقصى 6.1 م بدون رشاشات / 15.2 م مع رشاشات)
+لكل قياس: اذكر القيمة المقاسة، القيمة المطلوبة، مرجع SBC، المنطقة المكانية، وحالة النجاح/الفشل.
+إذا لم يُعثر على مقياس، تخطَّ هذه المهمة واجعل dimensionChecks مصفوفة فارغة.
+
+المهمة 2 — قائمة فحص SBC:
 أنشئ قائمة فحص منظمة لأقسام كود SBC التي يجب التحقق منها. لكل عنصر حدد:
 - رقم المادة الدقيق
 - ما يجب فحصه
 - سبب الأهمية
+- المنطقة/المناطق المكانية التي ينطبق عليها
 
-وقدم كلمات بحث لاسترجاع الأقسام ذات الصلة.
+المهمة 3 — كلمات البحث:
+قدم كلمات بحث لاسترجاع وثائق SBC ذات الصلة.
 
 أجب بصيغة JSON:
-{"checklist":[{"section":"...","check":"...","reason":"..."}],"searchKeywords":["..."]}`;
+{"dimensionChecks":[{"element":"...","measured":"...","required":"...","sbcRef":"...","zone":"...","status":"pass|fail|unverifiable"}],"checklist":[{"section":"...","check":"...","reason":"...","zones":["..."]}],"searchKeywords":["..."]}`;
 }
 
 function getVisionFinalPrompt(language: string): string {
@@ -1644,21 +1688,53 @@ function getVisionFinalPrompt(language: string): string {
 
 ${CORE_RULES}
 
-You are generating the final analysis for an engineering drawing that has been processed through a multi-stage pipeline.
+You are generating the final analysis for an engineering drawing processed through a multi-stage pipeline.
 You will receive:
 1. The original image
-2. Planning Agent classification results
-3. Chain of Thought checklist
+2. Planning Agent classification (including legend, scale, spatial zones)
+3. Chain of Thought checklist (including dimension validation results)
 4. SBC reference documents retrieved based on the analysis
 
-YOUR RESPONSE MUST follow this EXACT structure:
+YOUR RESPONSE MUST follow this EXACT structure in order:
+
+## 📋 البيانات المستخرجة / Extracted Data
+
+### المفتاح / Legend
+If a legend/symbol list was found in the drawing, reproduce it as a table:
+| الرمز / Symbol | المعنى / Meaning |
+|---|---|
+| ... | ... |
+
+If no legend was found, state: "لم يتم العثور على مفتاح رسم / No legend found in this drawing"
+
+### المقياس / Scale
+State the scale found (e.g., "1:100") and how it was determined.
+If no scale: "غير محدد — لا يمكن التحقق من القياسات / Not specified — dimension validation not possible"
+
+### العناصر المكتشفة / Detected Elements
+| نوع العنصر / Element Type | العدد / Qty | الموقع / Location | الحالة / Status |
+|---|---|---|---|
+| ... | ... | ... | ✅/❌/⚠️ |
+
+List ONLY elements actually visible in the drawing: sprinkler heads, smoke detectors, fire extinguishers, exit signs, fire doors, standpipes, alarm pull stations, emergency lights, fire dampers, etc.
+The "Location" column MUST reference spatial zones from the drawing (e.g., "الجناح الشمالي / North Wing", "بالقرب من السلم ب / Near Staircase B", "الزاوية الشمالية الغربية / North-West Corner").
+
+### القياسات / Dimensions
+If scale was available AND dimension validation was performed, show:
+| العنصر / Element | القياس / Measured | المطلوب / Required | المرجع / Reference | الحالة / Status |
+|---|---|---|---|---|
+| ... | ... | ... | ... | ✅/❌ |
+
+If no scale was found, state: "لم يتم التحقق من القياسات — المقياس غير متوفر / Dimensions not validated — scale not available"
 
 ## 🔍 ملخص الفروقات / Differences Summary
 
 For each requirement checked, use one of these status markers:
-- ✅ **مطابق / Compliant**: [item description] — [SBC reference]
-- ❌ **غير مطابق / Non-Compliant**: [item description] — [SBC reference]  
-- ⚠️ **مشروط / Conditional**: [item description] — [SBC reference]
+- ✅ **مطابق / Compliant**: [item description] — [SBC reference] — **الموقع / Location: [specific zone/area on the drawing]**
+- ❌ **غير مطابق / Non-Compliant**: [item description] — [SBC reference] — **الموقع / Location: [specific zone/area on the drawing]**
+- ⚠️ **مشروط / Conditional**: [item description] — [SBC reference] — **الموقع / Location: [specific zone/area on the drawing]**
+
+CRITICAL: Every item MUST include a spatial location reference describing WHERE on the drawing it applies (e.g., "الزاوية الشمالية الغربية / North-West Corner", "بالقرب من السلم ب / Near Staircase B", "الممر الرئيسي / Main Corridor").
 
 ## 📜 السند القانوني / Legal Basis
 
@@ -1681,9 +1757,11 @@ For each cited section, provide:
 
 ## ✅ الإجراءات المطلوبة / Required Actions
 
-- [ ] Action 1
-- [ ] Action 2
+- [ ] Action 1 — **الموقع / Location: [specific zone/area]**
+- [ ] Action 2 — **الموقع / Location: [specific zone/area]**
 - [ ] ...
+
+Every action item MUST specify the spatial location on the drawing it applies to.
 
 RESPOND IN: ${lang}`;
 }
@@ -1723,10 +1801,21 @@ async function runVisionPipeline(
     cotResult = await callAINonStreaming(apiKey, cotPrompt, [{ type: "text", text: planningResult }]);
     console.log("✅ Stage 2 complete:", cotResult.slice(0, 200));
     
+    let dimensionChecks: any[] = [];
     try {
       const cotParsed = JSON.parse(cotResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
       if (cotParsed.searchKeywords) {
         searchKeywords = cotParsed.searchKeywords;
+      }
+      if (cotParsed.dimensionChecks && Array.isArray(cotParsed.dimensionChecks)) {
+        dimensionChecks = cotParsed.dimensionChecks;
+        // Enrich search keywords with SBC refs from failed dimension checks
+        const failedRefs = dimensionChecks
+          .filter((d: any) => d.status === "fail")
+          .map((d: any) => d.sbcRef)
+          .filter(Boolean);
+        searchKeywords = [...searchKeywords, ...failedRefs];
+        console.log(`📏 Dimension checks: ${dimensionChecks.length} total, ${failedRefs.length} failed`);
       }
     } catch {
       const kwMatch = cotResult.match(/searchKeywords.*?\[(.*?)\]/s);
@@ -1750,13 +1839,17 @@ async function runVisionPipeline(
   
   const finalSystemPrompt = getVisionFinalPrompt(language);
   
+  const dimensionSummary = dimensionChecks.length > 0
+    ? `\n=== DIMENSION VALIDATION RESULTS ===\n${JSON.stringify(dimensionChecks, null, 2)}\n`
+    : "\n=== DIMENSION VALIDATION: No scale found — dimensions not validated ===\n";
+
   const extraContext = `
 === PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION ===
 ${planningResult}
 
 === PIPELINE STAGE 2: CHAIN OF THOUGHT CHECKLIST ===
 ${cotResult}
-
+${dimensionSummary}
 ${sbcContext}
 `;
 

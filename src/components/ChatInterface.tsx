@@ -1070,6 +1070,12 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                   </div>
                 ) : (
                   <>
+                    {isVisionRequest && (
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                        <span className="text-xs font-semibold tracking-wide text-teal-400">{t("blueprintMode")}</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-3">
                       <TypingIndicator mode={chatMode} label={t("typingIndicator")} />
                       {waitingLevel > 0 ? (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, GitCompareArrows, Scale, ListChecks, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { ChevronDown, GitCompareArrows, Scale, ListChecks, CheckCircle2, XCircle, AlertTriangle, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -41,6 +41,121 @@ function parseItems(text: string): ParsedItem[] {
     text: line.replace(/^[-•*]\s*/, "").replace(/✅|❌|⚠️/g, "").trim(),
     status: detectStatus(line),
   }));
+}
+
+// Parse markdown table into structured data
+function parseMarkdownTable(text: string): { headers: string[]; rows: string[][] } | null {
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) return null;
+  const headerLine = lines[0];
+  if (!headerLine.includes("|")) return null;
+  const separatorLine = lines[1];
+  if (!separatorLine.match(/^\|?[\s-:|]+\|?$/)) return null;
+  const parseRow = (line: string): string[] =>
+    line.split("|").map(cell => cell.trim()).filter(cell => cell !== "");
+  const headers = parseRow(headerLine);
+  const rows: string[][] = [];
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line && line.includes("|")) rows.push(parseRow(line));
+  }
+  if (headers.length === 0) return null;
+  return { headers, rows };
+}
+
+// Render a markdown table as styled HTML table
+function MiniTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border/40">
+      <table className="w-full border-collapse bg-card/30 text-sm">
+        <thead>
+          <tr className="bg-primary/10 border-b border-border/40">
+            {headers.map((h, i) => (
+              <th key={i} className="px-3 py-2 text-right font-semibold text-foreground/90 whitespace-nowrap">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} className={ri % 2 === 0 ? "bg-transparent" : "bg-muted/10"}>
+              {row.map((cell, ci) => (
+                <td key={ci} className="px-3 py-2 text-foreground/80 border-t border-border/20" dangerouslySetInnerHTML={{
+                  __html: cell.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                }} />
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// Extracted Data section — renders sub-sections with tables
+function ExtractedDataSection({ title, content, defaultOpen = true }: { title: string; content: string; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  // Split content by ### sub-headers
+  const subSections: { title: string; content: string }[] = [];
+  const lines = content.split("\n");
+  let current = { title: "", content: "" };
+
+  for (const line of lines) {
+    const subMatch = line.match(/^###\s+(.+)/);
+    if (subMatch) {
+      if (current.content.trim() || current.title) subSections.push({ ...current });
+      current = { title: subMatch[1].trim(), content: "" };
+    } else {
+      current.content += line + "\n";
+    }
+  }
+  if (current.content.trim() || current.title) subSections.push({ ...current });
+
+  return (
+    <div className="rounded-lg border border-border/60 overflow-hidden bg-card/40 border-l-4 border-l-teal-500">
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          "w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors",
+          open && "bg-muted/30 border-b border-border/40"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-teal-400"><ClipboardList className="w-4 h-4" /></span>
+          <span className="text-sm font-semibold text-foreground">{title}</span>
+        </div>
+        <div className={cn("w-7 h-7 rounded-full bg-teal-500/10 text-teal-400 flex items-center justify-center transition-transform duration-300", open && "rotate-180")}>
+          <ChevronDown className="w-4 h-4" />
+        </div>
+      </button>
+      <div className={cn("overflow-hidden transition-all duration-300", open ? "max-h-[4000px] opacity-100" : "max-h-0 opacity-0")}>
+        <div className="px-5 py-4 space-y-4">
+          {subSections.map((sub, i) => {
+            // Try parsing as table
+            const tableData = parseMarkdownTable(sub.content);
+            return (
+              <div key={i} className="space-y-2">
+                {sub.title && (
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-teal-400/80">{sub.title}</h4>
+                )}
+                {tableData ? (
+                  <MiniTable headers={tableData.headers} rows={tableData.rows} />
+                ) : (
+                  <div className="text-sm text-foreground/80 space-y-1">
+                    {sub.content.split("\n").filter(l => l.trim()).map((l, j) => (
+                      <p key={j} dangerouslySetInnerHTML={{
+                        __html: l.replace(/^[-•*]\s*/, "").replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                      }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface SectionProps {
@@ -102,14 +217,15 @@ export default function AnalysisResultCard({ content }: AnalysisResultCardProps)
   let currentSection = { type: "intro", title: "", content: "" };
 
   for (const line of lines) {
+    const isExtractedDataHeader = /^#{1,3}\s*.*(البيانات المستخرجة|Extracted Data)/i.test(line);
     const isDiffHeader = /^#{1,3}\s*.*(ملخص الفروقات|Differences Summary)/i.test(line);
     const isLegalHeader = /^#{1,3}\s*.*(السند القانوني|Legal Basis)/i.test(line);
     const isActionsHeader = /^#{1,3}\s*.*(الإجراءات المطلوبة|Required Actions)/i.test(line);
 
-    if (isDiffHeader || isLegalHeader || isActionsHeader) {
+    if (isExtractedDataHeader || isDiffHeader || isLegalHeader || isActionsHeader) {
       if (currentSection.content.trim()) sections.push({ ...currentSection });
       currentSection = {
-        type: isDiffHeader ? "diff" : isLegalHeader ? "legal" : "actions",
+        type: isExtractedDataHeader ? "extracted" : isDiffHeader ? "diff" : isLegalHeader ? "legal" : "actions",
         title: line.replace(/^#{1,3}\s*/, "").trim(),
         content: "",
       };
@@ -131,6 +247,19 @@ export default function AnalysisResultCard({ content }: AnalysisResultCardProps)
             </div>
           );
         }
+
+        // Extracted Data section uses special renderer with tables
+        if (s.type === "extracted") {
+          return (
+            <ExtractedDataSection
+              key={i}
+              title={s.title}
+              content={s.content}
+              defaultOpen={true}
+            />
+          );
+        }
+
         const config = {
           diff: { icon: <GitCompareArrows className="w-4 h-4" />, color: "border-l-violet-500" },
           legal: { icon: <Scale className="w-4 h-4" />, color: "border-l-blue-700" },
