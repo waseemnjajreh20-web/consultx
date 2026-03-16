@@ -1,3 +1,4 @@
+import { useLanguage } from "@/hooks/useLanguage";
 import consultxPlatformLogo from "@/assets/consultx-platform-logo.png";
 import nfpaLogo from "@/assets/nfpa-logo.png";
 import civilDefenseLogo from "@/assets/civil-defense-logo.png";
@@ -8,14 +9,14 @@ import sbcCenterLogo from "@/assets/sbc-center-logo.png";
 import baladyLogo from "@/assets/balady-logo.jpg";
 
 const logos = [
-  { name: "ConsultX", src: consultxPlatformLogo },
-  { name: "NFPA", src: nfpaLogo },
-  { name: "SBC", src: sbcLogo },
-  { name: "الدفاع المدني", src: civilDefenseLogo },
-  { name: "هيئة المهندسين", src: sceLogo },
-  { name: "الكود الوطني", src: sbcCenterLogo },
-  { name: "سدايا SDAIA", src: sdaiaLogo },
-  { name: "بلدي", src: baladyLogo },
+  { name: "ConsultX",        nameEn: "ConsultX",               src: consultxPlatformLogo },
+  { name: "NFPA",            nameEn: "NFPA",                   src: nfpaLogo },
+  { name: "SBC",             nameEn: "SBC",                    src: sbcLogo },
+  { name: "الدفاع المدني",   nameEn: "Civil Defense",          src: civilDefenseLogo },
+  { name: "هيئة المهندسين",  nameEn: "Saudi Council of Engineers", src: sceLogo },
+  { name: "الكود الوطني",    nameEn: "National Building Code", src: sbcCenterLogo },
+  { name: "سدايا SDAIA",     nameEn: "SDAIA",                  src: sdaiaLogo },
+  { name: "بلدي",            nameEn: "Balady",                 src: baladyLogo },
 ];
 
 const LogoItem = ({ name, src }: { name: string; src: string | null }) => (
@@ -37,6 +38,9 @@ const LogoItem = ({ name, src }: { name: string; src: string | null }) => (
 );
 
 const LogoMarquee = () => {
+  const { language } = useLanguage();
+  const isAr = language === "ar";
+
   return (
     <div className="relative z-10 w-full overflow-hidden border-b border-border/30 py-4" style={{ background: "transparent" }}>
       {/* Fade edges */}
@@ -45,7 +49,7 @@ const LogoMarquee = () => {
 
       <div className="flex animate-marquee hover:[animation-play-state:paused]">
         {[...logos, ...logos].map((logo, i) => (
-          <LogoItem key={i} name={logo.name} src={logo.src} />
+          <LogoItem key={i} name={isAr ? logo.name : logo.nameEn} src={logo.src} />
         ))}
       </div>
     </div>

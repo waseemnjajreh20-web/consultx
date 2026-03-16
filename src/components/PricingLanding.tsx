@@ -16,55 +16,63 @@ interface Feature {
   value?: string;
 }
 
-/* ─────────────── data ─────────────── */
-const explorerFeatures: Feature[] = [
-  { text: "الوضع الرئيسي — 10 رسائل/يوم", included: true },
-  { text: "3 وكلاء ذكيين", included: true },
-  { text: "GraphRAG أساسي", included: true },
-  { text: "الوضع الاستشاري", included: false },
-  { text: "الوضع التحليلي", included: false },
-  { text: "السند القانوني (رقم الصفحة)", included: false },
-  { text: "تصدير التقارير", included: false },
-  { text: "حفظ المحادثات: 7 أيام", included: true },
-];
+/* ─────────────── data (language-aware, built inside component) ─────────────── */
+function getExplorerFeatures(isAr: boolean): Feature[] {
+  return [
+    { text: isAr ? "الوضع الرئيسي — 10 رسائل/يوم" : "Main Mode — 10 messages/day", included: true },
+    { text: isAr ? "3 وكلاء ذكيين" : "3 AI agents", included: true },
+    { text: isAr ? "GraphRAG أساسي" : "Basic GraphRAG", included: true },
+    { text: isAr ? "الوضع الاستشاري" : "Advisory Mode", included: false },
+    { text: isAr ? "الوضع التحليلي" : "Analysis Mode", included: false },
+    { text: isAr ? "السند القانوني (رقم الصفحة)" : "Legal reference (page number)", included: false },
+    { text: isAr ? "تصدير التقارير" : "Export reports", included: false },
+    { text: isAr ? "حفظ المحادثات: 7 أيام" : "Chat history: 7 days", included: true },
+  ];
+}
 
-const engineerFeatures: Feature[] = [
-  { text: "الوضع الرئيسي — غير محدود", included: true },
-  { text: "الوضع الاستشاري — 50 استشارة/شهر", included: true },
-  { text: "الوضع التحليلي — 10 مخططات/شهر", included: true },
-  { text: "جميع الـ 12 وكيل ذكي", included: true },
-  { text: "GraphRAG كامل", included: true },
-  { text: "السند القانوني (رقم الصفحة والسكشن)", included: true },
-  { text: "تصدير PDF", included: true },
-  { text: "حفظ المحادثات: 90 يوم", included: true },
-  { text: "دعم بريد إلكتروني", included: true },
-];
+function getEngineerFeatures(isAr: boolean): Feature[] {
+  return [
+    { text: isAr ? "الوضع الرئيسي — غير محدود" : "Main Mode — Unlimited", included: true },
+    { text: isAr ? "الوضع الاستشاري — 50 استشارة/شهر" : "Advisory Mode — 50 consultations/month", included: true },
+    { text: isAr ? "الوضع التحليلي — 10 مخططات/شهر" : "Analysis Mode — 10 plans/month", included: true },
+    { text: isAr ? "جميع الـ 12 وكيل ذكي" : "All 12 AI agents", included: true },
+    { text: isAr ? "GraphRAG كامل" : "Full GraphRAG", included: true },
+    { text: isAr ? "السند القانوني (رقم الصفحة والسكشن)" : "Legal reference (page & section)", included: true },
+    { text: isAr ? "تصدير PDF" : "PDF export", included: true },
+    { text: isAr ? "حفظ المحادثات: 90 يوم" : "Chat history: 90 days", included: true },
+    { text: isAr ? "دعم بريد إلكتروني" : "Email support", included: true },
+  ];
+}
 
-const enterpriseFeatures: Feature[] = [
-  { text: "كل مميزات «مهندس» بالإضافة إلى:", included: true },
-  { text: "جميع الأوضاع — غير محدود", included: true },
-  { text: "وكلاء مخصصين حسب المشروع", included: true },
-  { text: "GraphRAG كامل + أولوية المعالجة", included: true },
-  { text: "تصدير PDF + Word + Excel", included: true },
-  { text: "حتى 10 مستخدمين", included: true },
-  { text: "حفظ محادثات غير محدود", included: true },
-  { text: "دعم أولوية + واتساب", included: true },
-  { text: "API للربط مع أنظمتكم", included: true },
-];
+function getEnterpriseFeatures(isAr: boolean): Feature[] {
+  return [
+    { text: isAr ? "كل مميزات «مهندس» بالإضافة إلى:" : "All Engineer features plus:", included: true },
+    { text: isAr ? "جميع الأوضاع — غير محدود" : "All modes — Unlimited", included: true },
+    { text: isAr ? "وكلاء مخصصين حسب المشروع" : "Custom agents per project", included: true },
+    { text: isAr ? "GraphRAG كامل + أولوية المعالجة" : "Full GraphRAG + priority processing", included: true },
+    { text: isAr ? "تصدير PDF + Word + Excel" : "PDF + Word + Excel export", included: true },
+    { text: isAr ? "حتى 10 مستخدمين" : "Up to 10 users", included: true },
+    { text: isAr ? "حفظ محادثات غير محدود" : "Unlimited chat history", included: true },
+    { text: isAr ? "دعم أولوية + واتساب" : "Priority + WhatsApp support", included: true },
+    { text: isAr ? "API للربط مع أنظمتكم" : "API integration with your systems", included: true },
+  ];
+}
 
-const comparisonRows = [
-  { label: "الوضع الرئيسي", explorer: "10/يوم", engineer: "غير محدود", enterprise: "غير محدود" },
-  { label: "الوضع الاستشاري", explorer: false, engineer: "50/شهر", enterprise: "غير محدود" },
-  { label: "الوضع التحليلي", explorer: false, engineer: "10/شهر", enterprise: "غير محدود" },
-  { label: "عدد الوكلاء", explorer: "3", engineer: "12", enterprise: "12+" },
-  { label: "GraphRAG", explorer: "أساسي", engineer: "كامل", enterprise: "كامل + أولوية" },
-  { label: "السند القانوني", explorer: false, engineer: true, enterprise: true },
-  { label: "تصدير التقارير", explorer: false, engineer: "PDF", enterprise: "PDF / Word / Excel" },
-  { label: "حفظ المحادثات", explorer: "7 أيام", engineer: "90 يوم", enterprise: "غير محدود" },
-  { label: "المستخدمون", explorer: "1", engineer: "1", enterprise: "حتى 10" },
-  { label: "الدعم الفني", explorer: false, engineer: "بريد إلكتروني", enterprise: "أولوية + واتساب" },
-  { label: "API", explorer: false, engineer: false, enterprise: true },
-];
+function getComparisonRows(isAr: boolean) {
+  return [
+    { label: isAr ? "الوضع الرئيسي" : "Main Mode", explorer: isAr ? "10/يوم" : "10/day", engineer: isAr ? "غير محدود" : "Unlimited", enterprise: isAr ? "غير محدود" : "Unlimited" },
+    { label: isAr ? "الوضع الاستشاري" : "Advisory Mode", explorer: false, engineer: isAr ? "50/شهر" : "50/month", enterprise: isAr ? "غير محدود" : "Unlimited" },
+    { label: isAr ? "الوضع التحليلي" : "Analysis Mode", explorer: false, engineer: isAr ? "10/شهر" : "10/month", enterprise: isAr ? "غير محدود" : "Unlimited" },
+    { label: isAr ? "عدد الوكلاء" : "AI Agents", explorer: "3", engineer: "12", enterprise: "12+" },
+    { label: "GraphRAG", explorer: isAr ? "أساسي" : "Basic", engineer: isAr ? "كامل" : "Full", enterprise: isAr ? "كامل + أولوية" : "Full + priority" },
+    { label: isAr ? "السند القانوني" : "Legal Reference", explorer: false, engineer: true, enterprise: true },
+    { label: isAr ? "تصدير التقارير" : "Report Export", explorer: false, engineer: "PDF", enterprise: "PDF / Word / Excel" },
+    { label: isAr ? "حفظ المحادثات" : "Chat History", explorer: isAr ? "7 أيام" : "7 days", engineer: isAr ? "90 يوم" : "90 days", enterprise: isAr ? "غير محدود" : "Unlimited" },
+    { label: isAr ? "المستخدمون" : "Users", explorer: "1", engineer: "1", enterprise: isAr ? "حتى 10" : "Up to 10" },
+    { label: isAr ? "الدعم الفني" : "Support", explorer: false, engineer: isAr ? "بريد إلكتروني" : "Email", enterprise: isAr ? "أولوية + واتساب" : "Priority + WhatsApp" },
+    { label: "API", explorer: false, engineer: false, enterprise: true },
+  ];
+}
 
 /* ─────────────── helpers ─────────────── */
 function TableCell({ val }: { val: boolean | string | undefined }) {
@@ -137,7 +145,13 @@ const PricingLanding = () => {
   const cyanColor = "hsl(195 85% 50%)";
   const amberColor = "#FF8C00";
 
-  const { dir } = useLanguage();
+  const { dir, language } = useLanguage();
+  const isAr = language === "ar";
+
+  const explorerFeatures = getExplorerFeatures(isAr);
+  const engineerFeatures = getEngineerFeatures(isAr);
+  const enterpriseFeatures = getEnterpriseFeatures(isAr);
+  const comparisonRows = getComparisonRows(isAr);
 
   const handleEngineerSubscribe = async () => {
     setEngineerLoading(true);
@@ -152,12 +166,12 @@ const PricingLanding = () => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error || !data?.checkout_url) {
-        toast({ title: "خطأ في الدفع", description: error?.message || "حاول مرة أخرى", variant: "destructive" });
+        toast({ title: isAr ? "خطأ في الدفع" : "Payment error", description: error?.message || (isAr ? "حاول مرة أخرى" : "Please try again"), variant: "destructive" });
         return;
       }
       window.location.href = data.checkout_url;
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message || "حدث خطأ غير متوقع", variant: "destructive" });
+      toast({ title: isAr ? "خطأ" : "Error", description: err.message || (isAr ? "حدث خطأ غير متوقع" : "An unexpected error occurred"), variant: "destructive" });
     } finally {
       setEngineerLoading(false);
     }
@@ -181,10 +195,10 @@ const PricingLanding = () => {
             backgroundClip: "text",
           }}
         >
-          اختر خطتك المناسبة
+          {isAr ? "اختر خطتك المناسبة" : "Choose your plan"}
         </h2>
         <p style={{ color: "rgba(200,220,240,0.65)" }} className="text-lg">
-          ابدأ مجاناً. ارتقِ عندما تحتاج.
+          {isAr ? "ابدأ مجاناً. ارتقِ عندما تحتاج." : "Start free. Upgrade when you need."}
         </p>
       </div>
 
@@ -218,7 +232,7 @@ const PricingLanding = () => {
                 color: "hsl(220 40% 6%)",
               }}
             >
-              الأكثر شعبية
+              {isAr ? "الأكثر شعبية" : "Most Popular"}
             </span>
           </div>
 
@@ -232,7 +246,7 @@ const PricingLanding = () => {
             }}
           >
             <Building2 size={12} strokeWidth={1.5} />
-            <span>تجربة مجانية 3 أيام</span>
+            <span>{isAr ? "تجربة مجانية 3 أيام" : "3-Day Free Trial"}</span>
           </div>
 
           {/* icon */}
@@ -243,9 +257,9 @@ const PricingLanding = () => {
             <HardHat size={32} strokeWidth={1.5} style={{ color: cyanColor }} />
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-1">مهندس</h3>
+          <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مهندس" : "Engineer"}</h3>
           <p className="text-sm mb-4" style={{ color: "rgba(200,220,240,0.5)" }}>
-            للمهندس الاستشاري المتخصص
+            {isAr ? "للمهندس الاستشاري المتخصص" : "For the specialized consulting engineer"}
           </p>
 
           {/* price */}
@@ -255,14 +269,14 @@ const PricingLanding = () => {
                 <AnimatedPrice value="99" />
               </span>
               <span className="text-lg font-medium" style={{ color: "rgba(200,220,240,0.6)" }}>
-                ر.س/شهر
+                {isAr ? "ر.س/شهر" : "SAR/mo"}
               </span>
             </div>
             <p className="text-xs mt-1" style={{ color: "rgba(200,220,240,0.4)" }}>
               ~$26 USD
             </p>
             <p className="text-xs mt-1 font-medium" style={{ color: cyanColor }}>
-              تجربة مجانية 3 أيام
+              {isAr ? "تجربة مجانية 3 أيام" : "3-Day Free Trial"}
             </p>
           </div>
 
@@ -295,8 +309,8 @@ const PricingLanding = () => {
             }}
           >
             {engineerLoading ? (
-              <><Loader2 size={15} strokeWidth={1.5} className="animate-spin" /> جارٍ التحميل...</>
-            ) : "ابدأ تجربة مجانية"}
+              <><Loader2 size={15} strokeWidth={1.5} className="animate-spin" /> {isAr ? "جارٍ التحميل..." : "Loading..."}</>
+            ) : (isAr ? "ابدأ تجربة مجانية" : "Start Free Trial")}
           </button>
         </div>
 
@@ -321,14 +335,14 @@ const PricingLanding = () => {
             <Compass size={32} strokeWidth={1.5} style={{ color: cyanColor }} />
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-1">مستكشف</h3>
+          <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مستكشف" : "Explorer"}</h3>
           <p className="text-sm mb-4" style={{ color: "rgba(200,220,240,0.5)" }}>
-            للتعرف على ConsultX
+            {isAr ? "للتعرف على ConsultX" : "Get to know ConsultX"}
           </p>
 
           {/* price */}
           <div className="mb-6">
-            <span className="text-4xl font-bold text-foreground">مجاناً</span>
+            <span className="text-4xl font-bold text-foreground">{isAr ? "مجاناً" : "Free"}</span>
           </div>
 
           {/* features */}
@@ -362,7 +376,7 @@ const PricingLanding = () => {
               (e.currentTarget as HTMLButtonElement).style.background = "transparent";
             }}
           >
-            ابدأ مجاناً
+            {isAr ? "ابدأ مجاناً" : "Start Free"}
           </button>
         </div>
 
@@ -391,7 +405,7 @@ const PricingLanding = () => {
                 color: amberColor,
               }}
             >
-              للفرق
+              {isAr ? "للفرق" : "For Teams"}
             </span>
           </div>
 
@@ -403,9 +417,9 @@ const PricingLanding = () => {
             <Building size={32} strokeWidth={1.5} style={{ color: amberColor }} />
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-1">مؤسسة</h3>
+          <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مؤسسة" : "Enterprise"}</h3>
           <p className="text-sm mb-4" style={{ color: "rgba(200,220,240,0.5)" }}>
-            للمكاتب الاستشارية والمقاولين
+            {isAr ? "للمكاتب الاستشارية والمقاولين" : "For consulting firms and contractors"}
           </p>
 
           {/* price */}
@@ -415,14 +429,14 @@ const PricingLanding = () => {
                 <AnimatedPrice value="349" />
               </span>
               <span className="text-lg font-medium" style={{ color: "rgba(200,220,240,0.6)" }}>
-                ر.س/شهر
+                {isAr ? "ر.س/شهر" : "SAR/mo"}
               </span>
             </div>
             <p className="text-xs mt-1" style={{ color: "rgba(200,220,240,0.4)" }}>
               ~$90 USD
             </p>
             <p className="text-xs mt-1 font-medium" style={{ color: amberColor }}>
-              تجربة مجانية 3 أيام
+              {isAr ? "تجربة مجانية 3 أيام" : "3-Day Free Trial"}
             </p>
           </div>
 
@@ -437,7 +451,7 @@ const PricingLanding = () => {
           </ul>
 
           <button
-            onClick={() => window.location.href = "mailto:njajrehwaseem@gmail.com?subject=استفسار عن باقة مؤسسة — ConsultX"}
+            onClick={() => window.location.href = `mailto:njajrehwaseem@gmail.com?subject=${isAr ? "استفسار عن باقة مؤسسة — ConsultX" : "Enterprise plan inquiry — ConsultX"}`}
             className="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             style={{
               border: `1.5px solid ${amberColor}`,
@@ -452,7 +466,7 @@ const PricingLanding = () => {
               (e.currentTarget as HTMLButtonElement).style.background = "transparent";
             }}
           >
-            تواصل معنا
+            {isAr ? "تواصل معنا" : "Contact Us"}
           </button>
         </div>
       </div>
@@ -470,7 +484,7 @@ const PricingLanding = () => {
             (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.6)";
           }}
         >
-          قارن جميع المميزات
+          {isAr ? "قارن جميع المميزات" : "Compare all features"}
           <ChevronDown
             size={16}
             strokeWidth={1.5}
@@ -496,9 +510,9 @@ const PricingLanding = () => {
                     className="text-right py-3 px-4 font-semibold"
                     style={{ color: cyanColor, borderBottom: "1px solid rgba(0,212,255,0.15)" }}
                   >
-                    الميزة
+                    {isAr ? "الميزة" : "Feature"}
                   </th>
-                  {["مستكشف", "مهندس", "مؤسسة"].map((h) => (
+                  {(isAr ? ["مستكشف", "مهندس", "مؤسسة"] : ["Explorer", "Engineer", "Enterprise"]).map((h) => (
                     <th
                       key={h}
                       className="text-center py-3 px-4 font-semibold"
@@ -542,9 +556,9 @@ const PricingLanding = () => {
       <div className="mt-10 flex flex-col items-center gap-6">
         <div className="flex flex-wrap justify-center gap-6">
           {[
-            { Icon: ShieldCheck, label: "بيانات مشفرة", color: cyanColor },
-            { Icon: CreditCard, label: "إلغاء في أي وقت", color: cyanColor },
-            { Icon: RefreshCw, label: "ضمان استرداد 14 يوم", color: cyanColor },
+            { Icon: ShieldCheck, label: isAr ? "بيانات مشفرة" : "Encrypted data", color: cyanColor },
+            { Icon: CreditCard, label: isAr ? "إلغاء في أي وقت" : "Cancel anytime", color: cyanColor },
+            { Icon: RefreshCw, label: isAr ? "ضمان استرداد 14 يوم" : "14-day money-back guarantee", color: cyanColor },
           ].map(({ Icon, label, color }) => (
             <div key={label} className="flex items-center gap-2 text-sm">
               <Icon size={16} strokeWidth={1.5} style={{ color }} />
@@ -562,11 +576,11 @@ const PricingLanding = () => {
           }}
         >
           <Building2 size={14} strokeWidth={1.5} />
-          <span>جرّب باقة مهندس أو مؤسسة 3 أيام مجاناً</span>
+          <span>{isAr ? "جرّب باقة مهندس أو مؤسسة 3 أيام مجاناً" : "Try Engineer or Enterprise plan free for 3 days"}</span>
         </div>
 
         <p className="text-xs text-center" style={{ color: "rgba(200,220,240,0.35)" }}>
-          الباقات المدفوعة تشمل تجربة مجانية لمدة 3 أيام.
+          {isAr ? "الباقات المدفوعة تشمل تجربة مجانية لمدة 3 أيام." : "Paid plans include a 3-day free trial."}
         </p>
       </div>
     </section>

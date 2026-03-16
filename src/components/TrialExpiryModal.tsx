@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface TrialExpiryModalProps {
   onClose: (subscribed: boolean) => void;
@@ -10,6 +11,8 @@ const CYAN = "hsl(195 85% 50%)";
 
 export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isAr = language === "ar";
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,9 +49,9 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
           <Clock size={40} strokeWidth={1.5} style={{ color: "#FF8C00" }} />
         </div>
 
-        <h2 className="text-xl font-bold text-foreground mb-3">انتهت تجربتك المجانية</h2>
+        <h2 className="text-xl font-bold text-foreground mb-3">{isAr ? "انتهت تجربتك المجانية" : "Your free trial has ended"}</h2>
         <p className="text-sm mb-6" style={{ color: "rgba(200,220,240,0.6)" }}>
-          اشترك الآن للاستمرار بجميع المميزات.
+          {isAr ? "اشترك الآن للاستمرار بجميع المميزات." : "Subscribe now to continue with all features."}
         </p>
 
         <div className="flex flex-col gap-3">
@@ -61,7 +64,7 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
               boxShadow: "0 0 20px rgba(0,212,255,0.3)",
             }}
           >
-            اشترك في باقة مهندس
+            {isAr ? "اشترك في باقة مهندس" : "Subscribe to Engineer plan"}
           </button>
           <button
             onClick={() => onClose(false)}
@@ -70,7 +73,7 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.7)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.45)"; }}
           >
-            الاستمرار بالباقة المجانية
+            {isAr ? "الاستمرار بالباقة المجانية" : "Continue with free plan"}
           </button>
         </div>
       </div>

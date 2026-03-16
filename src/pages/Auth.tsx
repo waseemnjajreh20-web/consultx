@@ -38,7 +38,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, signIn, signUp } = useAuth();
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
+  const isAr = language === "ar";
 
   const showCorporateBadge = !isLogin && isCorporateEmail(email) && isPromoActive();
   const showPromoBanner = !isLogin && isPromoActive();
@@ -168,8 +169,10 @@ const Auth = () => {
           } else {
             // No session = email confirmation required
             toast({
-              title: "تم إنشاء الحساب بنجاح",
-              description: "تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى فتح البريد والضغط على الرابط لتفعيل حسابك.",
+              title: isAr ? "تم إنشاء الحساب بنجاح" : "Account created successfully",
+              description: isAr
+                ? "تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى فتح البريد والضغط على الرابط لتفعيل حسابك."
+                : "A confirmation link has been sent to your email. Please open your email and click the link to activate your account.",
             });
           }
         }
@@ -305,7 +308,7 @@ const Auth = () => {
               }}
             >
               <Building2 size={13} strokeWidth={1.5} className="shrink-0" />
-              <span>سجّل ببريدك المؤسسي واحصل على تجربة باقة مهندس مجاناً لمدة 3 أيام</span>
+              <span>{isAr ? "سجّل ببريدك المؤسسي واحصل على تجربة باقة مهندس مجاناً لمدة 3 أيام" : "Sign up with your corporate email and get a free 3-day Engineer plan trial"}</span>
             </div>
           )}
 
@@ -354,7 +357,7 @@ const Auth = () => {
                   }}
                 >
                   <Sparkles size={11} strokeWidth={1.5} />
-                  بريد مؤسسي — ستحصل على تجربة باقة مهندس مجاناً
+                  {isAr ? "بريد مؤسسي — ستحصل على تجربة باقة مهندس مجاناً" : "Corporate email — You'll get a free Engineer plan trial"}
                 </div>
               )}
             </div>
@@ -454,7 +457,7 @@ const Auth = () => {
           {/* Divider */}
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-            <span className="text-xs" style={{ color: "rgba(200,220,240,0.3)" }}>أو</span>
+            <span className="text-xs" style={{ color: "rgba(200,220,240,0.3)" }}>{isAr ? "أو" : "or"}</span>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
           </div>
 
@@ -493,7 +496,9 @@ const Auth = () => {
               <path d="M11.02 28.554A14.373 14.373 0 0 1 10.2 24c0-1.582.274-3.116.82-4.554v-6.2H2.98A23.942 23.942 0 0 0 .48 24c0 3.86.924 7.514 2.5 10.754l8.04-6.2z" fill="#FBBC05"/>
               <path d="M24.48 9.538c3.528 0 6.694 1.212 9.19 3.594l6.882-6.882C36.396 2.372 30.956 0 24.48 0 15.1 0 6.94 5.13 2.98 13.246l8.04 6.2c1.898-5.68 7.2-9.908 13.46-9.908z" fill="#EA4335"/>
             </svg>
-            {isLogin ? "تسجيل الدخول بـ Google" : "إنشاء حساب بـ Google"}
+            {isLogin
+              ? (isAr ? "تسجيل الدخول بـ Google" : "Sign in with Google")
+              : (isAr ? "إنشاء حساب بـ Google" : "Sign up with Google")}
           </button>
 
           {/* Toggle login/signup */}
@@ -516,7 +521,7 @@ const Auth = () => {
 
         {/* Footer */}
         <p className="text-center text-xs mt-6" style={{ color: "rgba(200,220,240,0.2)" }}>
-          © ConsultX 2026 — مدعوم بمنظومة 12 وكيلاً ذكياً
+          {isAr ? "© ConsultX 2026 — مدعوم بمنظومة 12 وكيلاً ذكياً" : "© ConsultX 2026 — Powered by 12 AI Agents"}
         </p>
       </div>
 

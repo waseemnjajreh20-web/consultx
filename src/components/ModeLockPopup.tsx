@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ModeLockPopupProps {
   mode: "standard" | "analysis";
@@ -8,13 +9,15 @@ interface ModeLockPopupProps {
   anchorRef?: React.RefObject<HTMLElement>;
 }
 
-const MODE_LABELS: Record<string, string> = {
-  standard: "الوضع الاستشاري",
-  analysis: "الوضع التحليلي",
-};
-
 export default function ModeLockPopup({ mode, onDismiss }: ModeLockPopupProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isAr = language === "ar";
+
+  const MODE_LABELS: Record<string, string> = {
+    standard: isAr ? "الوضع الاستشاري" : "Advisory Mode",
+    analysis: isAr ? "الوضع التحليلي" : "Analysis Mode",
+  };
 
   useEffect(() => {
     const t = setTimeout(onDismiss, 5000);
@@ -37,14 +40,14 @@ export default function ModeLockPopup({ mode, onDismiss }: ModeLockPopupProps) {
       <Lock size={16} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "hsl(195 85% 50%)" }} />
       <div className="flex-1">
         <p className="font-medium text-foreground mb-1">
-          {MODE_LABELS[mode]} متاح في باقة مهندس
+          {isAr ? `${MODE_LABELS[mode]} متاح في باقة مهندس` : `${MODE_LABELS[mode]} available in Engineer plan`}
         </p>
         <button
           onClick={() => { onDismiss(); navigate("/subscribe"); }}
           className="text-xs font-semibold transition-all duration-200"
           style={{ color: "hsl(195 85% 50%)" }}
         >
-          ترقية ←
+          {isAr ? "ترقية ←" : "Upgrade →"}
         </button>
       </div>
     </div>

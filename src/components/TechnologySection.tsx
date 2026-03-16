@@ -13,8 +13,11 @@ const tier1 = [
   {
     Icon: Workflow,
     titleAr: "وكيل الأوركسترا",
+    titleEn: "Orchestra Agent",
     subtitleAr: "مدير المشروع العام",
+    subtitleEn: "General Project Manager",
     descAr: "يستلم الطلب، يوزع المهام، يجمع النتائج",
+    descEn: "Receives request, distributes tasks, collects results",
     accentColor: "#00D4FF",
     borderColor: "rgba(0,212,255,0.5)",
     glowColor: "rgba(0,212,255,0.15)",
@@ -23,28 +26,28 @@ const tier1 = [
 ];
 
 const tier2 = [
-  { Icon: BrainCircuit, titleAr: "وكيل التخطيط الذكي",       descAr: "يصنف المبنى وفئة الإشغال ومستوى الخطورة" },
-  { Icon: GitBranch,   titleAr: "وكيل سلسلة تفكير الكود",    descAr: "يربط بين SBC 201 وSBC 801 منطقياً" },
-  { Icon: Zap,         titleAr: "وكيل المعالجة المتوازية",    descAr: "استخراج وترجمة وتقييم في وقت واحد" },
-  { Icon: FileCheck,   titleAr: "وكيل مراجعة الكود",          descAr: "المدقق القانوني: مطابقة حرفية وتحقق من أرقام السكاشن" },
-  { Icon: GitMerge,    titleAr: "وكيل دمج التغييرات",         descAr: "يحل التعارضات بين الأكواد ويولد ملخص الفروقات" },
-  { Icon: Send,        titleAr: "وكيل بروتوكول الاستجابة",    descAr: "يصيغ الرد النهائي بالسند القانوني الإلزامي" },
+  { Icon: BrainCircuit, titleAr: "وكيل التخطيط الذكي",       titleEn: "Smart Planning Agent",        descAr: "يصنف المبنى وفئة الإشغال ومستوى الخطورة",                    descEn: "Classifies building, occupancy category, and risk level" },
+  { Icon: GitBranch,   titleAr: "وكيل سلسلة تفكير الكود",    titleEn: "Code Chain-of-Thought Agent",  descAr: "يربط بين SBC 201 وSBC 801 منطقياً",                          descEn: "Links SBC 201 and SBC 801 logically" },
+  { Icon: Zap,         titleAr: "وكيل المعالجة المتوازية",    titleEn: "Parallel Processing Agent",    descAr: "استخراج وترجمة وتقييم في وقت واحد",                          descEn: "Extract, translate, and evaluate simultaneously" },
+  { Icon: FileCheck,   titleAr: "وكيل مراجعة الكود",          titleEn: "Code Review Agent",            descAr: "المدقق القانوني: مطابقة حرفية وتحقق من أرقام السكاشن",       descEn: "Legal auditor: literal matching and section number verification" },
+  { Icon: GitMerge,    titleAr: "وكيل دمج التغييرات",         titleEn: "Change Merge Agent",           descAr: "يحل التعارضات بين الأكواد ويولد ملخص الفروقات",              descEn: "Resolves code conflicts and generates diff summary" },
+  { Icon: Send,        titleAr: "وكيل بروتوكول الاستجابة",    titleEn: "Response Protocol Agent",      descAr: "يصيغ الرد النهائي بالسند القانوني الإلزامي",                 descEn: "Formats final response with mandatory legal reference" },
 ].map(n => ({ ...n, accentColor: "#FF8C00", borderColor: "rgba(255,140,0,0.45)", glowColor: "rgba(255,140,0,0.12)", shadowColor: "rgba(255,140,0,0.3)" }));
 
 const tier3 = [
-  { Icon: Table,    titleAr: "وكيل تحليل الجداول",         descAr: "فك شفرة البيانات الرقمية المعقدة" },
-  { Icon: Link,     titleAr: "وكيل المراجع التقاطعية",      descAr: "تتبع الإحالات بين فقرات الكود" },
-  { Icon: Scale,    titleAr: "وكيل تقييم الاستثناءات",      descAr: "البحث عن حالات الإعفاء الخاصة" },
-  { Icon: Globe,    titleAr: "وكيل التوافق الدولي",          descAr: "ربط SBC بمعايير NFPA وSFPE العالمية" },
-  { Icon: Landmark, titleAr: "وكيل صياغة المنطق الهندسي",   descAr: "يشرح لماذا تم القرار مع تأكيد سيادة الدفاع المدني" },
+  { Icon: Table,    titleAr: "وكيل تحليل الجداول",         titleEn: "Table Analysis Agent",            descAr: "فك شفرة البيانات الرقمية المعقدة",                        descEn: "Decodes complex numerical data" },
+  { Icon: Link,     titleAr: "وكيل المراجع التقاطعية",      titleEn: "Cross-Reference Agent",           descAr: "تتبع الإحالات بين فقرات الكود",                           descEn: "Tracks references between code paragraphs" },
+  { Icon: Scale,    titleAr: "وكيل تقييم الاستثناءات",      titleEn: "Exception Assessment Agent",      descAr: "البحث عن حالات الإعفاء الخاصة",                           descEn: "Searches for special exemption cases" },
+  { Icon: Globe,    titleAr: "وكيل التوافق الدولي",          titleEn: "International Compliance Agent",  descAr: "ربط SBC بمعايير NFPA وSFPE العالمية",                     descEn: "Links SBC with global NFPA and SFPE standards" },
+  { Icon: Landmark, titleAr: "وكيل صياغة المنطق الهندسي",   titleEn: "Engineering Logic Agent",         descAr: "يشرح لماذا تم القرار مع تأكيد سيادة الدفاع المدني",       descEn: "Explains why the decision was made, confirming Civil Defense sovereignty" },
 ].map(n => ({ ...n, accentColor: "#DC143C", borderColor: "rgba(220,20,60,0.45)", glowColor: "rgba(220,20,60,0.12)", shadowColor: "rgba(220,20,60,0.3)" }));
 
 const featureCards = [
-  { Icon: Network,     titleAr: "ثورة GraphRAG",             textAr: "تحويل آلاف الصفحات المترابطة إلى خريطة معرفية بيانية. الدقة قفزت من 57% إلى 86% في الاستعلامات المعقدة.", accentColor: "#00D4FF", borderColor: "rgba(0,212,255,0.35)", glowColor: "rgba(0,212,255,0.1)", shadowColor: "rgba(0,212,255,0.25)" },
-  { Icon: Eye,         titleAr: "إدراك بصري للمخططات",       textAr: "قراءة المخططات الهندسية بصيغ PDF وCAD، استخراج البيانات المكانية، وتحليل الفروقات بين الإصدارات.",         accentColor: "#DC143C", borderColor: "rgba(220,20,60,0.35)",  glowColor: "rgba(220,20,60,0.1)",  shadowColor: "rgba(220,20,60,0.25)"  },
-  { Icon: Users,       titleAr: "12 وكيل ذكي متخصص",         textAr: "فريق هرمي من القيادة إلى التخصص الدقيق، يحاكي شركة هندسية متكاملة بقيادة وكيل الأوركسترا.",             accentColor: "#FF8C00", borderColor: "rgba(255,140,0,0.35)",  glowColor: "rgba(255,140,0,0.1)",  shadowColor: "rgba(255,140,0,0.25)"  },
-  { Icon: ShieldAlert, titleAr: "سياسة صفر هلوسة",           textAr: "اقتباسات حرفية فقط. كل استشارة تنتهي برقم القسم والصفحة. المناظرة متعددة الوكلاء تكشف الأخطاء قبل الرد.", accentColor: "#00D4FF", borderColor: "rgba(0,212,255,0.35)", glowColor: "rgba(0,212,255,0.1)", shadowColor: "rgba(0,212,255,0.25)" },
-  { Icon: Landmark,    titleAr: "سيادة الدفاع المدني",        textAr: "النظام يقر بأن الكود هو الحد الأدنى الفني فقط. الدفاع المدني يملك الحق الأصيل في تعديل الاشتراطات ميدانياً.", accentColor: "#FF8C00", borderColor: "rgba(255,140,0,0.35)", glowColor: "rgba(255,140,0,0.1)", shadowColor: "rgba(255,140,0,0.25)" },
+  { Icon: Network,     titleAr: "ثورة GraphRAG",             titleEn: "GraphRAG Revolution",          textAr: "تحويل آلاف الصفحات المترابطة إلى خريطة معرفية بيانية. الدقة قفزت من 57% إلى 86% في الاستعلامات المعقدة.", textEn: "Transforming thousands of interconnected pages into a knowledge graph. Accuracy jumped from 57% to 86% in complex queries.", accentColor: "#00D4FF", borderColor: "rgba(0,212,255,0.35)", glowColor: "rgba(0,212,255,0.1)", shadowColor: "rgba(0,212,255,0.25)" },
+  { Icon: Eye,         titleAr: "إدراك بصري للمخططات",       titleEn: "Visual Plan Perception",       textAr: "قراءة المخططات الهندسية بصيغ PDF وCAD، استخراج البيانات المكانية، وتحليل الفروقات بين الإصدارات.",         textEn: "Reading engineering plans in PDF and CAD formats, extracting spatial data, and analyzing version differences.", accentColor: "#DC143C", borderColor: "rgba(220,20,60,0.35)",  glowColor: "rgba(220,20,60,0.1)",  shadowColor: "rgba(220,20,60,0.25)"  },
+  { Icon: Users,       titleAr: "12 وكيل ذكي متخصص",         titleEn: "12 Specialized AI Agents",     textAr: "فريق هرمي من القيادة إلى التخصص الدقيق، يحاكي شركة هندسية متكاملة بقيادة وكيل الأوركسترا.",             textEn: "A hierarchical team from leadership to deep specialization, simulating a complete engineering firm led by the Orchestra Agent.", accentColor: "#FF8C00", borderColor: "rgba(255,140,0,0.35)",  glowColor: "rgba(255,140,0,0.1)",  shadowColor: "rgba(255,140,0,0.25)"  },
+  { Icon: ShieldAlert, titleAr: "سياسة صفر هلوسة",           titleEn: "Zero Hallucination Policy",    textAr: "اقتباسات حرفية فقط. كل استشارة تنتهي برقم القسم والصفحة. المناظرة متعددة الوكلاء تكشف الأخطاء قبل الرد.", textEn: "Literal quotes only. Every consultation ends with section and page numbers. Multi-agent debate catches errors before responding.", accentColor: "#00D4FF", borderColor: "rgba(0,212,255,0.35)", glowColor: "rgba(0,212,255,0.1)", shadowColor: "rgba(0,212,255,0.25)" },
+  { Icon: Landmark,    titleAr: "سيادة الدفاع المدني",        titleEn: "Civil Defense Sovereignty",    textAr: "النظام يقر بأن الكود هو الحد الأدنى الفني فقط. الدفاع المدني يملك الحق الأصيل في تعديل الاشتراطات ميدانياً.", textEn: "The system acknowledges that the code is the minimum technical standard only. Civil Defense has the original right to modify requirements in the field.", accentColor: "#FF8C00", borderColor: "rgba(255,140,0,0.35)", glowColor: "rgba(255,140,0,0.1)", shadowColor: "rgba(255,140,0,0.25)" },
 ];
 
 /* ─────────────── NODE COMPONENT ─────────────── */
@@ -52,8 +55,11 @@ const featureCards = [
 interface AgentNodeProps {
   Icon: LucideIcon;
   titleAr: string;
+  titleEn?: string;
   subtitleAr?: string;
+  subtitleEn?: string;
   descAr: string;
+  descEn?: string;
   accentColor: string;
   borderColor: string;
   glowColor: string;
@@ -61,9 +67,10 @@ interface AgentNodeProps {
   visible: boolean;
   delay?: number;
   large?: boolean;
+  isAr?: boolean;
 }
 
-function AgentNode({ Icon, titleAr, subtitleAr, descAr, accentColor, borderColor, glowColor, shadowColor, visible, delay = 0, large = false }: AgentNodeProps) {
+function AgentNode({ Icon, titleAr, titleEn, subtitleAr, subtitleEn, descAr, descEn, accentColor, borderColor, glowColor, shadowColor, visible, delay = 0, large = false, isAr = true }: AgentNodeProps) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -110,11 +117,11 @@ function AgentNode({ Icon, titleAr, subtitleAr, descAr, accentColor, borderColor
           />
         </div>
         <p className="text-xs font-bold leading-tight" style={{ color: accentColor, fontSize: large ? "11px" : "9.5px" }}>
-          {titleAr}
+          {isAr ? titleAr : (titleEn || titleAr)}
         </p>
-        {subtitleAr && (
+        {(subtitleAr || subtitleEn) && (
           <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.45)", fontSize: "8px" }}>
-            {subtitleAr}
+            {isAr ? subtitleAr : (subtitleEn || subtitleAr)}
           </p>
         )}
       </div>
@@ -132,7 +139,7 @@ function AgentNode({ Icon, titleAr, subtitleAr, descAr, accentColor, borderColor
             backdropFilter: "blur(12px)",
           }}
         >
-          {descAr}
+          {isAr ? descAr : (descEn || descAr)}
           <div
             className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0"
             style={{
@@ -216,7 +223,7 @@ export default function TechnologySection() {
             {/* TIER 1 */}
             <div className="flex justify-center gap-4 w-full">
               {tier1.map((node, i) => (
-                <AgentNode key={i} {...node} visible={visible} delay={0.1} large />
+                <AgentNode key={i} {...node} visible={visible} delay={0.1} large isAr={isAr} />
               ))}
             </div>
 
@@ -248,13 +255,13 @@ export default function TechnologySection() {
             <div className="w-full">
               <div className="hidden md:grid md:grid-cols-6 gap-3 w-full">
                 {tier2.map((node, i) => (
-                  <AgentNode key={i} {...node} visible={visible} delay={0.15 + i * 0.07} />
+                  <AgentNode key={i} {...node} visible={visible} delay={0.15 + i * 0.07} isAr={isAr} />
                 ))}
               </div>
               <div className="tier-row md:hidden">
                 {tier2.map((node, i) => (
                   <div key={i} className="agent-node">
-                    <AgentNode {...node} visible={visible} delay={0.15 + i * 0.07} />
+                    <AgentNode {...node} visible={visible} delay={0.15 + i * 0.07} isAr={isAr} />
                   </div>
                 ))}
               </div>
@@ -288,13 +295,13 @@ export default function TechnologySection() {
             <div className="w-full">
               <div className="hidden md:grid md:grid-cols-5 gap-3 w-full">
                 {tier3.map((node, i) => (
-                  <AgentNode key={i} {...node} visible={visible} delay={0.5 + i * 0.07} />
+                  <AgentNode key={i} {...node} visible={visible} delay={0.5 + i * 0.07} isAr={isAr} />
                 ))}
               </div>
               <div className="tier-row md:hidden">
                 {tier3.map((node, i) => (
                   <div key={i} className="agent-node">
-                    <AgentNode {...node} visible={visible} delay={0.5 + i * 0.07} />
+                    <AgentNode {...node} visible={visible} delay={0.5 + i * 0.07} isAr={isAr} />
                   </div>
                 ))}
               </div>
@@ -352,8 +359,8 @@ export default function TechnologySection() {
                   />
                 </div>
 
-                <h3 className="text-sm font-bold text-foreground">{card.titleAr}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{card.textAr}</p>
+                <h3 className="text-sm font-bold text-foreground">{isAr ? card.titleAr : card.titleEn}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{isAr ? card.textAr : card.textEn}</p>
               </div>
             ))}
           </div>

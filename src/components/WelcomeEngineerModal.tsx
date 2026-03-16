@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Gift, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface WelcomeEngineerModalProps {
   trialEnd: string;
@@ -11,6 +12,8 @@ const CYAN = "hsl(195 85% 50%)";
 
 export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngineerModalProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isAr = language === "ar";
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -18,7 +21,7 @@ export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngin
     return () => clearTimeout(t);
   }, []);
 
-  const formattedDate = new Date(trialEnd).toLocaleDateString("ar-SA", {
+  const formattedDate = new Date(trialEnd).toLocaleDateString(isAr ? "ar-SA" : "en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
 
@@ -73,12 +76,14 @@ export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngin
             backgroundClip: "text",
           }}
         >
-          مبروك! حصلت على تجربة مجانية لباقة مهندس
+          {isAr ? "مبروك! حصلت على تجربة مجانية لباقة مهندس" : "Congratulations! You got a free trial for the Engineer plan"}
         </h2>
 
         {/* Body */}
         <p className="text-sm leading-relaxed mb-4" style={{ color: "rgba(200,220,240,0.7)" }}>
-          بمناسبة إطلاق ConsultX، حصلت على تجربة مجانية لمدة 3 أيام لباقة مهندس الكاملة — جميع الأوضاع، الـ 12 وكيل ذكي، والسند القانوني.
+          {isAr
+            ? "بمناسبة إطلاق ConsultX، حصلت على تجربة مجانية لمدة 3 أيام لباقة مهندس الكاملة — جميع الأوضاع، الـ 12 وكيل ذكي، والسند القانوني."
+            : "To celebrate the launch of ConsultX, you got a 3-day free trial for the full Engineer plan — all modes, all 12 AI agents, and legal references."}
         </p>
 
         {/* Date */}
@@ -90,7 +95,7 @@ export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngin
             color: CYAN,
           }}
         >
-          تنتهي التجربة بتاريخ {formattedDate}
+          {isAr ? `تنتهي التجربة بتاريخ ${formattedDate}` : `Trial ends on ${formattedDate}`}
         </div>
 
         {/* CTA */}
@@ -105,12 +110,12 @@ export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngin
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 45px rgba(0,212,255,0.55)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 25px rgba(0,212,255,0.35)"; }}
         >
-          ابدأ استشارتك الأولى
+          {isAr ? "ابدأ استشارتك الأولى" : "Start your first consultation"}
         </button>
 
         {/* Footer */}
         <p className="text-xs mt-4" style={{ color: "rgba(200,220,240,0.3)" }}>
-          عرض لفترة محدودة بمناسبة الإطلاق
+          {isAr ? "عرض لفترة محدودة بمناسبة الإطلاق" : "Limited time launch offer"}
         </p>
       </div>
     </div>

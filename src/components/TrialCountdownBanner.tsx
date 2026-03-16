@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatCountdown } from "@/lib/corporatePromo";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface TrialCountdownBannerProps {
   trialEnd: string;
@@ -9,6 +10,8 @@ interface TrialCountdownBannerProps {
 
 export default function TrialCountdownBanner({ trialEnd }: TrialCountdownBannerProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isAr = language === "ar";
   const [msRemaining, setMsRemaining] = useState(() =>
     Math.max(0, new Date(trialEnd).getTime() - Date.now())
   );
@@ -43,13 +46,13 @@ export default function TrialCountdownBanner({ trialEnd }: TrialCountdownBannerP
         <span style={{ color: "rgba(200,220,240,0.75)" }}>
           {isUrgent ? (
             <>
-              تنتهي تجربتك خلال{" "}
+              {isAr ? "تنتهي تجربتك خلال" : "Your trial ends in"}{" "}
               <span style={{ color: accentColor, fontWeight: 600 }}>{countdown}</span>
-              {" "}— اشترك للاستمرار
+              {" "}{isAr ? "— اشترك للاستمرار" : "— Subscribe to continue"}
             </>
           ) : (
             <>
-              تجربة باقة مهندس — متبقي{" "}
+              {isAr ? "تجربة باقة مهندس — متبقي" : "Engineer plan trial — remaining"}{" "}
               <span style={{ color: accentColor, fontWeight: 600 }}>{countdown}</span>
             </>
           )}
@@ -71,7 +74,7 @@ export default function TrialCountdownBanner({ trialEnd }: TrialCountdownBannerP
           (e.currentTarget as HTMLButtonElement).style.background = isUrgent ? `${accentColor}20` : "transparent";
         }}
       >
-        اشترك الآن
+        {isAr ? "اشترك الآن" : "Subscribe Now"}
       </button>
     </div>
   );

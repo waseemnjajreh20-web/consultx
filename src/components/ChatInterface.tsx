@@ -108,12 +108,14 @@ function getModeButtonActiveStyle(mode: ChatMode) {
 }
 
 // ===== SOURCE NAME FORMATTER =====
-function formatSourceName(fileName: string): string {
+function formatSourceName(fileName: string, lang: string = "ar"): string {
   // "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json" → "SBC 201 — صفحات 251-500"
   // "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json" → "SBC 801 — صفحات 1-200"
   const match = fileName.match(/SBC\s*(\d+).*?-(\d+)-(\d+)/);
   if (match) {
-    return `SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
+    return lang === "en"
+      ? `SBC ${match[1]} — Pages ${match[2]}-${match[3]}`
+      : `SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
   }
   return fileName.replace('.json', '').replace(/_/g, ' ');
 }
@@ -218,7 +220,7 @@ async function streamChat({
       onError(errorData.error || "Daily message limit exceeded");
       return;
     }
-    onError(errorData.error || "حدث خطأ في الخدمة");
+    onError(errorData.error || (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
     return;
   }
   const sourcesHeader = resp.headers.get("X-SBC-Sources");
@@ -226,7 +228,7 @@ async function streamChat({
     const sources = sourcesHeader.split(",").filter(Boolean);
     if (sources.length > 0) onSources(sources);
   }
-  if (!resp.body) { onError("لا يوجد استجابة"); return; }
+  if (!resp.body) { onError(language === "en" ? "No response received" : "لا يوجد استجابة"); return; }
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let textBuffer = ""; let fullContent = ""; let streamDone = false; let firstChunkFired = false;
@@ -358,6 +360,19 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-resize textarea as user types
+  const autoResize = (el: HTMLTextAreaElement) => {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+  };
+
+  // Reset textarea height when input is cleared (after send)
+  useEffect(() => {
+    if (!input && textareaRef.current) {
+      textareaRef.current.style.height = "44px";
+    }
+  }, [input]);
   const { toast } = useToast();
   const { t, language, dir } = useLanguage();
   const { createConversation, saveMessage, updateConversationTitle, loadConversation } = useConversations();
@@ -822,14 +837,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                     <Lock size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "hsl(195 85% 50%)" }} />
                     <div>
                       <p className="font-medium text-foreground mb-1 text-xs">
-                        {modeLockTarget === "standard" ? "الوضع الاستشاري" : "الوضع التحليلي"} متاح في باقة مهندس
+                        {language === "en"
+                          ? `${modeLockTarget === "standard" ? "Advisory Mode" : "Analysis Mode"} is available on the Engineer plan`
+                          : `${modeLockTarget === "standard" ? "الوضع الاستشاري" : "الوضع التحليلي"} متاح في باقة مهندس`}
                       </p>
                       <button
                         onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
                         className="text-xs font-semibold"
                         style={{ color: "hsl(195 85% 50%)" }}
                       >
-                        ترقية ←
+                        {language === "en" ? "Upgrade →" : "ترقية ←"}
                       </button>
                     </div>
                     <button
@@ -1022,7 +1039,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                           <div className="flex items-center gap-2 pt-3 border-t border-border/30">
                             <BookOpen className="w-4 h-4 text-primary/70" />
                             <span className="text-xs text-muted-foreground">
-                              {t("sourcesLabel")} {message.sources.map(s => formatSourceName(s)).join(language === "ar" ? '، ' : ', ')}
+                              {t("sourcesLabel")} {message.sources.map(s => formatSourceName(s, language)).join(language === "ar" ? '، ' : ', ')}
                             </span>
                           </div>
                         )}
@@ -1117,7 +1134,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               <Paperclip className="w-4 h-4" />
             </Button>
             <Textarea
-              ref={textareaRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
+              ref={textareaRef} value={input} onChange={e => { setInput(e.target.value); autoResize(e.target as HTMLTextAreaElement); }} onKeyDown={handleKeyDown}
               placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : pendingImage ? t("imageAttached") : t("inputPlaceholder")}
               className="flex-1 bg-transparent border-0 resize-none focus-visible:ring-0 min-h-[44px] max-h-[200px] text-foreground placeholder:text-muted-foreground disabled:opacity-50"
               rows={1}
