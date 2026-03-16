@@ -33,3 +33,6 @@ dist-ssr
 
 # Claude AI session files
 .claude/
+consultx-main/.git_disabled/
+consultx-main/.git_disabled*
+consultx-main/

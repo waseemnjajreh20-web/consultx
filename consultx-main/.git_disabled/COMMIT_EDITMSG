@@ -1,6 +1,0 @@
-fix: revert to gemini-embedding-001 for embeddings script
-
-text-embedding-004 not available for any API key (404).
-gemini-embedding-001 confirmed working with new API key.
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
