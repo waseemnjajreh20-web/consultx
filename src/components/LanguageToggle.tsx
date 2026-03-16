@@ -1,37 +1,25 @@
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/hooks/useLanguage";
 
 export function LanguageToggle() {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+
+  const toggle = () => setLanguage(language === "ar" ? "en" : "ar");
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" title={t("language")}>
-          <Globe className="w-5 h-5" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => setLanguage("ar")}
-          className={language === "ar" ? "bg-accent" : ""}
-        >
-          {t("arabic")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setLanguage("en")}
-          className={language === "en" ? "bg-accent" : ""}
-        >
-          {t("english")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggle}
+      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2"
+      title={language === "ar" ? "Switch to English" : "التبديل للعربية"}
+      aria-label={language === "ar" ? "Switch to English" : "التبديل للعربية"}
+    >
+      <Globe className="w-4 h-4" />
+      <span className="text-xs font-semibold tracking-wide">
+        {language === "ar" ? "EN" : "عر"}
+      </span>
+    </Button>
   );
 }

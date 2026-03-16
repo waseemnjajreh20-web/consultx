@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from "react";
 import { Language, translations, TranslationKey } from "@/lib/translations";
 
 interface LanguageContextType {
@@ -14,29 +22,44 @@ const STORAGE_KEY = "consultx-language";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === "en" || saved === "ar") ? saved : "ar";
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved === "en" || saved === "ar" ? saved : "ar";
+    } catch {
+      return "ar";
+    }
   });
 
-  const setLanguage = (lang: Language) => {
+  // Stable reference — never changes between renders
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
-  };
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+    } catch {}
+  }, []);
 
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || key;
-  };
+  // Re-created ONLY when language changes — guarantees fresh translations
+  const t = useCallback(
+    (key: TranslationKey): string => translations[language][key] ?? key,
+    [language]
+  );
 
-  const dir = language === "ar" ? "rtl" : "ltr";
+  const dir: "rtl" | "ltr" = language === "ar" ? "rtl" : "ltr";
 
-  // Update document direction and lang
+  // Update document dir/lang whenever language changes
   useEffect(() => {
     document.documentElement.dir = dir;
     document.documentElement.lang = language;
   }, [language, dir]);
 
+  // Context value only changes when language changes — forces global re-render
+  const contextValue = useMemo(
+    () => ({ language, setLanguage, t, dir }),
+    [language, setLanguage, t, dir]
+  );
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );
