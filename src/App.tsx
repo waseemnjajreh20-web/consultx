@@ -10,6 +10,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -60,6 +61,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AnimatedRoutes />
+              <MobileBottomNav />
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
