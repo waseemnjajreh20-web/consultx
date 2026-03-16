@@ -358,6 +358,19 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-resize textarea as user types
+  const autoResize = (el: HTMLTextAreaElement) => {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+  };
+
+  // Reset textarea height when input is cleared (after send)
+  useEffect(() => {
+    if (!input && textareaRef.current) {
+      textareaRef.current.style.height = "44px";
+    }
+  }, [input]);
   const { toast } = useToast();
   const { t, language, dir } = useLanguage();
   const { createConversation, saveMessage, updateConversationTitle, loadConversation } = useConversations();
@@ -1117,7 +1130,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               <Paperclip className="w-4 h-4" />
             </Button>
             <Textarea
-              ref={textareaRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
+              ref={textareaRef} value={input} onChange={e => { setInput(e.target.value); autoResize(e.target as HTMLTextAreaElement); }} onKeyDown={handleKeyDown}
               placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : pendingImage ? t("imageAttached") : t("inputPlaceholder")}
               className="flex-1 bg-transparent border-0 resize-none focus-visible:ring-0 min-h-[44px] max-h-[200px] text-foreground placeholder:text-muted-foreground disabled:opacity-50"
               rows={1}
