@@ -213,10 +213,31 @@ async function streamChat({
     onError(language === "en" ? "Please login to continue" : "يرجى تسجيل الدخول للمتابعة");
     return;
   }
+  // Validate and build images array — filter out any malformed data URLs
+  const validImages = (images ?? []).filter(
+    (img) => typeof img === "string" && img.startsWith("data:") && img.includes(";base64,") && img.length > 100
+  );
+
+  // Diagnostic log — verify payload before send
+  console.log("[ConsultX] streamChat payload:", {
+    messageCount: messages.length,
+    imageCount: validImages.length,
+    imagePreviews: validImages.slice(0, 3).map((img) => img.substring(0, 50) + "..."),
+    mode,
+    language,
+    retry,
+  });
+
+  // Explicitly include images key only when images are present
+  const requestBody: Record<string, unknown> = { messages, retry, mode, language };
+  if (validImages.length > 0) {
+    requestBody.images = validImages;
+  }
+
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images }),
+    body: JSON.stringify(requestBody),
     signal,
   });
   if (!resp.ok) {
@@ -733,6 +754,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
     const imageBase64List = pendingImages.map(img => img.base64);
     const firstImageType = pendingImages[0]?.file?.type;
+
+    // Diagnostic log — confirm images are assembled before send
+    if (imageBase64List.length > 0) {
+      console.log("[ConsultX] handleSend images assembled:", {
+        count: imageBase64List.length,
+        types: pendingImages.map(img => img.file?.type ?? "unknown"),
+        pageNums: pendingImages.map(img => img.pageNum),
+        formatPreviews: imageBase64List.map(b => b.substring(0, 40) + "..."),
+      });
+    }
+
     // Start classifying stage (don't set isVisionRequest yet — wait for classification)
     if (hasImages) setLoadingStage("classifying");
     setPendingImages([]);
@@ -743,13 +775,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
-          const ext = firstImageType === "image/png" ? "png" : firstImageType === "image/webp" ? "webp" : "jpg";
+          // Detect actual MIME type from the base64 data URL (handles PDF→PNG conversion)
+          const firstBase64 = imageBase64List[0];
+          const mimeMatch = firstBase64.match(/^data:([^;]+);base64,/);
+          const actualMime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+          const ext = actualMime === "image/png" ? "png" : actualMime === "image/webp" ? "webp" : "jpg";
           const filePath = `${session.user.id}/${Date.now()}.${ext}`;
-          const base64Data = imageBase64List[0].split(",")[1];
+          const base64Data = firstBase64.split(",")[1];
           const binaryStr = atob(base64Data);
           const bytes = new Uint8Array(binaryStr.length);
           for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-          const blob = new Blob([bytes], { type: firstImageType || "image/jpeg" });
+          const blob = new Blob([bytes], { type: actualMime });
           const { error: uploadError } = await supabase.storage.from("chat-images").upload(filePath, blob);
           if (!uploadError) {
             const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(filePath);
