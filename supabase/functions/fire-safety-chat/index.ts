@@ -1544,6 +1544,65 @@ function convertToGeminiFormat(messages: any[]) {
   };
 }
 
+// ==================== IMAGE CLASSIFIER ====================
+
+async function classifyImage(apiKey: string, imageBase64: string): Promise<{type: "blueprint" | "general_image", confidence: number}> {
+  const classifyPrompt = `You are an image classifier. Determine if this image is:
+- A technical engineering blueprint, floor plan, architectural drawing, fire protection system drawing, or P&ID diagram → type: "blueprint"
+- A general photograph, selfie, screenshot, or non-technical image → type: "general_image"
+
+Respond in JSON ONLY, no other text:
+{"type":"blueprint","confidence":0.95}`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: classifyPrompt }] },
+          contents: [{ role: "user", parts: [
+            { inline_data: { mime_type: imageBase64.startsWith("data:image/png") ? "image/png" : imageBase64.startsWith("data:image/webp") ? "image/webp" : "image/jpeg", data: imageBase64.includes(",") ? imageBase64.split(",")[1] : imageBase64 } },
+            { text: "Classify this image." },
+          ] }],
+          generationConfig: { temperature: 0.1 },
+        }),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      if (parsed.type === "blueprint" || parsed.type === "general_image") {
+        return { type: parsed.type, confidence: parsed.confidence ?? 0.8 };
+      }
+    }
+  } catch (err) {
+    console.error("Classification failed:", err);
+  }
+  // Default to blueprint (safer — won't miss real blueprints)
+  return { type: "blueprint", confidence: 0.5 };
+}
+
+function getSimpleVisionPrompt(language: string): string {
+  const lang = language === "en" ? "ENGLISH" : "ARABIC";
+  return `[SYSTEM — ConsultX | IMAGE ANALYSIS]
+
+${CORE_RULES}
+
+You are analyzing a general image (photograph, not a technical blueprint) in the context of fire safety.
+
+Describe what you see in the image, identify any fire safety concerns, equipment, hazards, or code violations visible.
+If you can identify specific fire protection equipment (extinguishers, sprinklers, alarms, exit signs), note their condition and placement.
+Reference relevant SBC codes or NFPA standards where applicable.
+
+Keep the response practical and actionable for a fire safety engineer.
+
+RESPOND IN: ${lang}`;
+}
+
 // ==================== VISION PIPELINE (5-STAGE MISSION JOURNEY) ====================
 
 async function callAINonStreaming(apiKey: string, systemPrompt: string, userContent: any[]): Promise<string> {
@@ -1768,18 +1827,18 @@ RESPOND IN: ${lang}`;
 
 async function runVisionPipeline(
   apiKey: string,
-  imageBase64: string,
+  images: string[],
   userQuery: string,
   language: string,
 ): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[] }> {
-  console.log("🎯 === VISION PIPELINE START ===");
+  console.log(`🎯 === VISION PIPELINE START === (${images.length} image(s))`);
   const pipelineStart = Date.now();
 
   // Stage 1: Planning Agent
   console.log("📋 Stage 1: Planning Agent...");
   const planningPrompt = getVisionPlanningPrompt(language);
   const imageContent: any[] = [
-    { type: "image_url", image_url: { url: imageBase64 } },
+    ...images.map(img => ({ type: "image_url", image_url: { url: img } })),
     { type: "text", text: userQuery || (language === "en" ? "Analyze this engineering drawing for fire safety compliance." : "حلل هذا المخطط الهندسي من ناحية الامتثال للسلامة من الحرائق.") },
   ];
   
@@ -1949,42 +2008,58 @@ serve(async (req) => {
       }
     }
 
-    const { messages, retry, mode = "standard", language = "ar", image } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images: rawImages } = await req.json();
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
       throw new Error("GOOGLE_GEMINI_API_KEY is not configured");
     }
 
-    console.log("Chat mode:", mode, "| Language:", language, "| Has image:", !!image);
+    // Normalize: support both single `image` and `images` array (backward compat)
+    const imageList: string[] = rawImages && rawImages.length ? rawImages : (image ? [image] : []);
+
+    console.log("Chat mode:", mode, "| Language:", language, "| Images:", imageList.length);
 
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
     let finalMessages = [...messages];
+    let classResult: { type: "blueprint" | "general_image"; confidence: number } | null = null;
 
-    if (image) {
-      // ===== VISION PIPELINE =====
+    if (imageList.length > 0) {
+      // ===== CLASSIFY IMAGE FIRST =====
+      console.log("🔍 Classifying image...");
+      classResult = await classifyImage(GEMINI_API_KEY, imageList[0]);
+      console.log(`✅ Classification: ${classResult.type} (confidence: ${classResult.confidence})`);
+
       const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
       const userQuery = lastUserMessage?.content || "";
-      
-      const { systemPrompt, extraContext, usedFiles: visionFiles } = await runVisionPipeline(
-        GEMINI_API_KEY,
-        image,
-        userQuery,
-        language,
-      );
-      
-      fullSystemPrompt = systemPrompt + extraContext;
-      usedFiles = visionFiles;
-      
+
+      if (classResult.type === "blueprint") {
+        // ===== FULL VISION PIPELINE (blueprints) =====
+        const { systemPrompt, extraContext, usedFiles: visionFiles } = await runVisionPipeline(
+          GEMINI_API_KEY,
+          imageList,
+          userQuery,
+          language,
+        );
+        fullSystemPrompt = systemPrompt + extraContext;
+        usedFiles = visionFiles;
+      } else {
+        // ===== SIMPLIFIED VISION (general photos) =====
+        console.log("📷 General image — using simplified vision prompt");
+        fullSystemPrompt = getSimpleVisionPrompt(language);
+        usedFiles = [];
+      }
+
+      // Attach all images to the last user message
       const lastUserIdx = finalMessages.map((m: any, i: number) => m.role === "user" ? i : -1).filter((i: number) => i >= 0).pop();
       if (lastUserIdx !== undefined && lastUserIdx >= 0) {
         const originalText = finalMessages[lastUserIdx].content;
         finalMessages[lastUserIdx] = {
           role: "user",
           content: [
-            { type: "image_url", image_url: { url: image } },
-            { type: "text", text: originalText || (language === "en" ? "Analyze this drawing." : "حلل هذا المخطط.") },
+            ...imageList.map(img => ({ type: "image_url", image_url: { url: img } })),
+            { type: "text", text: originalText || (language === "en" ? "Analyze this image." : "حلل هذه الصورة.") },
           ],
         };
       }
@@ -2129,7 +2204,40 @@ serve(async (req) => {
       },
     });
 
-    return new Response(response.body!.pipeThrough(transformStream), {
+    // Build response stream — inject classification event if applicable
+    const mainStream = response.body!.pipeThrough(transformStream);
+
+    if (classResult) {
+      // Prepend classification SSE event before the Gemini stream
+      const encoder = new TextEncoder();
+      const classificationEvent = encoder.encode(
+        `data: ${JSON.stringify({ classification: classResult.type, confidence: classResult.confidence })}\n\n`
+      );
+      const combinedStream = new ReadableStream({
+        async start(controller) {
+          controller.enqueue(classificationEvent);
+          const reader = mainStream.getReader();
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              controller.enqueue(value);
+            }
+          } finally {
+            controller.close();
+          }
+        },
+      });
+      return new Response(combinedStream, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "X-SBC-Sources": usedFiles.join(","),
+        },
+      });
+    }
+
+    return new Response(mainStream, {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",

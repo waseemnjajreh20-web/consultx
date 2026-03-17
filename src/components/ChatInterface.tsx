@@ -60,7 +60,10 @@ type ChatMessage = {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fire-safety-chat`;
 const MAX_RETRIES = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_PDF_SIZE = 25 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ALLOWED_FILE_TYPES = [...ALLOWED_IMAGE_TYPES, "application/pdf"];
+const MAX_FILES = 10;
 // NO hard timeout — only abort on manual mode switch / navigation
 // Auto-error check only after 5 minutes (300s)
 const ERROR_CHECK_DELAY_MS = 300_000; // 5 minutes
@@ -193,15 +196,16 @@ function trimMessageHistory(messages: Message[], mode: ChatMode): ChatMessage[] 
 }
 
 async function streamChat({
-  messages, retry = false, mode = "standard", language = "ar", image,
-  onDelta, onFirstChunk, onDone, onError, onSources, signal
+  messages, retry = false, mode = "standard", language = "ar", images,
+  onDelta, onFirstChunk, onDone, onError, onSources, onClassification, signal
 }: {
-  messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; image?: string;
+  messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
   onError: (error: string) => void;
   onSources?: (sources: string[]) => void;
+  onClassification?: (result: { classification: string; confidence: number }) => void;
   signal?: AbortSignal;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -212,7 +216,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, image }),
+    body: JSON.stringify({ messages, retry, mode, language, images }),
     signal,
   });
   if (!resp.ok) {
@@ -248,6 +252,11 @@ async function streamChat({
       if (jsonStr === "[DONE]") { streamDone = true; break; }
       try {
         const parsed = JSON.parse(jsonStr);
+        // Detect classification SSE event (sent before streaming content)
+        if (parsed.classification && !parsed.choices) {
+          onClassification?.(parsed);
+          continue;
+        }
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
         if (content) {
           if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
@@ -266,6 +275,7 @@ async function streamChat({
       if (jsonStr === "[DONE]") continue;
       try {
         const parsed = JSON.parse(jsonStr);
+        if (parsed.classification && !parsed.choices) { onClassification?.(parsed); continue; }
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
         if (content) {
           if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
@@ -347,15 +357,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const [waitingLevel, setWaitingLevel] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRetrying, setAutoRetrying] = useState(false);
-  const [loadingStage, setLoadingStage] = useState<"connecting" | "thinking" | "writing" | "vision_1" | "vision_2" | "vision_3" | "vision_4" | "vision_5">("connecting");
+  const [loadingStage, setLoadingStage] = useState<"connecting" | "classifying" | "thinking" | "writing" | "vision_1" | "vision_2" | "vision_3" | "vision_4" | "vision_5">("connecting");
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [chatMode, setChatMode] = useState<ChatMode>("primary");
   const [prevMode, setPrevMode] = useState<ChatMode>("primary");
   const [isModeTransition, setIsModeTransition] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [pendingImage, setPendingImage] = useState<{ file: File; base64: string } | null>(null);
+  const [pendingImages, setPendingImages] = useState<{ file: File; base64: string; pageNum?: number }[]>([]);
   const [isVisionRequest, setIsVisionRequest] = useState(false);
+  const [classificationResult, setClassificationResult] = useState<"blueprint" | "general_image" | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const waitingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -403,8 +414,13 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   useEffect(() => { scrollToBottom(); }, [chatItems]);
 
   useEffect(() => {
-    if (!isLoading) { setLoadingStage("connecting"); return; }
-    if (isVisionRequest) {
+    if (!isLoading) { setLoadingStage("connecting"); setClassificationResult(null); return; }
+
+    // If classifying, wait for classification SSE event (no timeouts yet)
+    if (loadingStage === "classifying") return;
+
+    // Blueprint confirmed → full vision pipeline stages
+    if (classificationResult === "blueprint") {
       setLoadingStage("vision_1");
       const t2 = setTimeout(() => setLoadingStage("vision_2"), 3000);
       const t3 = setTimeout(() => setLoadingStage("vision_3"), 7000);
@@ -412,11 +428,20 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       const t5 = setTimeout(() => setLoadingStage("vision_5"), 18000);
       return () => { clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); };
     }
+
+    // General image → simpler stages
+    if (classificationResult === "general_image") {
+      setLoadingStage("thinking");
+      const t2 = setTimeout(() => setLoadingStage("writing"), 2000);
+      return () => clearTimeout(t2);
+    }
+
+    // Default text mode (no image)
     const timer1 = setTimeout(() => setLoadingStage("thinking"), 1000);
     const timer2 = setTimeout(() => setLoadingStage("writing"), 3000);
     const timer3 = setTimeout(() => setLoadingStage("processing" as any), 6000);
     return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3); };
-  }, [isLoading, isVisionRequest]);
+  }, [isLoading, classificationResult, loadingStage]);
 
   const visionStageIndex = { vision_1: 0, vision_2: 1, vision_3: 2, vision_4: 3, vision_5: 4 } as const;
   const textStageIndex: Record<string, number> = { connecting: 0, thinking: 1, writing: 2, processing: 3 };
@@ -426,6 +451,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const getLoadingMessage = () => {
     switch (loadingStage) {
       case "connecting": return t("connecting");
+      case "classifying": return t("scanningFileType");
       case "thinking": return t("thinking");
       case "writing": return t("writing");
       case "vision_1": return t("visionStage1");
@@ -441,6 +467,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const stopLoading = useCallback(() => {
     setIsLoading(false);
     setIsVisionRequest(false);
+    setClassificationResult(null);
     setRetryCount(0);
     setAutoRetrying(false);
     setInputEnabled(true);
@@ -502,27 +529,52 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   }, [chatMode, t, toast, isFreePlan]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      toast({ title: t("errorTitle"), description: t("unsupportedFormat"), variant: "destructive" });
-      return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const newImages: { file: File; base64: string; pageNum?: number }[] = [];
+
+    for (const file of files) {
+      if (file.type === "application/pdf") {
+        if (file.size > MAX_PDF_SIZE) {
+          toast({ title: t("errorTitle"), description: t("pdfTooBig"), variant: "destructive" });
+          continue;
+        }
+        try {
+          const { pdfToBase64Images } = await import("@/lib/pdfToImages");
+          const pageImages = await pdfToBase64Images(file);
+          pageImages.forEach((base64, idx) => {
+            newImages.push({ file, base64, pageNum: idx + 1 });
+          });
+          toast({ title: t("pdfUploaded"), description: `${pageImages.length} ${t("pagesExtracted")}` });
+        } catch (err) {
+          console.error("PDF conversion error:", err);
+          toast({ title: t("errorTitle"), description: t("pdfConversionError"), variant: "destructive" });
+        }
+      } else if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        if (file.size > MAX_IMAGE_SIZE) {
+          toast({ title: t("errorTitle"), description: t("imageTooBig"), variant: "destructive" });
+          continue;
+        }
+        const base64 = await fileToBase64(file);
+        newImages.push({ file, base64 });
+      } else {
+        toast({ title: t("errorTitle"), description: t("unsupportedFormat"), variant: "destructive" });
+      }
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-      toast({ title: t("errorTitle"), description: t("imageTooBig"), variant: "destructive" });
-      return;
-    }
-    const base64 = await fileToBase64(file);
-    setPendingImage({ file, base64 });
+
+    setPendingImages(prev => [...prev, ...newImages].slice(0, MAX_FILES));
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removePendingImage = () => { setPendingImage(null); };
+  const removePendingImage = (index: number) => {
+    setPendingImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSendWithRetry = useCallback(async (
     chatMessages: ChatMessage[], assistantId: string, isRetry: boolean = false,
     currentRetryCount: number = 0, currentMode: ChatMode = "standard",
-    convId: string | null = null, currentLanguage: string = "ar", imageBase64?: string,
+    convId: string | null = null, currentLanguage: string = "ar", imageBase64List?: string[],
   ) => {
     // Abort any previous request
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -564,9 +616,14 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     let currentSources: string[] = [];
     try {
       await streamChat({
-        messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, image: imageBase64,
+        messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64List,
         signal: controller.signal,
         onDelta: upsertAssistant,
+        onClassification: (result) => {
+          const classType = result.classification as "blueprint" | "general_image";
+          setClassificationResult(classType);
+          if (classType === "blueprint") setIsVisionRequest(true);
+        },
         onFirstChunk: () => {
           // Re-enable input on first streaming chunk (optimistic)
           setInputEnabled(true);
@@ -586,7 +643,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             console.log(`Response validation failed (attempt ${currentRetryCount + 1}):`, validation.issues);
             setRetryCount(currentRetryCount + 1);
             setChatItems(prev => prev.filter(item => ("type" in item) || item.id !== assistantId));
-            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64);
+            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64List);
           } else {
             stopLoading();
             if (convId) saveMessage(convId, "assistant", fullContent, currentSources);
@@ -603,7 +660,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             // If it was the 5-min timer abort, auto-retry once
             if (autoRetrying && currentRetryCount < 1) {
               setAutoRetrying(false);
-              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64);
+              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64List);
               return;
             }
             return; // ignore other aborts (mode switch)
@@ -619,7 +676,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         // 5-min auto-retry
         if (autoRetrying && currentRetryCount < 1) {
           setAutoRetrying(false);
-          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64);
+          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64List);
           return;
         }
         return; // ignore mode-switch aborts
@@ -642,8 +699,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
   const handleSend = async (text?: string) => {
     const messageText = text || input.trim();
-    const hasImage = !!pendingImage;
-    if (!messageText && !hasImage) return;
+    const hasImages = pendingImages.length > 0;
+    if (!messageText && !hasImages) return;
     if (isLoading) return;
 
     // Check daily limit client-side
@@ -665,32 +722,34 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
     const userMessage: Message = {
       id: Date.now().toString(), role: "user",
-      content: messageText || (language === "en" ? "Analyze this drawing" : "حلل هذا المخطط"),
-      timestamp: new Date(), imageUrl: pendingImage?.base64, mode: chatMode,
-      hasImage: !!pendingImage,
+      content: messageText || (language === "en" ? "Analyze this image" : "حلل هذه الصورة"),
+      timestamp: new Date(), imageUrl: pendingImages[0]?.base64, mode: chatMode,
+      hasImage: hasImages,
     };
     // Optimistic: add user message, clear input, increment local counter
     setChatItems(prev => [...prev, userMessage]);
     setInput(""); setIsLoading(true); setInputEnabled(false); setRetryCount(0);
     setLocalMessagesUsed(prev => prev + 1);
 
-    const imageBase64 = pendingImage?.base64;
-    const imageFileType = pendingImage?.file?.type;
-    if (pendingImage) setIsVisionRequest(true);
-    setPendingImage(null);
+    const imageBase64List = pendingImages.map(img => img.base64);
+    const firstImageType = pendingImages[0]?.file?.type;
+    // Start classifying stage (don't set isVisionRequest yet — wait for classification)
+    if (hasImages) setLoadingStage("classifying");
+    setPendingImages([]);
 
+    // Upload first image to Supabase storage for chat preview
     let storedImageUrl: string | undefined;
-    if (imageBase64 && currentConvId) {
+    if (imageBase64List.length > 0 && currentConvId) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
-          const ext = imageFileType === "image/png" ? "png" : imageFileType === "image/webp" ? "webp" : "jpg";
+          const ext = firstImageType === "image/png" ? "png" : firstImageType === "image/webp" ? "webp" : "jpg";
           const filePath = `${session.user.id}/${Date.now()}.${ext}`;
-          const base64Data = imageBase64.split(",")[1];
+          const base64Data = imageBase64List[0].split(",")[1];
           const binaryStr = atob(base64Data);
           const bytes = new Uint8Array(binaryStr.length);
           for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-          const blob = new Blob([bytes], { type: imageFileType || "image/jpeg" });
+          const blob = new Blob([bytes], { type: firstImageType || "image/jpeg" });
           const { error: uploadError } = await supabase.storage.from("chat-images").upload(filePath, blob);
           if (!uploadError) {
             const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(filePath);
@@ -706,7 +765,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     // Build history using smart per-mode trimming
     const allRealMessages = [...messages, userMessage];
     const chatMessages = trimMessageHistory(allRealMessages, chatMode);
-    handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language, imageBase64);
+    handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language, imageBase64List.length > 0 ? imageBase64List : undefined);
   };
 
 
@@ -1070,10 +1129,22 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                   </div>
                 ) : (
                   <>
-                    {isVisionRequest && (
+                    {loadingStage === "classifying" && (
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                        <span className="text-xs font-semibold tracking-wide text-yellow-400">{t("scanningFileType")}</span>
+                      </div>
+                    )}
+                    {classificationResult === "blueprint" && loadingStage !== "classifying" && (
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
                         <span className="text-xs font-semibold tracking-wide text-teal-400">{t("blueprintMode")}</span>
+                      </div>
+                    )}
+                    {classificationResult === "general_image" && loadingStage !== "classifying" && (
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                        <span className="text-xs font-semibold tracking-wide text-blue-400">{t("analyzingImage")}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-3">
@@ -1112,16 +1183,23 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       {/* Input Area */}
       <div className="border-t border-border/50 bg-card/30 backdrop-blur-xl p-4">
         <div className="max-w-4xl mx-auto">
-          {/* Pending image preview */}
-          {pendingImage && (
-            <div className="mb-3 flex items-start gap-2">
-              <div className="relative inline-block">
-                <img src={pendingImage.base64} alt="Preview" className="h-20 rounded-lg border border-primary/50 object-contain" />
-                <button onClick={removePendingImage} className="absolute -top-2 -end-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center hover:bg-destructive/80">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-              <span className="text-xs text-primary flex items-center gap-1 mt-1">
+          {/* Pending images preview */}
+          {pendingImages.length > 0 && (
+            <div className="mb-3 flex items-start gap-2 overflow-x-auto">
+              {pendingImages.map((img, idx) => (
+                <div key={idx} className="relative inline-block shrink-0">
+                  <img src={img.base64} alt={`Preview ${idx + 1}`} className="h-20 rounded-lg border border-primary/50 object-contain" />
+                  {img.pageNum && (
+                    <span className="absolute bottom-1 start-1 bg-black/60 text-white text-[10px] px-1 rounded">
+                      P{img.pageNum}
+                    </span>
+                  )}
+                  <button onClick={() => removePendingImage(idx)} className="absolute -top-2 -end-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center hover:bg-destructive/80">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <span className="text-xs text-primary flex items-center gap-1 mt-1 shrink-0">
                 <Eye className="w-3 h-3" />{t("visionAnalysis")}
               </span>
             </div>
@@ -1140,18 +1218,18 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             )}
             style={{ borderColor: getModeAccentColor(chatMode).replace("0.6", "0.4") }}
           >
-            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleFileSelect} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple onChange={handleFileSelect} className="hidden" />
             <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className="shrink-0 h-10 w-10 text-muted-foreground hover:text-primary" title={t("uploadFile")} disabled={!inputEnabled}>
               <Paperclip className="w-4 h-4" />
             </Button>
             <Textarea
               ref={textareaRef} value={input} onChange={e => { setInput(e.target.value); autoResize(e.target as HTMLTextAreaElement); }} onKeyDown={handleKeyDown}
-              placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : pendingImage ? t("imageAttached") : t("inputPlaceholder")}
+              placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : pendingImages.length > 0 ? t("imageAttached") : t("inputPlaceholder")}
               className="flex-1 bg-transparent border-0 resize-none focus-visible:ring-0 min-h-[44px] max-h-[200px] text-foreground placeholder:text-muted-foreground disabled:opacity-50"
               rows={1}
               disabled={!inputEnabled || isAtDailyLimit}
             />
-            <Button variant="hero" size="icon" onClick={() => handleSend()} disabled={(!input.trim() && !pendingImage) || !inputEnabled || isAtDailyLimit} className="shrink-0 h-10 w-10">
+            <Button variant="hero" size="icon" onClick={() => handleSend()} disabled={(!input.trim() && pendingImages.length === 0) || !inputEnabled || isAtDailyLimit} className="shrink-0 h-10 w-10">
               <Send className="w-4 h-4" />
             </Button>
           </div>
