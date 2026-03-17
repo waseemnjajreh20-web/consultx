@@ -228,10 +228,14 @@ async function streamChat({
     retry,
   });
 
-  // Explicitly include images key only when images are present
+  // Explicitly include images in request body when present.
+  // Send BOTH keys for backward compatibility:
+  //   `images` → new backend (array, multi-image support)
+  //   `image`  → old backend fallback (single image, legacy field)
   const requestBody: Record<string, unknown> = { messages, retry, mode, language };
   if (validImages.length > 0) {
-    requestBody.images = validImages;
+    requestBody.images = validImages;       // new backend reads this
+    requestBody.image = validImages[0];     // old backend fallback (single image)
   }
 
   const resp = await fetch(CHAT_URL, {
@@ -563,10 +567,12 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         }
         try {
           const { pdfToBase64Images } = await import("@/lib/pdfToImages");
+          const { compressImage } = await import("@/lib/compressImage");
           const pageImages = await pdfToBase64Images(file);
-          pageImages.forEach((base64, idx) => {
+          for (const [idx, rawPage] of pageImages.entries()) {
+            const base64 = await compressImage(rawPage);
             newImages.push({ file, base64, pageNum: idx + 1 });
-          });
+          }
           toast({ title: t("pdfUploaded"), description: `${pageImages.length} ${t("pagesExtracted")}` });
         } catch (err) {
           console.error("PDF conversion error:", err);
@@ -577,7 +583,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           toast({ title: t("errorTitle"), description: t("imageTooBig"), variant: "destructive" });
           continue;
         }
-        const base64 = await fileToBase64(file);
+        const raw = await fileToBase64(file);
+        const { compressImage } = await import("@/lib/compressImage");
+        const base64 = await compressImage(raw);
         newImages.push({ file, base64 });
       } else {
         toast({ title: t("errorTitle"), description: t("unsupportedFormat"), variant: "destructive" });
