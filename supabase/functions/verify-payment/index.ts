@@ -29,6 +29,13 @@ serve(async (req) => {
       headers: { Authorization: `Bearer ${TAP_SECRET_KEY}` },
     });
 
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("TAP verify-payment failed:", response.status, errorData);
+      return new Response(JSON.stringify({ error: "Failed to verify charge", status: response.status }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const data = await response.json();
 
     return new Response(JSON.stringify({

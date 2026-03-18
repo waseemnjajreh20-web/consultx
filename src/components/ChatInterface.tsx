@@ -636,6 +636,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             }
             return; // ignore other aborts (mode switch)
           }
+          setLocalMessagesUsed(prev => Math.max(0, prev - 1));
           stopLoading();
           toast({ title: currentLanguage === "en" ? "Error" : "خطأ", description: error, variant: "destructive" });
         }
@@ -654,6 +655,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         return; // ignore mode-switch aborts
       }
       console.error("Chat error:", error);
+      setLocalMessagesUsed(prev => Math.max(0, prev - 1));
       stopLoading();
       toast({ title: currentLanguage === "en" ? "Error" : "خطأ", description: currentLanguage === "en" ? "Connection error" : "حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى", variant: "destructive" });
     }

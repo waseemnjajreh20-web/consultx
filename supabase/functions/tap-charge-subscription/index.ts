@@ -112,8 +112,14 @@ serve(async (req) => {
 
     const chargeData = await chargeResponse.json();
 
+    if (!chargeResponse.ok) {
+      console.error("TAP charge creation failed:", chargeData);
+      return new Response(JSON.stringify({ error: "Payment provider error", details: chargeData.errors }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Record transaction
-    await adminClient.from("payment_transactions").insert({
+    const { error: txError } = await adminClient.from("payment_transactions").insert({
       user_id: userId,
       subscription_id: subscription.id,
       tap_charge_id: chargeData.id,
@@ -122,6 +128,12 @@ serve(async (req) => {
       status: chargeData.status === "CAPTURED" ? "captured" : "initiated",
       payment_type: "renewal",
     });
+
+    if (txError) {
+      console.error("Failed to record transaction:", txError);
+      return new Response(JSON.stringify({ error: "Failed to record payment" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // If captured immediately, update subscription
     if (chargeData.status === "CAPTURED") {
