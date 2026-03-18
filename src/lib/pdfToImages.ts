@@ -1,7 +1,8 @@
 import * as pdfjsLib from "pdfjs-dist";
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// Use CDN worker to avoid Vite bundling issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+// Use Vite-bundled worker (guaranteed version match, no CDN dependency)
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 /**
  * Convert a PDF file to an array of base64 PNG data URLs (one per page).
@@ -12,8 +13,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
  */
 export async function pdfToBase64Images(
   file: File,
-  maxPages = 10,
-  scale = 1.5
+  maxPages = 20,
+  scale = 1.2
 ): Promise<string[]> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

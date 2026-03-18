@@ -60,7 +60,7 @@ type ChatMessage = {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fire-safety-chat`;
 const MAX_RETRIES = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-const MAX_PDF_SIZE = 25 * 1024 * 1024;
+const MAX_PDF_SIZE = 50 * 1024 * 1024;  // 50 MB
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ALLOWED_FILE_TYPES = [...ALLOWED_IMAGE_TYPES, "application/pdf"];
 const MAX_FILES = 10;
@@ -568,7 +568,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         try {
           const { pdfToBase64Images } = await import("@/lib/pdfToImages");
           const { compressImage } = await import("@/lib/compressImage");
-          const pageImages = await pdfToBase64Images(file);
+          const pageImages = await pdfToBase64Images(file, 20);
           for (const [idx, rawPage] of pageImages.entries()) {
             const base64 = await compressImage(rawPage);
             newImages.push({ file, base64, pageNum: idx + 1 });
