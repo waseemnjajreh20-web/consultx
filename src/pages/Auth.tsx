@@ -221,7 +221,7 @@ const Auth = () => {
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{
-            width: "600px", height: "600px", borderRadius: "50%",
+            width: "clamp(280px, 80vw, 600px)", height: "clamp(280px, 80vw, 600px)", borderRadius: "50%",
             background: "radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
@@ -229,7 +229,7 @@ const Auth = () => {
       </div>
 
       {/* Top bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+      <div className="fixed top-4 left-4 right-4 flex items-center justify-between z-30">
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-2 text-sm transition-all duration-200"
@@ -244,7 +244,7 @@ const Auth = () => {
       </div>
 
       {/* Main card */}
-      <div className="relative z-10 w-full max-w-[420px] px-4 md:px-0">
+      <div className="relative z-10 w-full max-w-[min(90vw,420px)] px-4 md:px-0 pb-24 md:pb-0">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative mb-4">

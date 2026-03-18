@@ -123,7 +123,7 @@ const Account = () => {
         </div>
       </header>
 
-      <div className="relative z-10 flex-1 p-6 max-w-2xl mx-auto w-full">
+      <div className="relative z-10 flex-1 p-6 pb-24 md:pb-6 max-w-2xl mx-auto w-full">
         <div className="text-center mb-6">
           <img src={consultxIcon} alt="ConsultX" className="w-12 h-12 mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-gradient">{t("myAccount")}</h1>

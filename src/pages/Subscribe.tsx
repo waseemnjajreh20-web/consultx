@@ -207,7 +207,7 @@ const Subscribe = () => {
   const isPopular = (plan: Plan) => plan.type === "monthly" && plan.target === "individual";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-dvh bg-background flex flex-col">
       <div className="fixed inset-0 blueprint-grid opacity-30 pointer-events-none" />
 
       {/* Header */}
@@ -220,7 +220,7 @@ const Subscribe = () => {
       </header>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center p-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center p-6 pb-24 md:pb-6">
         <div className="w-full max-w-4xl">
           {/* Icon & Title */}
           <div className="text-center mb-8">

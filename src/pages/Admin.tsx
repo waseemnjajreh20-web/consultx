@@ -226,7 +226,7 @@ export default function Admin() {
         </div>
       </header>
 
-      <div className="relative z-10 p-6 max-w-6xl mx-auto space-y-6">
+      <div className="relative z-10 p-6 pb-24 md:pb-6 max-w-6xl mx-auto space-y-6">
 
         {/* ===== STATS CARDS ===== */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

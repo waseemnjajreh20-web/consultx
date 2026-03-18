@@ -1004,7 +1004,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       )}
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 pb-4">
         <div className="max-w-4xl mx-auto space-y-6">
           {chatItems.length === 0 ? (
             /* Welcome Screen */
@@ -1311,8 +1311,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         />
       )}
 
-      {/* Bottom padding for mobile nav */}
-      {isMobile && <div className="h-16" />}
+      {/* Bottom padding for mobile nav (~53px actual height) */}
+      {isMobile && <div className="h-14" />}
     </div>
     </div>
   );
