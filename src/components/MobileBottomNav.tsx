@@ -26,13 +26,8 @@ const MobileBottomNav = () => {
       return;
     }
     // Set chat flag and navigate to index
-    sessionStorage.setItem(SESSION_KEY, "1");
-    if (location.pathname === "/") {
-      // Force re-render by reloading — sessionStorage change triggers Index state
-      window.location.reload();
-    } else {
-      navigate("/");
-    }
+    sessionStorage.setItem("consultx_showChat", "1");
+    navigate("/");
   };
 
   const handleHistory = () => {
@@ -40,13 +35,8 @@ const MobileBottomNav = () => {
       navigate("/auth");
       return;
     }
-    // Navigate to index with chat open — history will be accessible from chat BottomNav
-    sessionStorage.setItem(SESSION_KEY, "1");
-    if (location.pathname === "/") {
-      window.location.reload();
-    } else {
-      navigate("/");
-    }
+    sessionStorage.setItem("consultx_showChat", "1");
+    navigate("/");
   };
 
   const handleMind = () => {
