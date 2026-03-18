@@ -1004,11 +1004,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       )}
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 pb-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className={cn(
+        "flex-1 overflow-y-auto px-4 pb-4",
+        chatItems.length === 0 ? "flex flex-col justify-center py-4" : "py-6"
+      )}>
+        <div className={cn(
+          "max-w-4xl mx-auto w-full",
+          chatItems.length === 0 ? "" : "space-y-6"
+        )}>
           {chatItems.length === 0 ? (
             /* Welcome Screen */
-            <div className="text-center py-12 space-y-8">
+            <div className="text-center py-8 space-y-8">
               <div className="space-y-4">
                 <div className="relative inline-block">
                   <img

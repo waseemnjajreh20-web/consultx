@@ -4,12 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState, useEffect } from "react";
-
-const SESSION_KEY = "consultx_showChat";
-
 /** Pages where the global nav should NOT appear */
-const HIDDEN_PATHS = ["/payment-callback"];
+const HIDDEN_PATHS = ["/payment-callback", "/"];
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -18,33 +14,11 @@ const MobileBottomNav = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
-  // Listen for chat-active state (chat BottomNav takes over)
-  const [chatActive, setChatActive] = useState(
-    () => sessionStorage.getItem(SESSION_KEY) === "1"
-  );
-
-  useEffect(() => {
-    // Re-check whenever route changes (user may exit chat → landing)
-    setChatActive(sessionStorage.getItem(SESSION_KEY) === "1");
-  }, [location.pathname]);
-
-  // Also poll for sessionStorage changes within the same tab
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const val = sessionStorage.getItem(SESSION_KEY) === "1";
-      setChatActive((prev) => (prev !== val ? val : prev));
-    }, 300);
-    return () => clearInterval(interval);
-  }, []);
-
   // Don't render on desktop
   if (!isMobile) return null;
 
-  // Don't render on hidden pages
+  // Don't render on hidden pages (includes "/" — ChatInterface has its own BottomNav)
   if (HIDDEN_PATHS.includes(location.pathname)) return null;
-
-  // Don't render when chat is active on Index (chat has its own BottomNav)
-  if (location.pathname === "/" && chatActive) return null;
 
   const handleNewChat = () => {
     if (!user) {
@@ -93,7 +67,7 @@ const MobileBottomNav = () => {
       icon: MessageSquarePlus,
       label: t("startConsultation") || "Chat",
       action: handleNewChat,
-      active: location.pathname === "/" && !chatActive,
+      active: false,
     },
     {
       id: "history",
