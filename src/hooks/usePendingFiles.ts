@@ -67,15 +67,25 @@ export function usePendingFiles() {
         const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
         if (isImage) {
-          const base64 = await fileToBase64(file);
-          candidates.push({
-            id,
-            file,
-            type: "image",
-            base64Pages: [base64],
-            previewUrl: base64,
-            name: file.name,
-          });
+          try {
+            const base64 = await fileToBase64(file);
+            candidates.push({
+              id,
+              file,
+              type: "image",
+              base64Pages: [base64],
+              previewUrl: base64,
+              name: file.name,
+            });
+          } catch {
+            toast({
+              title: language === "en" ? "Error" : "خطأ",
+              description: language === "en"
+                ? `Failed to read image: ${file.name}`
+                : `تعذّر قراءة الصورة: ${file.name}`,
+              variant: "destructive",
+            });
+          }
         } else {
           // PDF
           try {
