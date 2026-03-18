@@ -690,7 +690,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     // Snapshot pending files before clearing
     const filesToSend = [...pendingFiles];
     const pagesToSend = [...allBase64Pages];
-    if (filesToSend.length > 0) setIsVisionRequest(true);
+    setIsVisionRequest(filesToSend.length > 0);
     clearAll();
 
     const userMessage: Message = {
@@ -720,6 +720,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               const ext = b64.startsWith("data:image/png") ? "png" : "jpg";
               const filePath = `${session.user.id}/${Date.now()}-${pfId}-${idx}.${ext}`;
               const base64Data = b64.split(",")[1];
+              if (!base64Data) return null;
               const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
               const blob = new Blob([bytes], { type: ext === "png" ? "image/png" : "image/jpeg" });
               const { error: uploadError } = await supabase.storage.from("chat-images").upload(filePath, blob);

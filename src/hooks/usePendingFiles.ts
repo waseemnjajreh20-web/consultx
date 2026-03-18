@@ -36,40 +36,12 @@ export function usePendingFiles() {
     const fileArray = Array.from(incoming);
     if (!fileArray.length) return;
 
-    setPendingFiles(prev => {
-      const available = MAX_FILES - prev.length;
-      if (available <= 0) {
-        toast({
-          title: language === "en" ? "Error" : "خطأ",
-          description: language === "en"
-            ? `Maximum ${MAX_FILES} files allowed`
-            : `الحد الأقصى ${MAX_FILES} ملفات`,
-          variant: "destructive",
-        });
-        return prev;
-      }
-      return prev; // actual update happens below after async work
-    });
-
     setIsProcessing(true);
     try {
-      const newFiles: PendingFile[] = [];
-
-      // Get current count to check cap
-      let currentCount = 0;
-      setPendingFiles(prev => { currentCount = prev.length; return prev; });
+      const candidates: PendingFile[] = [];
 
       for (const file of fileArray) {
-        if (currentCount + newFiles.length >= MAX_FILES) {
-          toast({
-            title: language === "en" ? "Error" : "خطأ",
-            description: language === "en"
-              ? `Maximum ${MAX_FILES} files allowed`
-              : `الحد الأقصى ${MAX_FILES} ملفات`,
-            variant: "destructive",
-          });
-          break;
-        }
+        if (candidates.length >= MAX_FILES) break;
 
         const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
         const isPdf = file.type === ALLOWED_PDF_TYPE;
@@ -96,7 +68,7 @@ export function usePendingFiles() {
 
         if (isImage) {
           const base64 = await fileToBase64(file);
-          newFiles.push({
+          candidates.push({
             id,
             file,
             type: "image",
@@ -109,7 +81,7 @@ export function usePendingFiles() {
           try {
             const pages = await pdfToBase64Images(file);
             if (!pages.length) continue;
-            newFiles.push({
+            candidates.push({
               id,
               file,
               type: "pdf",
@@ -129,13 +101,12 @@ export function usePendingFiles() {
         }
       }
 
-      if (newFiles.length) {
+      if (candidates.length > 0) {
         setPendingFiles(prev => {
-          // Deduplicate by name+size
+          if (prev.length >= MAX_FILES) return prev;
           const existing = new Set(prev.map(f => `${f.name}-${f.file.size}`));
-          const deduped = newFiles.filter(f => !existing.has(`${f.name}-${f.file.size}`));
-          const combined = [...prev, ...deduped];
-          return combined.slice(0, MAX_FILES);
+          const deduped = candidates.filter(f => !existing.has(`${f.name}-${f.file.size}`));
+          return [...prev, ...deduped].slice(0, MAX_FILES);
         });
       }
     } finally {

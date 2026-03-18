@@ -152,7 +152,10 @@ export function useConversations() {
 
         return {
           conversation: conversation as Conversation,
-          messages: (messages || []) as ConversationMessage[],
+          messages: (messages || []).map(m => ({
+            ...m,
+            sources: m.sources ?? [],
+          })) as ConversationMessage[],
         };
       } catch (err: any) {
         setError(err.message);
