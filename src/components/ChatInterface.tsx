@@ -559,18 +559,20 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     waitingTimersRef.current = [];
     setWaitingLevel(0);
 
+    // Local flag — closure-safe, always reflects current invocation
+    let shouldAutoRetry = false;
+
     // Escalating waiting messages — no auto-cancel, just informational
     const t10  = setTimeout(() => setWaitingLevel(1), 10_000);
     const t30  = setTimeout(() => setWaitingLevel(2), 30_000);
     const t60  = setTimeout(() => setWaitingLevel(3), 60_000);
     const t120 = setTimeout(() => setWaitingLevel(4), 120_000);
-    // After 5 minutes, check if there's an actual error; if still going, don't stop
+    // After 5 minutes, if still loading, auto-retry once
     const t300 = setTimeout(() => {
-      // If still loading at 5 min, it must be a real issue — auto-retry once
       if (!controller.signal.aborted) {
-        setAutoRetrying(true);
+        shouldAutoRetry = true;   // local var — always fresh, no stale closure
+        setAutoRetrying(true);    // state for UI indicator only
         controller.abort();
-        // Re-trigger with same params by calling the function again (handled in catch)
       }
     }, 300_000);
     waitingTimersRef.current = [t10, t30, t60, t120, t300];
@@ -626,7 +628,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           waitingTimersRef.current = [];
           if (controller.signal.aborted) {
             // If it was the 5-min timer abort, auto-retry once
-            if (autoRetrying && currentRetryCount < 1) {
+            if (shouldAutoRetry && currentRetryCount < 1) {
+              shouldAutoRetry = false;
               setAutoRetrying(false);
               handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s);
               return;
@@ -642,7 +645,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       waitingTimersRef.current = [];
       if (error?.name === "AbortError") {
         // 5-min auto-retry
-        if (autoRetrying && currentRetryCount < 1) {
+        if (shouldAutoRetry && currentRetryCount < 1) {
+          shouldAutoRetry = false;
           setAutoRetrying(false);
           handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s);
           return;
@@ -653,7 +657,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       stopLoading();
       toast({ title: currentLanguage === "en" ? "Error" : "خطأ", description: currentLanguage === "en" ? "Connection error" : "حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى", variant: "destructive" });
     }
-  }, [toast, saveMessage, stopLoading, autoRetrying]);
+  }, [toast, saveMessage, stopLoading]);
 
   // Sync local usage counter from subscription data
   useEffect(() => {

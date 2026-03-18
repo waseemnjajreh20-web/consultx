@@ -20,15 +20,19 @@ export async function pdfToBase64Images(
   const totalPages = Math.min(pdf.numPages, maxPages);
   const results: string[] = [];
 
-  for (let i = 1; i <= totalPages; i++) {
-    const page = await pdf.getPage(i);
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement("canvas");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d")!;
-    await page.render({ canvasContext: ctx as any, viewport }).promise;
-    results.push(canvas.toDataURL("image/jpeg", 0.85));
+  try {
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d")!;
+      await page.render({ canvasContext: ctx as any, viewport }).promise;
+      results.push(canvas.toDataURL("image/jpeg", 0.85));
+    }
+  } finally {
+    pdf.destroy();
   }
 
   return results;
