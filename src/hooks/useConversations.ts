@@ -19,6 +19,7 @@ export interface ConversationMessage {
   sources: string[];
   created_at: string;
   image_url?: string;
+  image_urls?: string[];
 }
 
 export function useConversations() {
@@ -61,7 +62,8 @@ export function useConversations() {
       role: "user" | "assistant",
       content: string,
       sources: string[] = [],
-      imageUrl?: string
+      imageUrl?: string,
+      imageUrls?: string[]
     ): Promise<string | null> => {
       if (!user) return null;
       setError(null);
@@ -75,6 +77,9 @@ export function useConversations() {
         };
         if (imageUrl) {
           insertData.image_url = imageUrl;
+        }
+        if (imageUrls && imageUrls.length > 0) {
+          insertData.image_urls = imageUrls;
         }
         const { data, error: insertError } = await supabase
           .from("messages")
