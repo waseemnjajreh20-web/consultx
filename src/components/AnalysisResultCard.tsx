@@ -3,6 +3,15 @@ import { ChevronDown, GitCompareArrows, Scale, ListChecks, CheckCircle2, XCircle
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 interface AnalysisResultCardProps {
   content: string;
 }
@@ -80,7 +89,7 @@ function MiniTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
             <tr key={ri} className={ri % 2 === 0 ? "bg-transparent" : "bg-muted/10"}>
               {row.map((cell, ci) => (
                 <td key={ci} className="px-3 py-2 text-foreground/80 border-t border-border/20" dangerouslySetInnerHTML={{
-                  __html: cell.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                  __html: escapeHtml(cell).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 }} />
               ))}
             </tr>
@@ -144,7 +153,7 @@ function ExtractedDataSection({ title, content, defaultOpen = true }: { title: s
                   <div className="text-sm text-foreground/80 space-y-1">
                     {sub.content.split("\n").filter(l => l.trim()).map((l, j) => (
                       <p key={j} dangerouslySetInnerHTML={{
-                        __html: l.replace(/^[-•*]\s*/, "").replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        __html: escapeHtml(l.replace(/^[-•*]\s*/, "")).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                       }} />
                     ))}
                   </div>
@@ -193,7 +202,7 @@ function Section({ title, icon, colorClass, content, defaultOpen = false }: Sect
             <div key={i} className="flex items-start gap-2">
               {item.status && getStatusBadge(item.status)}
               <span className="text-sm text-foreground" dangerouslySetInnerHTML={{
-                __html: item.text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                __html: escapeHtml(item.text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
               }} />
             </div>
           ))}
@@ -242,7 +251,7 @@ export default function AnalysisResultCard({ content }: AnalysisResultCardProps)
           return (
             <div key={i} className="text-sm text-foreground space-y-1">
               {s.content.split("\n").filter(l => l.trim()).map((l, j) => (
-                <p key={j} dangerouslySetInnerHTML={{ __html: l.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
+                <p key={j} dangerouslySetInnerHTML={{ __html: escapeHtml(l).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
               ))}
             </div>
           );

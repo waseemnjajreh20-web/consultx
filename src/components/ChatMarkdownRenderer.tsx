@@ -196,9 +196,18 @@ function parseTextContent(text: string): ParsedSection[] {
   return sections;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function renderTextLine(line: string, index: number) {
-  // Compliance status badges inline
-  let processed = line
+  // Escape HTML first to prevent XSS from AI responses
+  let processed = escapeHtml(line)
     .replace(/✅\s*(مطابق|Compliant)/gi, '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
     .replace(/❌\s*(غير مطابق|Non-?Compliant)/gi, '<span class="inline-flex items-center gap-1 bg-red-500/15 text-red-600 border border-red-500/30 rounded-full px-2 py-0.5 text-xs font-medium">❌ $1</span>')
     .replace(/⚠️\s*(مشروط|Conditional)/gi, '<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-600 border border-amber-500/30 rounded-full px-2 py-0.5 text-xs font-medium">⚠️ $1</span>');
@@ -233,7 +242,7 @@ function renderTextLine(line: string, index: number) {
             {checked ? "✓" : "○"}
           </span>
         )}
-        <span dangerouslySetInnerHTML={{ __html: content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
+        <span dangerouslySetInnerHTML={{ __html: escapeHtml(content).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
       </li>
     );
   }

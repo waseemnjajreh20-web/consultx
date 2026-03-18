@@ -107,7 +107,7 @@ serve(async (req) => {
 
     // Log the payment attempt in payment_transactions
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    await adminClient.from("payment_transactions").insert({
+    const { error: txError } = await adminClient.from("payment_transactions").insert({
       user_id: user.id,
       tap_charge_id: tapData.id,
       amount,
@@ -115,6 +115,9 @@ serve(async (req) => {
       status: "initiated",
       payment_type: "checkout",
     });
+    if (txError) {
+      console.error("Failed to record checkout transaction:", txError);
+    }
 
     return new Response(JSON.stringify({ checkout_url: tapData.transaction.url, charge_id: tapData.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

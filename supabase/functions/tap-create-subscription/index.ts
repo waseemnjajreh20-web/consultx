@@ -232,7 +232,7 @@ serve(async (req) => {
     }
 
     // Record transaction
-    await adminClient.from("payment_transactions").insert({
+    const { error: txError } = await adminClient.from("payment_transactions").insert({
       user_id: userId,
       subscription_id: subscription.id,
       tap_charge_id: chargeData.id,
@@ -241,6 +241,9 @@ serve(async (req) => {
       status: chargeData.status === "CAPTURED" ? "captured" : "initiated",
       payment_type: "verification",
     });
+    if (txError) {
+      console.error("Failed to record verification transaction:", txError);
+    }
 
     return new Response(
       JSON.stringify({
