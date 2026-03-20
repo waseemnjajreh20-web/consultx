@@ -45,32 +45,41 @@ const Index = () => {
     }
   }, [profile, user?.id]);
 
+  // Auto-enter chat for users with an active paid subscription
+  useEffect(() => {
+    if (!loading && !subLoading && user && subscription?.active && !showChat) {
+      setShowChat(true);
+    }
+  }, [loading, subLoading, user, subscription?.active]);
+
   const handleStartChat = async () => {
     if (!user) {
       navigate("/auth");
       return;
     }
-    if (!subscription?.active) {
-      try {
-        const { data: { session: s } } = await supabase.auth.getSession();
-        if (s) {
-          const { data } = await supabase.functions.invoke("auto-trial", {
-            headers: { Authorization: `Bearer ${s.access_token}` },
-          });
-          if (data?.result === "created") {
-            setShowChat(true);
-            return;
-          }
-          if (data?.result === "already_exists") {
-            setShowChat(true);
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("Auto-trial error:", e);
-      }
+
+    // Active paid subscriber → chat
+    if (subscription?.active) {
+      setShowChat(true);
+      return;
+    }
+
+    // Expired or cancelled → must re-subscribe
+    if (subscription?.status === "expired" || subscription?.status === "cancelled") {
       navigate("/subscribe");
       return;
+    }
+
+    // New / free (Explorer) user — try auto-trial, then open chat regardless
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      if (s) {
+        await supabase.functions.invoke("auto-trial", {
+          headers: { Authorization: `Bearer ${s.access_token}` },
+        });
+      }
+    } catch (e) {
+      console.error("Auto-trial error:", e);
     }
     setShowChat(true);
   };

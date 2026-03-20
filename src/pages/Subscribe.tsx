@@ -4,7 +4,6 @@ import { CreditCard, Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft,
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -25,10 +24,17 @@ interface Plan {
   id: string;
   name_ar: string;
   name_en: string;
+  slug: string;
   price_amount: number;
   type: string;
   target: string;
   duration_days: number;
+  features: {
+    messages_per_day: number | null;
+    graphrag: boolean;
+    modes: string[];
+    team_members?: number;
+  };
 }
 
 const Subscribe = () => {
@@ -45,7 +51,6 @@ const Subscribe = () => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("individual");
   const [cardReady, setCardReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
@@ -66,18 +71,16 @@ const Subscribe = () => {
         .from("subscription_plans")
         .select("*")
         .eq("is_active", true)
+        .neq("slug", "free")
         .order("price_amount", { ascending: true });
       if (data && data.length > 0) {
         setPlans(data);
         const urlPlan = searchParams.get("plan");
         if (urlPlan && data.find((p) => p.id === urlPlan)) {
           setSelectedPlan(urlPlan);
-          const found = data.find((p) => p.id === urlPlan);
-          if (found) setActiveTab(found.target);
         } else {
-          // Default to monthly individual
-          const monthly = data.find((p) => p.type === "monthly" && p.target === "individual");
-          setSelectedPlan(monthly?.id || data[0].id);
+          const engineerPlan = data.find((p) => p.slug === "engineer");
+          setSelectedPlan(engineerPlan?.id || data[0].id);
         }
       }
     };
@@ -196,15 +199,12 @@ const Subscribe = () => {
   }
 
   const currentPlan = plans.find((p) => p.id === selectedPlan);
-  const filteredPlans = plans.filter((p) => p.target === activeTab);
 
   const getPriceLabel = (type: string) => {
     if (type === "weekly") return t("sarWeek");
     if (type === "yearly") return t("sarYear");
     return t("sarMonth");
   };
-
-  const isPopular = (plan: Plan) => plan.type === "monthly" && plan.target === "individual";
 
   return (
     <div className="min-h-dvh bg-background flex flex-col">
@@ -243,75 +243,68 @@ const Subscribe = () => {
             </div>
           )}
 
-          {/* Plan Selection Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-8">
-            <TabsList className="w-full max-w-md mx-auto bg-secondary/50 backdrop-blur-sm border border-border/50">
-              <TabsTrigger value="individual" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all">
-                {t("tab_individual")}
-              </TabsTrigger>
-              <TabsTrigger value="corporate" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all">
-                {t("tab_corporate")}
-              </TabsTrigger>
-              <TabsTrigger value="contractor" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all">
-                {t("tab_contractor")}
-              </TabsTrigger>
-            </TabsList>
-
-            {(["individual", "corporate", "contractor"] as const).map((tab) => (
-              <TabsContent key={tab} value={tab}>
-                <div className={`grid gap-4 mb-6 ${
-                  tab === "individual" ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 max-w-sm mx-auto"
-                }`}>
-                  {filteredPlans.map((plan, i) => {
-                    const selected = plan.id === selectedPlan;
-                    const popular = isPopular(plan);
-
-                    return (
-                      <Card
-                        key={plan.id}
-                        className={`cursor-pointer transition-all duration-300 animate-fade-up hover:scale-[1.02] ${
-                          selected
-                            ? "border-glow bg-card/90"
-                            : "border-border/50 bg-card/50 hover:border-primary/30"
-                        }`}
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                        onClick={() => setSelectedPlan(plan.id)}
-                      >
-                        <CardHeader className="pb-2 relative">
-                          {popular && (
-                            <Badge className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 bg-primary text-primary-foreground text-xs animate-pulse-glow">
-                              <Sparkles className="w-3 h-3 me-1" />
-                              {t("mostPopular")}
-                            </Badge>
-                          )}
-                          <CardTitle className="text-lg text-center mt-1">
-                            {language === "ar" ? plan.name_ar : plan.name_en}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center pb-4">
-                          <div className="text-3xl font-bold text-primary">
-                            {(plan.price_amount / 100).toFixed(0)}
-                            <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
-                          </div>
-                          {plan.price_amount > 0 && (
-                            <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
-                              <Clock className="w-3 h-3 me-1" />
-                              3 أيام تجربة مجانية
-                            </Badge>
-                          )}
-                          {selected && (
-                            <div className="mt-2">
-                              <CheckCircle className="w-5 h-5 text-primary mx-auto" />
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
+          {/* Plan Selection Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
+            {plans.map((plan, i) => {
+              const selected = plan.id === selectedPlan;
+              const popular = plan.slug === "engineer";
+              return (
+                <Card
+                  key={plan.id}
+                  className={`cursor-pointer transition-all duration-300 animate-fade-up hover:scale-[1.02] ${
+                    selected
+                      ? "border-glow bg-card/90"
+                      : "border-border/50 bg-card/50 hover:border-primary/30"
+                  }`}
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                  onClick={() => setSelectedPlan(plan.id)}
+                >
+                  <CardHeader className="pb-2 relative">
+                    {popular && (
+                      <Badge className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 bg-primary text-primary-foreground text-xs animate-pulse-glow">
+                        <Sparkles className="w-3 h-3 me-1" />
+                        {t("mostPopular")}
+                      </Badge>
+                    )}
+                    <CardTitle className="text-lg text-center mt-1">
+                      {language === "ar" ? plan.name_ar : plan.name_en}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center pb-4">
+                    <div className="text-3xl font-bold text-primary">
+                      {plan.price_amount === 0
+                        ? (language === "ar" ? "مجاني" : "Free")
+                        : (plan.price_amount / 100).toFixed(0)}
+                      {plan.price_amount > 0 && (
+                        <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
+                      )}
+                    </div>
+                    <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
+                      <li>
+                        {plan.features.messages_per_day === null
+                          ? (language === "ar" ? "✓ رسائل غير محدودة" : "✓ Unlimited messages")
+                          : (language === "ar"
+                              ? `✓ ${plan.features.messages_per_day} رسائل يومياً`
+                              : `✓ ${plan.features.messages_per_day} messages/day`)}
+                      </li>
+                      <li>
+                        {plan.features.graphrag
+                          ? (language === "ar" ? "✓ GraphRAG متاح" : "✓ GraphRAG enabled")
+                          : (language === "ar" ? "✗ GraphRAG غير متاح" : "✗ No GraphRAG")}
+                      </li>
+                    </ul>
+                    {plan.price_amount > 0 && (
+                      <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
+                        <Clock className="w-3 h-3 me-1" />
+                        {language === "ar" ? "3 أيام تجربة مجانية" : "3-day free trial"}
+                      </Badge>
+                    )}
+                    {selected && <CheckCircle className="w-5 h-5 text-primary mx-auto mt-2" />}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
           {/* Selected Plan Summary */}
           {currentPlan && (

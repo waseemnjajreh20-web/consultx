@@ -23,7 +23,6 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify user auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -42,30 +41,59 @@ serve(async (req) => {
     }
 
     const { plan, billing_cycle } = await req.json();
-
-    // Price map in SAR (whole units, not halalas)
-    const prices: Record<string, Record<string, number>> = {
-      engineer: { monthly: 99, annual: 948 },       // 99*12 = 1188 → discounted 948
-      enterprise: { monthly: 349, annual: 3348 },   // 349*12 = 4188 → discounted 3348
-    };
-
-    const amount = prices[plan]?.[billing_cycle];
-    if (!amount) {
-      return new Response(JSON.stringify({ error: "Invalid plan or billing_cycle" }), {
+    if (!plan || !billing_cycle) {
+      return new Response(JSON.stringify({ error: "plan and billing_cycle are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const planNames: Record<string, string> = {
-      engineer: "باقة مهندس — ConsultX",
-      enterprise: "باقة مؤسسة — ConsultX",
-    };
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Resolve plan from DB by slug — single source of truth for pricing
+    const { data: planData, error: planError } = await adminClient
+      .from("subscription_plans")
+      .select("*")
+      .eq("slug", plan)
+      .eq("is_active", true)
+      .neq("slug", "free")
+      .single();
+
+    if (planError || !planData) {
+      return new Response(JSON.stringify({ error: "Plan not found or not subscribable" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // price_amount is stored in halalas; TAP expects whole SAR units
+    const amountSAR = planData.price_amount / 100;
 
     const origin = "https://www.consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
     const webhookUrl = projectRef
       ? `https://${projectRef}.supabase.co/functions/v1/tap-webhook`
       : `${supabaseUrl}/functions/v1/tap-webhook`;
+
+    // Create pending subscription row so the webhook can activate it on CAPTURED
+    const now = new Date();
+    const periodEnd = new Date(now.getTime() + (planData.duration_days || 30) * 24 * 60 * 60 * 1000);
+    const { data: newSub, error: subError } = await adminClient
+      .from("user_subscriptions")
+      .insert({
+        user_id: user.id,
+        plan_id: planData.id,
+        status: "pending",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+      })
+      .select()
+      .single();
+
+    if (subError || !newSub) {
+      console.error("Failed to create pending subscription:", subError);
+      return new Response(JSON.stringify({ error: "Failed to initialise subscription" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const tapResponse = await fetch("https://api.tap.company/v2/charges", {
       method: "POST",
@@ -74,18 +102,14 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount,
+        amount: amountSAR,
         currency: "SAR",
         customer_initiated: true,
         threeDSecure: true,
         save_card: false,
-        description: planNames[plan] || plan,
+        description: `${planData.name_en} — ConsultX`,
         source: { id: "src_all" },
-        metadata: {
-          user_id: user.id,
-          plan,
-          billing_cycle,
-        },
+        metadata: { user_id: user.id, plan: planData.slug, billing_cycle },
         customer: {
           email: user.email,
           first_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "ConsultX User",
@@ -100,17 +124,19 @@ serve(async (req) => {
 
     if (!tapResponse.ok || !tapData.transaction?.url) {
       console.error("Tap charge error:", JSON.stringify(tapData));
+      // Roll back the pending subscription row
+      await adminClient.from("user_subscriptions").delete().eq("id", newSub.id);
       return new Response(JSON.stringify({ error: "Failed to create checkout", details: tapData }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Log the payment attempt in payment_transactions
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    // Log the payment attempt with subscription_id so the webhook can process it
     const { error: txError } = await adminClient.from("payment_transactions").insert({
       user_id: user.id,
+      subscription_id: newSub.id,
       tap_charge_id: tapData.id,
-      amount,
+      amount: planData.price_amount,
       currency: "SAR",
       status: "initiated",
       payment_type: "checkout",

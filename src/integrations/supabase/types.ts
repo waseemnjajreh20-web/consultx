@@ -268,42 +268,6 @@ export type Database = {
           },
         ]
       }
-      payment_history: {
-        Row: {
-          amount: number | null
-          billing_cycle: string | null
-          created_at: string | null
-          currency: string | null
-          id: string
-          plan: string | null
-          status: string | null
-          tap_charge_id: string | null
-          user_id: string
-        }
-        Insert: {
-          amount?: number | null
-          billing_cycle?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          plan?: string | null
-          status?: string | null
-          tap_charge_id?: string | null
-          user_id: string
-        }
-        Update: {
-          amount?: number | null
-          billing_cycle?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          plan?: string | null
-          status?: string | null
-          tap_charge_id?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       payment_transactions: {
         Row: {
           amount: number

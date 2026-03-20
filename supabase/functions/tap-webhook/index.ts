@@ -101,7 +101,7 @@ serve(async (req) => {
           console.log("Verification captured for active trial — keeping trialing status");
           updateData.status = "trialing";
         }
-      } else if (transaction.payment_type === "renewal" || transaction.payment_type === "subscription") {
+      } else if (transaction.payment_type === "renewal" || transaction.payment_type === "subscription" || transaction.payment_type === "checkout") {
         // Paid renewal — activate subscription
         console.log("Renewal/subscription charge captured — activating subscription");
         updateData.status = "active";
@@ -131,20 +131,14 @@ serve(async (req) => {
 
           // Sync profiles.plan_type when subscription becomes active
           if (updateData.status === "active" && transaction.user_id) {
-            // Fetch the plan's target to map to plan_type
+            // Correct: read slug directly — it maps 1:1 to profiles.plan_type
             const { data: planInfo } = await adminClient
               .from("subscription_plans")
-              .select("target")
+              .select("slug")
               .eq("id", sub.plan_id)
               .single();
 
-            // Map subscription_plans.target → profiles.plan_type
-            const targetToPlanType: Record<string, string> = {
-              individual: "engineer",
-              corporate: "enterprise",
-              contractor: "enterprise",
-            };
-            const planType = targetToPlanType[planInfo?.target || ""] || "engineer";
+            const planType = planInfo?.slug || "engineer";
 
             const { error: profileError } = await adminClient
               .from("profiles")

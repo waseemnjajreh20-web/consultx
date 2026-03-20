@@ -111,15 +111,16 @@ function getModeButtonActiveStyle(mode: ChatMode) {
 
 // ===== SOURCE NAME FORMATTER =====
 function formatSourceName(fileName: string, lang: string = "ar"): string {
-  // "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json" → "SBC 201 — صفحات 251-500"
-  // "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json" → "SBC 801 — صفحات 1-200"
-  const match = fileName.match(/SBC\s*(\d+).*?-(\d+)-(\d+)/);
+  // "SBC 201 - The Saudi General Building Code-251-500 extracted chunks" → "📖 SBC 201 — صفحات 251-500"
+  // "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json" → "📖 SBC 801 — صفحات 1-200"
+  // [^-]* prevents the pattern from consuming the page-range dashes when the title contains dashes
+  const match = fileName.match(/SBC\s*(\d+)[^-]*-(\d+)-(\d+)/);
   if (match) {
     return lang === "en"
-      ? `SBC ${match[1]} — Pages ${match[2]}-${match[3]}`
-      : `SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
+      ? `📖 SBC ${match[1]} — Pages ${match[2]}-${match[3]}`
+      : `📖 SBC ${match[1]} — صفحات ${match[2]}-${match[3]}`;
   }
-  return fileName.replace('.json', '').replace(/_/g, ' ');
+  return fileName.replace(/\.json$/i, "").replace(/_/g, " ").trim();
 }
 
 // ===== SWITCH MARKER PARSER =====
@@ -1113,8 +1114,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                           />
                         )}
                         {message.sources && message.sources.length > 0 && (
-                          <div className="flex items-center gap-2 pt-3 border-t border-border/30">
-                            <BookOpen className="w-4 h-4 text-primary/70" />
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
                             <span className="text-xs text-muted-foreground">
                               {t("sourcesLabel")} {message.sources.map(s => formatSourceName(s, language)).join(language === "ar" ? '، ' : ', ')}
                             </span>
