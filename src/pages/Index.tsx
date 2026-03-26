@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 import CosmicBackground from "@/components/CosmicBackground";
+import GraphRagShowcase from "@/components/GraphRagShowcase";
 
 const ChatInterface = lazy(() => import("@/components/ChatInterface"));
 
@@ -126,6 +127,9 @@ const Index = () => {
 
             {/* 1. Navbar + Brand Marquee + Hero */}
             <HeroSection onStartChat={handleStartChat} isLoggedIn={!!user} />
+
+            {/* 1.5. GraphRAG Showcase — "The Knowledge Brain" */}
+            <GraphRagShowcase onExplore={handleStartChat} />
 
             {/* 2. How It Works */}
             <div id="how-it-works">
