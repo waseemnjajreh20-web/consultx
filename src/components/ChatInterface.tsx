@@ -70,7 +70,9 @@ const ERROR_CHECK_DELAY_MS = 300_000; // 5 minutes
 // Requirement 4 — Utility Bar: Copy · Export · Download PDF
 // 100% inline styles — no CSS class dependency, no external hooks
 // ─────────────────────────────────────────────────────────────────────────────
-function UtilityBar({ content, mode }: { content: string; mode: ChatMode }) {
+function UtilityBar({ content, mode, messageId, userName }: {
+  content: string; mode: ChatMode; messageId: string; userName: string;
+}) {
   const [copied,   setCopied]   = useState(false);
   const [exported, setExported] = useState(false);
 
@@ -117,59 +119,127 @@ function UtilityBar({ content, mode }: { content: string; mode: ChatMode }) {
     }
   };
 
-  // ── Export (formatted plain-text) ────────────────────────────────────────
+  // ── Export — Web Share API with clipboard fallback ───────────────────────
   const handleExport = async () => {
     console.log("[ConsultX Utility] Export clicked");
-    const text = `ConsultX — تقرير هندسي\n${"─".repeat(44)}\n\n${content}`;
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.share) {
+        await navigator.share({ title: "ConsultX - تقرير هندسي", text: content });
+      } else {
+        await navigator.clipboard.writeText(content);
+      }
       setExported(true);
-      console.log("[ConsultX Utility] Export text copied ✓");
+      console.log("[ConsultX Utility] Export done ✓");
       setTimeout(() => setExported(false), 2000);
     } catch (err) {
       console.error("[ConsultX Utility] Export failed:", err);
     }
   };
 
-  // ── PDF (print-ready blob in new tab) ────────────────────────────────────
+  // ── PDF — DOM clone, branded print window ────────────────────────────────
   const handlePdf = () => {
     console.log("[ConsultX Utility] PDF clicked");
-    const safe = content
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
 
-    // Split closing script tag to avoid TSX parser confusion
-    const scriptOpen  = "<scr" + "ipt>";
-    const scriptClose = "</" + "script>";
+    // 1. Grab the fully-rendered HTML from the DOM
+    const contentEl = document.getElementById(`cmr-${messageId}`);
+    const renderedHtml = contentEl
+      ? contentEl.innerHTML
+      : `<pre style="white-space:pre-wrap">${content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>`;
 
-    const html = [
-      "<!DOCTYPE html>",
-      '<html dir="rtl" lang="ar">',
-      "<head>",
-      '<meta charset="UTF-8">',
-      "<title>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a<\/title>",
-      '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">',
-      "<style>",
-      "*{box-sizing:border-box}",
-      "body{font-family:'Cairo',system-ui,sans-serif;line-height:1.8;color:#111;background:#fff;padding:48px;max-width:820px;margin:0 auto;direction:rtl}",
-      "pre{white-space:pre-wrap;font-size:0.9rem;line-height:1.8;margin:0;font-family:inherit}",
-      ".hdr{border-bottom:3px solid #0891b2;padding-bottom:14px;margin-bottom:28px}",
-      ".hdr h1{color:#0891b2;margin:0;font-size:1.4rem;font-weight:700}",
-      ".hdr p{color:#6b7280;font-size:0.8rem;margin:4px 0 0}",
-      "@media print{@page{margin:18mm}body{padding:0}}",
-      "<\/style>",
-      "<\/head>",
-      "<body>",
-      '<div class="hdr">',
-      "<h1>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a<\/h1>",
-      `<p>${new Date().toLocaleString("ar-SA")}<\/p>`,
-      "<\/div>",
-      `<pre>${safe}<\/pre>`,
-      `${scriptOpen}window.onload=()=>{window.print()}${scriptClose}`,
-      "<\/body>",
-      "<\/html>",
-    ].join("\n");
+    // 2. Carry over page stylesheets so Tailwind classes render correctly
+    const styleLinks = Array.from(document.styleSheets)
+      .map(ss => {
+        try { return ss.href ? `<link rel="stylesheet" href="${ss.href}">` : ""; }
+        catch { return ""; }
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    const sc = "</" + "script>";
+
+    const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+${styleLinks}
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    font-family: 'Cairo', system-ui, sans-serif;
+    line-height: 1.8;
+    color: #1a1a2e;
+    background: #ffffff !important;
+    padding: 40px 48px;
+    max-width: 860px;
+    margin: 0 auto;
+    direction: rtl;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Force all collapsible sections fully open */
+  details { display: block !important; }
+  details > *:not(summary) { display: block !important; }
+  summary::marker, summary::-webkit-details-marker { display: none !important; }
+  /* Suppress UI chrome */
+  button, [class*="utility"], [class*="avatar"],
+  [class*="glow"], [class*="typing"] { display: none !important; }
+  /* Branded header */
+  .cx-hdr {
+    background: #f0f8ff;
+    border-bottom: 2px solid #0891b2;
+    padding: 16px 22px 14px;
+    margin-bottom: 30px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .cx-hdr-left h1 {
+    margin: 0 0 3px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0369a1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cx-hdr-left p  { margin: 0; font-size: 0.77rem; color: #64748b; }
+  .cx-hdr-meta    { text-align: left; font-size: 0.73rem; color: #64748b; line-height: 1.8; white-space: nowrap; }
+  @media print {
+    @page { margin: 16mm 18mm; }
+    body  { padding: 0; }
+    .cx-hdr { border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="cx-hdr">
+  <div class="cx-hdr-left">
+    <h1>
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <rect width="32" height="32" rx="7" fill="#0891b2"/>
+        <path d="M16 5 L23 13 L20 13 L20 26 L12 26 L12 13 L9 13 Z" fill="white"/>
+        <rect x="7" y="27.5" width="18" height="2" rx="1" fill="white" opacity="0.65"/>
+      </svg>
+      ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a
+    </h1>
+    <p>\u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064a\u0629 \u0645\u0646 \u0627\u0644\u062d\u0631\u064a\u0642</p>
+  </div>
+  <div class="cx-hdr-meta">
+    <div>\u0625\u0639\u062f\u0627\u062f: ${userName}</div>
+    <div>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631: ${new Date().toLocaleString("ar-SA")}</div>
+  </div>
+</div>
+<div class="cx-content">${renderedHtml}</div>
+<script>
+  document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+  window.onload = function() { window.print(); };
+${sc}
+</body>
+</html>`;
 
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url  = URL.createObjectURL(blob);
@@ -530,6 +600,11 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
 const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userName =
+    (user?.user_metadata as Record<string, string> | undefined)?.full_name ||
+    (user?.user_metadata as Record<string, string> | undefined)?.name ||
+    user?.email ||
+    "مستشار ConsultX";
   const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
   const { subscription, refetch: refetchSub } = useSubscription();
@@ -1299,7 +1374,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                         {isVisionAnalysisResponse(displayContent) ? (
                           <AnalysisResultCard content={displayContent} />
                         ) : (
-                          <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
+                          <div id={`cmr-${message.id}`}>
+                            <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
+                          </div>
                         )}
                         {/* Switch mode button */}
                         {switchTarget && (
@@ -1317,7 +1394,12 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                           </div>
                         )}
                         {/* Requirement 4 — Utility Bar */}
-                        <UtilityBar content={displayContent} mode={msgMode} />
+                        <UtilityBar
+                          content={displayContent}
+                          mode={msgMode}
+                          messageId={message.id}
+                          userName={userName}
+                        />
                       </div>
                     )}
                   </div>

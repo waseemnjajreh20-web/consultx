@@ -183,11 +183,15 @@ function parseTextContent(text: string): ParsedSection[] {
     const h1Match = line.match(/^#\s+(.+)$/);
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
+    const h4Match = line.match(/^####\s+(.+)$/);
     const isTableRow = line.trim().startsWith("|") ||
       (line.includes("|") && line.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
     const isTableSep = line.match(/^\|?[\s-:|]+\|?$/) && line.includes("-");
 
-    if (h3Match) {
+    if (h4Match) {
+      flushTable(); flushText();
+      sections.push({ type: "heading", content: h4Match[1], level: 4 });
+    } else if (h3Match) {
       flushTable(); flushText();
       sections.push({ type: "heading", content: h3Match[1], level: 3 });
     } else if (h2Match) {
@@ -469,10 +473,100 @@ function CollapsibleSection({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Collapsible Headings — H3/H4 grouped with their following content
+// ─────────────────────────────────────────────────────────────────────────────
+type GroupedSection =
+  | ParsedSection
+  | { type: "collapsible-heading"; title: string; level: 3 | 4; children: ParsedSection[] };
+
+function groupCollapsibleHeadings(sections: ParsedSection[]): GroupedSection[] {
+  const result: GroupedSection[] = [];
+  let i = 0;
+  while (i < sections.length) {
+    const s = sections[i];
+    if (s.type === "heading" && (s.level === 3 || s.level === 4)) {
+      const children: ParsedSection[] = [];
+      i++;
+      while (i < sections.length && sections[i].type !== "heading") {
+        children.push(sections[i++]);
+      }
+      result.push({
+        type: "collapsible-heading",
+        title: s.content,
+        level: s.level as 3 | 4,
+        children,
+      });
+    } else {
+      result.push(s);
+      i++;
+    }
+  }
+  return result;
+}
+
+function HeadingCollapsible({
+  title, level, children, mode,
+}: {
+  title: string; level: 3 | 4; children: ParsedSection[]; mode?: ChatMode;
+}) {
+  const accent =
+    mode === "primary"  ? "rgba(0,212,255,0.06)"  :
+    mode === "standard" ? "rgba(255,140,0,0.06)"  :
+    mode === "analysis" ? "rgba(220,20,60,0.06)"  : "rgba(255,255,255,0.04)";
+  const borderColor =
+    mode === "primary"  ? "rgba(0,212,255,0.25)"  :
+    mode === "standard" ? "rgba(255,140,0,0.25)"  :
+    mode === "analysis" ? "rgba(220,20,60,0.25)"  : "rgba(255,255,255,0.12)";
+  const summaryColor =
+    mode === "primary"  ? "#00D4FF" :
+    mode === "standard" ? "#FF8C00" :
+    mode === "analysis" ? "#DC143C" : "inherit";
+
+  return (
+    <details
+      open
+      style={{
+        margin: "10px 0",
+        borderRadius: "8px",
+        border: `1px solid ${borderColor}`,
+        background: accent,
+        overflow: "hidden",
+      }}
+    >
+      <summary
+        style={{
+          padding: "9px 14px",
+          cursor: "pointer",
+          fontWeight: level === 3 ? 500 : 400,
+          fontSize: level === 3 ? "0.875rem" : "0.82rem",
+          listStyle: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          color: summaryColor,
+          userSelect: "none",
+        }}
+      >
+        <span style={{ fontSize: "0.6rem", opacity: 0.55, transition: "transform 0.2s" }}>▼</span>
+        {title}
+      </summary>
+      <div style={{ padding: "6px 14px 12px", borderTop: `1px solid ${borderColor}` }}>
+        {children.map((sec, i) => {
+          if (sec.type === "table" && sec.tableData)
+            return <TableRenderer key={i} tableData={sec.tableData} />;
+          return <TextRenderer key={i} content={sec.content} mode={mode} />;
+        })}
+      </div>
+    </details>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Requirement 1 — Main Component: Typography, RTL, line-height 1.8
 // ─────────────────────────────────────────────────────────────────────────────
 const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
-  const sections = useMemo(() => parseDetailsBlocks(content), [content]);
+  const rawSections = useMemo(() => parseDetailsBlocks(content), [content]);
+  const sections    = useMemo(() => groupCollapsibleHeadings(rawSections), [rawSections]);
   const isArabic = /[\u0600-\u06FF]/.test(content.slice(0, 300));
 
   return (
@@ -487,7 +581,21 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
       dir={isArabic ? "rtl" : "ltr"}
     >
       {sections.map((section, index) => {
-        // ── Headings (Req 1: strict font-weight hierarchy) ───────────────────
+        // ── Collapsible H3/H4 headings ────────────────────────────────────────
+        if (section.type === "collapsible-heading") {
+          const s = section as { type: "collapsible-heading"; title: string; level: 3 | 4; children: ParsedSection[] };
+          return (
+            <HeadingCollapsible
+              key={index}
+              title={s.title}
+              level={s.level}
+              children={s.children}
+              mode={mode}
+            />
+          );
+        }
+
+        // ── Headings H1/H2 (Req 1: strict font-weight hierarchy) ─────────────
         if (section.type === "heading") {
           const isExecutive = section.content.includes("الخلاصة التنفيذية") || section.content.includes("✅");
 
@@ -508,31 +616,20 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
             );
           }
 
-          if (section.level === 2) {
-            return (
-              <h2 key={index}
-                className={cn(
-                  "mt-4 mb-2.5 first:mt-0 leading-[1.8] pb-1.5",
-                  "border-b border-primary/25 text-base",
-                  isExecutive
-                    ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20"
-                    : "text-foreground",
-                )}
-                style={{ fontWeight: 600 }}
-              >
-                {section.content}
-              </h2>
-            );
-          }
-
-          // H3 — Medium 500
+          // H2 — Semibold 600
           return (
-            <h3 key={index}
-              className="mt-3.5 mb-2 first:mt-0 leading-[1.8] text-foreground"
-              style={{ fontWeight: 500, fontSize: "0.875rem" }}
+            <h2 key={index}
+              className={cn(
+                "mt-4 mb-2.5 first:mt-0 leading-[1.8] pb-1.5",
+                "border-b border-primary/25 text-base",
+                isExecutive
+                  ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20"
+                  : "text-foreground",
+              )}
+              style={{ fontWeight: 600 }}
             >
               {section.content}
-            </h3>
+            </h2>
           );
         }
 
