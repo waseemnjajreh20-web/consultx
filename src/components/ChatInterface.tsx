@@ -136,24 +136,23 @@ function UtilityBar({ content, mode, messageId, userName }: {
     }
   };
 
-  // ── PDF — DOM clone, branded print window ────────────────────────────────
+  // ── PDF — DOM clone, branded A4 print window ─────────────────────────────
   const handlePdf = () => {
     console.log("[ConsultX Utility] PDF clicked");
 
-    // 1. Grab the fully-rendered HTML from the DOM
-    const contentEl = document.getElementById(`cmr-${messageId}`);
+    // 1. Grab fully-rendered HTML
+    const contentEl  = document.getElementById(`cmr-${messageId}`);
     const renderedHtml = contentEl
       ? contentEl.innerHTML
       : `<pre style="white-space:pre-wrap">${content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>`;
 
-    // 2. Carry over page stylesheets so Tailwind classes render correctly
+    // 2. Carry over page stylesheets (Tailwind class fidelity)
     const styleLinks = Array.from(document.styleSheets)
-      .map(ss => {
-        try { return ss.href ? `<link rel="stylesheet" href="${ss.href}">` : ""; }
-        catch { return ""; }
-      })
-      .filter(Boolean)
-      .join("\n");
+      .map(ss => { try { return ss.href ? `<link rel="stylesheet" href="${ss.href}">` : ""; } catch { return ""; } })
+      .filter(Boolean).join("\n");
+
+    // 3. Timestamp
+    const exportTs = new Date().toLocaleString("ar-SA");
 
     const sc = "</" + "script>";
 
@@ -162,80 +161,220 @@ function UtilityBar({ content, mode, messageId, userName }: {
 <head>
 <meta charset="UTF-8">
 <title>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 ${styleLinks}
 <style>
+  /* ── Reset & base ───────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; }
-  html, body {
+  html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body {
     font-family: 'Cairo', system-ui, sans-serif;
-    line-height: 1.8;
-    color: #1a1a2e;
-    background: #ffffff !important;
-    padding: 40px 48px;
-    max-width: 860px;
-    margin: 0 auto;
+    line-height: 1.85;
+    color: #111827;
+    background: #ffffff;
+    margin: 0;
+    padding: 0 0 60px;
     direction: rtl;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    orphans: 3;
+    widows: 3;
   }
-  /* Force all collapsible sections fully open */
+  /* ── Open all collapsibles ──────────────────────────────────────── */
   details { display: block !important; }
   details > *:not(summary) { display: block !important; }
   summary::marker, summary::-webkit-details-marker { display: none !important; }
-  /* Suppress UI chrome */
-  button, [class*="utility"], [class*="avatar"],
-  [class*="glow"], [class*="typing"] { display: none !important; }
-  /* Branded header */
+  /* ── Suppress UI chrome ─────────────────────────────────────────── */
+  button { display: none !important; }
+  /* ── Branded header ─────────────────────────────────────────────── */
   .cx-hdr {
-    background: #f0f8ff;
-    border-bottom: 2px solid #0891b2;
-    padding: 16px 22px 14px;
-    margin-bottom: 30px;
-    border-radius: 8px 8px 0 0;
+    background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%);
+    border-bottom: 3px solid #00D4FF;
+    padding: 18px 28px 16px;
+    margin-bottom: 28px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
-  .cx-hdr-left h1 {
-    margin: 0 0 3px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #0369a1;
+  .cx-hdr-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
   }
-  .cx-hdr-left p  { margin: 0; font-size: 0.77rem; color: #64748b; }
-  .cx-hdr-meta    { text-align: left; font-size: 0.73rem; color: #64748b; line-height: 1.8; white-space: nowrap; }
+  .cx-hdr-brand img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .cx-hdr-brand h1 {
+    margin: 0 0 2px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0369a1;
+    white-space: nowrap;
+  }
+  .cx-hdr-brand p {
+    margin: 0;
+    font-size: 0.72rem;
+    color: #475569;
+  }
+  .cx-hdr-meta {
+    text-align: left;
+    font-size: 0.72rem;
+    color: #475569;
+    line-height: 1.9;
+    white-space: nowrap;
+  }
+  .cx-hdr-meta strong { color: #1e3a5f; font-weight: 600; }
+  /* ── Content wrapper ────────────────────────────────────────────── */
+  .cx-content { padding: 0 28px; }
+  /* ── Smart print-safe color mapping ────────────────────────────── */
+  /* Class-based (known CSS classes from renderer) */
+  .consultx-bold-primary  { color: #005B70 !important; background: rgba(0,91,112,0.08) !important; border-bottom-color: #005B70 !important; }
+  .consultx-bold-standard { color: #8B4500 !important; background: transparent !important; }
+  .consultx-bold-analysis { color: #800000 !important; background: transparent !important; }
+  /* Numbered list accent spans & inline color overrides via JS */
+  /* Tables ── light grey zebra, readable borders */
+  table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.85rem; break-inside: avoid; }
+  table thead th {
+    background: #dbeafe !important;
+    color: #1e3a5f !important;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-bottom: 2px solid #93c5fd;
+    text-align: right;
+  }
+  table tbody tr:nth-child(even) td { background: #f9fafb !important; }
+  table tbody tr:nth-child(odd)  td { background: #ffffff !important; }
+  table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #111827 !important;
+    vertical-align: top;
+    line-height: 1.7;
+  }
+  /* Collapsible section boxes */
+  details {
+    border: 1px solid #b0d4e8 !important;
+    background: #f0f8ff !important;
+    margin: 8px 0;
+    border-radius: 6px;
+    break-inside: avoid;
+  }
+  summary {
+    font-weight: 600 !important;
+    color: #005B70 !important;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+  }
+  /* Blockquotes */
+  blockquote {
+    border-right: 3px solid #005B70 !important;
+    background: #f0f8ff !important;
+    color: #1e3a5f !important;
+    padding: 8px 14px;
+    margin: 8px 0;
+  }
+  /* Headings ── consistent hierarchy */
+  h1, h2 { color: #0c2a4a !important; border-bottom-color: #93c5fd !important; page-break-after: avoid; break-after: avoid; }
+  h3, h4 { color: #1e3a5f !important; page-break-after: avoid; break-after: avoid; }
+  /* Compliance badges */
+  [class*="emerald"] { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
+  [class*="red-"]    { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
+  [class*="amber-"]  { background: #fef3c7 !important; color: #92400e !important; border-color: #fcd34d !important; }
+  /* Paragraph flow */
+  p, li { orphans: 3; widows: 3; }
+  /* ── Sticky footer ──────────────────────────────────────────────── */
+  .cx-footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 36px;
+    border-top: 1px solid #d1d5db;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    font-size: 0.68rem;
+    color: #6b7280;
+    z-index: 9999;
+  }
+  .cx-footer .cx-page-num::after { content: counter(page); }
+  /* ── @page ─────────────────────────────────────────────────────── */
   @media print {
-    @page { margin: 16mm 18mm; }
-    body  { padding: 0; }
-    .cx-hdr { border-radius: 0; }
+    @page {
+      size: A4;
+      margin: 1.5cm 1.5cm 2cm 1.5cm;
+      @bottom-right {
+        content: "\0635\0641\062d\0629 " counter(page) " \0645\0646 " counter(pages);
+        font-family: 'Cairo', sans-serif;
+        font-size: 8pt;
+        color: #6b7280;
+      }
+      @bottom-left {
+        content: "\062a\0627\0631\064a\062e \0627\0644\062a\0635\062f\064a\0631: ${exportTs}";
+        font-family: 'Cairo', sans-serif;
+        font-size: 8pt;
+        color: #6b7280;
+      }
+    }
+    .cx-footer { display: none; }
   }
 </style>
 </head>
 <body>
+<!-- ── Header ── -->
 <div class="cx-hdr">
-  <div class="cx-hdr-left">
-    <h1>
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-        <rect width="32" height="32" rx="7" fill="#0891b2"/>
-        <path d="M16 5 L23 13 L20 13 L20 26 L12 26 L12 13 L9 13 Z" fill="white"/>
-        <rect x="7" y="27.5" width="18" height="2" rx="1" fill="white" opacity="0.65"/>
-      </svg>
-      ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a
-    </h1>
-    <p>\u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064a\u0629 \u0645\u0646 \u0627\u0644\u062d\u0631\u064a\u0642</p>
+  <div class="cx-hdr-brand">
+    <img src="${consultxIcon}" alt="ConsultX" onerror="this.style.display='none'">
+    <div>
+      <h1>ConsultX \u2014 \u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629</h1>
+      <p>\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u062a\u062f\u0642\u064a\u0642 \u0627\u0644\u0647\u0646\u062f\u0633\u064a \u2014 \u0627\u0634\u062a\u0631\u0627\u0637\u0627\u062a \u0643\u0648\u062f \u0627\u0644\u0628\u0646\u0627\u0621 \u0627\u0644\u0633\u0639\u0648\u062f\u064a</p>
+    </div>
   </div>
   <div class="cx-hdr-meta">
-    <div>\u0625\u0639\u062f\u0627\u062f: ${userName}</div>
-    <div>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631: ${new Date().toLocaleString("ar-SA")}</div>
+    <div><strong>\u0625\u0639\u062f\u0627\u062f \u0627\u0644\u0645\u0647\u0646\u062f\u0633:</strong> ${userName}</div>
+    <div><strong>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631:</strong> ${exportTs}</div>
   </div>
 </div>
+<!-- ── Content ── -->
 <div class="cx-content">${renderedHtml}</div>
+<!-- ── Footer (screen fallback when @page isn't supported) ── -->
+<div class="cx-footer">
+  <span>ConsultX &copy; ${new Date().getFullYear()}</span>
+  <span>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631: ${exportTs}</span>
+</div>
 <script>
+  // Force all collapsible sections open
   document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+
+  // Smart inline-color remapping: dark UI brand colors → print-safe equivalents
+  var COLOR_MAP = {
+    '#00d4ff': '#005B70', 'rgb(0, 212, 255)': '#005B70', 'rgba(0, 212, 255': '#005B70',
+    '#ff8c00': '#8B4500', 'rgb(255, 140, 0)': '#8B4500', 'rgba(255, 140, 0': '#8B4500',
+    '#dc143c': '#800000', 'rgb(220, 20, 60)': '#800000',  'rgba(220, 20, 60': '#800000',
+  };
+  function remapEl(el) {
+    if (!el.style) return;
+    var c = (el.style.color || '').toLowerCase();
+    var bc = (el.style.borderColor || el.style.borderBottomColor || '').toLowerCase();
+    var bg = (el.style.background || el.style.backgroundColor || '').toLowerCase();
+    for (var key in COLOR_MAP) {
+      if (c.indexOf(key) !== -1)  el.style.color = COLOR_MAP[key];
+      if (bc.indexOf(key) !== -1) { el.style.borderColor = COLOR_MAP[key]; el.style.borderBottomColor = COLOR_MAP[key]; }
+      if (bg.indexOf(key) !== -1) el.style.background = 'transparent';
+    }
+    // Force very light / near-white text to black
+    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#111827';
+  }
+  document.querySelectorAll('*').forEach(remapEl);
+
+  // Force body background white (dark Tailwind root may bleed in)
+  document.body.style.background = '#ffffff';
+  document.documentElement.style.background = '#ffffff';
+
   window.onload = function() { window.print(); };
 ${sc}
 </body>
