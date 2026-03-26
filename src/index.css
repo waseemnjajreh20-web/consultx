@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -696,6 +696,129 @@
   .auth-card-mobile {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ===================================================================
+   CONSULTX AI OUTPUT — PREMIUM ENGINEERING REPORT STYLES
+   (Requirements 1–4 from the UI/UX overhaul)
+=================================================================== */
+
+/* ── Req 1: Arabic/bilingual line-height enforced globally in renderer ── */
+/* (set inline via style prop in ChatMarkdownRenderer — no override needed) */
+
+/* ── Req 3: Mode-aware bold highlights ─────────────────────────────────── */
+.consultx-bold-primary {
+  font-weight: 600;
+  background: rgba(0, 212, 255, 0.12);
+  color: #7ee8fa;
+  padding: 0 4px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.25);
+}
+.consultx-bold-standard {
+  font-weight: 600;
+  color: #fcd34d;
+}
+.consultx-bold-analysis {
+  font-weight: 600;
+  color: #fca5a5;
+}
+
+/* ── Req 3 (Analysis): SBC Legal Citation — blockquote & code block ────── */
+.sbc-legal-citation {
+  font-family: 'IBM Plex Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 0.825rem;
+  line-height: 1.8;
+  background: rgba(15, 23, 42, 0.70);
+  border-right: 3px solid #1d4ed8;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 16px 10px 12px;
+  margin: 10px 0;
+  color: hsl(var(--muted-foreground));
+  position: relative;
+}
+.sbc-legal-citation::before {
+  content: "§ SBC";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #93c5fd;
+  background: rgba(29, 78, 216, 0.25);
+  padding: 1px 6px;
+  border-radius: 0 6px 0 4px;
+  font-family: system-ui, sans-serif;
+}
+
+.sbc-code-fence {
+  height: 1px;
+  background: hsl(var(--border) / 0.3);
+  margin: 8px 0;
+}
+
+/* Inline code — analysis mode (inherits from renderer but explicit override) */
+.mode-analysis-bubble code {
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  font-size: 0.82em;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(29, 78, 216, 0.30);
+  color: #93c5fd;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* ── Req 4: Utility Bar ────────────────────────────────────────────────── */
+.consultx-utility-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid;  /* color set inline per-mode */
+}
+
+.consultx-util-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: 1px solid hsl(var(--border) / 0.5);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.consultx-util-btn:hover {
+  color: rgb(var(--accent-rgb, 0,212,255));
+  background: rgba(var(--accent-rgb, 0,212,255), 0.08);
+  border-color: rgba(var(--accent-rgb, 0,212,255), 0.35);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb, 0,212,255), 0.15);
+}
+.consultx-util-btn:active {
+  transform: scale(0.96);
+}
+
+/* ── Req 4: Print / PDF window styles (applied inside the blob document) ── */
+/* These classes are only used in the blob print window, kept here for ref.  */
+@media print {
+  /* If user prints the main app page accidentally */
+  .cosmic-bg,
+  .shooting-star,
+  .cosmic-dust,
+  .cosmic-dust-2,
+  .blueprint-grid-glow,
+  .consultx-utility-bar,
+  [data-radix-popper-content-wrapper] {
+    display: none !important;
   }
 }
 

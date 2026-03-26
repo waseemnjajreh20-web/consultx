@@ -1,9 +1,18 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, FileText, BookOpen, Calculator, Lightbulb, ClipboardList, Shield, GitCompareArrows, Scale, ListChecks, Table2 } from "lucide-react";
+import {
+  ChevronDown, FileText, BookOpen, Calculator, Lightbulb,
+  ClipboardList, Shield, GitCompareArrows, Scale, ListChecks, Table2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+type ChatMode = "primary" | "standard" | "analysis";
 
 interface ChatMarkdownRendererProps {
   content: string;
+  mode?: ChatMode;
 }
 
 interface ParsedSection {
@@ -15,114 +24,133 @@ interface ParsedSection {
   tableData?: { headers: string[]; rows: string[][] };
 }
 
-// Map section titles to icons
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Icons & Colors
+// ─────────────────────────────────────────────────────────────────────────────
 function getSectionIcon(title: string) {
-  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data")) return <Table2 className="w-4 h-4" />;
-  if (title.includes("ملخص الفروقات") || title.includes("Differences Summary")) return <GitCompareArrows className="w-4 h-4" />;
-  if (title.includes("السند القانوني") || title.includes("Legal Basis")) return <Scale className="w-4 h-4" />;
-  if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions")) return <ListChecks className="w-4 h-4" />;
-  if (title.includes("النص المرجعي") || title.includes("English")) return <FileText className="w-4 h-4" />;
-  if (title.includes("الترجمة")) return <BookOpen className="w-4 h-4" />;
-  if (title.includes("التحليل")) return <Calculator className="w-4 h-4" />;
-  if (title.includes("الاشتقاق")) return <Lightbulb className="w-4 h-4" />;
-  if (title.includes("توصيات")) return <ClipboardList className="w-4 h-4" />;
-  if (title.includes("ملاحظات") || title.includes("AHJ")) return <Shield className="w-4 h-4" />;
+  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data"))    return <Table2 className="w-4 h-4" />;
+  if (title.includes("ملخص الفروقات")      || title.includes("Differences"))       return <GitCompareArrows className="w-4 h-4" />;
+  if (title.includes("السند القانوني")     || title.includes("Legal Basis"))       return <Scale className="w-4 h-4" />;
+  if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions"))  return <ListChecks className="w-4 h-4" />;
+  if (title.includes("النص المرجعي")       || title.includes("English"))           return <FileText className="w-4 h-4" />;
+  if (title.includes("الترجمة"))                                                   return <BookOpen className="w-4 h-4" />;
+  if (title.includes("التحليل"))                                                   return <Calculator className="w-4 h-4" />;
+  if (title.includes("الاشتقاق"))                                                  return <Lightbulb className="w-4 h-4" />;
+  if (title.includes("توصيات"))                                                    return <ClipboardList className="w-4 h-4" />;
+  if (title.includes("ملاحظات") || title.includes("AHJ"))                         return <Shield className="w-4 h-4" />;
   return <FileText className="w-4 h-4" />;
 }
 
-// Get section color based on type
 function getSectionColor(title: string): string {
-  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data")) return "border-l-teal-500";
-  if (title.includes("ملخص الفروقات") || title.includes("Differences Summary")) return "border-l-violet-500";
-  if (title.includes("السند القانوني") || title.includes("Legal Basis")) return "border-l-blue-700";
-  if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions")) return "border-l-cyan-500";
-  if (title.includes("النص المرجعي") || title.includes("English")) return "border-l-blue-500";
-  if (title.includes("الترجمة")) return "border-l-green-500";
-  if (title.includes("التحليل")) return "border-l-amber-500";
-  if (title.includes("الاشتقاق")) return "border-l-purple-500";
-  if (title.includes("توصيات")) return "border-l-cyan-500";
-  if (title.includes("ملاحظات") || title.includes("AHJ")) return "border-l-rose-500";
+  if (title.includes("البيانات المستخرجة") || title.includes("Extracted Data"))    return "border-l-teal-500";
+  if (title.includes("ملخص الفروقات")      || title.includes("Differences"))       return "border-l-violet-500";
+  if (title.includes("السند القانوني")     || title.includes("Legal Basis"))       return "border-l-blue-700";
+  if (title.includes("الإجراءات المطلوبة") || title.includes("Required Actions"))  return "border-l-cyan-500";
+  if (title.includes("النص المرجعي")       || title.includes("English"))           return "border-l-blue-500";
+  if (title.includes("الترجمة"))                                                   return "border-l-green-500";
+  if (title.includes("التحليل"))                                                   return "border-l-amber-500";
+  if (title.includes("الاشتقاق"))                                                  return "border-l-purple-500";
+  if (title.includes("توصيات"))                                                    return "border-l-cyan-500";
+  if (title.includes("ملاحظات") || title.includes("AHJ"))                         return "border-l-rose-500";
   return "border-l-primary";
 }
 
-// Parse markdown table
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 2 — Geometric SVG Bullet Icons (mode-specific shapes)
+// ─────────────────────────────────────────────────────────────────────────────
+function BulletIcon({ mode }: { mode?: ChatMode }) {
+  // Analysis → crimson diamond
+  if (mode === "analysis") {
+    return (
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden
+        style={{ marginTop: "9px", flexShrink: 0 }}>
+        <path d="M4 0L8 4L4 8L0 4Z" fill="rgba(220,38,38,0.80)" />
+      </svg>
+    );
+  }
+  // Standard/Consultant → amber rounded square
+  if (mode === "standard") {
+    return (
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden
+        style={{ marginTop: "9px", flexShrink: 0 }}>
+        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="rgba(245,158,11,0.80)" />
+      </svg>
+    );
+  }
+  // Primary / default → cyan right-pointing arrow
+  return (
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden
+      style={{ marginTop: "9px", flexShrink: 0 }}>
+      <path d="M0 0L8 4L0 8Z" fill="rgba(0,212,255,0.85)" />
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mode-aware accent helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function getNumberColor(mode?: ChatMode): string {
+  if (mode === "analysis") return "#DC143C";
+  if (mode === "standard") return "#FF8C00";
+  return "#00D4FF";
+}
+
+// Requirement 3 — Primary: bold text pops with cyan highlight
+function getBoldHtml(text: string, mode?: ChatMode): string {
+  if (mode === "primary")  return `<strong class="consultx-bold-primary">${text}</strong>`;
+  if (mode === "standard") return `<strong class="consultx-bold-standard">${text}</strong>`;
+  if (mode === "analysis") return `<strong class="consultx-bold-analysis">${text}</strong>`;
+  return `<strong class="font-semibold text-foreground">${text}</strong>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Parsers
+// ─────────────────────────────────────────────────────────────────────────────
 function parseMarkdownTable(text: string): { headers: string[]; rows: string[][] } | null {
   const lines = text.trim().split("\n");
   if (lines.length < 2) return null;
-
-  // Check if first line looks like a table header
   const headerLine = lines[0];
   if (!headerLine.includes("|")) return null;
-
-  // Check for separator line
   const separatorLine = lines[1];
   if (!separatorLine.match(/^\|?[\s-:|]+\|?$/)) return null;
 
-  const parseRow = (line: string): string[] => {
-    return line
-      .split("|")
-      .map((cell) => cell.trim())
-      .filter((cell) => cell !== "");
-  };
+  const parseRow = (line: string): string[] =>
+    line.split("|").map(c => c.trim()).filter(c => c !== "");
 
   const headers = parseRow(headerLine);
   const rows: string[][] = [];
-
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line && line.includes("|")) {
-      rows.push(parseRow(line));
-    }
+    if (line && line.includes("|")) rows.push(parseRow(line));
   }
-
-  if (headers.length === 0) return null;
-
-  return { headers, rows };
+  return headers.length === 0 ? null : { headers, rows };
 }
 
-// Parse <details><summary>...</summary>...</details> blocks and convert to accordion
 function parseDetailsBlocks(content: string): ParsedSection[] {
   const sections: ParsedSection[] = [];
-
-  // More robust pattern for details blocks
-  const detailsPattern = /<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi;
-
+  const pattern = /<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi;
   let lastIndex = 0;
   let match;
-  let sectionCounter = 0;
+  let counter = 0;
 
-  while ((match = detailsPattern.exec(content)) !== null) {
-    // Add text before this match
+  while ((match = pattern.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      const textBefore = content.slice(lastIndex, match.index).trim();
-      if (textBefore) {
-        sections.push(...parseTextContent(textBefore));
-      }
+      const before = content.slice(lastIndex, match.index).trim();
+      if (before) sections.push(...parseTextContent(before));
     }
-
-    // Extract title (strip HTML tags for clean display)
-    const rawTitle = match[1];
-    const cleanTitle = rawTitle.replace(/<[^>]*>/g, "").trim();
-    const accordionContent = match[2].trim();
-
     sections.push({
       type: "accordion",
-      title: cleanTitle,
-      content: accordionContent,
-      sectionKey: `section-${sectionCounter++}`,
+      title: match[1].replace(/<[^>]*>/g, "").trim(),
+      content: match[2].trim(),
+      sectionKey: `sec-${counter++}`,
     });
-
     lastIndex = match.index + match[0].length;
   }
 
-  // Add remaining text after last match
   if (lastIndex < content.length) {
     const remaining = content.slice(lastIndex).trim();
-    if (remaining) {
-      sections.push(...parseTextContent(remaining));
-    }
+    if (remaining) sections.push(...parseTextContent(remaining));
   }
-
   return sections;
 }
 
@@ -136,66 +164,57 @@ function parseTextContent(text: string): ParsedSection[] {
   const flushText = () => {
     if (currentText.length > 0) {
       const joined = currentText.join("\n").trim();
-      if (joined) {
-        sections.push({ type: "text", content: joined });
-      }
+      if (joined) sections.push({ type: "text", content: joined });
       currentText = [];
     }
   };
-
   const flushTable = () => {
     if (tableLines.length > 0) {
       const tableText = tableLines.join("\n");
       const tableData = parseMarkdownTable(tableText);
-      if (tableData) {
-        sections.push({ type: "table", content: tableText, tableData });
-      } else {
-        // Not a valid table, treat as text
-        currentText.push(...tableLines);
-      }
+      if (tableData) sections.push({ type: "table", content: tableText, tableData });
+      else currentText.push(...tableLines);
       tableLines = [];
       inTable = false;
     }
   };
 
   for (const line of lines) {
-    // Check for headings
+    const h1Match = line.match(/^#\s+(.+)$/);
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
+    const isTableRow = line.trim().startsWith("|") ||
+      (line.includes("|") && line.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
+    const isTableSep = line.match(/^\|?[\s-:|]+\|?$/) && line.includes("-");
 
-    // Check if this line could be a table row
-    const isTableRow = line.trim().startsWith("|") || (line.includes("|") && line.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
-    const isTableSeparator = line.match(/^\|?[\s-:|]+\|?$/) && line.includes("-");
-
-    if (h2Match) {
-      flushTable();
-      flushText();
-      sections.push({ type: "heading", content: h2Match[1], level: 2 });
-    } else if (h3Match) {
-      flushTable();
-      flushText();
+    if (h3Match) {
+      flushTable(); flushText();
       sections.push({ type: "heading", content: h3Match[1], level: 3 });
-    } else if (isTableRow || isTableSeparator) {
+    } else if (h2Match) {
+      flushTable(); flushText();
+      sections.push({ type: "heading", content: h2Match[1], level: 2 });
+    } else if (h1Match) {
+      flushTable(); flushText();
+      sections.push({ type: "heading", content: h1Match[1], level: 1 });
+    } else if (isTableRow || isTableSep) {
       flushText();
       inTable = true;
       tableLines.push(line);
     } else if (inTable && line.trim() === "") {
-      // End of table
       flushTable();
     } else {
-      if (inTable) {
-        flushTable();
-      }
+      if (inTable) flushTable();
       currentText.push(line);
     }
   }
-
   flushTable();
   flushText();
-
   return sections;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// XSS-safe HTML escaping
+// ─────────────────────────────────────────────────────────────────────────────
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -205,90 +224,133 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
-function renderTextLine(line: string, index: number) {
-  // Escape HTML first to prevent XSS from AI responses
-  let processed = escapeHtml(line)
-    .replace(/✅\s*(مطابق|Compliant)/gi, '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
-    .replace(/❌\s*(غير مطابق|Non-?Compliant)/gi, '<span class="inline-flex items-center gap-1 bg-red-500/15 text-red-600 border border-red-500/30 rounded-full px-2 py-0.5 text-xs font-medium">❌ $1</span>')
-    .replace(/⚠️\s*(مشروط|Conditional)/gi, '<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-600 border border-amber-500/30 rounded-full px-2 py-0.5 text-xs font-medium">⚠️ $1</span>');
+// Apply inline markdown (bold, code, badges) to an already-escaped string
+function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
+  return escaped
+    // Compliance badges
+    .replace(/✅\s*(مطابق|Compliant)/gi,
+      '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
+    .replace(/❌\s*(غير مطابق|Non-?Compliant)/gi,
+      '<span class="inline-flex items-center gap-1 bg-red-500/15 text-red-400 border border-red-500/30 rounded-full px-2 py-0.5 text-xs font-medium">❌ $1</span>')
+    .replace(/⚠️\s*(مشروط|Conditional)/gi,
+      '<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5 text-xs font-medium">⚠️ $1</span>')
+    // Bold — mode-aware
+    .replace(/\*\*([^*]+)\*\*/g, (_, txt) => getBoldHtml(txt, mode))
+    // Inline code
+    .replace(/`([^`]+)`/g,
+      '<code class="bg-muted/80 px-1.5 py-0.5 rounded text-[0.82em] font-mono text-primary/90 border border-border/40">$1</code>');
+}
 
-  // Bold text
-  processed = processed.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>');
-  
-  // Inline code
-  processed = processed.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm font-mono">$1</code>');
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 3 (Analysis) — SBC Legal Citation for blockquotes & code fences
+// ─────────────────────────────────────────────────────────────────────────────
+function renderTextLine(line: string, index: number, mode?: ChatMode) {
   // Blockquote
   if (line.startsWith("> ")) {
+    const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode);
+    if (mode === "analysis") {
+      return (
+        <blockquote key={index} className="sbc-legal-citation leading-[1.8] my-2"
+          dangerouslySetInnerHTML={{ __html: inner }} />
+      );
+    }
     return (
-      <blockquote
-        key={index}
-        className="border-r-2 border-primary pr-4 my-2 text-muted-foreground italic"
-        dangerouslySetInnerHTML={{ __html: processed.replace(/^>\s*/, "") }}
-      />
+      <blockquote key={index}
+        className="border-r-2 border-primary/40 pr-4 my-2 text-muted-foreground italic leading-[1.8]"
+        dangerouslySetInnerHTML={{ __html: inner }} />
     );
   }
 
-  // Bullet list
+  // Fenced code block (triple backtick lines passed individually)
+  if (line.startsWith("```")) {
+    return mode === "analysis"
+      ? <div key={index} className="sbc-code-fence" />
+      : <hr key={index} className="border-border/20 my-1" />;
+  }
+
+  // Requirement 2 — Bullet list with geometric icon
   if (line.match(/^[-•]\s/) || line.match(/^-\s*\[.\]\s/)) {
     const isChecklist = line.match(/^-\s*\[(.)]\s/);
     const checked = isChecklist?.[1] === "x" || isChecklist?.[1] === "X";
-    const content = line.replace(/^[-•]\s*(\[.\]\s)?/, "");
-    
+    const rawContent = line.replace(/^[-•]\s*(\[.\]\s)?/, "");
+    const inner = applyInlineMarkdown(escapeHtml(rawContent), mode);
+
     return (
-      <li key={index} className="flex items-start gap-2 text-foreground mr-4 my-1">
-        {isChecklist && (
-          <span className={`mt-0.5 ${checked ? "text-green-500" : "text-muted-foreground"}`}>
+      <li key={index} className="flex items-start gap-2.5 text-foreground leading-[1.8] mb-[10px] list-none">
+        {isChecklist ? (
+          <span className={`mt-1 flex-shrink-0 ${checked ? "text-emerald-400" : "text-muted-foreground"}`}>
             {checked ? "✓" : "○"}
           </span>
+        ) : (
+          <BulletIcon mode={mode} />
         )}
-        <span dangerouslySetInnerHTML={{ __html: escapeHtml(content).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
+        <span dangerouslySetInnerHTML={{ __html: inner }} />
       </li>
     );
   }
 
-  // Numbered list
+  // Requirement 2 — Numbered list with accent-colored numbers
   if (line.match(/^\d+\.\s/)) {
+    const numMatch = line.match(/^(\d+)\.\s(.*)$/);
+    const num = numMatch?.[1] ?? "";
+    const rest = applyInlineMarkdown(escapeHtml(numMatch?.[2] ?? ""), mode);
+    const numColor = getNumberColor(mode);
+
     return (
-      <li
-        key={index}
-        className="text-foreground mr-4 list-decimal my-1"
-        dangerouslySetInnerHTML={{ __html: processed.replace(/^\d+\.\s/, "") }}
-      />
+      <li key={index} className="flex items-start gap-2.5 text-foreground leading-[1.8] mb-[10px] list-none">
+        <span style={{ color: numColor, fontWeight: 700, minWidth: "1.5rem", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+          {num}.
+        </span>
+        <span dangerouslySetInnerHTML={{ __html: rest }} />
+      </li>
     );
   }
 
-  // Empty line
-  if (!line.trim()) {
-    return <br key={index} />;
-  }
+  // Empty line → breathing space (not a full <br>)
+  if (!line.trim()) return <div key={index} className="h-1.5" />;
 
   // Regular paragraph
+  const processed = applyInlineMarkdown(escapeHtml(line), mode);
   return (
-    <p
-      key={index}
-      className="text-foreground my-1"
-      dangerouslySetInnerHTML={{ __html: processed }}
-    />
+    <p key={index} className="text-foreground leading-[1.8] my-1"
+      dangerouslySetInnerHTML={{ __html: processed }} />
   );
 }
 
-function TextRenderer({ content }: { content: string }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// TextRenderer
+// ─────────────────────────────────────────────────────────────────────────────
+function TextRenderer({ content, mode }: { content: string; mode?: ChatMode }) {
   const lines = content.split("\n");
-  return <>{lines.map((line, i) => renderTextLine(line, i))}</>;
+  return <>{lines.map((line, i) => renderTextLine(line, i, mode))}</>;
 }
 
-// Table Component
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 2 — Table: rounded corners, zebra rows, scrollable, dark header
+// ─────────────────────────────────────────────────────────────────────────────
 function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: string[][] } }) {
   return (
-    <div className="my-4 overflow-x-auto">
-      <table className="w-full border-collapse bg-card/50 rounded-lg overflow-hidden">
+    <div
+      className="my-4 rounded-lg border border-border/40 shadow-sm"
+      style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}
+    >
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: "480px" }}
+      >
         <thead>
-          <tr className="bg-primary/10 border-b border-border">
+          <tr>
             {tableData.headers.map((header, i) => (
               <th
                 key={i}
-                className="px-4 py-3 text-right text-sm font-semibold text-foreground border-l border-border first:border-l-0"
+                className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap"
+                style={{
+                  fontWeight: 600,
+                  background: "hsl(var(--muted) / 0.7)",
+                  borderBottom: "1px solid hsl(var(--border) / 0.6)",
+                  borderRight: i > 0 ? "1px solid hsl(var(--border) / 0.3)" : undefined,
+                  borderRadius: i === 0 ? "6px 0 0 0" : i === tableData.headers.length - 1 ? "0 6px 0 0" : undefined,
+                }}
               >
                 {header}
               </th>
@@ -296,92 +358,109 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
           </tr>
         </thead>
         <tbody>
-          {tableData.rows.map((row, rowIndex) => (
-            <tr
-              key={rowIndex}
-              className={cn(
-                "border-b border-border/50 last:border-b-0",
-                rowIndex % 2 === 0 ? "bg-transparent" : "bg-muted/20"
-              )}
-            >
-              {row.map((cell, cellIndex) => (
-                <td
-                  key={cellIndex}
-                  className="px-4 py-2 text-sm text-foreground border-l border-border/50 first:border-l-0"
-                >
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {tableData.rows.map((row, rowIndex) => {
+            const isEven = rowIndex % 2 === 0;
+            return (
+              <tr
+                key={rowIndex}
+                style={{
+                  background: isEven ? "transparent" : "hsl(var(--muted) / 0.18)",
+                  transition: "background 0.15s",
+                }}
+                className="hover:bg-primary/5"
+              >
+                {row.map((cell, cellIndex) => (
+                  <td
+                    key={cellIndex}
+                    className="px-4 py-2.5 text-foreground align-top leading-[1.8]"
+                    style={{
+                      borderBottom: rowIndex < tableData.rows.length - 1 ? "1px solid hsl(var(--border) / 0.25)" : undefined,
+                      borderRight: cellIndex > 0 ? "1px solid hsl(var(--border) / 0.2)" : undefined,
+                    }}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 }
 
-// Collapsible Section Component
-function CollapsibleSection({ 
-  title, 
-  content, 
-  sectionKey 
-}: { 
-  title: string; 
-  content: string; 
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 3 (Consultant) — Accordion Cards: professional deep-analysis UI
+// ─────────────────────────────────────────────────────────────────────────────
+function CollapsibleSection({
+  title, content, sectionKey, mode,
+}: {
+  title: string;
+  content: string;
   sectionKey: string;
+  mode?: ChatMode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const icon = getSectionIcon(title);
   const colorClass = getSectionColor(title);
-
-  // Parse content for tables
   const parsedContent = useMemo(() => parseTextContent(content), [content]);
+  const isConsultant = mode === "standard";
 
   return (
     <div className={cn(
-      "my-3 rounded-lg border border-border/60 overflow-hidden bg-card/40 backdrop-blur-sm",
-      "border-l-4",
-      colorClass
+      "my-3 rounded-xl border overflow-hidden backdrop-blur-sm border-l-4",
+      colorClass,
+      isConsultant
+        ? "border-border/70 bg-card/65 shadow-md shadow-black/20"
+        : "border-border/60 bg-card/40",
     )}>
-      {/* Header / Toggle Button */}
+      {/* ── Header ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between px-4 py-3",
-          "hover:bg-muted/40 transition-colors duration-200",
+          "w-full flex items-center justify-between gap-3",
+          isConsultant ? "px-5 py-4" : "px-4 py-3",
+          "hover:bg-muted/50 transition-colors duration-200",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-          isOpen && "bg-muted/30 border-b border-border/40"
+          isOpen && "bg-muted/35 border-b border-border/40",
         )}
         aria-expanded={isOpen}
         aria-controls={sectionKey}
       >
-        <div className="flex items-center gap-3 text-right">
-          <span className="text-primary/80">{icon}</span>
-          <span className="text-sm font-semibold text-foreground">{title}</span>
+        <div className="flex items-center gap-3 text-right min-w-0">
+          <span className="text-primary/80 flex-shrink-0">{icon}</span>
+          <span className={cn("font-semibold text-foreground truncate", isConsultant ? "text-[0.88rem]" : "text-sm")}>
+            {title}
+          </span>
+          {isConsultant && (
+            <span className="hidden sm:inline text-xs text-muted-foreground/60 font-normal flex-shrink-0">
+              {isOpen ? "— إخفاء التحليل" : "— عرض التحليل الكامل"}
+            </span>
+          )}
         </div>
         <div className={cn(
-          "flex items-center justify-center w-7 h-7 rounded-full",
-          "bg-primary/10 text-primary transition-transform duration-300",
-          isOpen && "rotate-180"
+          "flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0",
+          "bg-primary/10 text-primary transition-transform duration-300 ease-in-out",
+          isOpen && "rotate-180",
         )}>
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-3.5 h-3.5" />
         </div>
       </button>
 
-      {/* Content */}
+      {/* ── Body ── */}
       <div
         id={sectionKey}
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+          isOpen ? "max-h-[3000px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <div className="px-5 py-4 bg-muted/10">
-          {parsedContent.map((section, index) => {
-            if (section.type === "table" && section.tableData) {
-              return <TableRenderer key={index} tableData={section.tableData} />;
-            }
-            return <TextRenderer key={index} content={section.content} />;
+        <div className={cn("px-5 py-4", isConsultant ? "bg-muted/12" : "bg-muted/8")}>
+          {parsedContent.map((section, i) => {
+            if (section.type === "table" && section.tableData)
+              return <TableRenderer key={i} tableData={section.tableData} />;
+            return <TextRenderer key={i} content={section.content} mode={mode} />;
           })}
         </div>
       </div>
@@ -389,34 +468,75 @@ function CollapsibleSection({
   );
 }
 
-const ChatMarkdownRenderer = ({ content }: ChatMarkdownRendererProps) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 1 — Main Component: Typography, RTL, line-height 1.8
+// ─────────────────────────────────────────────────────────────────────────────
+const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
   const sections = useMemo(() => parseDetailsBlocks(content), [content]);
-  
+  const isArabic = /[\u0600-\u06FF]/.test(content.slice(0, 300));
+
   return (
-    <div className="prose prose-invert prose-sm max-w-none space-y-2">
+    <div
+      className="prose prose-invert prose-sm max-w-none space-y-1"
+      style={{
+        lineHeight: 1.8,
+        fontFamily: isArabic
+          ? "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif"
+          : "'Inter', system-ui, sans-serif",
+      }}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
       {sections.map((section, index) => {
+        // ── Headings (Req 1: strict font-weight hierarchy) ───────────────────
         if (section.type === "heading") {
-          const HeadingTag = section.level === 2 ? "h2" : "h3";
-          const isExecutiveSummary = section.content.includes("الخلاصة التنفيذية") || section.content.includes("✅");
-          
+          const isExecutive = section.content.includes("الخلاصة التنفيذية") || section.content.includes("✅");
+
+          if (section.level === 1) {
+            return (
+              <h2 key={index}
+                className={cn(
+                  "mt-5 mb-3 first:mt-0 leading-[1.8] pb-2",
+                  "border-b-2 border-primary/40",
+                  isExecutive
+                    ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20 text-lg"
+                    : "text-foreground text-lg",
+                )}
+                style={{ fontWeight: 700 }}
+              >
+                {section.content}
+              </h2>
+            );
+          }
+
+          if (section.level === 2) {
+            return (
+              <h2 key={index}
+                className={cn(
+                  "mt-4 mb-2.5 first:mt-0 leading-[1.8] pb-1.5",
+                  "border-b border-primary/25 text-base",
+                  isExecutive
+                    ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20"
+                    : "text-foreground",
+                )}
+                style={{ fontWeight: 600 }}
+              >
+                {section.content}
+              </h2>
+            );
+          }
+
+          // H3 — Medium 500
           return (
-            <HeadingTag
-              key={index}
-              className={cn(
-                "font-bold mt-4 mb-3 first:mt-0",
-                section.level === 2 
-                  ? "text-lg border-b border-primary/30 pb-2" 
-                  : "text-base",
-                isExecutiveSummary 
-                  ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20" 
-                  : "text-foreground"
-              )}
+            <h3 key={index}
+              className="mt-3.5 mb-2 first:mt-0 leading-[1.8] text-foreground"
+              style={{ fontWeight: 500, fontSize: "0.875rem" }}
             >
               {section.content}
-            </HeadingTag>
+            </h3>
           );
         }
 
+        // ── Accordion (Req 3 — Consultant cards) ─────────────────────────────
         if (section.type === "accordion" && section.sectionKey) {
           return (
             <CollapsibleSection
@@ -424,18 +544,20 @@ const ChatMarkdownRenderer = ({ content }: ChatMarkdownRendererProps) => {
               title={section.title || "تفاصيل"}
               content={section.content || ""}
               sectionKey={section.sectionKey}
+              mode={mode}
             />
           );
         }
 
+        // ── Table (Req 2) ─────────────────────────────────────────────────────
         if (section.type === "table" && section.tableData) {
           return <TableRenderer key={index} tableData={section.tableData} />;
         }
 
-        // Regular text
+        // ── Regular text ──────────────────────────────────────────────────────
         return (
-          <div key={index} className="my-2">
-            <TextRenderer content={section.content} />
+          <div key={index} className="my-0.5">
+            <TextRenderer content={section.content} mode={mode} />
           </div>
         );
       })}

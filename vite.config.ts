@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // motion-utils dist/es/*.mjs files are missing (only .map files exist);
+      // redirect to the CJS bundle which is present and complete.
+      "motion-utils": path.resolve(
+        __dirname,
+        "./node_modules/motion-utils/dist/cjs/index.js"
+      ),
     },
   },
 }));

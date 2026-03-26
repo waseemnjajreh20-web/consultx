@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
 import TrialCountdownBanner from "./TrialCountdownBanner";
@@ -65,6 +65,202 @@ const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 // NO hard timeout — only abort on manual mode switch / navigation
 // Auto-error check only after 5 minutes (300s)
 const ERROR_CHECK_DELAY_MS = 300_000; // 5 minutes
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Requirement 4 — Utility Bar: Copy · Export · Download PDF
+// 100% inline styles — no CSS class dependency, no external hooks
+// ─────────────────────────────────────────────────────────────────────────────
+function UtilityBar({ content, mode }: { content: string; mode: ChatMode }) {
+  const [copied,   setCopied]   = useState(false);
+  const [exported, setExported] = useState(false);
+
+  const accent =
+    mode === "primary"  ? "#00D4FF" :
+    mode === "standard" ? "#FF8C00" : "#DC143C";
+
+  const BASE: React.CSSProperties = {
+    display:        "inline-flex",
+    alignItems:     "center",
+    gap:            "5px",
+    padding:        "3px 11px",
+    borderRadius:   "6px",
+    fontSize:       "0.71rem",
+    fontWeight:     500,
+    color:          "#7a8898",
+    background:     "transparent",
+    border:         "1px solid rgba(255,255,255,0.10)",
+    cursor:         "pointer",
+    whiteSpace:     "nowrap",
+    fontFamily:     "inherit",
+    letterSpacing:  "0.02em",
+    transition:     "color 0.15s, border-color 0.15s, background 0.15s",
+    lineHeight:     1,
+  };
+
+  const hover = (e: React.MouseEvent<HTMLButtonElement>, on: boolean) => {
+    const el = e.currentTarget;
+    el.style.color        = on ? accent   : "#7a8898";
+    el.style.borderColor  = on ? `${accent}55` : "rgba(255,255,255,0.10)";
+    el.style.background   = on ? `${accent}14` : "transparent";
+  };
+
+  // ── Copy ──────────────────────────────────────────────────────────────────
+  const handleCopy = async () => {
+    console.log("[ConsultX Utility] Copy clicked");
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      console.log("[ConsultX Utility] Copied to clipboard ✓");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("[ConsultX Utility] Copy failed:", err);
+    }
+  };
+
+  // ── Export (formatted plain-text) ────────────────────────────────────────
+  const handleExport = async () => {
+    console.log("[ConsultX Utility] Export clicked");
+    const text = `ConsultX — تقرير هندسي\n${"─".repeat(44)}\n\n${content}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setExported(true);
+      console.log("[ConsultX Utility] Export text copied ✓");
+      setTimeout(() => setExported(false), 2000);
+    } catch (err) {
+      console.error("[ConsultX Utility] Export failed:", err);
+    }
+  };
+
+  // ── PDF (print-ready blob in new tab) ────────────────────────────────────
+  const handlePdf = () => {
+    console.log("[ConsultX Utility] PDF clicked");
+    const safe = content
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    // Split closing script tag to avoid TSX parser confusion
+    const scriptOpen  = "<scr" + "ipt>";
+    const scriptClose = "</" + "script>";
+
+    const html = [
+      "<!DOCTYPE html>",
+      '<html dir="rtl" lang="ar">',
+      "<head>",
+      '<meta charset="UTF-8">',
+      "<title>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a<\/title>",
+      '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">',
+      "<style>",
+      "*{box-sizing:border-box}",
+      "body{font-family:'Cairo',system-ui,sans-serif;line-height:1.8;color:#111;background:#fff;padding:48px;max-width:820px;margin:0 auto;direction:rtl}",
+      "pre{white-space:pre-wrap;font-size:0.9rem;line-height:1.8;margin:0;font-family:inherit}",
+      ".hdr{border-bottom:3px solid #0891b2;padding-bottom:14px;margin-bottom:28px}",
+      ".hdr h1{color:#0891b2;margin:0;font-size:1.4rem;font-weight:700}",
+      ".hdr p{color:#6b7280;font-size:0.8rem;margin:4px 0 0}",
+      "@media print{@page{margin:18mm}body{padding:0}}",
+      "<\/style>",
+      "<\/head>",
+      "<body>",
+      '<div class="hdr">',
+      "<h1>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a<\/h1>",
+      `<p>${new Date().toLocaleString("ar-SA")}<\/p>`,
+      "<\/div>",
+      `<pre>${safe}<\/pre>`,
+      `${scriptOpen}window.onload=()=>{window.print()}${scriptClose}`,
+      "<\/body>",
+      "<\/html>",
+    ].join("\n");
+
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url  = URL.createObjectURL(blob);
+    const win  = window.open(url, "_blank");
+    if (win) {
+      console.log("[ConsultX Utility] Print window opened ✓");
+      win.onunload = () => URL.revokeObjectURL(url);
+    } else {
+      console.error("[ConsultX Utility] Popup blocked — allow popups for this site");
+    }
+  };
+
+  // ── Icon helpers (no className dependency) ───────────────────────────────
+  const CheckIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+  const CopyIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
+  );
+  const ShareIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  );
+  const PdfIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="12" y1="18" x2="12" y2="12"/>
+      <line x1="9" y1="15" x2="15" y2="15"/>
+    </svg>
+  );
+
+  return (
+    <div style={{
+      display:     "flex",
+      alignItems:  "center",
+      gap:         "6px",
+      paddingTop:  "10px",
+      marginTop:   "6px",
+      borderTop:   "1px solid rgba(255,255,255,0.08)",
+    }}>
+      {/* Copy */}
+      <button
+        onClick={handleCopy}
+        onMouseEnter={e => hover(e, true)}
+        onMouseLeave={e => hover(e, false)}
+        style={{ ...BASE, ...(copied ? { color: accent } : {}) }}
+        title="نسخ النص"
+      >
+        {copied ? <CheckIcon /> : <CopyIcon />}
+        <span>{copied ? "تم!" : "نسخ"}</span>
+      </button>
+
+      {/* Export */}
+      <button
+        onClick={handleExport}
+        onMouseEnter={e => hover(e, true)}
+        onMouseLeave={e => hover(e, false)}
+        style={{ ...BASE, ...(exported ? { color: accent } : {}) }}
+        title="تصدير / مشاركة"
+      >
+        {exported ? <CheckIcon /> : <ShareIcon />}
+        <span>{exported ? "تم!" : "تصدير"}</span>
+      </button>
+
+      {/* PDF */}
+      <button
+        onClick={handlePdf}
+        onMouseEnter={e => hover(e, true)}
+        onMouseLeave={e => hover(e, false)}
+        style={BASE}
+        title="تحميل PDF"
+      >
+        <PdfIcon />
+        <span>PDF</span>
+      </button>
+    </div>
+  );
+}
 
 // ===== MODE COLOR HELPERS =====
 function getModeGlowClass(mode: ChatMode) {
@@ -1103,7 +1299,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                         {isVisionAnalysisResponse(displayContent) ? (
                           <AnalysisResultCard content={displayContent} />
                         ) : (
-                          <ChatMarkdownRenderer content={displayContent} />
+                          <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
                         )}
                         {/* Switch mode button */}
                         {switchTarget && (
@@ -1120,6 +1316,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                             </span>
                           </div>
                         )}
+                        {/* Requirement 4 — Utility Bar */}
+                        <UtilityBar content={displayContent} mode={msgMode} />
                       </div>
                     )}
                   </div>
