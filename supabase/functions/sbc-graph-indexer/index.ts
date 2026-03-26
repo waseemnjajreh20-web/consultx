@@ -88,6 +88,7 @@ async function callGemini(prompt: string, content: string, retries = 3): Promise
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(300_000), // 300s — prevents Supabase gateway killing mid-generation
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${prompt}\n\n--- TEXT CHUNKS ---\n${content}` }] }],
           generationConfig: {
@@ -261,9 +262,9 @@ async function processFile(
 
       processedChunks += batch.length;
       console.log(`  ✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}: +${extracted.entities?.length || 0} nodes, +${extracted.relationships?.length || 0} edges`);
-      
-      // Small delay to avoid rate limiting
-      await new Promise(r => setTimeout(r, 300));
+
+      // 3s delay between extraction calls — prevents ECONNRESET and DB throttling
+      await new Promise(r => setTimeout(r, 3_000));
       
     } catch (batchError) {
       console.error(`  ❌ Batch ${Math.floor(i / BATCH_SIZE) + 1} failed:`, batchError);
@@ -287,83 +288,91 @@ async function processFile(
   return { nodesCount: totalNodes, edgesCount: totalEdges, partial: !isComplete, nextChunk };
 }
 
-// ==================== COMMUNITY DETECTION ====================
-async function buildCommunities(supabase: any): Promise<void> {
-  console.log("🔗 Building communities...");
+// ==================== COMMUNITY DETECTION (batched, paginated) ====================
+// Processes `limit` groups starting from `offset`.
+// offset === 0 → wipes existing summaries first (full rebuild).
+// offset  > 0 → appends (resume mid-run without re-wiping earlier groups).
+// Returns { done, total_groups, next_offset, communities_built } for orchestrator loop.
+async function buildCommunitiesBatched(
+  supabase: any,
+  offset: number,
+  limit: number,
+): Promise<{ done: boolean; total_groups: number; next_offset: number; communities_built: number }> {
+  console.log(`🔗 Building communities (offset=${offset}, limit=${limit})...`);
 
-  // Get all nodes
+  // Fetch all nodes — deterministic sort so flat index is stable across calls
   const { data: allNodes } = await supabase
     .from("graph_nodes")
-    .select("id, name, type, description, sbc_source, chapter, keywords");
+    .select("id, name, type, description, sbc_source, chapter, keywords")
+    .order("sbc_source", { ascending: true })
+    .order("chapter",    { ascending: true });
 
   if (!allNodes?.length) {
     console.log("No nodes found for community detection");
-    return;
+    return { done: true, total_groups: 0, next_offset: 0, communities_built: 0 };
   }
 
-  // Level 0: Group by chapter within each SBC source (micro communities)
-  const chapterGroups: Map<string, any[]> = new Map();
+  // Build deterministically ordered flat group list
+  type GroupEntry = { level: number; key: string; nodes: any[] };
+
+  const chapterMap = new Map<string, any[]>();
+  const sourceMap  = new Map<string, any[]>();
   for (const node of allNodes) {
-    const key = `${node.sbc_source}_ch${node.chapter || 0}`;
-    if (!chapterGroups.has(key)) chapterGroups.set(key, []);
-    chapterGroups.get(key)!.push(node);
+    const ck = `${node.sbc_source}_ch${node.chapter ?? 0}`;
+    if (!chapterMap.has(ck)) chapterMap.set(ck, []);
+    chapterMap.get(ck)!.push(node);
+    if (!sourceMap.has(node.sbc_source)) sourceMap.set(node.sbc_source, []);
+    sourceMap.get(node.sbc_source)!.push(node);
   }
 
-  // Level 1: Group by SBC source (mid communities)
-  const sourceGroups: Map<string, any[]> = new Map();
-  for (const node of allNodes) {
-    const key = node.sbc_source;
-    if (!sourceGroups.has(key)) sourceGroups.set(key, []);
-    sourceGroups.get(key)!.push(node);
+  const allGroups: GroupEntry[] = [];
+  for (const [k, v] of [...chapterMap.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    if (v.length >= 2) allGroups.push({ level: 0, key: k, nodes: v });
+  }
+  for (const [k, v] of [...sourceMap.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    if (v.length >= 2) allGroups.push({ level: 1, key: k, nodes: v });
+  }
+  if (allNodes.length >= 2) allGroups.push({ level: 2, key: "all", nodes: allNodes });
+
+  const total_groups = allGroups.length;
+
+  // Full rebuild: wipe existing summaries only on offset === 0
+  if (offset === 0) {
+    await supabase.from("community_summaries").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    console.log("  🗑️  Cleared existing community_summaries");
   }
 
-  // Level 2: All nodes together (macro)
-  const macroGroups: Map<string, any[]> = new Map([["all", allNodes]]);
+  const batchSlice = allGroups.slice(offset, offset + limit);
+  let built = 0;
 
-  const groupSets = [
-    { level: 0, groups: chapterGroups },
-    { level: 1, groups: sourceGroups },
-    { level: 2, groups: macroGroups },
-  ];
+  for (const { level, key, nodes } of batchSlice) {
+    const sample = nodes.slice(0, 30);
+    try {
+      const summary = await callGemini(getCommunityPrompt(sample, level), "");
+      const sbcSources = [...new Set(nodes.map((n: any) => n.sbc_source))];
 
-  let communityId = 0;
+      await supabase.from("community_summaries").insert({
+        level,
+        community_id: offset + built,
+        summary:        summary.summary || `Community ${key}`,
+        summary_ar:     summary.summary_ar,
+        node_ids:       nodes.map((n: any) => n.id),
+        sbc_sources:    sbcSources,
+        topic_keywords: summary.topic_keywords || [],
+      });
 
-  for (const { level, groups } of groupSets) {
-    for (const [key, nodes] of groups) {
-      if (nodes.length < 2) continue;
-      
-      // Take sample if too many nodes
-      const sampleNodes = nodes.slice(0, 30);
-      
-      try {
-        const summary = await callGemini(
-          getCommunityPrompt(sampleNodes, level),
-          ""
-        );
-
-        const sbcSources = [...new Set(nodes.map((n: any) => n.sbc_source))];
-        const nodeIds = nodes.map((n: any) => n.id);
-
-        await supabase.from("community_summaries").insert({
-          level,
-          community_id: communityId++,
-          summary: summary.summary || `Community ${key}`,
-          summary_ar: summary.summary_ar,
-          node_ids: nodeIds,
-          sbc_sources: sbcSources,
-          topic_keywords: summary.topic_keywords || [],
-        });
-
-        console.log(`  ✅ Community L${level} [${key}]: ${nodes.length} nodes`);
-        
-        await new Promise(r => setTimeout(r, 300));
-      } catch (err) {
-        console.error(`  ❌ Community ${key} failed:`, err);
-      }
+      built++;
+      console.log(`  ✅ Community L${level} [${key}]: ${nodes.length} nodes`);
+    } catch (err) {
+      console.error(`  ❌ Community ${key} failed:`, err);
     }
+    await new Promise(r => setTimeout(r, 300));
   }
 
-  console.log(`✅ Built ${communityId} communities`);
+  const next_offset = offset + batchSlice.length;
+  const done = next_offset >= total_groups;
+  console.log(`✅ Built ${built} communities (${next_offset}/${total_groups})${done ? " — DONE" : ""}`);
+  return { done, total_groups, next_offset, communities_built: built };
 }
 
 // ==================== MAIN HANDLER ====================
@@ -405,10 +414,12 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // ---- ACTION: communities ----
+    // ---- ACTION: communities (batched, paginated) ----
     if (action === "communities") {
-      await buildCommunities(supabase);
-      return new Response(JSON.stringify({ success: true, message: "Communities built" }), {
+      const offset = typeof body.offset === "number" ? body.offset : 0;
+      const limit  = typeof body.limit  === "number" ? body.limit  : 5;
+      const result = await buildCommunitiesBatched(supabase, offset, limit);
+      return new Response(JSON.stringify({ success: true, ...result }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
