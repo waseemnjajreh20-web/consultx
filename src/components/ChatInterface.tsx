@@ -156,241 +156,110 @@ function UtilityBar({ content, mode, messageId, userName }: {
 
     const sc = "</" + "script>";
 
-    const html = `<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-<meta charset="UTF-8">
-<title>ConsultX \u2014 \u062a\u0642\u0631\u064a\u0631 \u0647\u0646\u062f\u0633\u064a</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
-${styleLinks}
-<style>
-  /* ── Reset & base ───────────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; }
-  html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  body {
-    font-family: 'Cairo', system-ui, sans-serif;
-    line-height: 1.85;
-    color: #111827;
-    background: #ffffff;
-    margin: 0;
-    padding: 0 0 60px;
-    direction: rtl;
-    orphans: 3;
-    widows: 3;
-  }
-  /* ── Open all collapsibles ──────────────────────────────────────── */
-  details { display: block !important; }
-  details > *:not(summary) { display: block !important; }
-  summary::marker, summary::-webkit-details-marker { display: none !important; }
-  /* ── Suppress UI chrome ─────────────────────────────────────────── */
-  button { display: none !important; }
-  /* ── Branded header ─────────────────────────────────────────────── */
-  .cx-hdr {
-    background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%);
-    border-bottom: 3px solid #00D4FF;
-    padding: 18px 28px 16px;
-    margin-bottom: 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-  .cx-hdr-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .cx-hdr-brand img {
-    height: 40px;
-    width: 40px;
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-  .cx-hdr-brand h1 {
-    margin: 0 0 2px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #0369a1;
-    white-space: nowrap;
-  }
-  .cx-hdr-brand p {
-    margin: 0;
-    font-size: 0.72rem;
-    color: #475569;
-  }
-  .cx-hdr-meta {
-    text-align: left;
-    font-size: 0.72rem;
-    color: #475569;
-    line-height: 1.9;
-    white-space: nowrap;
-  }
-  .cx-hdr-meta strong { color: #1e3a5f; font-weight: 600; }
-  /* ── Content wrapper ────────────────────────────────────────────── */
-  .cx-content { padding: 0 28px; }
-  /* ── Smart print-safe color mapping ────────────────────────────── */
-  /* Class-based (known CSS classes from renderer) */
-  .consultx-bold-primary  { color: #005B70 !important; background: rgba(0,91,112,0.08) !important; border-bottom-color: #005B70 !important; }
-  .consultx-bold-standard { color: #8B4500 !important; background: transparent !important; }
-  .consultx-bold-analysis { color: #800000 !important; background: transparent !important; }
-  /* Numbered list accent spans & inline color overrides via JS */
-  /* Tables ── light grey zebra, readable borders */
-  table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.85rem; break-inside: avoid; }
-  table thead th {
-    background: #dbeafe !important;
-    color: #1e3a5f !important;
-    font-weight: 700;
-    padding: 8px 12px;
-    border-bottom: 2px solid #93c5fd;
-    text-align: right;
-  }
-  table tbody tr:nth-child(even) td { background: #f9fafb !important; }
-  table tbody tr:nth-child(odd)  td { background: #ffffff !important; }
-  table td {
-    padding: 7px 12px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #111827 !important;
-    vertical-align: top;
-    line-height: 1.7;
-  }
-  /* Collapsible section boxes */
-  details {
-    border: 1px solid #b0d4e8 !important;
-    background: #f0f8ff !important;
-    margin: 8px 0;
-    border-radius: 6px;
-    break-inside: avoid;
-  }
-  summary {
-    font-weight: 600 !important;
-    color: #005B70 !important;
-    padding: 8px 12px;
-    font-size: 0.875rem;
-  }
-  /* Blockquotes */
-  blockquote {
-    border-right: 3px solid #005B70 !important;
-    background: #f0f8ff !important;
-    color: #1e3a5f !important;
-    padding: 8px 14px;
-    margin: 8px 0;
-  }
-  /* Headings ── consistent hierarchy */
-  h1, h2 { color: #0c2a4a !important; border-bottom-color: #93c5fd !important; page-break-after: avoid; break-after: avoid; }
-  h3, h4 { color: #1e3a5f !important; page-break-after: avoid; break-after: avoid; }
-  /* Compliance badges */
-  [class*="emerald"] { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
-  [class*="red-"]    { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
-  [class*="amber-"]  { background: #fef3c7 !important; color: #92400e !important; border-color: #fcd34d !important; }
-  /* Compliance / alert blocks — prevent splitting between pages */
-  [class*="emerald"], [class*="red-"], [class*="amber-"],
-  [class*="compliance"], [class*="alert"], [class*="warning"],
-  [class*="border-"] { break-inside: avoid; }
-  /* Paragraph flow */
-  p, li { orphans: 3; widows: 3; }
-  /* ── Sticky footer ──────────────────────────────────────────────── */
-  .cx-footer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 36px;
-    border-top: 1px solid #d1d5db;
-    background: #ffffff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 28px;
-    font-size: 0.68rem;
-    color: #6b7280;
-    z-index: 9999;
-  }
-  .cx-footer .cx-page-num::after { content: counter(page); }
-  /* ── @page ─────────────────────────────────────────────────────── */
-  @media print {
-    @page {
-      size: A4;
-      margin: 1.5cm 1.5cm 2.5cm 1.5cm;
-      @bottom-right {
-        content: "ConsultX \2014 \0645\0646\0635\0629 \0627\0644\0627\0633\062a\0634\0627\0631\0627\062a \0627\0644\0647\0646\062f\0633\064a\0629 \0648\0627\0644\0648\0642\0627\064a\0629 \0645\0646 \0627\0644\062d\0631\064a\0642";
-        font-family: 'Cairo', sans-serif;
-        font-size: 7.5pt;
-        color: #0369a1;
-      }
-      @bottom-center {
-        content: "\0635\0641\062d\0629 " counter(page) " \0645\0646 " counter(pages);
-        font-family: 'Cairo', sans-serif;
-        font-size: 8pt;
-        color: #6b7280;
-      }
-      @bottom-left {
-        content: "\0625\0639\062f\0627\062f \0627\0644\0645\0647\0646\062f\0633: ${userName}";
-        font-family: 'Cairo', sans-serif;
-        font-size: 8pt;
-        color: #6b7280;
-      }
-    }
-    body { color: #000000 !important; background: #ffffff !important; }
-    .cx-footer { display: none; }
-  }
-</style>
-</head>
-<body>
-<!-- ── Header ── -->
-<div class="cx-hdr">
-  <div class="cx-hdr-brand">
-    <img src="${consultxIcon}" alt="ConsultX" onerror="this.style.display='none'">
-    <div>
-      <h1>ConsultX \u2014 \u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629</h1>
-      <p>\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u062a\u062f\u0642\u064a\u0642 \u0627\u0644\u0647\u0646\u062f\u0633\u064a \u2014 \u0627\u0634\u062a\u0631\u0627\u0637\u0627\u062a \u0643\u0648\u062f \u0627\u0644\u0628\u0646\u0627\u0621 \u0627\u0644\u0633\u0639\u0648\u062f\u064a</p>
-    </div>
-  </div>
-  <div class="cx-hdr-meta">
-    <div><strong>\u0625\u0639\u062f\u0627\u062f \u0627\u0644\u0645\u0647\u0646\u062f\u0633:</strong> ${userName}</div>
-    <div><strong>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631:</strong> ${exportTs}</div>
-  </div>
-</div>
-<!-- ── Content ── -->
-<div class="cx-content">${renderedHtml}</div>
-<!-- ── Footer (screen fallback when @page isn't supported) ── -->
-<div class="cx-footer">
-  <span>ConsultX \u2014 \u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064a\u0629 \u0645\u0646 \u0627\u0644\u062d\u0631\u064a\u0642</span>
-  <span class="cx-page-num">\u0635\u0641\u062d\u0629 </span>
-  <span>\u0625\u0639\u062f\u0627\u062f \u0627\u0644\u0645\u0647\u0646\u062f\u0633: ${userName}</span>
-</div>
-<script>
-  // Force all collapsible sections open
-  document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+    // Build HTML string pieces — NO unicode escapes, plain Arabic only
+    const titleText = "ConsultX \u2014 تقرير هندسي";
+    const platformText = "ConsultX \u2014 منصة الاستشارات الهندسية";
+    const subtitleText = "تقرير التدقيق الهندسي \u2014 اشتراطات كود البناء السعودي";
+    const preparerLabel = "إعداد المهندس:";
+    const dateLabel = "تاريخ التصدير:";
+    const footerText = "ConsultX \u2014 منصة الاستشارات الهندسية والوقاية من الحريق";
+    const pageLabel = "صفحة ";
+    const preparerFooter = "إعداد المهندس: " + userName;
 
-  // Smart inline-color remapping: dark UI brand colors → print-safe equivalents
-  var COLOR_MAP = {
-    '#00d4ff': '#005B70', 'rgb(0, 212, 255)': '#005B70', 'rgba(0, 212, 255': '#005B70',
-    '#ff8c00': '#8B4500', 'rgb(255, 140, 0)': '#8B4500', 'rgba(255, 140, 0': '#8B4500',
-    '#dc143c': '#800000', 'rgb(220, 20, 60)': '#800000',  'rgba(220, 20, 60': '#800000',
-  };
-  function remapEl(el) {
-    if (!el.style) return;
-    var c = (el.style.color || '').toLowerCase();
-    var bc = (el.style.borderColor || el.style.borderBottomColor || '').toLowerCase();
-    var bg = (el.style.background || el.style.backgroundColor || '').toLowerCase();
-    for (var key in COLOR_MAP) {
-      if (c.indexOf(key) !== -1)  el.style.color = COLOR_MAP[key];
-      if (bc.indexOf(key) !== -1) { el.style.borderColor = COLOR_MAP[key]; el.style.borderBottomColor = COLOR_MAP[key]; }
-      if (bg.indexOf(key) !== -1) el.style.background = 'transparent';
-    }
-    // Force very light / near-white text to pure black (print-safe)
-    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#000000';
-  }
-  document.querySelectorAll('*').forEach(remapEl);
-
-  // Force body background white (dark Tailwind root may bleed in)
-  document.body.style.background = '#ffffff';
-  document.documentElement.style.background = '#ffffff';
-
-  window.onload = function() { window.print(); };
-${sc}
-</body>
-</html>`;
+    const html = [
+      "<!DOCTYPE html>",
+      '<html dir="rtl" lang="ar">',
+      "<head>",
+      '<meta charset="UTF-8">',
+      "<title>" + titleText + "</title>",
+      '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">',
+      styleLinks,
+      "<style>",
+      "*, *::before, *::after { box-sizing: border-box; }",
+      "html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }",
+      "body { font-family: 'Cairo', system-ui, sans-serif; line-height: 1.85; color: #111827; background: #ffffff; margin: 0; padding: 0 0 60px; direction: rtl; orphans: 3; widows: 3; }",
+      "details { display: block !important; }",
+      "details > *:not(summary) { display: block !important; }",
+      "summary::marker, summary::-webkit-details-marker { display: none !important; }",
+      "button { display: none !important; }",
+      ".cx-hdr { background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%); border-bottom: 3px solid #00D4FF; padding: 18px 28px 16px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; page-break-inside: avoid; break-inside: avoid; }",
+      ".cx-hdr-brand { display: flex; align-items: center; gap: 12px; }",
+      ".cx-hdr-brand img { height: 40px; width: 40px; object-fit: contain; flex-shrink: 0; }",
+      ".cx-hdr-brand h1 { margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; color: #0369a1; white-space: nowrap; }",
+      ".cx-hdr-brand p { margin: 0; font-size: 0.72rem; color: #475569; }",
+      ".cx-hdr-meta { text-align: left; font-size: 0.72rem; color: #475569; line-height: 1.9; white-space: nowrap; }",
+      ".cx-hdr-meta strong { color: #1e3a5f; font-weight: 600; }",
+      ".cx-content { padding: 0 28px; }",
+      ".consultx-bold-primary  { color: #005B70 !important; background: rgba(0,91,112,0.08) !important; border-bottom-color: #005B70 !important; }",
+      ".consultx-bold-standard { color: #8B4500 !important; background: transparent !important; }",
+      ".consultx-bold-analysis { color: #800000 !important; background: transparent !important; }",
+      "table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.85rem; break-inside: avoid; }",
+      "table thead th { background: #dbeafe !important; color: #1e3a5f !important; font-weight: 700; padding: 8px 12px; border-bottom: 2px solid #93c5fd; text-align: right; }",
+      "table tbody tr:nth-child(even) td { background: #f9fafb !important; }",
+      "table tbody tr:nth-child(odd)  td { background: #ffffff !important; }",
+      "table td { padding: 7px 12px; border-bottom: 1px solid #e5e7eb; color: #111827 !important; vertical-align: top; line-height: 1.7; }",
+      "details { border: 1px solid #b0d4e8 !important; background: #f0f8ff !important; margin: 8px 0; border-radius: 6px; break-inside: avoid; }",
+      "summary { font-weight: 600 !important; color: #005B70 !important; padding: 8px 12px; font-size: 0.875rem; }",
+      "blockquote { border-right: 3px solid #005B70 !important; background: #f0f8ff !important; color: #1e3a5f !important; padding: 8px 14px; margin: 8px 0; }",
+      "h1, h2 { color: #0c2a4a !important; border-bottom-color: #93c5fd !important; page-break-after: avoid; break-after: avoid; }",
+      "h3, h4 { color: #1e3a5f !important; page-break-after: avoid; break-after: avoid; }",
+      "[class*='emerald'] { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }",
+      "[class*='red-']    { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }",
+      "[class*='amber-']  { background: #fef3c7 !important; color: #92400e !important; border-color: #fcd34d !important; }",
+      "[class*='emerald'], [class*='red-'], [class*='amber-'], [class*='compliance'], [class*='alert'], [class*='warning'], [class*='border-'] { break-inside: avoid; }",
+      "p, li { orphans: 3; widows: 3; }",
+      ".cx-footer { position: fixed; bottom: 0; left: 0; right: 0; height: 36px; border-top: 1px solid #d1d5db; background: #ffffff; display: flex; justify-content: space-between; align-items: center; padding: 0 28px; font-size: 0.68rem; color: #6b7280; z-index: 9999; }",
+      ".cx-footer .cx-page-num::after { content: counter(page); }",
+      "@media print { @page { size: A4; margin: 1.5cm 1.5cm 2.5cm 1.5cm; } body { color: #000000 !important; background: #ffffff !important; } .cx-footer { display: none; } }",
+      "</style>",
+      "</head>",
+      "<body>",
+      '<div class="cx-hdr">',
+      '  <div class="cx-hdr-brand">',
+      '    <img src="' + consultxIcon + '" alt="ConsultX" onerror="this.style.display=\'none\'">',
+      "    <div>",
+      "      <h1>" + platformText + "</h1>",
+      "      <p>" + subtitleText + "</p>",
+      "    </div>",
+      "  </div>",
+      '  <div class="cx-hdr-meta">',
+      "    <div><strong>" + preparerLabel + "</strong> " + userName + "</div>",
+      "    <div><strong>" + dateLabel + "</strong> " + exportTs + "</div>",
+      "  </div>",
+      "</div>",
+      '<div class="cx-content">' + renderedHtml + "</div>",
+      '<div class="cx-footer">',
+      "  <span>" + footerText + "</span>",
+      '  <span class="cx-page-num">' + pageLabel + "</span>",
+      "  <span>" + preparerFooter + "</span>",
+      "</div>",
+      "<script>",
+      "  document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });",
+      "  var COLOR_MAP = {",
+      "    '#00d4ff': '#005B70', 'rgb(0, 212, 255)': '#005B70', 'rgba(0, 212, 255': '#005B70',",
+      "    '#ff8c00': '#8B4500', 'rgb(255, 140, 0)': '#8B4500', 'rgba(255, 140, 0': '#8B4500',",
+      "    '#dc143c': '#800000', 'rgb(220, 20, 60)': '#800000', 'rgba(220, 20, 60': '#800000'",
+      "  };",
+      "  function remapEl(el) {",
+      "    if (!el.style) return;",
+      "    var c = (el.style.color || '').toLowerCase();",
+      "    var bc = (el.style.borderColor || el.style.borderBottomColor || '').toLowerCase();",
+      "    var bg = (el.style.background || el.style.backgroundColor || '').toLowerCase();",
+      "    for (var key in COLOR_MAP) {",
+      "      if (c.indexOf(key) !== -1) el.style.color = COLOR_MAP[key];",
+      "      if (bc.indexOf(key) !== -1) { el.style.borderColor = COLOR_MAP[key]; el.style.borderBottomColor = COLOR_MAP[key]; }",
+      "      if (bg.indexOf(key) !== -1) el.style.background = 'transparent';",
+      "    }",
+      "    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#000000';",
+      "  }",
+      "  document.querySelectorAll('*').forEach(remapEl);",
+      "  document.body.style.background = '#ffffff';",
+      "  document.documentElement.style.background = '#ffffff';",
+      "  window.onload = function() { window.print(); };",
+      sc,
+      "</body>",
+      "</html>",
+    ].join("\n");
 
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url  = URL.createObjectURL(blob);
