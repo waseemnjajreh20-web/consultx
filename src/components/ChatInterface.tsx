@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { getSuggestedQuestionKeys } from "@/lib/suggestions";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import consultxIcon from "@/assets/consultx-icon.png";
+import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
 import AnalysisResultCard, { isVisionAnalysisResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
@@ -284,6 +284,10 @@ ${styleLinks}
   [class*="emerald"] { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
   [class*="red-"]    { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
   [class*="amber-"]  { background: #fef3c7 !important; color: #92400e !important; border-color: #fcd34d !important; }
+  /* Compliance / alert blocks — prevent splitting between pages */
+  [class*="emerald"], [class*="red-"], [class*="amber-"],
+  [class*="compliance"], [class*="alert"], [class*="warning"],
+  [class*="border-"] { break-inside: avoid; }
   /* Paragraph flow */
   p, li { orphans: 3; widows: 3; }
   /* ── Sticky footer ──────────────────────────────────────────────── */
@@ -306,20 +310,27 @@ ${styleLinks}
   @media print {
     @page {
       size: A4;
-      margin: 1.5cm 1.5cm 2cm 1.5cm;
+      margin: 1.5cm 1.5cm 2.5cm 1.5cm;
       @bottom-right {
+        content: "ConsultX \2014 \0645\0646\0635\0629 \0627\0644\0627\0633\062a\0634\0627\0631\0627\062a \0627\0644\0647\0646\062f\0633\064a\0629 \0648\0627\0644\0648\0642\0627\064a\0629 \0645\0646 \0627\0644\062d\0631\064a\0642";
+        font-family: 'Cairo', sans-serif;
+        font-size: 7.5pt;
+        color: #0369a1;
+      }
+      @bottom-center {
         content: "\0635\0641\062d\0629 " counter(page) " \0645\0646 " counter(pages);
         font-family: 'Cairo', sans-serif;
         font-size: 8pt;
         color: #6b7280;
       }
       @bottom-left {
-        content: "\062a\0627\0631\064a\062e \0627\0644\062a\0635\062f\064a\0631: ${exportTs}";
+        content: "\0625\0639\062f\0627\062f \0627\0644\0645\0647\0646\062f\0633: ${userName}";
         font-family: 'Cairo', sans-serif;
         font-size: 8pt;
         color: #6b7280;
       }
     }
+    body { color: #000000 !important; background: #ffffff !important; }
     .cx-footer { display: none; }
   }
 </style>
@@ -343,8 +354,9 @@ ${styleLinks}
 <div class="cx-content">${renderedHtml}</div>
 <!-- ── Footer (screen fallback when @page isn't supported) ── -->
 <div class="cx-footer">
-  <span>ConsultX &copy; ${new Date().getFullYear()}</span>
-  <span>\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0635\u062f\u064a\u0631: ${exportTs}</span>
+  <span>ConsultX \u2014 \u0645\u0646\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0647\u0646\u062f\u0633\u064a\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064a\u0629 \u0645\u0646 \u0627\u0644\u062d\u0631\u064a\u0642</span>
+  <span class="cx-page-num">\u0635\u0641\u062d\u0629 </span>
+  <span>\u0625\u0639\u062f\u0627\u062f \u0627\u0644\u0645\u0647\u0646\u062f\u0633: ${userName}</span>
 </div>
 <script>
   // Force all collapsible sections open
@@ -366,8 +378,8 @@ ${styleLinks}
       if (bc.indexOf(key) !== -1) { el.style.borderColor = COLOR_MAP[key]; el.style.borderBottomColor = COLOR_MAP[key]; }
       if (bg.indexOf(key) !== -1) el.style.background = 'transparent';
     }
-    // Force very light / near-white text to black
-    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#111827';
+    // Force very light / near-white text to pure black (print-safe)
+    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#000000';
   }
   document.querySelectorAll('*').forEach(remapEl);
 
@@ -744,6 +756,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     (user?.user_metadata as Record<string, string> | undefined)?.name ||
     user?.email ||
     "مستشار ConsultX";
+  const displayName = userName.includes("@") ? userName.split("@")[0] : userName;
   const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
   const { subscription, refetch: refetchSub } = useSubscription();
@@ -1327,7 +1340,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             )}
             <Button variant="ghost" size="sm" onClick={() => navigate("/account")} className="text-muted-foreground hover:text-foreground">
               <UserCircle className="w-4 h-4" />
-              <span className="hidden sm:inline ms-1">{t("myAccount")}</span>
+              <span className="hidden sm:inline ms-1">{displayName}</span>
             </Button>
             <Button variant="ghost" onClick={onBack} className="text-muted-foreground hover:text-foreground">
               {dir === "rtl" ? <ArrowRight className="ms-2 w-4 h-4" /> : <ArrowLeft className="me-2 w-4 h-4" />}
@@ -1383,7 +1396,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                     className={cn("w-20 h-20 mx-auto animate-float rounded-full", getAvatarGlowClass(chatMode))}
                   />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground">{t("welcomeTitle")}</h2>
+                <h2 className="text-2xl font-bold text-foreground">
+                  {language === "ar" ? `مرحباً، ${displayName}` : `Welcome, ${displayName}`}
+                </h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   {chatMode === "analysis" ? t("welcomeSubtitleAnalysis") : chatMode === "primary" ? t("welcomeSubtitlePrimary") : t("welcomeSubtitle")}
                 </p>
@@ -1537,7 +1552,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                           content={displayContent}
                           mode={msgMode}
                           messageId={message.id}
-                          userName={userName}
+                          userName={displayName}
                         />
                       </div>
                     )}
