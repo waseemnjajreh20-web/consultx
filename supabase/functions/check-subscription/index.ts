@@ -7,19 +7,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Campaign constants (must match launch-trial-activate)
 const LAUNCH_DATE  = new Date("2026-03-28T00:00:00.000Z");
 const CAMPAIGN_END = new Date("2026-04-28T00:00:00.000Z");
 const TRIAL_DAYS   = 3;
-
-const LAUNCH_TRIAL_LIMITS: Record<string, number> = {
-  primary:  50,
-  standard:  2,
-  analysis:  1,
-};
+const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 
 function addDays(d: Date, days: number) {
-  return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
+  return new Date(d.getTime() + days * 86_400_000);
+}
+function daysUntil(end: Date, now: Date): number {
+  return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86_400_000));
+}
+function hoursUntil(end: Date, now: Date): number {
+  return Math.max(0, Math.floor((end.getTime() - now.getTime()) / 3_600_000));
 }
 
 serve(async (req) => {
@@ -50,7 +50,6 @@ serve(async (req) => {
     }
 
     // Admin bypass
-    const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
     if (user.email && ADMIN_EMAILS.includes(user.email)) {
       return new Response(
         JSON.stringify({
@@ -58,10 +57,16 @@ serve(async (req) => {
           plan: { id: "enterprise", name_ar: "مؤسسة", name_en: "Enterprise", price_amount: 34900, currency: "SAR" },
           expires_at: null, card_brand: null, card_last_four: null,
           daily_messages_used: 0, daily_messages_limit: 9999,
-          launch_trial_status: "paid", launch_trial_active: false,
-          launch_trial_days_remaining: 0, launch_trial_end: null,
-          mode_limits: null, mode_usage_today: { primary: 0, standard: 0, analysis: 0 },
+          // Launch trial fields
+          access_state: "paid_active",
+          launch_trial_status: "paid",
+          launch_trial_active: false,
+          launch_trial_days_remaining: 0,
+          launch_trial_hours_remaining: 0,
+          launch_trial_end: null,
           show_welcome_banner: false,
+          upgrade_context: null,
+          recommended_plan: "pro",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -71,8 +76,8 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const now         = new Date();
 
-    // ── Parallel fetches ────────────────────────────────────────────────────────
-    const [subResult, dailyUsageResult, profileResult, modeUsageResult] = await Promise.all([
+    // ── Parallel fetches ────────────────────────────────────────────────────
+    const [subResult, dailyUsageResult, profileResult] = await Promise.all([
       adminClient
         .from("user_subscriptions")
         .select("*, subscription_plans(*)")
@@ -83,29 +88,16 @@ serve(async (req) => {
       adminClient.rpc("get_daily_usage", { p_user_id: userId }),
       adminClient
         .from("profiles")
-        .select("launch_trial_status, launch_trial_start, launch_trial_end, launch_trial_welcomed, created_at")
+        .select("launch_trial_status, launch_trial_start, launch_trial_end, launch_trial_welcomed, launch_trial_consumed, created_at")
         .eq("user_id", userId)
         .maybeSingle(),
-      // Fetch today's mode-specific usage in one query
-      adminClient
-        .from("mode_daily_usage")
-        .select("mode, count")
-        .eq("user_id", userId)
-        .eq("usage_date", new Date().toISOString().split("T")[0]),
     ]);
 
-    const subscription    = subResult.data;
-    const messagesUsed    = dailyUsageResult.data ?? 0;
-    const profile         = profileResult.data;
-    const modeUsageRows   = modeUsageResult.data ?? [];
+    const subscription = subResult.data;
+    const messagesUsed = dailyUsageResult.data ?? 0;
+    const profile      = profileResult.data;
 
-    // Build mode usage map
-    const modeUsageToday: Record<string, number> = { primary: 0, standard: 0, analysis: 0 };
-    for (const row of modeUsageRows) {
-      if (row.mode in modeUsageToday) modeUsageToday[row.mode] = row.count;
-    }
-
-    // ── Paid subscription check ─────────────────────────────────────────────────
+    // ── Paid subscription check ─────────────────────────────────────────────
     let active            = false;
     let trialDaysRemaining = 0;
     let expiresAt: string | null = null;
@@ -141,98 +133,110 @@ serve(async (req) => {
     }
 
     const plan = subscription?.subscription_plans as any;
-
-    // ── Launch trial logic ───────────────────────────────────────────────────────
-    // If user already has an active paid subscription, mark as paid and skip trial
     const isPaidActive = active && subscription?.status === "active";
 
-    let launchTrialStatus      = profile?.launch_trial_status ?? null;
-    let launchTrialActive      = false;
-    let launchTrialDaysLeft    = 0;
+    // ── Launch trial state ──────────────────────────────────────────────────
+    let launchTrialStatus   = profile?.launch_trial_status ?? null;
+    let launchTrialActive   = false;
+    let launchTrialDaysLeft = 0;
+    let launchTrialHoursLeft = 0;
     let launchTrialEnd: string | null = null;
-    let showWelcomeBanner      = false;
-    let effectiveModeLimit: Record<string, number> | null = null;
+    let showWelcomeBanner   = false;
 
     if (isPaidActive) {
-      // Mark paid if not already
       if (launchTrialStatus !== "paid") {
         await adminClient.from("profiles").update({ launch_trial_status: "paid" }).eq("user_id", userId);
         launchTrialStatus = "paid";
       }
     } else {
-      // Check and potentially auto-init trial for users who haven't hit the activate endpoint yet
       const userCreatedAt = new Date(user.created_at ?? profile?.created_at ?? now.toISOString());
       const isNewUser     = userCreatedAt >= LAUNCH_DATE;
       const withinWindow  = now < CAMPAIGN_END;
 
-      if (!launchTrialStatus && withinWindow) {
-        // Auto-initialize
-        if (isNewUser) {
-          const trialStart = userCreatedAt;
-          const trialEnd   = addDays(userCreatedAt, TRIAL_DAYS);
-          launchTrialStatus = "eligible_new";
-          await adminClient.from("profiles").update({
-            launch_trial_status:   "eligible_new",
-            launch_trial_start:    trialStart.toISOString(),
-            launch_trial_end:      trialEnd.toISOString(),
-            launch_trial_welcomed: false,
-          }).eq("user_id", userId);
-          profile && (profile.launch_trial_end = trialEnd.toISOString());
+      // Auto-initialize if no status yet
+      if (!launchTrialStatus) {
+        if (withinWindow) {
+          if (isNewUser) {
+            const tStart = userCreatedAt;
+            const tEnd   = addDays(userCreatedAt, TRIAL_DAYS);
+            launchTrialStatus = "trial_active";
+            await adminClient.from("profiles").update({
+              launch_trial_status:   "trial_active",
+              launch_trial_start:    tStart.toISOString(),
+              launch_trial_end:      tEnd.toISOString(),
+              launch_trial_consumed: true,
+              launch_source:         "new_signup",
+            }).eq("user_id", userId);
+            // update local ref
+            if (profile) {
+              profile.launch_trial_end = tEnd.toISOString();
+              profile.launch_trial_welcomed = false;
+            }
+          } else {
+            launchTrialStatus = "eligible_existing_pending";
+            await adminClient.from("profiles").update({
+              launch_trial_status: "eligible_existing_pending",
+              launch_source:       "existing_user",
+            }).eq("user_id", userId);
+          }
         } else {
-          launchTrialStatus = "eligible_existing_pending";
-          await adminClient.from("profiles").update({
-            launch_trial_status: "eligible_existing_pending",
-          }).eq("user_id", userId);
+          launchTrialStatus = "ineligible";
+          await adminClient.from("profiles").update({ launch_trial_status: "ineligible" }).eq("user_id", userId);
         }
-      } else if (!launchTrialStatus && !withinWindow) {
-        launchTrialStatus = "ineligible_window_closed";
-        await adminClient.from("profiles").update({
-          launch_trial_status: "ineligible_window_closed",
-        }).eq("user_id", userId);
       }
 
       // Evaluate active trial
-      if (
-        launchTrialStatus === "eligible_new" ||
-        launchTrialStatus === "eligible_existing_active"
-      ) {
+      if (launchTrialStatus === "trial_active") {
         const trialEndDate = profile?.launch_trial_end ? new Date(profile.launch_trial_end) : null;
         if (trialEndDate && now < trialEndDate) {
-          launchTrialActive   = true;
-          launchTrialEnd      = profile!.launch_trial_end;
-          launchTrialDaysLeft = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          effectiveModeLimit  = LAUNCH_TRIAL_LIMITS;
-          showWelcomeBanner   =
-            launchTrialStatus === "eligible_existing_active" && !profile?.launch_trial_welcomed;
+          launchTrialActive    = true;
+          launchTrialEnd       = profile!.launch_trial_end;
+          launchTrialDaysLeft  = daysUntil(trialEndDate, now);
+          launchTrialHoursLeft = hoursUntil(trialEndDate, now);
+          // Show welcome banner for existing users who haven't dismissed it yet
+          showWelcomeBanner    = !isNewUser && !profile?.launch_trial_welcomed;
         } else if (trialEndDate && now >= trialEndDate) {
-          // Expired — update
-          await adminClient.from("profiles").update({ launch_trial_status: "expired" }).eq("user_id", userId);
-          launchTrialStatus = "expired";
+          await adminClient.from("profiles").update({ launch_trial_status: "trial_expired" }).eq("user_id", userId);
+          launchTrialStatus = "trial_expired";
         }
       }
     }
 
+    // ── Access state ────────────────────────────────────────────────────────
+    const accessState: string = (() => {
+      if (isPaidActive)                            return "paid_active";
+      if (launchTrialActive)                       return "trial_active";
+      if (launchTrialStatus === "trial_expired")   return "trial_expired";
+      if (launchTrialStatus === "eligible_existing_pending") return "eligible_existing_pending";
+      if (launchTrialStatus === "paid")            return "paid_active";
+      return "ineligible";
+    })();
+
+    const upgradeContext = launchTrialStatus === "trial_expired" ? "trial_expired" : null;
+
     return new Response(
       JSON.stringify({
-        // Paid subscription fields (unchanged interface)
+        // Standard paid subscription fields (unchanged interface)
         active,
-        status:                subscription?.status ?? "none",
-        trial_days_remaining:  trialDaysRemaining,
-        plan:                  plan ? { id: plan.id, name_ar: plan.name_ar, name_en: plan.name_en, price_amount: plan.price_amount, currency: plan.currency } : null,
-        expires_at:            expiresAt,
-        card_brand:            subscription?.card_brand ?? null,
-        card_last_four:        subscription?.card_last_four ?? null,
-        daily_messages_used:   messagesUsed,
-        daily_messages_limit:  dailyLimit,
+        status:               subscription?.status ?? "none",
+        trial_days_remaining: trialDaysRemaining,
+        plan:                 plan ? { id: plan.id, name_ar: plan.name_ar, name_en: plan.name_en, price_amount: plan.price_amount, currency: plan.currency } : null,
+        expires_at:           expiresAt,
+        card_brand:           subscription?.card_brand ?? null,
+        card_last_four:       subscription?.card_last_four ?? null,
+        daily_messages_used:  messagesUsed,
+        daily_messages_limit: dailyLimit,
 
-        // Launch trial fields
+        // Launch trial fields (new unified access object)
+        access_state:                accessState,
         launch_trial_status:         launchTrialStatus,
         launch_trial_active:         launchTrialActive,
         launch_trial_days_remaining: launchTrialDaysLeft,
+        launch_trial_hours_remaining: launchTrialHoursLeft,
         launch_trial_end:            launchTrialEnd,
-        mode_limits:                 effectiveModeLimit,
-        mode_usage_today:            modeUsageToday,
         show_welcome_banner:         showWelcomeBanner,
+        upgrade_context:             upgradeContext,
+        recommended_plan:            "pro",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

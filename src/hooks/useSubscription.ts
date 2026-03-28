@@ -2,21 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type LaunchTrialStatus =
-  | "eligible_new"
-  | "eligible_existing_pending"
-  | "eligible_existing_active"
-  | "expired"
-  | "paid"
-  | "ineligible_window_closed"
-  | null;
-
-export interface ModeUsageToday {
-  primary:  number;
-  standard: number;
-  analysis: number;
-}
-
 export interface SubscriptionStatus {
   // Existing paid-subscription fields
   active: boolean;
@@ -30,13 +15,15 @@ export interface SubscriptionStatus {
   daily_messages_limit: number;
 
   // Launch trial fields
-  launch_trial_status:          LaunchTrialStatus;
-  launch_trial_active:          boolean;
-  launch_trial_days_remaining:  number;
-  launch_trial_end:             string | null;
-  mode_limits:                  Record<string, number> | null;
-  mode_usage_today:             ModeUsageToday;
-  show_welcome_banner:          boolean;
+  access_state?: string;
+  launch_trial_status?: string;
+  launch_trial_active?: boolean;
+  launch_trial_days_remaining?: number;
+  launch_trial_hours_remaining?: number;
+  launch_trial_end?: string | null;
+  show_welcome_banner?: boolean;
+  upgrade_context?: string | null;
+  recommended_plan?: string;
 }
 
 export function useSubscription() {
@@ -79,19 +66,5 @@ export function useSubscription() {
     else { setSubscription(null); setLoading(false); }
   }, [user, session]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /** Optimistically increment a mode's usage count after a successful message */
-  const incrementModeUsage = useCallback((mode: "primary" | "standard" | "analysis") => {
-    setSubscription(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        mode_usage_today: {
-          ...prev.mode_usage_today,
-          [mode]: (prev.mode_usage_today?.[mode] ?? 0) + 1,
-        },
-      };
-    });
-  }, []);
-
-  return { subscription, loading, error, refetch: checkSubscription, incrementModeUsage };
+  return { subscription, loading, error, refetch: checkSubscription };
 }

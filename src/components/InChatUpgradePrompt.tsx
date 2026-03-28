@@ -36,35 +36,62 @@ export default function InChatUpgradePrompt({ variant, mode, language }: InChatU
     : "#00D4FF";
   const borderColor        = `${accentColor}55`;
 
+  // Mode-specific title: speak to what the user just accomplished, not what they can't do
   const title = isModeLimitVariant
-    ? (isAr
-        ? `لقد استخدمت حد التجربة في ${ModeLabel(mode, true)}`
-        : `You've reached today's trial limit for ${ModeLabel(mode, false)}`)
+    ? (mode === "analysis"
+        ? (isAr
+            ? "اكتمل تحليلك الهندسي اليوم"
+            : "Today's engineering analysis is complete")
+        : (isAr
+            ? "اكتملت استشاراتك الاستشارية اليوم"
+            : "Today's advisory sessions are complete"))
     : (isAr
-        ? "انتهت فترتك التجريبية المجانية"
-        : "Your free trial has ended");
+        ? "اكتملت تجربتك الهندسية الكاملة"
+        : "Your full engineering trial is complete");
 
+  // Body: value-forward, not restriction-forward
   const body = isModeLimitVariant
-    ? (isAr
-        ? "فعّل Pro لمواصلة الوصول إلى الإجابات الاستشارية الكاملة والتحليل المتقدم بشكل مستمر دون قيود يومية."
-        : "Activate Pro to continue full advisory answers and advanced analysis with no daily limits.")
+    ? (mode === "analysis"
+        ? (isAr
+            ? "الوضع التحليلي مخصص لكل متغيرات المشروع الحقيقي — معادلات، تحقق من الامتثال، ومسار قرار كامل. Pro يفتح التحليل غير المحدود يومياً."
+            : "Analysis mode is built for real project variables — equations, compliance verification, full decision paths. Pro unlocks unlimited daily analysis.")
+        : (isAr
+            ? "الوضع الاستشاري يقدم المرجع القانوني الدقيق، الفقرة، والاشتقاق الهندسي الكامل. Pro يتيح الرجوع إليه بلا قيود يومية."
+            : "Advisory mode delivers precise legal references, clauses, and complete engineering derivations. Pro removes the daily ceiling."))
     : (isAr
-        ? "فعّل اشتراكك الآن لمواصلة الوصول إلى ConsultX دون قيود، مع جميع الأوضاع غير المحدودة."
-        : "Activate your subscription now to continue accessing ConsultX without restrictions, including all unlimited modes.");
+        ? "ثلاثة أيام أثبتت ما يستطيع ConsultX Pro تقديمه. الخطوة التالية هي الوصول الكامل المستمر — بلا انقطاع، بلا قيود يومية."
+        : "Three days showed you what ConsultX Pro can do. The next step is continuous full access — no interruptions, no daily ceilings.");
 
-  const ctaLabel = isAr ? "اشترك في Pro الآن" : "Subscribe to Pro Now";
+  const ctaLabel = isAr ? "فعّل اشتراكك الآن" : "Activate Your Subscription";
 
-  const valuePoints = isAr
-    ? [
-        "إجابات استشارية كاملة مع المرجع والفقرة والاشتقاق الهندسي",
-        "تحليل غير محدود للمخططات الهندسية",
-        "وصول مستمر بدون انقطاع يومي",
-      ]
-    : [
-        "Full advisory answers with references, clauses, and engineering logic",
-        "Unlimited engineering drawing analysis",
-        "Continuous access with no daily interruptions",
-      ];
+  // Value points: outcomes, not feature checklist
+  const valuePoints = isModeLimitVariant
+    ? (isAr
+        ? [
+            mode === "analysis"
+              ? "تحليل هندسي كامل لكل مشروع، يومياً بدون حد"
+              : "استشارات يومية غير محدودة مع المرجع والفقرة",
+            "كل الأوضاع مفتوحة — رئيسي، استشاري، تحليلي",
+            "وصول فوري بعد التفعيل",
+          ]
+        : [
+            mode === "analysis"
+              ? "Full engineering analysis for every project, every day"
+              : "Unlimited daily advisory answers with legal references",
+            "All modes unlocked — Primary, Advisory, Analysis",
+            "Instant access from activation",
+          ])
+    : (isAr
+        ? [
+            "استشارات يومية غير محدودة في الوضع الاستشاري والتحليلي",
+            "GraphRAG — كل إجابة مرتبطة بشبكة المراجع الهندسية",
+            "تصدير PDF وحفظ المحادثات 90 يوماً",
+          ]
+        : [
+            "Unlimited daily use of Advisory and Analysis modes",
+            "GraphRAG — every answer connected to the engineering reference graph",
+            "PDF export and 90-day conversation history",
+          ]);
 
   return (
     <div
@@ -151,11 +178,11 @@ export default function InChatUpgradePrompt({ variant, mode, language }: InChatU
         </svg>
       </button>
 
-      {/* Plan comparison hint */}
+      {/* Friction reducer microcopy */}
       <p style={{ margin: "12px 0 0", fontSize: "0.73rem", color: "#4a6070", lineHeight: 1.5 }}>
         {isAr
-          ? "باقة المهندس Pro: وصول كامل لكل الأوضاع، مراجع قانونية دقيقة، تصدير PDF، وحفظ المحادثات 90 يوماً."
-          : "Engineer Pro plan: full access to all modes, precise legal references, PDF export, and 90-day history."}
+          ? "وصول فوري بعد التفعيل · تجديد تلقائي · إلغاء في أي وقت بدون غرامة"
+          : "Instant access after activation · Auto-renews · Cancel anytime, no penalty"}
       </p>
     </div>
   );

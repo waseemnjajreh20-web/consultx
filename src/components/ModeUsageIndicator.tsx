@@ -30,11 +30,18 @@ export default function ModeUsageIndicator({ mode, used, limit }: ModeUsageIndic
   const bgAlpha     = isDone ? 0.18 : isLast ? 0.12 : 0.07;
   const textColor   = isDone ? accentColor : isLast ? `${accentColor}dd` : `${accentColor}99`;
 
+  // Professional, non-mechanical labels — mode-aware
   const label = isDone
-    ? (isAr ? "نفدت الحصة اليومية" : "Daily quota used")
-    : isAr
-      ? `${remaining} إجابة متبقية اليوم`
-      : `${remaining} response${remaining !== 1 ? "s" : ""} remaining today`;
+    ? (mode === "analysis"
+        ? (isAr ? "اكتمل التحليل اليومي" : "Today's analysis complete")
+        : (isAr ? "اكتملت استشارات اليوم" : "Today's advisory sessions complete"))
+    : (mode === "analysis"
+        ? (isAr
+            ? (remaining === 1 ? "تحليل هندسي واحد متبقٍ" : `${remaining} تحليلات هندسية متبقية`)
+            : `${remaining} analysis response${remaining !== 1 ? "s" : ""} left today`)
+        : (isAr
+            ? (remaining === 1 ? "استشارة استشارية أخيرة اليوم" : `${remaining} استشارات استشارية متبقية`)
+            : `${remaining} advisory response${remaining !== 1 ? "s" : ""} left today`));
 
   return (
     <div
@@ -97,8 +104,12 @@ export function TrialDaysIndicator({ daysRemaining }: { daysRemaining: number })
         <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
       </svg>
       {isAr
-        ? `${daysRemaining} ${daysRemaining === 1 ? "يوم" : "أيام"} تجريبية`
-        : `${daysRemaining} trial day${daysRemaining !== 1 ? "s" : ""}`
+        ? (daysRemaining === 1
+            ? "آخر يوم من التجربة الكاملة"
+            : `${daysRemaining} أيام وصول كامل`)
+        : (daysRemaining === 1
+            ? "Last day of full access"
+            : `${daysRemaining} days full access`)
       }
     </div>
   );

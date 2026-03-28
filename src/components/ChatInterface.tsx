@@ -26,7 +26,7 @@ import { useLaunchTrial } from "@/hooks/useLaunchTrial";
 import { useIsMobile } from "@/hooks/use-mobile";
 import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
-import ModeUsageIndicator, { TrialDaysIndicator } from "./ModeUsageIndicator";
+import { TrialDaysIndicator } from "./ModeUsageIndicator";
 
 interface Message {
   id: string;
@@ -50,11 +50,11 @@ interface DividerMessage {
   timestamp: Date;
 }
 
-// In-chat upgrade prompt (mode limit or trial expired)
+// In-chat upgrade prompt (trial expired)
 interface UpgradeItem {
   id: string;
   type: "upgrade";
-  variant: "mode_limit" | "trial_expired";
+  variant: "trial_expired";
   mode?: ChatMode;
   timestamp: Date;
 }
@@ -641,14 +641,12 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const displayName = userName.includes("@") ? userName.split("@")[0] : userName;
   const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
-  const { subscription, refetch: refetchSub, incrementModeUsage } = useSubscription();
+  const { subscription, refetch: refetchSub } = useSubscription();
   const { trialData, dismissWelcomeBanner } = useLaunchTrial();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
   const [showExpiryModal, setShowExpiryModal] = useState(false);
   const [localMessagesUsed, setLocalMessagesUsed] = useState(0);
   const [modeLockTarget, setModeLockTarget] = useState<"standard" | "analysis" | null>(null);
-  // Track mode usage locally (updated optimistically after each successful message)
-  const [localModeUsage, setLocalModeUsage] = useState<Record<string, number>>({ primary: 0, standard: 0, analysis: 0 });
   const [chatItems, setChatItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -931,14 +929,6 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               ("type" in item) ? item : ((item.id === assistantId || item.id.startsWith(assistantId))
                 ? { ...item, isValid: validation.valid, sources: currentSources } : item)
             ));
-            // Optimistically increment mode usage after successful message
-            if (currentMode === "standard" || currentMode === "analysis" || currentMode === "primary") {
-              setLocalModeUsage(prev => ({
-                ...prev,
-                [currentMode]: (prev[currentMode] ?? 0) + 1,
-              }));
-              incrementModeUsage(currentMode as "primary" | "standard" | "analysis");
-            }
           }
         },
         onError: error => {
@@ -953,15 +943,6 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               return;
             }
             return; // ignore other aborts (mode switch)
-          }
-          // If mode limit exceeded (launch trial), show in-chat upgrade card
-          if (error === "mode_limit_exceeded" || error.includes?.("mode_limit_exceeded")) {
-            stopLoading();
-            setChatItems(prev => [
-              ...prev.filter(item => !("type" in item) || (item as any).id !== assistantId),
-              { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "mode_limit", mode: currentMode, timestamp: new Date() } as UpgradeItem,
-            ]);
-            return;
           }
           if (error === "trial_expired") {
             stopLoading();
@@ -1003,13 +984,6 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     }
   }, [subscription?.daily_messages_used]);
 
-  // Sync mode usage from subscription
-  useEffect(() => {
-    if (subscription?.mode_usage_today) {
-      setLocalModeUsage(subscription.mode_usage_today);
-    }
-  }, [subscription?.mode_usage_today]);
-
   const dailyLimit = subscription?.daily_messages_limit ?? 10;
   const isAtDailyLimit = localMessagesUsed >= dailyLimit && dailyLimit < 9999;
 
@@ -1018,24 +992,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     if (!messageText && !hasFiles) return;
     if (isLoading) return;
 
-    // ── Launch trial: per-mode limit check (client-side optimistic guard) ──
-    const launchTrialActive = trialData?.trial_active ?? false;
-    const modeLimits        = subscription?.mode_limits ?? trialData?.mode_limits ?? null;
-    if (launchTrialActive && modeLimits && (chatMode === "standard" || chatMode === "analysis")) {
-      const modeLimit = modeLimits[chatMode] ?? 99;
-      const modeUsed  = localModeUsage[chatMode] ?? 0;
-      if (modeUsed >= modeLimit) {
-        // Show in-chat upgrade prompt instead of toast
-        setChatItems(prev => [
-          ...prev,
-          { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "mode_limit", mode: chatMode, timestamp: new Date() } as UpgradeItem,
-        ]);
-        return;
-      }
-    }
-
     // ── Launch trial expired check ─────────────────────────────────────────
-    if (trialData?.status === "expired" && !subscription?.active) {
+    const launchTrialActive = trialData?.trial_active ?? false;
+    if (trialData?.access_state === "trial_expired" && !subscription?.active) {
       setChatItems(prev => [
         ...prev,
         { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "trial_expired", timestamp: new Date() } as UpgradeItem,
@@ -1279,14 +1238,6 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             {/* Launch trial days remaining pill */}
             {trialData?.trial_active && !subscription?.active && (
               <TrialDaysIndicator daysRemaining={trialData.days_remaining} />
-            )}
-            {/* Per-mode usage indicator for current restricted mode */}
-            {trialData?.trial_active && !subscription?.active && (chatMode === "standard" || chatMode === "analysis") && subscription?.mode_limits && (
-              <ModeUsageIndicator
-                mode={chatMode}
-                used={localModeUsage[chatMode] ?? 0}
-                limit={subscription.mode_limits[chatMode] ?? (chatMode === "standard" ? 2 : 1)}
-              />
             )}
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground hover:text-foreground">

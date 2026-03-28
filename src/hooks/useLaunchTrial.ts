@@ -2,46 +2,47 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type LaunchTrialStatus =
-  | "eligible_new"
+export type AccessState =
+  | "trial_active"
+  | "trial_expired"
+  | "paid_active"
   | "eligible_existing_pending"
-  | "eligible_existing_active"
-  | "expired"
-  | "paid"
-  | "ineligible_window_closed"
+  | "ineligible"
   | null;
 
-export interface LaunchTrialData {
-  status: LaunchTrialStatus;
-  trial_active: boolean;
-  trial_start: string | null;
-  trial_end: string | null;
-  days_remaining: number;
-  mode_limits: Record<string, number> | null;   // { primary: 50, standard: 2, analysis: 1 }
-  show_welcome_banner: boolean;
-}
+export type UpgradeContext = "trial_expired" | "account_upgrade" | "analysis_gate" | null;
 
-export interface ModeUsageToday {
-  primary: number;
-  standard: number;
-  analysis: number;
+export interface LaunchTrialData {
+  access_state: AccessState;
+  is_paid: boolean;
+  trial_active: boolean;
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  days_remaining: number;
+  hours_remaining: number;
+  show_welcome_banner: boolean;
+  recommended_plan: "starter" | "pro" | "team";
+  upgrade_context: UpgradeContext;
 }
 
 const DEFAULT: LaunchTrialData = {
-  status: null,
+  access_state: null,
+  is_paid: false,
   trial_active: false,
-  trial_start: null,
-  trial_end: null,
+  trial_started_at: null,
+  trial_ends_at: null,
   days_remaining: 0,
-  mode_limits: null,
+  hours_remaining: 0,
   show_welcome_banner: false,
+  recommended_plan: "pro",
+  upgrade_context: null,
 };
 
 export function useLaunchTrial() {
   const { user, session } = useAuth();
-  const [data, setData]     = useState<LaunchTrialData>(DEFAULT);
+  const [data, setData]       = useState<LaunchTrialData>(DEFAULT);
   const [loading, setLoading] = useState(true);
-  const activated = useRef(false);
+  const activated             = useRef(false);
 
   const activate = useCallback(async () => {
     if (!user || !session) {

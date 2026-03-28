@@ -46,16 +46,16 @@ export default function LaunchTrialWelcomeBanner({ daysRemaining, onDismiss }: L
       <span style={{ flex: 1, lineHeight: 1.5 }}>
         {isAr
           ? <>
-              <strong style={{ color: "#00D4FF", fontWeight: 600 }}>مرحباً بعودتك!</strong>
-              {" "}حصلت تلقائياً على وصول تجريبي{" "}
+              <strong style={{ color: "#00D4FF", fontWeight: 600 }}>وصول كامل مفعّل.</strong>
+              {" "}الوضع الاستشاري والتحليلي متاحان لك{" "}
               <strong style={{ color: "#e2f4f9" }}>{daysRemaining} أيام</strong>
-              {" "}للأوضاع المتقدمة — اكتشف عمق التحليل الهندسي في ConsultX.
+              {" "}— اكتشف عمق المراجع الهندسية التي بني عليها ConsultX.
             </>
           : <>
-              <strong style={{ color: "#00D4FF", fontWeight: 600 }}>Welcome back!</strong>
-              {" "}You've automatically received a{" "}
-              <strong style={{ color: "#e2f4f9" }}>{daysRemaining}-day trial</strong>
-              {" "}of advanced modes — explore the depth of engineering analysis in ConsultX.
+              <strong style={{ color: "#00D4FF", fontWeight: 600 }}>Full access activated.</strong>
+              {" "}Advisory and Analysis modes are yours for{" "}
+              <strong style={{ color: "#e2f4f9" }}>{daysRemaining} days</strong>
+              {" "}— explore the engineering reference depth behind ConsultX.
             </>
         }
       </span>

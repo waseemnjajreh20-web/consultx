@@ -12,7 +12,7 @@ export interface Profile {
   corporate_domain: string | null;
   trial_expired_modal_shown: boolean;
   // Launch trial fields
-  launch_trial_status: string | null;
+  launch_trial_status: 'trial_active' | 'trial_expired' | 'eligible_existing_pending' | 'paid' | 'ineligible' | null;
   launch_trial_start: string | null;
   launch_trial_end: string | null;
   launch_trial_welcomed: boolean;
@@ -70,9 +70,8 @@ export function useProfile() {
 
   const isLaunchTrialActive = () => {
     if (!profile?.launch_trial_end) return false;
-    const status = profile.launch_trial_status;
     return (
-      (status === "eligible_new" || status === "eligible_existing_active") &&
+      profile.launch_trial_status === "trial_active" &&
       new Date(profile.launch_trial_end) > new Date()
     );
   };
