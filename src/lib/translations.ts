@@ -34,19 +34,20 @@ export const translations = {
     unexpectedError: "حدث خطأ غير متوقع",
     
     // Hero
-    heroTitle: "مستشار الحماية من الحرائق",
-    heroSubtitle: "استشارات متخصصة في كود البناء السعودي (SBC 201 & SBC 801) ومعايير NFPA للحماية من الحرائق وسلامة الحياة",
+    heroTitle: "إجابة مرجعية دقيقة خلال ثوانٍ — بدلاً من ساعات بحث",
+    heroSubtitle: "اطرح سؤالك، يحلّله ConsultX ويردّ بإجابة مستشهدة من الكود مباشرةً — يختصر وقتك ويرفع دقة قرارك",
+    heroTrustBadge: "مستند إلى · SBC 201 · SBC 801 · NFPA 13 · NFPA 101",
     startConsultation: "ابدأ الاستشارة الآن",
     signInToConsult: "سجل دخول للاستشارة",
     learnMore: "تعرف على المزيد",
-    
+
     // Features
-    feature1Title: "SBC 201 & SBC 801",
-    feature1Desc: "تحليل شامل لمتطلبات كود البناء السعودي للحماية من الحرائق",
+    feature1Title: "اقتباس حرفي من الكود",
+    feature1Desc: "نص المادة والجدول بالكامل — صفر تفسير حر أو تخمين",
     feature2Title: "تحليل المخططات",
-    feature2Desc: "مراجعة وتحليل مخططات أنظمة الحماية من الحرائق",
-    feature3Title: "NFPA & SFPE",
-    feature3Desc: "استشارات متوافقة مع المعايير الدولية للحماية من الحرائق",
+    feature2Desc: "ارفع المخطط واحصل على مراجعة مبنية على الكود فوراً",
+    feature3Title: "قرار مدعوم بمعايير معتمدة",
+    feature3Desc: "توافق تام مع NFPA والكود السعودي — ثقة في كل استشارة",
     
     // Footer
     copyright: "© 2026 ConsultX - جميع الحقوق محفوظة - Eng.WaseemNjajreh",
@@ -325,19 +326,20 @@ export const translations = {
     unexpectedError: "An unexpected error occurred",
     
     // Hero
-    heroTitle: "Fire Safety Consultant",
-    heroSubtitle: "Expert consulting on Saudi Building Code (SBC 201 & SBC 801) and NFPA standards for fire protection and life safety",
+    heroTitle: "Code-Backed Fire Safety Answers in Seconds",
+    heroSubtitle: "Ask your question. ConsultX retrieves the exact SBC or NFPA clause and delivers a cited answer — faster than any manual search",
+    heroTrustBadge: "Powered by · SBC 201 · SBC 801 · NFPA 13 · NFPA 101",
     startConsultation: "Start Consultation",
     signInToConsult: "Sign in to Consult",
     learnMore: "Learn More",
-    
+
     // Features
-    feature1Title: "SBC 201 & SBC 801",
-    feature1Desc: "Comprehensive analysis of Saudi Building Code fire protection requirements",
+    feature1Title: "Verbatim Code Citations",
+    feature1Desc: "Exact article and table text — no free interpretation or guesswork",
     feature2Title: "Plan Analysis",
-    feature2Desc: "Review and analysis of fire protection system drawings",
-    feature3Title: "NFPA & SFPE",
-    feature3Desc: "Consulting compliant with international fire protection standards",
+    feature2Desc: "Upload a drawing and get an instant code-based review",
+    feature3Title: "Standards-Backed Decisions",
+    feature3Desc: "Full compliance with NFPA and Saudi Building Code — confidence in every answer",
     
     // Footer
     copyright: "© 2026 ConsultX - All Rights Reserved - Eng.WaseemNjajreh",
