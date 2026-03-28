@@ -19,27 +19,27 @@ interface Feature {
 /* ─────────────── data (language-aware, built inside component) ─────────────── */
 function getExplorerFeatures(isAr: boolean): Feature[] {
   return [
-    { text: isAr ? "الوضع الرئيسي — 10 رسائل/يوم" : "Main Mode — 10 messages/day", included: true },
-    { text: isAr ? "3 وكلاء ذكيين" : "3 AI agents", included: true },
+    { text: isAr ? "الوضع الرئيسي — 10 إجابات/يوم" : "Primary Mode — 10 answers/day", included: true },
+    { text: isAr ? "أسئلة سريعة عن SBC وNFPA" : "Quick SBC & NFPA questions", included: true },
     { text: isAr ? "GraphRAG أساسي" : "Basic GraphRAG", included: true },
-    { text: isAr ? "الوضع الاستشاري" : "Advisory Mode", included: false },
-    { text: isAr ? "الوضع التحليلي" : "Analysis Mode", included: false },
-    { text: isAr ? "السند القانوني (رقم الصفحة)" : "Legal reference (page number)", included: false },
-    { text: isAr ? "تصدير التقارير" : "Export reports", included: false },
+    { text: isAr ? "الوضع الاستشاري (مقيّد)" : "Advisory Mode (restricted)", included: false },
+    { text: isAr ? "الوضع التحليلي (مقيّد)" : "Analysis Mode (restricted)", included: false },
+    { text: isAr ? "السند القانوني + رقم الصفحة" : "Legal reference + page number", included: false },
+    { text: isAr ? "تصدير PDF" : "PDF export", included: false },
     { text: isAr ? "حفظ المحادثات: 7 أيام" : "Chat history: 7 days", included: true },
   ];
 }
 
 function getEngineerFeatures(isAr: boolean): Feature[] {
   return [
-    { text: isAr ? "الوضع الرئيسي — غير محدود" : "Main Mode — Unlimited", included: true },
-    { text: isAr ? "الوضع الاستشاري — 50 استشارة/شهر" : "Advisory Mode — 50 consultations/month", included: true },
-    { text: isAr ? "الوضع التحليلي — 10 مخططات/شهر" : "Analysis Mode — 10 plans/month", included: true },
-    { text: isAr ? "جميع الـ 12 وكيل ذكي" : "All 12 AI agents", included: true },
-    { text: isAr ? "GraphRAG كامل" : "Full GraphRAG", included: true },
-    { text: isAr ? "السند القانوني (رقم الصفحة والسكشن)" : "Legal reference (page & section)", included: true },
-    { text: isAr ? "تصدير PDF" : "PDF export", included: true },
-    { text: isAr ? "حفظ المحادثات: 90 يوم" : "Chat history: 90 days", included: true },
+    { text: isAr ? "الوضع الرئيسي — غير محدود" : "Primary Mode — Unlimited", included: true },
+    { text: isAr ? "الوضع الاستشاري — 50 استشارة/شهر مع اقتباس + سند" : "Advisory Mode — 50/month with clause + reference", included: true },
+    { text: isAr ? "الوضع التحليلي — 10 مخططات/شهر مع تحليل كامل" : "Analysis Mode — 10 plans/month with full analysis", included: true },
+    { text: isAr ? "جميع الـ 12 وكيل ذكي + أوركسترا" : "All 12 AI agents + orchestrator", included: true },
+    { text: isAr ? "GraphRAG كامل — روابط الكود المعقدة" : "Full GraphRAG — complex code cross-links", included: true },
+    { text: isAr ? "السند القانوني الدقيق (صفحة + سكشن + اشتقاق)" : "Precise legal reference (page + section + derivation)", included: true },
+    { text: isAr ? "تصدير PDF بالهوية المهنية" : "PDF export with professional branding", included: true },
+    { text: isAr ? "حفظ المحادثات: 90 يوماً" : "Chat history: 90 days", included: true },
     { text: isAr ? "دعم بريد إلكتروني" : "Email support", included: true },
   ];
 }
@@ -193,6 +193,12 @@ const PricingLanding = () => {
     >
       {/* Section title */}
       <div className="text-center mb-12 animate-fade-in">
+        {/* Launch trial badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-4"
+          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "hsl(195 85% 60%)" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "hsl(195 85% 50%)", display: "inline-block" }} />
+          {isAr ? "مسار إثبات الثقة — تجربة 3 أيام مفعّلة تلقائياً لكل مستخدم" : "Trust Proof Path — 3-day trial auto-activated for every user"}
+        </div>
         <h2
           className="text-3xl md:text-4xl font-bold mb-3"
           style={{
@@ -202,11 +208,25 @@ const PricingLanding = () => {
             backgroundClip: "text",
           }}
         >
-          {isAr ? "اختر خطتك المناسبة" : "Choose your plan"}
+          {isAr ? "أداة دعم القرار الهندسي" : "Engineering Decision Support"}
         </h2>
-        <p style={{ color: "rgba(200,220,240,0.65)" }} className="text-lg">
-          {isAr ? "ابدأ مجاناً. ارتقِ عندما تحتاج." : "Start free. Upgrade when you need."}
+        <p style={{ color: "rgba(200,220,240,0.65)" }} className="text-lg max-w-2xl mx-auto">
+          {isAr
+            ? "ConsultX ليس شاتاً — هو مرجعية هندسية موثقة تعتمد على SBC وNFPA وتدفعك لقرار مدعوم بالسند والمنطق."
+            : "ConsultX isn't a chatbot — it's a documented engineering reference built on SBC & NFPA, delivering decisions backed by clause and logic."}
         </p>
+
+        {/* Value props row */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+          {(isAr
+            ? ["⚡ سرعة الإجابة الهندسية", "📖 مرجع + فقرة + اشتقاق", "🔒 موثوقية SBC 2024"]
+            : ["⚡ Engineering answer speed", "📖 Reference + clause + derivation", "🔒 SBC 2024 compliance"]
+          ).map((v, i) => (
+            <span key={i} style={{ fontSize: "0.78rem", color: "rgba(180,210,230,0.7)", padding: "3px 12px", borderRadius: "20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              {v}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* spacer */}
@@ -248,13 +268,13 @@ const PricingLanding = () => {
           <div
             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full mb-4 mt-3 self-start"
             style={{
-              background: "rgba(255,140,0,0.12)",
-              border: "1px solid rgba(255,140,0,0.35)",
-              color: amberColor,
+              background: "rgba(0,212,255,0.10)",
+              border: "1px solid rgba(0,212,255,0.35)",
+              color: cyanColor,
             }}
           >
             <Building2 size={12} strokeWidth={1.5} />
-            <span>{isAr ? "تجربة مجانية 3 أيام" : "3-Day Free Trial"}</span>
+            <span>{isAr ? "تجربة مفعّلة تلقائياً · 3 أيام كاملة" : "Auto-activated · 3-day full trial"}</span>
           </div>
 
           {/* icon */}
@@ -265,9 +285,9 @@ const PricingLanding = () => {
             <HardHat size={32} strokeWidth={1.5} style={{ color: cyanColor }} />
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مهندس" : "Engineer"}</h3>
+          <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مهندس Pro" : "Engineer Pro"}</h3>
           <p className="text-sm mb-4" style={{ color: "rgba(200,220,240,0.5)" }}>
-            {isAr ? "للمهندس الاستشاري المتخصص" : "For the specialized consulting engineer"}
+            {isAr ? "للمهندس الذي يعتمد ConsultX مرجعاً يومياً للقرار" : "For engineers who rely on ConsultX as their daily decision reference"}
           </p>
 
           {/* price */}
@@ -284,7 +304,7 @@ const PricingLanding = () => {
               ~$26 USD
             </p>
             <p className="text-xs mt-1 font-medium" style={{ color: cyanColor }}>
-              {isAr ? "تجربة مجانية 3 أيام" : "3-Day Free Trial"}
+              {isAr ? "تجربة 3 أيام مفعّلة تلقائياً — بدون بطاقة" : "3-day trial auto-activated — no card required"}
             </p>
           </div>
 
@@ -318,7 +338,7 @@ const PricingLanding = () => {
           >
             {engineerLoading ? (
               <><Loader2 size={15} strokeWidth={1.5} className="animate-spin" /> {isAr ? "جارٍ التحميل..." : "Loading..."}</>
-            ) : (isAr ? "ابدأ تجربة مجانية" : "Start Free Trial")}
+            ) : (isAr ? "اشترك في Pro الآن" : "Subscribe to Pro Now")}
           </button>
         </div>
 
@@ -346,7 +366,7 @@ const PricingLanding = () => {
 
           <h3 className="text-xl font-bold text-foreground mb-1">{isAr ? "مستكشف" : "Explorer"}</h3>
           <p className="text-sm mb-4" style={{ color: "rgba(200,220,240,0.5)" }}>
-            {isAr ? "للتعرف على ConsultX" : "Get to know ConsultX"}
+            {isAr ? "البداية الآمنة — يصبح Pro بعد التجربة" : "Safe starting point — becomes Pro after trial"}
           </p>
 
           {/* price */}
@@ -577,20 +597,28 @@ const PricingLanding = () => {
           ))}
         </div>
 
+        {/* Trust proof statement */}
         <div
-          className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl"
+          className="flex items-center gap-2 text-sm px-5 py-3 rounded-xl text-center"
           style={{
-            background: "rgba(255,140,0,0.08)",
-            border: "1px solid rgba(255,140,0,0.2)",
-            color: amberColor,
+            background: "rgba(0,212,255,0.06)",
+            border: "1px solid rgba(0,212,255,0.2)",
+            color: "hsl(195 60% 70%)",
+            maxWidth: "520px",
           }}
         >
-          <Building2 size={14} strokeWidth={1.5} />
-          <span>{isAr ? "جرّب باقة مهندس أو مؤسسة 3 أيام مجاناً" : "Try Engineer or Enterprise plan free for 3 days"}</span>
+          <ShieldCheck size={14} strokeWidth={1.5} style={{ color: cyanColor, flexShrink: 0 }} />
+          <span>
+            {isAr
+              ? "كل مستخدم — جديد أو قديم — يحصل تلقائياً على 3 أيام لاختبار العمق الهندسي. لا كود. لا تسجيل إضافي. مسار اشتراك واحد متسق من الدخول حتى الدفع."
+              : "Every user — new or returning — automatically gets 3 days to experience the engineering depth. No code. No re-registration. One consistent subscription path from entry to payment."}
+          </span>
         </div>
 
         <p className="text-xs text-center" style={{ color: "rgba(200,220,240,0.35)" }}>
-          {isAr ? "الباقات المدفوعة تشمل تجربة مجانية لمدة 3 أيام." : "Paid plans include a 3-day free trial."}
+          {isAr
+            ? "ConsultX — منصة استشارات هندسية SaaS. الحد الأدنى هو الكود السعودي. نعمل فوق الحد الأدنى."
+            : "ConsultX — Engineering SaaS decision platform. The floor is the Saudi building code. We work above the floor."}
         </p>
       </div>
     </section>

@@ -22,7 +22,11 @@ import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
 import { useConversations } from "@/hooks/useConversations";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useLaunchTrial } from "@/hooks/useLaunchTrial";
 import { useIsMobile } from "@/hooks/use-mobile";
+import InChatUpgradePrompt from "./InChatUpgradePrompt";
+import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
+import ModeUsageIndicator, { TrialDaysIndicator } from "./ModeUsageIndicator";
 
 interface Message {
   id: string;
@@ -46,7 +50,16 @@ interface DividerMessage {
   timestamp: Date;
 }
 
-type ChatItem = Message | DividerMessage;
+// In-chat upgrade prompt (mode limit or trial expired)
+interface UpgradeItem {
+  id: string;
+  type: "upgrade";
+  variant: "mode_limit" | "trial_expired";
+  mode?: ChatMode;
+  timestamp: Date;
+}
+
+type ChatItem = Message | DividerMessage | UpgradeItem;
 
 interface ChatInterfaceProps {
   onBack: () => void;
@@ -628,11 +641,14 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const displayName = userName.includes("@") ? userName.split("@")[0] : userName;
   const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
-  const { subscription, refetch: refetchSub } = useSubscription();
+  const { subscription, refetch: refetchSub, incrementModeUsage } = useSubscription();
+  const { trialData, dismissWelcomeBanner } = useLaunchTrial();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
   const [showExpiryModal, setShowExpiryModal] = useState(false);
   const [localMessagesUsed, setLocalMessagesUsed] = useState(0);
   const [modeLockTarget, setModeLockTarget] = useState<"standard" | "analysis" | null>(null);
+  // Track mode usage locally (updated optimistically after each successful message)
+  const [localModeUsage, setLocalModeUsage] = useState<Record<string, number>>({ primary: 0, standard: 0, analysis: 0 });
   const [chatItems, setChatItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -755,8 +771,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
   // ===== MODE SWITCH HANDLER — also aborts any pending request =====
   const handleModeSwitch = useCallback((newMode: ChatMode, fromAI: boolean = false) => {
-    // Free plan enforcement: block استشاري and تحليلي
-    if (isFreePlan() && (newMode === "standard" || newMode === "analysis")) {
+    // Free plan enforcement: block standard and analysis unless launch trial is active
+    const launchTrialActive = trialData?.trial_active ?? false;
+    if (isFreePlan() && !launchTrialActive && (newMode === "standard" || newMode === "analysis")) {
       setModeLockTarget(newMode as "standard" | "analysis");
       return;
     }
@@ -914,6 +931,14 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               ("type" in item) ? item : ((item.id === assistantId || item.id.startsWith(assistantId))
                 ? { ...item, isValid: validation.valid, sources: currentSources } : item)
             ));
+            // Optimistically increment mode usage after successful message
+            if (currentMode === "standard" || currentMode === "analysis" || currentMode === "primary") {
+              setLocalModeUsage(prev => ({
+                ...prev,
+                [currentMode]: (prev[currentMode] ?? 0) + 1,
+              }));
+              incrementModeUsage(currentMode as "primary" | "standard" | "analysis");
+            }
           }
         },
         onError: error => {
@@ -928,6 +953,23 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               return;
             }
             return; // ignore other aborts (mode switch)
+          }
+          // If mode limit exceeded (launch trial), show in-chat upgrade card
+          if (error === "mode_limit_exceeded" || error.includes?.("mode_limit_exceeded")) {
+            stopLoading();
+            setChatItems(prev => [
+              ...prev.filter(item => !("type" in item) || (item as any).id !== assistantId),
+              { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "mode_limit", mode: currentMode, timestamp: new Date() } as UpgradeItem,
+            ]);
+            return;
+          }
+          if (error === "trial_expired") {
+            stopLoading();
+            setChatItems(prev => [
+              ...prev.filter(item => !("type" in item) || (item as any).id !== assistantId),
+              { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "trial_expired", timestamp: new Date() } as UpgradeItem,
+            ]);
+            return;
           }
           setLocalMessagesUsed(prev => Math.max(0, prev - 1));
           stopLoading();
@@ -961,6 +1003,13 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     }
   }, [subscription?.daily_messages_used]);
 
+  // Sync mode usage from subscription
+  useEffect(() => {
+    if (subscription?.mode_usage_today) {
+      setLocalModeUsage(subscription.mode_usage_today);
+    }
+  }, [subscription?.mode_usage_today]);
+
   const dailyLimit = subscription?.daily_messages_limit ?? 10;
   const isAtDailyLimit = localMessagesUsed >= dailyLimit && dailyLimit < 9999;
 
@@ -969,8 +1018,33 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     if (!messageText && !hasFiles) return;
     if (isLoading) return;
 
-    // Check daily limit client-side
-    if (isAtDailyLimit) {
+    // ── Launch trial: per-mode limit check (client-side optimistic guard) ──
+    const launchTrialActive = trialData?.trial_active ?? false;
+    const modeLimits        = subscription?.mode_limits ?? trialData?.mode_limits ?? null;
+    if (launchTrialActive && modeLimits && (chatMode === "standard" || chatMode === "analysis")) {
+      const modeLimit = modeLimits[chatMode] ?? 99;
+      const modeUsed  = localModeUsage[chatMode] ?? 0;
+      if (modeUsed >= modeLimit) {
+        // Show in-chat upgrade prompt instead of toast
+        setChatItems(prev => [
+          ...prev,
+          { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "mode_limit", mode: chatMode, timestamp: new Date() } as UpgradeItem,
+        ]);
+        return;
+      }
+    }
+
+    // ── Launch trial expired check ─────────────────────────────────────────
+    if (trialData?.status === "expired" && !subscription?.active) {
+      setChatItems(prev => [
+        ...prev,
+        { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "trial_expired", timestamp: new Date() } as UpgradeItem,
+      ]);
+      return;
+    }
+
+    // Check daily limit client-side (fallback for non-trial users)
+    if (isAtDailyLimit && !launchTrialActive) {
       toast({
         title: t("dailyLimitExceeded"),
         description: t("upgradeForMore"),
@@ -1139,7 +1213,8 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               const icon = mode === "primary" ? <MessageSquare className="w-4 h-4" /> : mode === "standard" ? <ClipboardList className="w-4 h-4" /> : <FlaskConical className="w-4 h-4" />;
               const label = mode === "primary" ? t("primary") : mode === "standard" ? t("standard") : t("analysis");
               const activeStyle = isActive ? getModeButtonActiveStyle(mode) : {};
-              const isLocked = isFreePlan() && (mode === "standard" || mode === "analysis");
+              const launchTrialActive = trialData?.trial_active ?? false;
+              const isLocked = isFreePlan() && !launchTrialActive && (mode === "standard" || mode === "analysis");
               return (
                 <button
                   key={mode}
@@ -1201,6 +1276,18 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Launch trial days remaining pill */}
+            {trialData?.trial_active && !subscription?.active && (
+              <TrialDaysIndicator daysRemaining={trialData.days_remaining} />
+            )}
+            {/* Per-mode usage indicator for current restricted mode */}
+            {trialData?.trial_active && !subscription?.active && (chatMode === "standard" || chatMode === "analysis") && subscription?.mode_limits && (
+              <ModeUsageIndicator
+                mode={chatMode}
+                used={localModeUsage[chatMode] ?? 0}
+                limit={subscription.mode_limits[chatMode] ?? (chatMode === "standard" ? 2 : 1)}
+              />
+            )}
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground hover:text-foreground">
                 <ShieldCheck className="w-4 h-4" />
@@ -1229,9 +1316,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
         />
       )}
 
-      {/* Trial Countdown Banner */}
+      {/* Trial Countdown Banner (legacy engineer trial) */}
       {isEngineerTrial() && !isTrialExpired() && profile?.trial_end && (
         <TrialCountdownBanner trialEnd={profile.trial_end} />
+      )}
+
+      {/* Launch Trial Welcome Banner — shown once to existing users on first activation */}
+      {trialData?.show_welcome_banner && trialData.trial_active && (
+        <LaunchTrialWelcomeBanner
+          daysRemaining={trialData.days_remaining}
+          onDismiss={dismissWelcomeBanner}
+        />
       )}
 
       {/* Chat Area — drag/drop zone (desktop only) */}
@@ -1318,7 +1413,21 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             chatItems.map((item) => {
               // Divider
               if ("type" in item && item.type === "divider") {
-                return <ModeDivider key={item.id} mode={item.mode} t={t} />;
+                return <ModeDivider key={item.id} mode={(item as DividerMessage).mode} t={t} />;
+              }
+
+              // In-chat upgrade prompt (mode limit hit or trial expired)
+              if ("type" in item && item.type === "upgrade") {
+                const upgradeItem = item as UpgradeItem;
+                return (
+                  <div key={item.id} className="max-w-xl mx-auto">
+                    <InChatUpgradePrompt
+                      variant={upgradeItem.variant}
+                      mode={upgradeItem.mode}
+                      language={language}
+                    />
+                  </div>
+                );
               }
 
               const message = item as Message;

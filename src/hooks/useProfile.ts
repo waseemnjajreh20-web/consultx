@@ -11,12 +11,17 @@ export interface Profile {
   trial_end: string | null;
   corporate_domain: string | null;
   trial_expired_modal_shown: boolean;
+  // Launch trial fields
+  launch_trial_status: string | null;
+  launch_trial_start: string | null;
+  launch_trial_end: string | null;
+  launch_trial_welcomed: boolean;
 }
 
 export function useProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile]   = useState<Profile | null>(null);
+  const [loading, setLoading]   = useState(true);
 
   const fetchProfile = useCallback(async () => {
     if (!user) { setProfile(null); setLoading(false); return; }
@@ -36,11 +41,8 @@ export function useProfile() {
 
   const markTrialExpiredModalShown = async () => {
     if (!user) return;
-    await supabase
-      .from("profiles")
-      .update({ trial_expired_modal_shown: true })
-      .eq("user_id", user.id);
-    setProfile((p) => p ? { ...p, trial_expired_modal_shown: true } : p);
+    await supabase.from("profiles").update({ trial_expired_modal_shown: true }).eq("user_id", user.id);
+    setProfile(p => p ? { ...p, trial_expired_modal_shown: true } : p);
   };
 
   const isEngineerTrial = () => {
@@ -66,5 +68,24 @@ export function useProfile() {
     return Math.max(0, new Date(profile.trial_end).getTime() - Date.now());
   };
 
-  return { profile, loading, fetchProfile, markTrialExpiredModalShown, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining };
+  const isLaunchTrialActive = () => {
+    if (!profile?.launch_trial_end) return false;
+    const status = profile.launch_trial_status;
+    return (
+      (status === "eligible_new" || status === "eligible_existing_active") &&
+      new Date(profile.launch_trial_end) > new Date()
+    );
+  };
+
+  const launchTrialDaysRemaining = () => {
+    if (!isLaunchTrialActive() || !profile?.launch_trial_end) return 0;
+    return Math.ceil((new Date(profile.launch_trial_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  };
+
+  return {
+    profile, loading, fetchProfile,
+    markTrialExpiredModalShown,
+    isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining,
+    isLaunchTrialActive, launchTrialDaysRemaining,
+  };
 }
