@@ -258,15 +258,23 @@ const HeroSection = ({ onStartChat, isLoggedIn }: HeroSectionProps) => {
 
         {/* Subtitle */}
         <p
-          className="text-sm md:text-lg text-foreground/70 max-w-[90%] md:max-w-2xl mb-8 animate-fade-up text-center leading-relaxed"
+          className="text-sm md:text-lg text-foreground/70 max-w-[90%] md:max-w-2xl mb-4 animate-fade-up text-center leading-relaxed"
           style={{ animationDelay: "0.1s" }}
         >
           {t("heroSubtitle")}
         </p>
 
-        {/* CTA Buttons */}
+        {/* Trust badge — SBC/NFPA as supporting credibility line */}
+        <p
+          className="text-xs text-foreground/40 mb-8 animate-fade-up text-center tracking-wider"
+          style={{ animationDelay: "0.15s", letterSpacing: "0.08em" }}
+        >
+          {t("heroTrustBadge")}
+        </p>
+
+        {/* CTA — single primary above fold, secondary visually subordinate */}
         <div
-          className="flex flex-col sm:flex-row gap-3 mb-10 md:mb-12 animate-fade-up w-full max-w-xs sm:max-w-none sm:w-auto"
+          className="flex flex-col items-center gap-3 mb-10 md:mb-12 animate-fade-up w-full max-w-xs sm:max-w-none sm:w-auto"
           style={{ animationDelay: "0.2s" }}
         >
           <MagneticButton
@@ -283,18 +291,13 @@ const HeroSection = ({ onStartChat, isLoggedIn }: HeroSectionProps) => {
             <Flame className="w-5 h-5 ms-2 group-hover:animate-pulse" />
             {isLoggedIn ? t("startConsultation") : t("signInToConsult")}
           </MagneticButton>
-          <MagneticButton
-            variant="heroOutline"
-            size="lg"
-            onClick={() => {
-              document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="flex items-center justify-center gap-2 w-full sm:w-auto"
-            style={{ minHeight: "48px" }}
+          <button
+            onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
+            className="text-xs text-foreground/40 hover:text-foreground/70 transition-colors flex items-center gap-1"
           >
-            <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
+            <ChevronDown className="w-3.5 h-3.5" strokeWidth={1.5} />
             {t("learnMore")}
-          </MagneticButton>
+          </button>
         </div>
 
         {/* Feature Cards */}
