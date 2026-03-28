@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-interface SubscriptionStatus {
+export interface SubscriptionStatus {
+  // Existing paid-subscription fields
   active: boolean;
   status: "none" | "trialing" | "active" | "expired" | "cancelled";
   trial_days_remaining: number;
@@ -12,14 +13,25 @@ interface SubscriptionStatus {
   card_last_four: string | null;
   daily_messages_used: number;
   daily_messages_limit: number;
+
+  // Launch trial fields
+  access_state?: string;
+  launch_trial_status?: string;
+  launch_trial_active?: boolean;
+  launch_trial_days_remaining?: number;
+  launch_trial_hours_remaining?: number;
+  launch_trial_end?: string | null;
+  show_welcome_banner?: boolean;
+  upgrade_context?: string | null;
+  recommended_plan?: string;
 }
 
 export function useSubscription() {
   const { user, session } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const hasLoadedOnce = useRef(false);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
+  const hasLoadedOnce             = useRef(false);
 
   const checkSubscription = useCallback(async () => {
     if (!user || !session) {
@@ -30,7 +42,6 @@ export function useSubscription() {
     }
 
     try {
-      // Only show loading on FIRST check to prevent ChatInterface unmount on token refresh
       if (!hasLoadedOnce.current) setLoading(true);
 
       const { data, error: fnError } = await supabase.functions.invoke("check-subscription", {
@@ -44,7 +55,6 @@ export function useSubscription() {
     } catch (err: any) {
       console.error("Subscription check error:", err);
       setError(err.message);
-      // Don't null-out subscription on background re-check errors (prevents UI flicker)
       if (!hasLoadedOnce.current) setSubscription(null);
     } finally {
       setLoading(false);

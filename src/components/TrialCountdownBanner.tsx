@@ -46,13 +46,13 @@ export default function TrialCountdownBanner({ trialEnd }: TrialCountdownBannerP
         <span style={{ color: "rgba(200,220,240,0.75)" }}>
           {isUrgent ? (
             <>
-              {isAr ? "تنتهي تجربتك خلال" : "Your trial ends in"}{" "}
+              {isAr ? "آخر ساعات الوصول الكامل — تنتهي خلال" : "Final hours of full access — ends in"}{" "}
               <span style={{ color: accentColor, fontWeight: 600 }}>{countdown}</span>
-              {" "}{isAr ? "— اشترك للاستمرار" : "— Subscribe to continue"}
+              {" "}{isAr ? "— أكمل الوصول" : "— Continue access"}
             </>
           ) : (
             <>
-              {isAr ? "تجربة باقة مهندس — متبقي" : "Engineer plan trial — remaining"}{" "}
+              {isAr ? "وصول كامل للأوضاع الاستشارية — متبقي" : "Full advisory access active — remaining"}{" "}
               <span style={{ color: accentColor, fontWeight: 600 }}>{countdown}</span>
             </>
           )}
@@ -74,7 +74,7 @@ export default function TrialCountdownBanner({ trialEnd }: TrialCountdownBannerP
           (e.currentTarget as HTMLButtonElement).style.background = isUrgent ? `${accentColor}20` : "transparent";
         }}
       >
-        {isAr ? "اشترك الآن" : "Subscribe Now"}
+        {isAr ? "أكمل الوصول" : "Continue Access"}
       </button>
     </div>
   );

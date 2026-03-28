@@ -49,9 +49,18 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
           <Clock size={40} strokeWidth={1.5} style={{ color: "#FF8C00" }} />
         </div>
 
-        <h2 className="text-xl font-bold text-foreground mb-3">{isAr ? "انتهت تجربتك المجانية" : "Your free trial has ended"}</h2>
-        <p className="text-sm mb-6" style={{ color: "rgba(200,220,240,0.6)" }}>
-          {isAr ? "اشترك الآن للاستمرار بجميع المميزات." : "Subscribe now to continue with all features."}
+        <h2 className="text-xl font-bold text-foreground mb-3">
+          {isAr ? "اكتملت تجربتك الهندسية" : "Your engineering trial is complete"}
+        </h2>
+        <p className="text-sm mb-2" style={{ color: "rgba(200,220,240,0.65)" }}>
+          {isAr
+            ? "لقد رأيت ما يقدمه الوضع الاستشاري والتحليلي. ConsultX Pro يواصل هذا المستوى بلا قيود يومية."
+            : "You've seen what Advisory and Analysis modes can do. ConsultX Pro continues at this level with no daily limits."}
+        </p>
+        <p className="text-xs mb-6" style={{ color: "rgba(200,220,240,0.35)" }}>
+          {isAr
+            ? "وصول فوري · إلغاء في أي وقت"
+            : "Instant access · Cancel anytime"}
         </p>
 
         <div className="flex flex-col gap-3">
@@ -64,16 +73,16 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
               boxShadow: "0 0 20px rgba(0,212,255,0.3)",
             }}
           >
-            {isAr ? "اشترك في باقة مهندس" : "Subscribe to Engineer plan"}
+            {isAr ? "فعّل اشتراكك الآن" : "Activate Your Subscription"}
           </button>
           <button
             onClick={() => onClose(false)}
             className="w-full py-2.5 rounded-xl text-sm transition-all duration-300"
-            style={{ color: "rgba(200,220,240,0.45)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.7)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.45)"; }}
+            style={{ color: "rgba(200,220,240,0.4)" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.65)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(200,220,240,0.4)"; }}
           >
-            {isAr ? "الاستمرار بالباقة المجانية" : "Continue with free plan"}
+            {isAr ? "متابعة بالوضع الرئيسي" : "Continue with Primary mode"}
           </button>
         </div>
       </div>
