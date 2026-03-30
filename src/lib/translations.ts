@@ -292,6 +292,121 @@ export const translations = {
     prefsClearMemory: "مسح الذاكرة",
     prefsClearMemoryDesc: "حذف جميع المحادثات السابقة",
     prefsSaved: "تم حفظ التفضيلات",
+
+    // ── Hero Rewrite ──
+    heroHeadline: "إجابات هندسية دقيقة من كود الحماية من الحرائق",
+    heroSubline: "ConsultX يُحيل كل إجابة إلى الفقرة الدقيقة من SBC أو NFPA — في ثوانٍ لا ساعات.",
+    heroTrustLine: "مبني على SBC 201، SBC 801، NFPA، والدفاع المدني",
+
+    // ── Problem / Solution ──
+    problemTitle: "التحديات اليومية للمهندس",
+    pain1Title: "بحث مُضنٍ في مجلدات الكود",
+    pain1Desc: "ساعات في تصفح عشرات المجلدات للعثور على فقرة واحدة",
+    pain2Title: "غموض في التفسير",
+    pain2Desc: "قرارات هندسية تتأخر بسبب عدم اليقين في قراءة الكود",
+    pain3Title: "مراجعة مخططات تستنزف الوقت",
+    pain3Desc: "مراجعة يدوية بطيئة تُعيق تسليم المشاريع في موعدها",
+    solutionStatement: "ConsultX يُحوّل أسئلتك الهندسية إلى إجابات موثّقة فورية — مع الإشارة الدقيقة لكل فقرة من الكود.",
+
+    // ── Core Benefits ──
+    benefitsTitle: "ما الذي يُقدّمه ConsultX",
+    benefit1Title: "دقة مرجعية كاملة",
+    benefit1Desc: "كل إجابة تُحيل إلى الفقرة الدقيقة من الكود — لا تخمين ولا غموض",
+    benefit2Title: "تغطية شاملة للمعايير",
+    benefit2Desc: "SBC 201 وSBC 801 وNFPA وأنظمة الدفاع المدني في مكان واحد",
+    benefit3Title: "تحليل المخططات بصرياً",
+    benefit3Desc: "ارفع مخططاتك للحصول على مراجعة مدعومة بالذكاء الاصطناعي",
+    benefit4Title: "ثلاثة أوضاع استشارة",
+    benefit4Desc: "وضع سريع، استشاري، وتحليلي — لكل نوع من أنواع الأسئلة الهندسية",
+    underTheHood: "ماذا يعمل خلف الكواليس؟",
+
+    // ── Product Proof ──
+    productProofTitle: "شاهد ConsultX في العمل",
+    productProofSubtitle: "إجابة هندسية موثقة في ثوانٍ",
+
+    // ── Trust Strip ──
+    trustTitle: "موثّق بالمعايير الرسمية",
+    trust1Label: "SBC 201 & 801",
+    trust2Label: "+70 معياراً NFPA",
+    trust3Label: "الدفاع المدني",
+    trust4Label: "+5,700 عقدة معرفية",
+
+    // ── Pricing (Redesign) ──
+    pricingTitle: "اختر باقتك",
+    pricingSubtitle: "جرّب 3 أيام مجاناً — بدون بطاقة بنكية",
+    monthlyLabel: "شهري",
+    yearlyLabel: "سنوي",
+    savingsLabel: "وفّر 17%",
+    planStarterName: "Starter",
+    planStarterDesc: "للمهندسين الأفراد والاستشارات الدورية",
+    planProName: "Pro",
+    planProDesc: "للمهندسين النشطين ومراجعة المشاريع",
+    planTeamName: "Team",
+    planTeamDesc: "للمكاتب الهندسية والفرق المتعددة",
+    trialExplanation: "كل مستخدم جديد يحصل تلقائياً على 3 أيام وصول كامل",
+    afterTrialExplanation: "بعد انتهاء التجربة، اختر باقة أو فقد الميزات المتقدمة",
+    comparisonToggle: "مقارنة تفصيلية بين الباقات",
+    perMonth: "ريال/شهر",
+    perYear: "ريال/سنة",
+
+    // ── FAQ (6 items redesign) ──
+    faq1Q: "ما هو ConsultX؟",
+    faq1A: "ConsultX مستشار هندسي ذكي مخصص للحماية من الحرائق، يُجيب على أسئلتك الهندسية بإحالة مباشرة لفقرات كود البناء السعودي ومعايير NFPA.",
+    faq2Q: "ما مدى موثوقية الإجابات؟",
+    faq2A: "كل إجابة تُحيل إلى الفقرة الدقيقة من المعيار المعتمد. ConsultX لا يخمّن — يستشهد بالمصدر الأصلي في كل مرة.",
+    faq3Q: "ماذا يشمل كل اشتراك؟",
+    faq3A: "جميع الباقات تشمل الوصول لأكواد SBC وNFPA وأنظمة الدفاع المدني. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
+    faq4Q: "ماذا يحدث بعد انتهاء التجربة؟",
+    faq4A: "بعد 3 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
+    faq5Q: "هل يمكنني رفع المخططات للتحليل؟",
+    faq5A: "نعم، في وضع التحليل يمكنك رفع مخططاتك الهندسية للمراجعة بمقارنتها بمتطلبات الكود مباشرة.",
+    faq6Q: "هل يمكنني إلغاء الاشتراك في أي وقت؟",
+    faq6A: "نعم، يمكنك الإلغاء في أي وقت من صفحة حسابك. يستمر وصولك حتى نهاية فترة الاشتراك المدفوعة.",
+
+    // ── SiteFooter ──
+    footerSummary: "مستشار هندسي ذكي للحماية من الحرائق — مبني على كود البناء السعودي ومعايير NFPA.",
+    footerProduct: "المنتج",
+    footerReferences: "المراجع",
+    footerAccount: "الحساب",
+    footerLegal: "قانوني",
+    footerPrivacy: "سياسة الخصوصية",
+    footerTerms: "الشروط والأحكام",
+    footerRefund: "سياسة الاسترداد",
+    footerContact: "تواصل معنا",
+    footerCopyright: "© 2026 ConsultX. جميع الحقوق محفوظة.",
+    footerHome: "الرئيسية",
+    footerHowItWorks: "كيف يعمل",
+    footerPricing: "الأسعار",
+    footerSbc201: "SBC 201 — الحماية من الحريق",
+    footerSbc801: "SBC 801 — سلامة الحياة",
+    footerNfpa: "معايير NFPA",
+    footerCivilDefense: "الدفاع المدني",
+
+    // ── Legal Pages ──
+    privacyTitle: "سياسة الخصوصية",
+    termsTitle: "الشروط والأحكام",
+    refundTitle: "سياسة الاسترداد",
+    contactTitle: "تواصل معنا",
+    contactFormName: "الاسم",
+    contactFormEmail: "البريد الإلكتروني",
+    contactFormSubject: "الموضوع",
+    contactFormMessage: "الرسالة",
+    contactFormSubmit: "إرسال الرسالة",
+    contactResponseTime: "نرد خلال 24 ساعة في أيام العمل",
+    contactEmailLabel: "راسلنا على",
+
+    // ── CTA Section (Redesign) ──
+    ctaTitle: "ابدأ استشارتك الهندسية الآن",
+    ctaSubtitle: "انضم إلى المهندسين الذين يحصلون على إجابات دقيقة وموثّقة في ثوانٍ",
+    ctaButton: "ابدأ مجاناً — 3 أيام كاملة",
+
+    // ── HowItWorks (updated step text) ──
+    howStep1Title: "اطرح سؤالك الهندسي",
+    howStep1Desc: "اكتب سؤالك بأي صياغة — ConsultX يفهم السياق الهندسي",
+    howStep2Title: "احصل على إجابة موثقة بالكود",
+    howStep2Desc: "إجابة فورية مع إحالة مباشرة لفقرة الكود أو المعيار المعتمد",
+    howStep3Title: "ارفع المخططات وراجع أسرع",
+    howStep3Desc: "ارفع مخططاتك الهندسية للمراجعة مقابل متطلبات الكود تلقائياً",
   },
   en: {
     // Common
@@ -584,6 +699,121 @@ export const translations = {
     prefsClearMemory: "Clear Memory",
     prefsClearMemoryDesc: "Delete all previous conversations",
     prefsSaved: "Preferences saved",
+
+    // ── Hero Rewrite ──
+    heroHeadline: "Precise Engineering Answers from Fire Safety Code",
+    heroSubline: "ConsultX cites every answer to the exact paragraph of SBC or NFPA — in seconds, not hours.",
+    heroTrustLine: "Built on SBC 201, SBC 801, NFPA, and Civil Defense standards",
+
+    // ── Problem / Solution ──
+    problemTitle: "The Engineer's Daily Challenges",
+    pain1Title: "Exhausting Code Volume Search",
+    pain1Desc: "Hours browsing dozens of volumes to find a single clause",
+    pain2Title: "Interpretation Uncertainty",
+    pain2Desc: "Engineering decisions delayed by ambiguity in reading the code",
+    pain3Title: "Time-Draining Plan Review",
+    pain3Desc: "Slow manual review that delays project delivery",
+    solutionStatement: "ConsultX turns your engineering questions into instant, cited answers — with an exact reference to every code clause.",
+
+    // ── Core Benefits ──
+    benefitsTitle: "What ConsultX Delivers",
+    benefit1Title: "Full Citation Accuracy",
+    benefit1Desc: "Every answer links to the exact code clause — no guessing, no ambiguity",
+    benefit2Title: "Multi-Standard Coverage",
+    benefit2Desc: "SBC 201, SBC 801, NFPA, and Civil Defense regulations in one place",
+    benefit3Title: "Visual Plan Analysis",
+    benefit3Desc: "Upload your drawings for AI-assisted code compliance review",
+    benefit4Title: "Three Consultation Modes",
+    benefit4Desc: "Quick, Advisory, and Analysis modes — for every type of engineering question",
+    underTheHood: "What works under the hood?",
+
+    // ── Product Proof ──
+    productProofTitle: "See ConsultX in Action",
+    productProofSubtitle: "A documented engineering answer in seconds",
+
+    // ── Trust Strip ──
+    trustTitle: "Backed by Official Standards",
+    trust1Label: "SBC 201 & 801",
+    trust2Label: "70+ NFPA Standards",
+    trust3Label: "Civil Defense",
+    trust4Label: "5,700+ Knowledge Nodes",
+
+    // ── Pricing (Redesign) ──
+    pricingTitle: "Choose Your Plan",
+    pricingSubtitle: "Try 3 days free — no credit card required",
+    monthlyLabel: "Monthly",
+    yearlyLabel: "Yearly",
+    savingsLabel: "Save 17%",
+    planStarterName: "Starter",
+    planStarterDesc: "For individual engineers and periodic consultations",
+    planProName: "Pro",
+    planProDesc: "For active engineers and project reviews",
+    planTeamName: "Team",
+    planTeamDesc: "For engineering firms and multi-user teams",
+    trialExplanation: "Every new user automatically gets 3 days of full access",
+    afterTrialExplanation: "After the trial, choose a plan or lose advanced features",
+    comparisonToggle: "Detailed plan comparison",
+    perMonth: "SAR/mo",
+    perYear: "SAR/yr",
+
+    // ── FAQ (6 items redesign) ──
+    faq1Q: "What is ConsultX?",
+    faq1A: "ConsultX is an intelligent engineering assistant for fire safety. It answers your questions with direct references to Saudi Building Code clauses and NFPA standards.",
+    faq2Q: "How reliable are the answers?",
+    faq2A: "Every answer cites the exact clause from the applicable standard. ConsultX doesn't guess — it references the original source every time.",
+    faq3Q: "What does each plan include?",
+    faq3A: "All plans include access to SBC and NFPA codes and Civil Defense regulations. Higher plans add plan analysis, unlimited conversations, and faster support.",
+    faq4Q: "What happens after the trial ends?",
+    faq4A: "After 3 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
+    faq5Q: "Can I upload drawings for analysis?",
+    faq5A: "Yes. In Analysis mode you can upload engineering drawings for review against code requirements directly.",
+    faq6Q: "Can I cancel my subscription at any time?",
+    faq6A: "Yes, you can cancel anytime from your account page. Access continues until the end of your paid billing period.",
+
+    // ── SiteFooter ──
+    footerSummary: "Intelligent fire safety engineering consultant — built on Saudi Building Code and NFPA standards.",
+    footerProduct: "Product",
+    footerReferences: "References",
+    footerAccount: "Account",
+    footerLegal: "Legal",
+    footerPrivacy: "Privacy Policy",
+    footerTerms: "Terms & Conditions",
+    footerRefund: "Refund Policy",
+    footerContact: "Contact Us",
+    footerCopyright: "© 2026 ConsultX. All rights reserved.",
+    footerHome: "Home",
+    footerHowItWorks: "How It Works",
+    footerPricing: "Pricing",
+    footerSbc201: "SBC 201 — Fire Protection",
+    footerSbc801: "SBC 801 — Life Safety",
+    footerNfpa: "NFPA Standards",
+    footerCivilDefense: "Civil Defense",
+
+    // ── Legal Pages ──
+    privacyTitle: "Privacy Policy",
+    termsTitle: "Terms & Conditions",
+    refundTitle: "Refund Policy",
+    contactTitle: "Contact Us",
+    contactFormName: "Name",
+    contactFormEmail: "Email",
+    contactFormSubject: "Subject",
+    contactFormMessage: "Message",
+    contactFormSubmit: "Send Message",
+    contactResponseTime: "We respond within 24 hours on business days",
+    contactEmailLabel: "Email us at",
+
+    // ── CTA Section (Redesign) ──
+    ctaTitle: "Start Your Engineering Consultation Now",
+    ctaSubtitle: "Join engineers who get accurate, cited answers in seconds",
+    ctaButton: "Start Free — 3 Full Days",
+
+    // ── HowItWorks (updated step text) ──
+    howStep1Title: "Ask Your Engineering Question",
+    howStep1Desc: "Type your question in any phrasing — ConsultX understands engineering context",
+    howStep2Title: "Get a Code-Referenced Answer",
+    howStep2Desc: "Instant answer with a direct reference to the exact code clause or standard",
+    howStep3Title: "Upload Plans and Review Faster",
+    howStep3Desc: "Upload your engineering drawings for automatic review against code requirements",
   },
 } as const;
 

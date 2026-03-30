@@ -1,13 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, ArrowRight, Building2 } from "lucide-react";
-import { LAUNCH_PROMO, isPromoActive } from "@/lib/corporatePromo";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function CTASection() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const isAr = language === "ar";
-  const promoActive = isPromoActive();
 
   return (
     <section
@@ -38,14 +36,14 @@ export default function CTASection() {
           filter: "drop-shadow(0 0 24px rgba(0,212,255,0.35))",
         }}
       >
-        {isAr ? "جاهز تبدأ استشارتك الهندسية؟" : "Ready to Start Your Engineering Consultation?"}
+        {isAr ? "ابدأ استشارتك الهندسية الآن" : "Start Your Engineering Consultation Now"}
       </h2>
 
       {/* Subtitle */}
       <p className="relative z-10 text-sm md:text-base text-muted-foreground max-w-xl mb-8 md:mb-10">
         {isAr
-          ? "ابدأ محادثتك الأولى مع مستشار الحماية من الحرائق الآن"
-          : "Start your first conversation with the fire safety advisor now"}
+          ? "انضم إلى المهندسين الذين يحصلون على إجابات دقيقة وموثّقة في ثوانٍ"
+          : "Join engineers who get accurate, cited answers in seconds"}
       </p>
 
       {/* Button */}
@@ -70,7 +68,7 @@ export default function CTASection() {
           }}
         >
           {isAr ? <ArrowLeft size={20} strokeWidth={2} /> : <ArrowRight size={20} strokeWidth={2} />}
-          {isAr ? "ابدأ الآن مجاناً" : "Start for Free"}
+          {isAr ? "ابدأ مجاناً — 3 أيام كاملة" : "Start Free — 3 Full Days"}
         </button>
       </div>
 
@@ -79,24 +77,6 @@ export default function CTASection() {
         {isAr ? "لا يتطلب بطاقة ائتمان" : "No credit card required"}
       </p>
 
-      {/* Corporate promo badge */}
-      {promoActive && LAUNCH_PROMO.enabled && (
-        <div
-          className="relative z-10 mt-5 flex items-center gap-2 px-4 py-2 rounded-full text-sm"
-          style={{
-            background: "rgba(255,140,0,0.08)",
-            border: "1px solid rgba(255,140,0,0.3)",
-            color: "#FF8C00",
-          }}
-        >
-          <Building2 size={15} strokeWidth={1.5} />
-          <span className="text-xs md:text-sm">
-            {isAr
-              ? "بريد مؤسسي؟ احصل على باقة مهندس 3 أيام مجاناً"
-              : "Corporate email? Get 3 days free Engineer plan"}
-          </span>
-        </div>
-      )}
     </section>
   );
 }

@@ -1,16 +1,18 @@
 import { useState, lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import SiteHeader from "@/components/SiteHeader";
 import HeroSection from "@/components/HeroSection";
+import ProblemSolutionSection from "@/components/ProblemSolutionSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
-import TechnologySection from "@/components/TechnologySection";
-import StatsSection from "@/components/StatsSection";
-import TechMarquee from "@/components/TechMarquee";
+import CoreBenefitsSection from "@/components/CoreBenefitsSection";
+import ProductProofSection from "@/components/ProductProofSection";
+import TrustStripSection from "@/components/TrustStripSection";
 import PricingLanding from "@/components/PricingLanding";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import FAQSection from "@/components/FAQSection";
 import CTASection from "@/components/CTASection";
-import LandingFooter from "@/components/LandingFooter";
+import SiteFooter from "@/components/SiteFooter";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -18,7 +20,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 import CosmicBackground from "@/components/CosmicBackground";
-import GraphRagShowcase from "@/components/GraphRagShowcase";
 
 const ChatInterface = lazy(() => import("@/components/ChatInterface"));
 
@@ -125,40 +126,43 @@ const Index = () => {
               />
             )}
 
-            {/* 1. Navbar + Brand Marquee + Hero */}
+            {/* 1. Site Header (navbar) */}
+            <SiteHeader onStartChat={handleStartChat} isLoggedIn={!!user} />
+
+            {/* 2. Hero */}
             <HeroSection onStartChat={handleStartChat} isLoggedIn={!!user} />
 
-            {/* 1.5. GraphRAG Showcase — "The Knowledge Brain" */}
-            <GraphRagShowcase onExplore={handleStartChat} />
+            {/* 3. Problem / Solution */}
+            <ProblemSolutionSection />
 
-            {/* 2. How It Works */}
+            {/* 4. How It Works */}
             <div id="how-it-works">
               <HowItWorksSection />
             </div>
 
-            {/* 3. Technology / Agent Architecture */}
-            <TechnologySection />
+            {/* 5. Core Benefits */}
+            <CoreBenefitsSection />
 
-            {/* 4. Stats/Numbers */}
-            <StatsSection />
+            {/* 6. Product Proof */}
+            <ProductProofSection />
 
-            {/* 5. Pricing */}
+            {/* 7. Trust Strip */}
+            <TrustStripSection />
+
+            {/* 8. Pricing */}
             <PricingLanding />
 
-            {/* 6. Tech Standards Marquee (reverse direction) */}
-            <TechMarquee />
-
-            {/* 7. Testimonials */}
+            {/* 9. Testimonials */}
             <TestimonialsSection />
 
-            {/* 8. FAQ */}
+            {/* 10. FAQ */}
             <FAQSection />
 
-            {/* 9. Final CTA */}
+            {/* 11. Final CTA */}
             <CTASection />
 
-            {/* 10. Footer */}
-            <LandingFooter />
+            {/* 12. Footer */}
+            <SiteFooter />
           </div>
         </motion.main>
       )}
