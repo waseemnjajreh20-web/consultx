@@ -47,6 +47,7 @@ function CancelSubscriptionButton({
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   const handleCancel = async () => {
     if (!confirming) {
@@ -55,11 +56,26 @@ function CancelSubscriptionButton({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke("cancel-subscription", {
+      const { data, error } = await supabase.functions.invoke("cancel-subscription", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
-      toast({ title: t("subscriptionCancelled") });
+      const accessUntil = data?.access_until
+        ? new Date(data.access_until).toLocaleDateString(
+            language === "ar" ? "ar-SA" : "en-US",
+            { year: "numeric", month: "long", day: "numeric" }
+          )
+        : null;
+      toast({
+        title: data?.cancelled_immediately
+          ? (language === "ar" ? "تم إلغاء الاشتراك" : "Subscription cancelled")
+          : (language === "ar" ? "جارٍ إلغاء الاشتراك" : "Cancellation scheduled"),
+        description: !data?.cancelled_immediately && accessUntil
+          ? (language === "ar"
+              ? `وصولك نشط حتى ${accessUntil}`
+              : `Your access continues until ${accessUntil}`)
+          : undefined,
+      });
       refetch();
     } catch {
       toast({
@@ -134,7 +150,7 @@ const Account = () => {
   const navigate = useNavigate();
   const {
     user, session, signOut, authLoading, subscription, subLoading, refetch,
-    isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess,
+    isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess, isFreeLoggedIn,
     trialDaysRemaining, rawAccessState,
   } = useEntitlement();
   const { t, dir, language, setLanguage } = useLanguage();
@@ -335,6 +351,21 @@ const Account = () => {
         language === "ar"
           ? "فعّل اشتراك Pro للوصول الكامل"
           : "Activate Pro subscription for full access";
+    } else if (subscription?.status === "past_due") {
+      // past_due within grace — isPaidActive is true but a payment renewal failed.
+      // GRACE_DAYS mirrors the constant in check-subscription and fire-safety-chat.
+      const GRACE_DAYS = 7;
+      const graceEnd = subscription.past_due_since
+        ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
+        : null;
+      glowClass = "border-orange-500/40 shadow-[0_0_24px_rgba(249,115,22,0.12)]";
+      gradientClass = "from-orange-500/10 to-transparent";
+      stateTitle = language === "ar" ? "مطلوب تجديد الدفع" : "Payment Renewal Required";
+      stateSubtitle = graceEnd
+        ? (language === "ar"
+            ? `وصولك الكامل محفوظ حتى ${graceEnd.toLocaleDateString("ar-SA", { month: "long", day: "numeric" })}`
+            : `Full access preserved until ${graceEnd.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`)
+        : (language === "ar" ? "يرجى التواصل مع الدعم" : "Please contact support");
     } else if (isPaidActive) {
       glowClass = "border-green-500/40 shadow-[0_0_24px_rgba(34,197,94,0.12)]";
       gradientClass = "from-green-500/10 to-transparent";
@@ -352,8 +383,17 @@ const Account = () => {
         language === "ar"
           ? `مشترك في ${planName}`
           : `Subscribed to ${planName}`;
+      stateSubtitle = subscription?.cancel_at_period_end
+        ? (language === "ar" ? `ينتهي وصولك في ${expiryDate}` : `Access ends ${expiryDate}`)
+        : (language === "ar" ? `يُجدَّد في ${expiryDate}` : `Renews ${expiryDate}`);
+    } else if (isFreeLoggedIn) {
+      glowClass = "border-border/40";
+      gradientClass = "from-muted/20 to-transparent";
+      stateTitle = language === "ar" ? "وصول مجاني — النمط الرئيسي" : "Free Access — Main Mode";
       stateSubtitle =
-        language === "ar" ? `ينتهي في ${expiryDate}` : `Expires ${expiryDate}`;
+        language === "ar"
+          ? "النمط الرئيسي متاح · 10 رسائل يومياً · الأنماط المتقدمة تتطلب اشتراكاً"
+          : "Main mode available · 10 messages per day · Advanced modes require a subscription";
     } else {
       glowClass = "border-border/40";
       gradientClass = "from-muted/20 to-transparent";
@@ -441,123 +481,196 @@ const Account = () => {
   };
 
   // Subscription
-  const renderSubscription = () => (
-    <div className="space-y-4">
-      <div className="bg-card/60 rounded-xl border border-border/40 p-6 space-y-4">
-        <h2 className="text-lg font-semibold">
-          {language === "ar" ? "تفاصيل الاشتراك" : "Subscription Details"}
-        </h2>
+  const renderSubscription = () => {
+    // Mirror the 7-day grace constant used in check-subscription and fire-safety-chat.
+    const GRACE_DAYS = 7;
+    const graceEndDate = subscription?.past_due_since
+      ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
+      : null;
 
-        {/* Status row */}
-        <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-              isPaidActive
-                ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                : isTrialActive
-                ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-                : isTrialExpired
-                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                : "bg-muted/40 text-muted-foreground border border-border/40"
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current" />
-            {isPaidActive
-              ? t("statusActive")
-              : isTrialActive
-              ? t("statusTrialing")
-              : isTrialExpired
-              ? t("statusExpired")
-              : t("statusNone")}
-          </span>
-        </div>
+    const subStatus = subscription?.status;
+    const isCancelScheduled = subscription?.cancel_at_period_end === true;
 
-        {/* Plan */}
-        {subscription?.plan && (
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground mb-0.5">{t("currentPlan")}</p>
-              <p className="font-medium">
-                {language === "ar"
-                  ? subscription.plan.name_ar
-                  : subscription.plan.name_en}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground mb-0.5">
-                {language === "ar" ? "السعر" : "Price"}
-              </p>
-              <p className="font-medium">
-                {(subscription.plan.price_amount / 100).toFixed(0)}{" "}
-                {t("sar")}
-              </p>
-            </div>
-          </div>
-        )}
+    // Status badge config — ordered from most-specific to least-specific.
+    const badge = (() => {
+      if (subStatus === "past_due") return {
+        cls: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
+        label: language === "ar" ? "دفع معلق" : "Payment Due",
+      };
+      if (isCancelScheduled) return {
+        cls: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+        label: language === "ar" ? "جارٍ الإلغاء" : "Cancelling",
+      };
+      if (isPaidActive) return {
+        cls: "bg-green-500/10 text-green-400 border border-green-500/20",
+        label: t("statusActive"),
+      };
+      if (isTrialActive) return {
+        cls: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
+        label: t("statusTrialing"),
+      };
+      if (isTrialExpired) return {
+        cls: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+        label: t("statusExpired"),
+      };
+      if (subStatus === "cancelled") return {
+        cls: "bg-muted/40 text-muted-foreground border border-border/40",
+        label: language === "ar" ? "ملغى" : "Cancelled",
+      };
+      return {
+        cls: "bg-muted/40 text-muted-foreground border border-border/40",
+        label: t("statusNone"),
+      };
+    })();
 
-        {/* Trial end */}
-        {isTrialActive && subscription?.launch_trial_end && (
-          <div className="text-sm">
-            <p className="text-muted-foreground mb-0.5">
-              {language === "ar" ? "انتهاء التجربة" : "Trial ends"}
-            </p>
-            <p className="font-medium text-cyan-400">
-              {new Date(subscription.launch_trial_end).toLocaleDateString(
-                language === "ar" ? "ar-SA" : "en-US"
-              )}{" "}
-              — {trialDaysRemaining}{" "}
-              {language === "ar" ? "أيام متبقية" : "days remaining"}
-            </p>
-          </div>
-        )}
+    return (
+      <div className="space-y-4">
+        <div className="bg-card/60 rounded-xl border border-border/40 p-6 space-y-4">
+          <h2 className="text-lg font-semibold">
+            {language === "ar" ? "تفاصيل الاشتراك" : "Subscription Details"}
+          </h2>
 
-        {/* Expiry */}
-        {isPaidActive && subscription?.expires_at && (
-          <div className="text-sm">
-            <p className="text-muted-foreground mb-0.5">{t("expiresAt")}</p>
-            <p className="font-medium">
-              {new Date(subscription.expires_at).toLocaleDateString(
-                language === "ar" ? "ar-SA" : "en-US"
-              )}
-            </p>
-          </div>
-        )}
-
-        {/* Card */}
-        {subscription?.card_brand && (
-          <div className="flex items-center gap-2 text-sm">
-            <CreditCard className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground">
-              {subscription.card_brand} •••• {subscription.card_last_four}
+          {/* Status badge */}
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${badge.cls}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              {badge.label}
             </span>
           </div>
-        )}
 
-        {/* Actions */}
-        {(isTrialActive || isPaidActive) && session && (
-          <CancelSubscriptionButton t={t} refetch={refetch} session={session} />
-        )}
+          {/* Plan */}
+          {subscription?.plan && (
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground mb-0.5">{t("currentPlan")}</p>
+                <p className="font-medium">
+                  {language === "ar"
+                    ? subscription.plan.name_ar
+                    : subscription.plan.name_en}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">
+                  {language === "ar" ? "السعر" : "Price"}
+                </p>
+                <p className="font-medium">
+                  {(subscription.plan.price_amount / 100).toFixed(0)}{" "}
+                  {t("sar")}
+                </p>
+              </div>
+            </div>
+          )}
 
-        {(isTrialExpired || (!hasActiveAccess)) && (
-          <Button
-            variant="hero"
-            className="w-full mt-2"
-            onClick={() => navigate("/subscribe")}
-          >
-            {t("subscribeNow")}
-          </Button>
+          {/* Trial end */}
+          {isTrialActive && subscription?.launch_trial_end && (
+            <div className="text-sm">
+              <p className="text-muted-foreground mb-0.5">
+                {language === "ar" ? "انتهاء التجربة" : "Trial ends"}
+              </p>
+              <p className="font-medium text-cyan-400">
+                {new Date(subscription.launch_trial_end).toLocaleDateString(
+                  language === "ar" ? "ar-SA" : "en-US"
+                )}{" "}
+                — {trialDaysRemaining}{" "}
+                {language === "ar" ? "أيام متبقية" : "days remaining"}
+              </p>
+            </div>
+          )}
+
+          {/* Renewal date / access-until date */}
+          {(isPaidActive || subStatus === "past_due") && subscription?.expires_at && (
+            <div className="text-sm">
+              <p className="text-muted-foreground mb-0.5">
+                {isCancelScheduled || subStatus === "past_due"
+                  ? (language === "ar" ? "الوصول حتى" : "Access until")
+                  : (language === "ar" ? "تاريخ التجديد القادم" : "Next billing date")}
+              </p>
+              <p className="font-medium">
+                {new Date(subscription.expires_at).toLocaleDateString(
+                  language === "ar" ? "ar-SA" : "en-US",
+                  { year: "numeric", month: "long", day: "numeric" }
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* Cancellation-scheduled info — replaces cancel button */}
+          {isCancelScheduled && subscription?.expires_at && (
+            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-sm">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-300">
+                  {language === "ar" ? "إلغاء الاشتراك مجدول" : "Cancellation scheduled"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {language === "ar"
+                    ? `وصولك الكامل نشط حتى ${new Date(subscription.expires_at).toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })}`
+                    : `Your full access remains active until ${new Date(subscription.expires_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Past-due payment warning with grace-window end date */}
+          {subStatus === "past_due" && (
+            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm">
+              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-destructive">
+                  {language === "ar" ? "تعذّر تجديد الدفع" : "Payment renewal failed"}
+                </p>
+                {graceEndDate ? (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {language === "ar"
+                      ? `وصولك الكامل محفوظ حتى ${graceEndDate.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })} — تواصل مع الدعم إذا استمرت المشكلة`
+                      : `Your full access is preserved until ${graceEndDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} — contact support if the issue persists`}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {language === "ar" ? "يرجى التواصل مع الدعم" : "Please contact support"}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Card on file */}
+          {subscription?.card_brand && (
+            <div className="flex items-center gap-2 text-sm">
+              <CreditCard className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground">
+                {subscription.card_brand} •••• {subscription.card_last_four}
+              </span>
+            </div>
+          )}
+
+          {/* Cancel action — only when subscription is active/trialing and not already scheduled */}
+          {(isTrialActive || isPaidActive) && !isCancelScheduled && session && (
+            <CancelSubscriptionButton t={t} refetch={refetch} session={session} />
+          )}
+
+          {/* Subscribe CTA — expired / free-tier users */}
+          {!isPaidActive && !isTrialActive && !isCancelScheduled && (
+            <Button
+              variant="hero"
+              className="w-full mt-2"
+              onClick={() => navigate("/subscribe")}
+            >
+              {t("subscribeNow")}
+            </Button>
+          )}
+        </div>
+
+        {isTrialActive && (
+          <div className="bg-cyan-500/5 rounded-xl border border-cyan-500/20 p-4 text-sm text-cyan-300">
+            {language === "ar"
+              ? "اشتراكك Pro سيبدأ تلقائياً بعد انتهاء فترة التجربة"
+              : "Your Pro subscription will auto-start after the trial ends"}
+          </div>
         )}
       </div>
-
-      {isTrialActive && (
-        <div className="bg-cyan-500/5 rounded-xl border border-cyan-500/20 p-4 text-sm text-cyan-300">
-          {language === "ar"
-            ? "اشتراكك Pro سيبدأ تلقائياً بعد انتهاء فترة التجربة"
-            : "Your Pro subscription will auto-start after the trial ends"}
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   // Billing
   const renderBilling = () => (
@@ -612,6 +725,11 @@ const Account = () => {
                       language === "ar" ? "ar-SA" : "en-US"
                     )}
                   </p>
+                  {tx.status === "failed" && tx.failure_code && (
+                    <p className="text-xs text-destructive/70 mt-0.5">
+                      {tx.failure_code}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="font-medium">
@@ -707,7 +825,46 @@ const Account = () => {
           </div>
         )}
 
-        {!hasActiveAccess && (
+        {/* Free-tier usage counter — 10 messages / 24h, Main mode only */}
+        {isFreeLoggedIn && (
+          <div className="bg-card/60 rounded-xl border border-border/40 p-6 space-y-4">
+            <h2 className="text-lg font-semibold">
+              {language === "ar" ? "استخدام اليوم — النمط الرئيسي" : "Today's Usage — Main Mode"}
+            </h2>
+            <div>
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="text-muted-foreground">
+                  {t("dailyUsageCounter")}
+                </span>
+                <span className="font-medium">
+                  {subscription?.daily_messages_used ?? 0} /{" "}
+                  {subscription?.daily_messages_limit ?? 10}
+                </span>
+              </div>
+              <div className="w-full bg-muted/30 rounded-full h-2">
+                <div
+                  className="bg-primary rounded-full h-2 transition-all"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      ((subscription?.daily_messages_used ?? 0) /
+                        (subscription?.daily_messages_limit ?? 10)) *
+                        100
+                    )}%`,
+                  }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {language === "ar"
+                  ? "النمط الرئيسي فقط — اشترك للوصول إلى جميع الأنماط"
+                  : "Main mode only — subscribe for access to all modes"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Fallback for unauthenticated or edge-case states */}
+        {!hasActiveAccess && !isFreeLoggedIn && (
           <div className="bg-card/60 rounded-xl border border-border/40 p-6 text-center">
             <p className="text-muted-foreground text-sm mb-4">
               {language === "ar"
