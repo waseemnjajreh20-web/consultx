@@ -186,8 +186,10 @@ serve(async (req) => {
         updateData.current_period_start = now.toISOString();
         updateData.current_period_end = periodEnd.toISOString();
         updateData.next_billing_date = periodEnd.toISOString();
-        // Clear any past-due flag from prior failed attempts on this renewal cycle
+        // Clear past-due and dunning flags so a future independent failure
+        // can trigger a fresh dunning email (re-arms the deduplication gate).
         updateData.past_due_since = null;
+        updateData.dunning_notified_at = null;
       }
 
       if (Object.keys(updateData).length > 0) {

@@ -400,6 +400,7 @@ serve(async (req) => {
         current_period_end: newPeriodEnd.toISOString(),
         next_billing_date: newPeriodEnd.toISOString(),
         past_due_since: null,
+        dunning_notified_at: null, // re-arms dunning for any future independent failure
       }).eq("id", sub.id);
       console.log(
         `Sub ${sub.id}: renewed immediately (CAPTURED) — ` +
