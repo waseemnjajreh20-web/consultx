@@ -12,11 +12,79 @@ serve(async (req) => {
   }
 
   try {
+    // ── Tap webhook signature verification (HMAC-SHA256) ─────────────────────
+    // Must run before any DB access. Fail closed — no bypass paths.
+    const tapSecretKey = Deno.env.get("TAP_SECRET_KEY");
+    if (!tapSecretKey) {
+      console.error("TAP_SECRET_KEY not configured — cannot verify webhook");
+      return new Response(JSON.stringify({ error: "Webhook verification unavailable" }), { status: 500, headers: corsHeaders });
+    }
+
+    const receivedHash = req.headers.get("hashstring");
+    if (!receivedHash) {
+      console.error("Webhook rejected: missing hashstring header");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    // Clone the request so the body can be read twice (once for HMAC, once for JSON parsing)
+    const bodyText = await req.text();
+    let payload: any;
+    try {
+      payload = JSON.parse(bodyText);
+    } catch {
+      console.error("Webhook rejected: invalid JSON body");
+      return new Response(JSON.stringify({ error: "Bad request" }), { status: 400, headers: corsHeaders });
+    }
+
+    // Build the hash input string exactly as documented by Tap:
+    // x_id + x_amount + x_currency + x_gateway_reference + x_payment_reference + x_status + x_created
+    const hashInput =
+      "x_id"                  + (payload.id                        ?? "") +
+      "x_amount"              + String(payload.transaction?.amount  ?? "") +
+      "x_currency"            + (payload.currency                   ?? "") +
+      "x_gateway_reference"   + (payload.reference?.gateway         ?? "") +
+      "x_payment_reference"   + (payload.reference?.payment         ?? "") +
+      "x_status"              + (payload.status                     ?? "") +
+      "x_created"             + String(payload.transaction?.created ?? "");
+
+    console.log("Webhook HMAC input fields:", {
+      x_id: payload.id ?? "",
+      x_amount: String(payload.transaction?.amount ?? ""),
+      x_currency: payload.currency ?? "",
+      x_gateway_reference: payload.reference?.gateway ?? "",
+      x_payment_reference: payload.reference?.payment ?? "",
+      x_status: payload.status ?? "",
+      x_created: String(payload.transaction?.created ?? ""),
+    });
+
+    const encoder = new TextEncoder();
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(tapSecretKey),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const sigBuffer = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(hashInput));
+    const computedHash = Array.from(new Uint8Array(sigBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    if (computedHash !== receivedHash) {
+      console.error("Webhook rejected: HMAC mismatch", {
+        computed_length: computedHash.length,
+        received_length: receivedHash.length,
+      });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    console.log("Webhook signature verified successfully");
+    // ── End signature verification ────────────────────────────────────────────
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const payload = await req.json();
     console.log("Tap webhook received:", JSON.stringify(payload));
 
     const chargeId = payload.id;
