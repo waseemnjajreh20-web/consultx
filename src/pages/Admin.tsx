@@ -4,6 +4,7 @@ import {
   Users, CreditCard, TrendingUp, Database, Play, RefreshCw,
   CheckCircle, XCircle, Clock, AlertCircle, ArrowLeft,
   Loader2, Shield, BarChart3, Network, FileText, Zap, StopCircle,
+  AlertTriangle, Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,13 +21,57 @@ const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 interface AdminStats {
   users: { total: number; recent7Days: number };
   subscriptions: { active: number; total: number; breakdown: Record<string, number> };
-  revenue: { totalHalala: number; totalSAR: string; transactions: number };
+  revenue: {
+    totalHalala: number;
+    totalSAR: string;
+    transactions: number;
+    renewalHalala: number;
+    renewalSAR: string;
+    renewalCount: number;
+    verificationCount: number;
+  };
+  billing: {
+    pastDue: Array<{
+      id: string;
+      user_id: string;
+      past_due_since: string;
+      dunning_notified_at: string | null;
+      current_period_end: string | null;
+    }>;
+    softCancelCount: number;
+    pendingActivationCount: number;
+    deadLetters: Array<{
+      id: string;
+      charge_id: string;
+      reason: string;
+      tap_status: string;
+      created_at: string;
+    }>;
+    deadLetters24hCount: number;
+    failedTransactions: Array<{
+      id: string;
+      user_id: string;
+      tap_charge_id: string | null;
+      payment_type: string;
+      failure_code: string | null;
+      failure_message: string | null;
+      created_at: string;
+    }>;
+  };
   knowledgeGraph: {
-    nodes: number; edges: number; communities: number;
+    nodes: number;
+    edges: number;
+    communities: number;
     files: Array<{
-      id: string; file_name: string; status: string; sbc_source: string;
-      nodes_extracted: number; edges_extracted: number;
-      last_processed_chunk: number; error_message?: string; processed_at?: string;
+      id: string;
+      file_name: string;
+      status: string;
+      sbc_source: string;
+      nodes_extracted: number;
+      edges_extracted: number;
+      last_processed_chunk: number;
+      error_message?: string;
+      processed_at?: string;
     }>;
   };
 }
@@ -46,6 +91,17 @@ const statusIcons: Record<string, React.ReactNode> = {
   failed: <XCircle className="w-3 h-3" />,
   pending: <AlertCircle className="w-3 h-3" />,
 };
+
+/** Format ISO datetime as short locale string. */
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("ar-SA", { month: "short", day: "numeric" });
+}
+
+/** Truncate UUID to first 8 chars for display. */
+function shortId(id: string): string {
+  return id.slice(0, 8) + "…";
+}
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -200,6 +256,8 @@ export default function Admin() {
   const liveDone = autoIndexing ? autoIndexProgress.done : kgDoneFiles;
   const liveProgress = liveTotal > 0 ? Math.round((liveDone / liveTotal) * 100) : kgProgress;
 
+  const billing = stats?.billing;
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <div className="fixed inset-0 blueprint-grid opacity-20 pointer-events-none" />
@@ -260,6 +318,7 @@ export default function Admin() {
             </CardContent>
           </Card>
 
+          {/* Revenue card — renewal revenue is the real business metric */}
           <Card className="bg-card/80 backdrop-blur-xl border-border/50">
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
@@ -267,11 +326,16 @@ export default function Admin() {
                   <TrendingUp className="w-5 h-5 text-green-400" />
                 </div>
                 <Badge variant="outline" className="text-xs border-green-500/30 text-green-400">
-                  {stats?.revenue.transactions ?? 0} معاملة
+                  {stats?.revenue.renewalCount ?? 0} تجديد
                 </Badge>
               </div>
-              <p className="text-3xl font-bold">{stats?.revenue.totalSAR ?? "0.00"}</p>
-              <p className="text-sm text-muted-foreground mt-1">إجمالي الإيرادات (ريال)</p>
+              <p className="text-3xl font-bold">{stats?.revenue.renewalSAR ?? "0.00"}</p>
+              <p className="text-sm text-muted-foreground mt-1">إيراد التجديدات (ريال)</p>
+              {(stats?.revenue.verificationCount ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  + {stats?.revenue.verificationCount} تحقق بطاقة (1 ر.س)
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -287,6 +351,62 @@ export default function Admin() {
               </div>
               <p className="text-3xl font-bold">{stats?.knowledgeGraph.nodes ?? 0}</p>
               <p className="text-sm text-muted-foreground mt-1">عقدة في المعرفة الرسومية</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ===== BILLING HEALTH CARDS ===== */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Past due */}
+          <Card className={`bg-card/80 backdrop-blur-xl border-border/50 ${(billing?.pastDue.length ?? 0) > 0 ? "border-red-500/40" : ""}`}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 rounded-lg bg-red-500/10">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-red-400">{billing?.pastDue.length ?? 0}</p>
+              <p className="text-sm text-muted-foreground mt-1">متأخر السداد</p>
+            </CardContent>
+          </Card>
+
+          {/* Scheduled cancellations */}
+          <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 rounded-lg bg-orange-500/10">
+                  <Ban className="w-5 h-5 text-orange-400" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-orange-400">{billing?.softCancelCount ?? 0}</p>
+              <p className="text-sm text-muted-foreground mt-1">إلغاء مجدول</p>
+            </CardContent>
+          </Card>
+
+          {/* Pending activation */}
+          <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 rounded-lg bg-yellow-500/10">
+                  <Clock className="w-5 h-5 text-yellow-400" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-yellow-400">{billing?.pendingActivationCount ?? 0}</p>
+              <p className="text-sm text-muted-foreground mt-1">تفعيل معلق</p>
+            </CardContent>
+          </Card>
+
+          {/* Dead letters (24h) */}
+          <Card className={`bg-card/80 backdrop-blur-xl border-border/50 ${(billing?.deadLetters24hCount ?? 0) > 0 ? "border-yellow-500/40" : ""}`}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2 rounded-lg bg-yellow-500/10">
+                  <AlertCircle className="w-5 h-5 text-yellow-400" />
+                </div>
+                <span className="text-xs text-muted-foreground">24س</span>
+              </div>
+              <p className="text-3xl font-bold text-yellow-400">{billing?.deadLetters24hCount ?? 0}</p>
+              <p className="text-sm text-muted-foreground mt-1">أحداث webhook فاشلة</p>
             </CardContent>
           </Card>
         </div>
@@ -363,7 +483,7 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* ===== SUBSCRIPTIONS BREAKDOWN ===== */}
+        {/* ===== SUBSCRIPTIONS BREAKDOWN + KG FILES ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-card/80 backdrop-blur-xl border-border/50">
             <CardHeader className="pb-3">
@@ -375,8 +495,13 @@ export default function Admin() {
             <CardContent className="space-y-3">
               {Object.entries(stats?.subscriptions.breakdown ?? {}).map(([status, count]) => {
                 const labels: Record<string, string> = {
-                  active: "نشط", trialing: "تجريبي", cancelled: "ملغى",
-                  expired: "منتهي", none: "بلا اشتراك",
+                  active: "نشط",
+                  trialing: "تجريبي",
+                  cancelled: "ملغى",
+                  expired: "منتهي",
+                  none: "بلا اشتراك",
+                  past_due: "متأخر السداد",
+                  pending_activation: "تفعيل معلق",
                 };
                 const total = stats?.subscriptions.total || 1;
                 return (
@@ -435,6 +560,120 @@ export default function Admin() {
             </CardContent>
           </Card>
         </div>
+
+        {/* ===== PAST-DUE USERS ===== */}
+        {(billing?.pastDue.length ?? 0) > 0 && (
+          <Card className="bg-card/80 backdrop-blur-xl border-red-500/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2 text-red-400">
+                <AlertTriangle className="w-4 h-4" />
+                مستخدمون متأخرون في السداد ({billing!.pastDue.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {billing!.pastDue.map((row) => {
+                  const graceDue = row.current_period_end
+                    ? new Date(new Date(row.current_period_end).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("ar-SA", { month: "short", day: "numeric" })
+                    : "—";
+                  return (
+                    <div
+                      key={row.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="font-mono text-muted-foreground shrink-0">{shortId(row.user_id)}</span>
+                        <span className="text-muted-foreground shrink-0">منذ {fmtDate(row.past_due_since)}</span>
+                        <span className="text-muted-foreground shrink-0">انتهاء الفترة: {graceDue}</span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={row.dunning_notified_at
+                          ? "border-green-500/30 text-green-400 text-xs"
+                          : "border-muted text-muted-foreground text-xs"}
+                      >
+                        {row.dunning_notified_at ? "أُرسل إشعار" : "لم يُرسل بعد"}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ===== RECENT FAILED TRANSACTIONS ===== */}
+        {(billing?.failedTransactions.length ?? 0) > 0 && (
+          <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <XCircle className="w-4 h-4 text-destructive" />
+                آخر المدفوعات الفاشلة ({billing!.failedTransactions.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {billing!.failedTransactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-xs"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="font-mono text-muted-foreground shrink-0">{shortId(tx.user_id)}</span>
+                      <Badge variant="outline" className="border-muted text-muted-foreground text-xs shrink-0">
+                        {tx.payment_type || "—"}
+                      </Badge>
+                      <span className="text-destructive/80 truncate">
+                        {tx.failure_code ? `${tx.failure_code}` : ""}
+                        {tx.failure_message ? ` — ${tx.failure_message}` : ""}
+                        {!tx.failure_code && !tx.failure_message ? "فشل غير محدد" : ""}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground/60 shrink-0 ms-2">{fmtDate(tx.created_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ===== WEBHOOK DEAD LETTERS ===== */}
+        {(billing?.deadLetters.length ?? 0) > 0 && (
+          <Card className="bg-card/80 backdrop-blur-xl border-yellow-500/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2 text-yellow-400">
+                <AlertCircle className="w-4 h-4" />
+                Webhook Dead Letters — آخر {billing!.deadLetters.length}
+                {(billing?.deadLetters24hCount ?? 0) > 0 && (
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs ms-2">
+                    {billing!.deadLetters24hCount} في 24 ساعة
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {billing!.deadLetters.map((dl) => (
+                  <div
+                    key={dl.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-xs"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="font-mono text-muted-foreground shrink-0">
+                        {dl.charge_id ? dl.charge_id.slice(0, 14) + "…" : "—"}
+                      </span>
+                      <Badge variant="outline" className="border-muted text-muted-foreground text-xs shrink-0">
+                        {dl.tap_status || "—"}
+                      </Badge>
+                      <span className="text-yellow-400/80 truncate">{dl.reason}</span>
+                    </div>
+                    <span className="text-muted-foreground/60 shrink-0 ms-2">{fmtDate(dl.created_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ===== MANUAL INDEXER CONTROL ===== */}
         <Card className="bg-card/80 backdrop-blur-xl border-border/50">
