@@ -393,9 +393,10 @@ const SBC201_INDEX: FilePageRange[] = [
   },
   {
     pageRange: "1001-1250",
-    chapters: [11, 12, 13, 14, 15],
-    topics: ["accessibility", "interior environment", "energy", "lighting", "ventilation", "plumbing"],
-    topicsAr: ["وصول", "بيئة داخلية", "طاقة", "إنارة", "تهوية", "سباكة"],
+    // Chapter 10 (means of egress) continues here — Section 1014+ (handrails, guards, ramps)
+    chapters: [10, 11, 12, 13, 14, 15],
+    topics: ["means of egress", "exit", "handrail", "guardrail", "guard", "ramp", "stepped aisle", "ramped aisle", "accessibility", "interior environment", "energy", "lighting", "ventilation", "plumbing"],
+    topicsAr: ["مخرج", "مخارج", "درابزين", "حماية سقوط", "منحدر", "ممر متدرج", "وصول", "بيئة داخلية", "طاقة", "إنارة", "تهوية", "سباكة"],
   },
   {
     pageRange: "1251-1500",
@@ -530,6 +531,13 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "درج": { sbc201: [10], sbc801: [] },
   "سلم": { sbc201: [10], sbc801: [] },
   "سلالم": { sbc201: [10], sbc801: [] },
+  "handrail": { sbc201: [10], sbc801: [] },
+  "handrails": { sbc201: [10], sbc801: [] },
+  "guardrail": { sbc201: [10], sbc801: [] },
+  "guard rail": { sbc201: [10], sbc801: [] },
+  "ramp": { sbc201: [10], sbc801: [] },
+  "منحدر": { sbc201: [10], sbc801: [] },
+  "درابزين": { sbc201: [10], sbc801: [] },
   "corridor": { sbc201: [10], sbc801: [] },
   "ممر": { sbc201: [10], sbc801: [] },
   "travel distance": { sbc201: [10], sbc801: [] },
@@ -758,6 +766,8 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "درج": ["stair", "stairway", "staircase"],
   "سلم": ["stair", "stairway", "ladder"],
   "سلالم": ["stairs", "stairways", "staircases"],
+  "درابزين": ["handrail", "handrails", "guardrail", "railing", "guard"],
+  "منحدر": ["ramp", "ramped aisle", "slope"],
   "باب": ["door", "doorway", "opening"],
   "أبواب": ["doors", "doorways"],
   "فتحة": ["opening", "aperture"],
@@ -1144,10 +1154,13 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
     }
   }
   
-  // Check for explicit section numbers (e.g., 903.2 -> chapter 9)
+  // Check for explicit section numbers (e.g., 903.2 -> chapter 9, or "Section 1014" bare)
   const sectionMatch = lower.match(/(?:section\s+)?(\d{3,4})\.\d/gi);
-  if (sectionMatch) {
-    for (const m of sectionMatch) {
+  // Also match bare integer section numbers when preceded by "section" / "مادة" / "clause"
+  const bareSectionMatch = lower.match(/(?:section|مادة|clause)\s+(\d{3,4})\b/gi);
+  const allSectionMatches = [...(sectionMatch || []), ...(bareSectionMatch || [])];
+  if (allSectionMatches.length > 0) {
+    for (const m of allSectionMatches) {
       const secNum = parseInt(m.match(/(\d{3,4})/)?.[1] || "0");
       const chapNum = Math.floor(secNum / 100);
       if (chapNum > 0 && chapNum <= 35) {
@@ -2156,7 +2169,8 @@ serve(async (req) => {
       const userQuery = lastUserMessage?.content || "";
       
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
-      const { context: sbcContext, files } = await fetchSBCContextVector(userQuery, mode);
+      // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
+      const { context: sbcContext, files } = await fetchSBCContext(userQuery);
       usedFiles = files;
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
       
@@ -2172,10 +2186,17 @@ serve(async (req) => {
           : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
         fullSystemPrompt += warningMsg;
       } else {
-        const warningMsg = language === "en"
-          ? `\n\n⚠️ WARNING: No SBC files loaded. Inform user that reference documents are temporarily unavailable.`
-          : `\n\n⚠️ تحذير: لم يتم تحميل ملفات SBC. أخبر المستخدم أن المستندات المرجعية غير متوفرة مؤقتاً.`;
-        fullSystemPrompt += warningMsg;
+        // No SBC content loaded — storage retrieval failed entirely.
+        // Return a clean 503 instead of calling Gemini with no context (which produces
+        // misleading "text not available in provided files" responses).
+        console.error("SBC context empty after retrieval — returning 503");
+        const errMsg = language === "en"
+          ? "Reference documents are temporarily unavailable. Please try again in a moment."
+          : "المستندات المرجعية غير متوفرة مؤقتاً. يرجى المحاولة مجدداً بعد لحظات.";
+        return new Response(JSON.stringify({ error: errMsg }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
     
