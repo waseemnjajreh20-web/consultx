@@ -102,14 +102,18 @@ export default function ConversationsList({ onSelectConversation, onClose }: Con
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     conv.mode === "analysis"
-                      ? "bg-green-600/10 text-green-600"
+                      ? "bg-red-600/10 text-red-600"
+                      : conv.mode === "standard"
+                      ? "bg-orange-500/10 text-orange-500"
                       : "bg-primary/10 text-primary"
                   }`}
                 >
                   {conv.mode === "analysis" ? (
                     <FlaskConical className="w-4 h-4" />
-                  ) : (
+                  ) : conv.mode === "standard" ? (
                     <ClipboardList className="w-4 h-4" />
+                  ) : (
+                    <MessageSquare className="w-4 h-4" />
                   )}
                 </div>
 

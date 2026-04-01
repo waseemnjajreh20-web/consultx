@@ -17,7 +17,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
-import AnalysisResultCard, { isVisionAnalysisResponse } from "./AnalysisResultCard";
+import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
 import { useConversations } from "@/hooks/useConversations";
@@ -1178,6 +1178,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                 <button
                   key={mode}
                   onClick={() => handleModeSwitch(mode)}
+                  title={mode === "primary" ? t("modeDesc_primary") : mode === "standard" ? t("modeDesc_standard") : t("modeDesc_analysis")}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-300",
                     isActive ? "font-semibold" : "text-muted-foreground hover:text-foreground"
@@ -1454,7 +1455,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {isVisionAnalysisResponse(displayContent) ? (
+                        {isVisionAnalysisResponse(displayContent) || (msgMode === "analysis" && isComplianceTextResponse(displayContent)) ? (
                           <AnalysisResultCard content={displayContent} />
                         ) : (
                           <div id={`cmr-${message.id}`}>
@@ -1573,7 +1574,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             )}
             <Textarea
               ref={textareaRef} value={input} onChange={e => { setInput(e.target.value); autoResize(e.target as HTMLTextAreaElement); }} onKeyDown={handleKeyDown}
-              placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : hasFiles ? t("imageAttached") : t("inputPlaceholder")}
+              placeholder={isAtDailyLimit ? t("dailyLimitExceeded") : hasFiles ? t("imageAttached") : chatMode === "primary" ? t("placeholder_primary") : chatMode === "standard" ? t("placeholder_standard") : t("placeholder_analysis")}
               className="flex-1 bg-transparent border-0 resize-none focus-visible:ring-0 min-h-[44px] max-h-[200px] text-foreground placeholder:text-muted-foreground disabled:opacity-50"
               rows={1}
               disabled={!inputEnabled || isAtDailyLimit}

@@ -219,6 +219,18 @@ export function isVisionAnalysisResponse(content: string): boolean {
   );
 }
 
+/** Detects text-based (non-vision) compliance review responses in analysis mode.
+ *  Requires at least 2 of the 4 structured section headers used by AnalysisResultCard. */
+export function isComplianceTextResponse(content: string): boolean {
+  const markers = [
+    content.includes("البيانات المستخرجة") || content.includes("Extracted Data"),
+    content.includes("ملخص الفروقات") || content.includes("Differences Summary"),
+    content.includes("السند القانوني") || content.includes("Legal Basis"),
+    content.includes("الإجراءات المطلوبة") || content.includes("Required Actions"),
+  ];
+  return markers.filter(Boolean).length >= 2;
+}
+
 export default function AnalysisResultCard({ content }: AnalysisResultCardProps) {
   // Extract sections by headers
   const sections: { type: string; title: string; content: string }[] = [];

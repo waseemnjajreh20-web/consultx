@@ -33,10 +33,10 @@ const BottomNav = ({ chatMode, onModeSwitch, onToggleHistory, onScrollToInput, i
     { id: "account", icon: UserCircle, action: () => navigate("/account") },
   ];
 
-  const modes: { mode: ChatMode; icon: typeof MessageSquare; label: string; color: string }[] = [
-    { mode: "primary", icon: MessageSquare, label: t("primary"), color: "#00D4FF" },
-    { mode: "standard", icon: ClipboardList, label: t("standard"), color: "#FF8C00" },
-    { mode: "analysis", icon: FlaskConical, label: t("analysis"), color: "#DC143C" },
+  const modes: { mode: ChatMode; icon: typeof MessageSquare; label: string; color: string; description: string }[] = [
+    { mode: "primary", icon: MessageSquare, label: t("primary"), color: "#00D4FF", description: t("modeDesc_primary") },
+    { mode: "standard", icon: ClipboardList, label: t("standard"), color: "#FF8C00", description: t("modeDesc_standard") },
+    { mode: "analysis", icon: FlaskConical, label: t("analysis"), color: "#DC143C", description: t("modeDesc_analysis") },
   ];
 
   return (
@@ -78,7 +78,7 @@ const BottomNav = ({ chatMode, onModeSwitch, onToggleHistory, onScrollToInput, i
         <SheetContent side="bottom" className="rounded-t-2xl border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 pb-8">
           <div className="w-12 h-1 bg-muted rounded-full mx-auto mt-3 mb-6" />
           <div className="space-y-2">
-            {modes.map(({ mode, icon: Icon, label, color }) => {
+            {modes.map(({ mode, icon: Icon, label, color, description }) => {
               const isActive = chatMode === mode;
               const isLocked = isFreePlan && (mode === "standard" || mode === "analysis");
               return (
@@ -94,11 +94,14 @@ const BottomNav = ({ chatMode, onModeSwitch, onToggleHistory, onScrollToInput, i
                     border: isActive ? `1px solid ${color}40` : "1px solid transparent",
                   }}
                 >
-                  <Icon className="w-5 h-5" style={{ color }} />
-                  <span className="font-medium text-foreground">{label}</span>
+                  <Icon className="w-5 h-5 shrink-0" style={{ color }} />
+                  <div className="flex flex-col items-start text-start min-w-0">
+                    <span className="font-medium text-foreground">{label}</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{description}</span>
+                  </div>
                   {isLocked && <span className="text-xs text-muted-foreground ms-auto">🔒</span>}
-                  {isActive && (
-                    <span className="w-2 h-2 rounded-full ms-auto" style={{ background: color }} />
+                  {isActive && !isLocked && (
+                    <span className="w-2 h-2 rounded-full ms-auto shrink-0" style={{ background: color }} />
                   )}
                 </button>
               );
