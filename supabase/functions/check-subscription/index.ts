@@ -203,12 +203,15 @@ serve(async (req) => {
     }
 
     // ── Access state ────────────────────────────────────────────────────────
+    // NOTE: launchTrialStatus === "paid" is intentionally NOT mapped to "paid_active" here.
+    // isPaidActive (first branch) already covers all legitimate paid users.
+    // A cancelled/expired subscription sets isPaidActive = false — these users must NOT
+    // retain paid_active access just because their profile still shows launch_trial_status = "paid".
     const accessState: string = (() => {
       if (isPaidActive)                            return "paid_active";
       if (launchTrialActive)                       return "trial_active";
       if (launchTrialStatus === "trial_expired")   return "trial_expired";
       if (launchTrialStatus === "eligible_existing_pending") return "eligible_existing_pending";
-      if (launchTrialStatus === "paid")            return "paid_active";
       return "ineligible";
     })();
 

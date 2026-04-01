@@ -158,6 +158,7 @@ const Account = () => {
       const { data } = await supabase
         .from("payment_transactions")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(20);
       if (data) setTransactions(data);

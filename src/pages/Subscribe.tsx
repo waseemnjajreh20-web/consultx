@@ -49,7 +49,7 @@ interface Plan {
 const Subscribe = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, session, authLoading, subscription, subLoading, isReturningUser, isPaidActive } = useEntitlement();
+  const { user, session, authLoading, subscription, subLoading, isReturningUser, isPaidActive, isTrialActive, trialDaysRemaining } = useEntitlement();
   const { t, dir, language } = useLanguage();
   const { toast } = useToast();
 
@@ -237,13 +237,13 @@ const Subscribe = () => {
             </p>
           </div>
 
-          {/* Trial banner */}
-          {subscription?.status === "trialing" && (
+          {/* Trial banner — shown for ALL active trial users (launch trial OR paid trialing) */}
+          {isTrialActive && !isReturningUser && (
             <div className="max-w-lg mx-auto mb-6 bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 text-sm text-center text-primary">
               <Clock className="w-4 h-4 inline-block me-1 mb-0.5" />
               {language === "ar"
-                ? `تجربتك المجانية تنتهي خلال ${subscription.trial_days_remaining} أيام — أضف بطاقتك الآن لمواصلة الاشتراك بدون انقطاع`
-                : `Your free trial ends in ${subscription.trial_days_remaining} days — add your card now to continue without interruption`}
+                ? `تجربتك المجانية تنتهي خلال ${trialDaysRemaining || subscription?.trial_days_remaining || 0} أيام — أضف بطاقتك الآن لمواصلة الاشتراك بدون انقطاع`
+                : `Your free trial ends in ${trialDaysRemaining || subscription?.trial_days_remaining || 0} days — add your card now to continue without interruption`}
             </div>
           )}
 
@@ -296,6 +296,14 @@ const Subscribe = () => {
                           ? (language === "ar" ? "✓ GraphRAG متاح" : "✓ GraphRAG enabled")
                           : (language === "ar" ? "✗ GraphRAG غير متاح" : "✗ No GraphRAG")}
                       </li>
+                      {Array.isArray(plan.features.modes) && plan.features.modes.length > 0 && (
+                        <li>
+                          {language === "ar" ? "✓ الأوضاع: " : "✓ Modes: "}
+                          {plan.features.modes.map((m: string) =>
+                            m === "primary" ? t("primary") : m === "standard" ? t("standard") : t("analysis")
+                          ).join(" · ")}
+                        </li>
+                      )}
                     </ul>
                     {plan.price_amount > 0 && (
                       <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
@@ -347,7 +355,7 @@ const Subscribe = () => {
                 ) : (
                   <CreditCard className="w-5 h-5 ms-2" />
                 )}
-                {isReturningUser ? t("startSubscription") : t("startFreeTrial")}
+                {isReturningUser ? t("startSubscription") : isTrialActive ? t("addCardContinue") : t("startFreeTrial")}
               </Button>
             </div>
           )}

@@ -83,8 +83,13 @@ export function useEntitlement(): UseEntitlementResult {
   const isTrialExpired = rawAccessState === "trial_expired";
   const hasActiveAccess = isPaidActive || isTrialActive;
   const canAccessChat = hasActiveAccess || isAdmin;
+  // isReturningUser: covers paid-subscription lapsers AND launch-trial-expired users
+  // who never had a paid subscription. Both groups should see the re-subscribe CTA,
+  // not the first-time "Start Free Trial" CTA.
   const isReturningUser =
-    subscription?.status === "expired" || subscription?.status === "cancelled";
+    subscription?.status === "expired" ||
+    subscription?.status === "cancelled" ||
+    rawAccessState === "trial_expired";
 
   const trialDaysRemaining = subscription?.launch_trial_days_remaining ?? 0;
   const trialHoursRemaining = subscription?.launch_trial_hours_remaining ?? 0;
