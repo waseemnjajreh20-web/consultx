@@ -17,8 +17,8 @@ export default function Refund() {
 
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
-                <h2 className="text-base font-semibold text-foreground mb-3">1. التجربة المجانية لـ 3 أيام</h2>
-                <p>كل مستخدم جديد يحصل تلقائياً على 3 أيام وصول كامل مجاناً — بدون بطاقة بنكية. التجربة لا تستوجب أي دفع.</p>
+                <h2 className="text-base font-semibold text-foreground mb-3">1. التجربة المجانية لـ 7 أيام</h2>
+                <p>كل مستخدم جديد يحصل تلقائياً على 7 أيام وصول كامل مجاناً — بدون بطاقة بنكية. التجربة لا تستوجب أي دفع.</p>
               </div>
 
               <div>
@@ -58,8 +58,8 @@ export default function Refund() {
 
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
-                <h2 className="text-base font-semibold text-foreground mb-3">1. 3-Day Free Trial</h2>
-                <p>Every new user automatically receives 3 days of full access for free — no credit card required. The trial requires no payment.</p>
+                <h2 className="text-base font-semibold text-foreground mb-3">1. 7-Day Free Trial</h2>
+                <p>Every new user automatically receives 7 days of full access for free — no credit card required. The trial requires no payment.</p>
               </div>
 
               <div>

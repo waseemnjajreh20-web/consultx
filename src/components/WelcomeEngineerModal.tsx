@@ -82,8 +82,8 @@ export default function WelcomeEngineerModal({ trialEnd, onClose }: WelcomeEngin
         {/* Body */}
         <p className="text-sm leading-relaxed mb-4" style={{ color: "rgba(200,220,240,0.7)" }}>
           {isAr
-            ? "بمناسبة إطلاق ConsultX، حصلت على تجربة مجانية لمدة 3 أيام لباقة مهندس الكاملة — جميع الأوضاع، الـ 12 وكيل ذكي، والسند القانوني."
-            : "To celebrate the launch of ConsultX, you got a 3-day free trial for the full Engineer plan — all modes, all 12 AI agents, and legal references."}
+            ? "بمناسبة إطلاق ConsultX، حصلت على تجربة مجانية لمدة 7 أيام لباقة مهندس الكاملة — جميع الأوضاع، الـ 12 وكيل ذكي، والسند القانوني."
+            : "To celebrate the launch of ConsultX, you got a 7-day free trial for the full Engineer plan — all modes, all 12 AI agents, and legal references."}
         </p>
 
         {/* Date */}

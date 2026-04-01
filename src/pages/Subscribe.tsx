@@ -13,13 +13,8 @@ import consultxIcon from "@/assets/consultx-icon.png";
 
 const TAP_PUBLISHABLE_KEY = import.meta.env.VITE_TAP_PUBLISHABLE_KEY || "pk_test_4QqUxKJotDilhnfGZ98ALrp3";
 
-/** Display name overrides: map DB slug → user-facing plan name */
+/** Display name: use the DB plan name directly (matches PricingLanding). */
 function getPlanDisplayName(slug: string, nameAr: string, nameEn: string, isAr: boolean): string {
-  const overrides: Record<string, { ar: string; en: string }> = {
-    engineer: { ar: "Pro", en: "Pro" },
-    enterprise: { ar: "Team", en: "Team" },
-  };
-  if (overrides[slug]) return isAr ? overrides[slug].ar : overrides[slug].en;
   return isAr ? nameAr : nameEn;
 }
 
