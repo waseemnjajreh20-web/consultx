@@ -2,7 +2,6 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { useProfile } from "@/hooks/useProfile";
-import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 
@@ -10,7 +9,7 @@ const ChatInterface = lazy(() => import("@/components/ChatInterface"));
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { user, session, isLoading, canAccessChat, isReturningUser } = useEntitlement();
+  const { user, isLoading, canAccessChat } = useEntitlement();
   const { profile } = useProfile();
 
   // isReady gates render of ChatInterface — set once access is confirmed
@@ -39,32 +38,12 @@ const Workspace = () => {
       return;
     }
 
-    // Expired / cancelled → must re-subscribe before entering workspace
-    if (isReturningUser) {
-      navigate("/subscribe");
-      return;
-    }
-
-    // Active access (paid / trial / admin) → enter immediately
+    // Any authenticated user (paid, trial, free-tier, admin) may enter the workspace.
+    // Backend enforces mode availability and daily message limits.
     if (canAccessChat) {
       setIsReady(true);
-      return;
     }
-
-    // Free / trial-pending user — invoke auto-trial, then enter workspace regardless
-    (async () => {
-      try {
-        if (session) {
-          await supabase.functions.invoke("auto-trial", {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          });
-        }
-      } catch (e) {
-        console.error("Auto-trial error:", e);
-      }
-      setIsReady(true);
-    })();
-  }, [isLoading, user, canAccessChat, isReturningUser, session, navigate]);
+  }, [isLoading, user, canAccessChat, navigate]);
 
   if (isLoading || !isReady) return <LoadingSpinner />;
 

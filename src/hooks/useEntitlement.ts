@@ -44,8 +44,9 @@ export interface UseEntitlementResult {
   isTrialActive: boolean;
   isTrialExpired: boolean;
   hasActiveAccess: boolean;   // isPaidActive || isTrialActive
-  canAccessChat: boolean;     // hasActiveAccess || isAdmin — single gate for workspace entry
-  isReturningUser: boolean;   // expired or cancelled (used by Subscribe page)
+  isFreeLoggedIn: boolean;    // authenticated, no active paid/trial access — free logged-in tier
+  canAccessChat: boolean;     // any authenticated user (free-tier included); backend enforces mode/limit
+  isReturningUser: boolean;   // expired or cancelled (used by Subscribe page UI copy)
 
   // Trial timing
   trialDaysRemaining: number;
@@ -82,10 +83,17 @@ export function useEntitlement(): UseEntitlementResult {
     rawAccessState === "trial_active" || subscription?.status === "trialing";
   const isTrialExpired = rawAccessState === "trial_expired";
   const hasActiveAccess = isPaidActive || isTrialActive;
-  const canAccessChat = hasActiveAccess || isAdmin;
+  // isFreeLoggedIn: authenticated user with no active paid/trial access.
+  // These users enter the workspace under the free logged-in tier:
+  //   - Main mode available, Advisory/Analytical locked
+  //   - 10 messages / 24h (enforced by backend; client daily-limit check is a UX shortcut)
+  const isFreeLoggedIn = !isLoading && !!user && !isAdmin && !hasActiveAccess;
+  // canAccessChat: any authenticated user may enter the workspace.
+  // Backend (fire-safety-chat) is the authoritative enforcer of mode and rate limits.
+  const canAccessChat = hasActiveAccess || isAdmin || isFreeLoggedIn;
   // isReturningUser: covers paid-subscription lapsers AND launch-trial-expired users
   // who never had a paid subscription. Both groups should see the re-subscribe CTA,
-  // not the first-time "Start Free Trial" CTA.
+  // not the first-time "Start Free Trial" CTA. Used for Subscribe page UI copy only.
   const isReturningUser =
     subscription?.status === "expired" ||
     subscription?.status === "cancelled" ||
@@ -114,6 +122,7 @@ export function useEntitlement(): UseEntitlementResult {
     isTrialActive,
     isTrialExpired,
     hasActiveAccess,
+    isFreeLoggedIn,
     canAccessChat,
     isReturningUser,
     trialDaysRemaining,

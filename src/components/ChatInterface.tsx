@@ -948,6 +948,22 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             }
             return; // ignore other aborts (mode switch)
           }
+          if (error === "mode_locked") {
+            // Backend rejected the request because this mode requires a subscription.
+            // Roll back local usage (backend never incremented), switch to primary mode,
+            // and show a clear bilingual explanation.
+            setLocalMessagesUsed(prev => Math.max(0, prev - 1));
+            stopLoading();
+            setChatMode("primary");
+            toast({
+              title: currentLanguage === "en" ? "Mode Unavailable" : "هذا النمط غير متاح",
+              description: currentLanguage === "en"
+                ? "Advisory and Analytical modes require a subscription. Switched to Main mode."
+                : "نمطا الاستشاري والتحليلي يتطلبان اشتراكاً. تم التحويل إلى النمط الرئيسي.",
+              variant: "destructive",
+            });
+            return;
+          }
           if (error === "trial_expired") {
             stopLoading();
             setChatItems(prev => [
@@ -996,15 +1012,11 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     if (!messageText && !hasFiles) return;
     if (isLoading) return;
 
-    // ── Launch trial expired check ─────────────────────────────────────────
+    // Free-tier users (trial_expired, cancelled, etc.) proceed normally.
+    // Backend enforces mode lock (403) and daily limit (429); the client-side
+    // check below is a UX shortcut only — it avoids a round-trip when the
+    // counter is already known to be exhausted.
     const launchTrialActive = trialData?.trial_active ?? false;
-    if (trialData?.access_state === "trial_expired" && !subscription?.active) {
-      setChatItems(prev => [
-        ...prev,
-        { id: `upgrade-${Date.now()}`, type: "upgrade", variant: "trial_expired", timestamp: new Date() } as UpgradeItem,
-      ]);
-      return;
-    }
 
     // Check daily limit client-side (fallback for non-trial users)
     if (isAtDailyLimit && !launchTrialActive) {
