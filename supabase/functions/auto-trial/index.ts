@@ -46,23 +46,24 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the default monthly individual plan dynamically
+    // Fetch the Pro (engineer) plan explicitly by slug — slug is the stable identifier.
+    // We must NOT use a nondeterministic query (type+target+LIMIT 1) because it could
+    // return the free plan. The trial must always be on the engineer/Pro plan.
     const { data: plan, error: planError } = await adminClient
       .from("subscription_plans")
       .select("id")
       .eq("is_active", true)
-      .eq("type", "monthly")
-      .eq("target", "individual")
-      .limit(1)
+      .eq("slug", "engineer")
       .maybeSingle();
 
     if (planError || !plan) {
-      return new Response(JSON.stringify({ error: "No active plan found" }), { status: 500, headers: corsHeaders });
+      console.error("Engineer plan not found — cannot create trial:", planError);
+      return new Response(JSON.stringify({ error: "Pro plan not found" }), { status: 500, headers: corsHeaders });
     }
 
-    // Create 7-day trial
+    // Create 7-day Pro trial
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     const { error: insertError } = await adminClient
       .from("user_subscriptions")

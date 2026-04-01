@@ -1918,7 +1918,7 @@ serve(async (req) => {
       // Launch-trial constants (must match launch-trial-activate)
       const LAUNCH_DATE_TS  = new Date("2026-03-28T00:00:00.000Z");
       const CAMPAIGN_END_TS = new Date("2026-04-28T00:00:00.000Z");
-      const TRIAL_DAYS_NUM  = 3;
+      const TRIAL_DAYS_NUM  = 7;
       const LAUNCH_TRIAL_LIMITS_MAP: Record<string, number> = { primary: 50, standard: 2, analysis: 1 };
 
       const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];

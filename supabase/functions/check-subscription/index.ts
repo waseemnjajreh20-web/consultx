@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const LAUNCH_DATE  = new Date("2026-03-28T00:00:00.000Z");
 const CAMPAIGN_END = new Date("2026-04-28T00:00:00.000Z");
-const TRIAL_DAYS   = 3;
+const TRIAL_DAYS   = 7;
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 
 function addDays(d: Date, days: number) {
