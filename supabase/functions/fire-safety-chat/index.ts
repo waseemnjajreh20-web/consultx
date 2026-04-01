@@ -1919,7 +1919,6 @@ serve(async (req) => {
       const LAUNCH_DATE_TS  = new Date("2026-03-28T00:00:00.000Z");
       const CAMPAIGN_END_TS = new Date("2026-04-28T00:00:00.000Z");
       const TRIAL_DAYS_NUM  = 7;
-      const LAUNCH_TRIAL_LIMITS_MAP: Record<string, number> = { primary: 50, standard: 2, analysis: 1 };
 
       const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
       const isAdmin      = userEmail && ADMIN_EMAILS.includes(userEmail);
@@ -1967,38 +1966,47 @@ serve(async (req) => {
             }
           }
         } else {
-          // ── Launch trial mode-specific limit check ──────────────────────────
+          // ── Launch trial fallback check (users without a user_subscriptions row) ─
+          // Statuses must match current DB CHECK constraint (migration 20260328000002).
+          // Valid values: trial_active, trial_expired, eligible_existing_pending,
+          //               paid, ineligible.  Stale values eligible_new,
+          //               eligible_existing_active, ineligible_window_closed removed.
           let launchTrialStatus = profile?.launch_trial_status ?? null;
 
-          // Auto-initialize if missing
+          // Auto-initialize if status not yet set (e.g. Google OAuth users whose
+          // auto-trial call has not yet run)
           if (!launchTrialStatus) {
             const userCreatedAt = new Date(profile?.created_at ?? now.toISOString());
             const isNewUser     = userCreatedAt >= LAUNCH_DATE_TS;
             if (now < CAMPAIGN_END_TS) {
               if (isNewUser) {
                 const trialEnd = new Date(userCreatedAt.getTime() + TRIAL_DAYS_NUM * 86400000);
-                launchTrialStatus = "eligible_new";
+                launchTrialStatus = "trial_active";
                 await adminClient.from("profiles").update({
-                  launch_trial_status: "eligible_new",
-                  launch_trial_start:  userCreatedAt.toISOString(),
-                  launch_trial_end:    trialEnd.toISOString(),
+                  launch_trial_status:   "trial_active",
+                  launch_trial_start:    userCreatedAt.toISOString(),
+                  launch_trial_end:      trialEnd.toISOString(),
+                  launch_trial_consumed: true,
+                  launch_source:         "new_signup",
                 }).eq("user_id", userId);
                 profile && Object.assign(profile, { launch_trial_end: trialEnd.toISOString() });
               } else {
                 // First chat activates the trial for existing users
                 const trialStart = now;
                 const trialEnd   = new Date(now.getTime() + TRIAL_DAYS_NUM * 86400000);
-                launchTrialStatus = "eligible_existing_active";
+                launchTrialStatus = "trial_active";
                 await adminClient.from("profiles").update({
-                  launch_trial_status: "eligible_existing_active",
-                  launch_trial_start:  trialStart.toISOString(),
-                  launch_trial_end:    trialEnd.toISOString(),
+                  launch_trial_status:   "trial_active",
+                  launch_trial_start:    trialStart.toISOString(),
+                  launch_trial_end:      trialEnd.toISOString(),
+                  launch_trial_consumed: true,
+                  launch_source:         "existing_user",
                 }).eq("user_id", userId);
                 profile && Object.assign(profile, { launch_trial_end: trialEnd.toISOString() });
               }
             } else {
-              launchTrialStatus = "ineligible_window_closed";
-              await adminClient.from("profiles").update({ launch_trial_status: "ineligible_window_closed" }).eq("user_id", userId);
+              launchTrialStatus = "ineligible";
+              await adminClient.from("profiles").update({ launch_trial_status: "ineligible" }).eq("user_id", userId);
             }
           }
 
@@ -2007,49 +2015,40 @@ serve(async (req) => {
             if (now < CAMPAIGN_END_TS) {
               const trialStart = now;
               const trialEnd   = new Date(now.getTime() + TRIAL_DAYS_NUM * 86400000);
-              launchTrialStatus = "eligible_existing_active";
+              launchTrialStatus = "trial_active";
               await adminClient.from("profiles").update({
-                launch_trial_status: "eligible_existing_active",
-                launch_trial_start:  trialStart.toISOString(),
-                launch_trial_end:    trialEnd.toISOString(),
+                launch_trial_status:   "trial_active",
+                launch_trial_start:    trialStart.toISOString(),
+                launch_trial_end:      trialEnd.toISOString(),
+                launch_trial_consumed: true,
               }).eq("user_id", userId);
               profile && Object.assign(profile, { launch_trial_end: trialEnd.toISOString() });
             } else {
-              launchTrialStatus = "ineligible_window_closed";
-              await adminClient.from("profiles").update({ launch_trial_status: "ineligible_window_closed" }).eq("user_id", userId);
+              launchTrialStatus = "ineligible";
+              await adminClient.from("profiles").update({ launch_trial_status: "ineligible" }).eq("user_id", userId);
             }
           }
 
           const trialEndDate = profile?.launch_trial_end ? new Date(profile.launch_trial_end) : null;
           const trialIsActive =
-            (launchTrialStatus === "eligible_new" || launchTrialStatus === "eligible_existing_active") &&
+            launchTrialStatus === "trial_active" &&
             trialEndDate !== null && now < trialEndDate;
 
           if (trialIsActive) {
-            // ── Mode-specific limit enforcement ──────────────────────────────
-            const resolvedMode = (mode === "primary" || mode === "standard" || mode === "analysis") ? mode : "standard";
-            const modeLimit    = LAUNCH_TRIAL_LIMITS_MAP[resolvedMode] ?? 50;
-
-            // Check current count BEFORE incrementing
-            const { data: currentModeCount } = await adminClient.rpc("get_mode_daily_count", {
-              p_user_id: userId,
-              p_mode:    resolvedMode,
-            });
-
-            if (currentModeCount !== null && currentModeCount >= modeLimit) {
+            // Trial users get the same 20-message daily limit as user_subscriptions
+            // trialing users. Per-mode limit functions were dropped in migration
+            // 20260328000002 and must not be called.
+            const trialDailyLimit = 20;
+            const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
+            if (currentCount && currentCount > trialDailyLimit) {
               return new Response(
                 JSON.stringify({
-                  error: "mode_limit_exceeded",
-                  mode:  resolvedMode,
-                  limit: modeLimit,
-                  used:  currentModeCount,
+                  error: "تجاوزت الحد اليومي للرسائل / Daily message limit exceeded",
+                  limit: trialDailyLimit,
                 }),
                 { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
               );
             }
-
-            // Increment mode usage (deducted at request start — valid start of processing)
-            await adminClient.rpc("increment_mode_daily_count", { p_user_id: userId, p_mode: resolvedMode });
 
           } else if (!trialIsActive) {
             // Trial expired or no trial — enforce free daily limit
@@ -2057,7 +2056,7 @@ serve(async (req) => {
             if (currentCount && currentCount > dailyLimit) {
               return new Response(
                 JSON.stringify({
-                  error: launchTrialStatus === "expired"
+                  error: launchTrialStatus === "trial_expired"
                     ? "trial_expired"
                     : "تجاوزت الحد اليومي للرسائل / Daily message limit exceeded",
                   limit: dailyLimit,

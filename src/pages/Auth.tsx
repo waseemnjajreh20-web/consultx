@@ -37,7 +37,7 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, signIn, signUp } = useAuth();
+  const { user, session, signIn, signUp } = useAuth();
   const { t, dir, language } = useLanguage();
   const isAr = language === "ar";
 
@@ -65,8 +65,15 @@ const Auth = () => {
   };
 
   useEffect(() => {
-    if (user) navigate("/");
-  }, [user, navigate]);
+    if (!user || !session) return;
+    // Covers ALL sign-in paths, including Google OAuth redirect where Auth.tsx
+    // is not mounted during the callback and the inline handlers cannot run.
+    // auto-trial is idempotent — returns "already_exists" immediately if a
+    // user_subscriptions row is already present, so this is safe for returning
+    // users of every auth method.
+    activateAutoTrial(session.access_token).catch(() => {});
+    navigate("/");
+  }, [user, session, navigate]);
 
   const triggerShake = () => {
     setShake(true);

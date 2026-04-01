@@ -160,7 +160,7 @@ serve(async (req) => {
      * Trial Logic — determines subscription behavior based on user history:
      *
      * 1. NEW USER (no prior subscription, launch trial not yet consumed):
-     *    - Gets a 3-day free trial (trial_end = now + 3 days)
+     *    - Gets a 7-day free trial (trial_end = now + 7 days)
      *    - Status is set to "trialing"
      *    - Card is saved; subscription auto-renews after trial ends
      *
@@ -179,7 +179,7 @@ serve(async (req) => {
      *    upon CAPTURED charge. No second free trial is granted.
      */
     const now = new Date();
-    const trialEnd3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const trialEnd7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     let subscription: any;
     let subError: any;
@@ -227,8 +227,8 @@ serve(async (req) => {
       subscription = result.data;
       subError = result.error;
     } else {
-      /** Case 1: Trial-eligible user — grant 3-day free trial */
-      console.log("Trial-eligible user — granting 3-day free trial (launch_trial_status:", profile?.launch_trial_status ?? "null", ")");
+      /** Case 1: Trial-eligible user — grant 7-day free trial */
+      console.log("Trial-eligible user — granting 7-day free trial (launch_trial_status:", profile?.launch_trial_status ?? "null", ")");
       const result = await adminClient
         .from("user_subscriptions")
         .insert({
@@ -236,7 +236,7 @@ serve(async (req) => {
           plan_id: plan_id,
           status: "trialing",
           trial_start: now.toISOString(),
-          trial_end: trialEnd3Days.toISOString(),
+          trial_end: trialEnd7Days.toISOString(),
           tap_customer_id: chargeData.customer?.id || null,
           tap_card_id: chargeData.card?.id || null,
           tap_payment_agreement_id: chargeData.payment_agreement?.id || null,
