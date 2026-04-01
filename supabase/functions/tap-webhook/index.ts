@@ -112,11 +112,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ message: "Transaction not found" }), { status: 200, headers: corsHeaders });
     }
 
-    // Update transaction status
+    // Update transaction status (+ failure detail columns when FAILED)
     const mappedStatus = status === "CAPTURED" ? "captured" : status === "FAILED" ? "failed" : "initiated";
+    const txUpdate: Record<string, any> = { status: mappedStatus };
+    if (status === "FAILED") {
+      txUpdate.failure_code    = payload.response?.code    ?? null;
+      txUpdate.failure_message = payload.response?.message ?? null;
+    }
     const { error: txUpdateError } = await adminClient
       .from("payment_transactions")
-      .update({ status: mappedStatus })
+      .update(txUpdate)
       .eq("id", transaction.id);
 
     if (txUpdateError) {
@@ -164,6 +169,7 @@ serve(async (req) => {
           updateData.status = "active";
           updateData.current_period_start = now.toISOString();
           updateData.current_period_end = periodEnd.toISOString();
+          updateData.next_billing_date = periodEnd.toISOString();
         } else {
           // New user within trial window — keep trialing with card saved
           console.log("Verification captured for active trial — keeping trialing status");
@@ -175,6 +181,9 @@ serve(async (req) => {
         updateData.status = "active";
         updateData.current_period_start = now.toISOString();
         updateData.current_period_end = periodEnd.toISOString();
+        updateData.next_billing_date = periodEnd.toISOString();
+        // Clear any past-due flag from prior failed attempts on this renewal cycle
+        updateData.past_due_since = null;
       }
 
       if (Object.keys(updateData).length > 0) {
@@ -229,7 +238,30 @@ serve(async (req) => {
         tap_response_code: payload.response?.code,
         tap_response_message: payload.response?.message,
       });
-      // Optionally mark subscription as payment_failed
+
+      // Mark past_due_since if this is a renewal charge (not a verification).
+      // Only set it on the first failure — do not overwrite an existing timestamp
+      // from a prior retry, so the grace-period clock starts from the first miss.
+      if (transaction.payment_type === "renewal" || transaction.payment_type === "subscription") {
+        const { data: subForFailure } = await adminClient
+          .from("user_subscriptions")
+          .select("past_due_since")
+          .eq("id", transaction.subscription_id)
+          .single();
+
+        if (subForFailure && !subForFailure.past_due_since) {
+          const { error: pastDueError } = await adminClient
+            .from("user_subscriptions")
+            .update({ past_due_since: new Date().toISOString() })
+            .eq("id", transaction.subscription_id);
+
+          if (pastDueError) {
+            console.error("Failed to set past_due_since:", pastDueError);
+          } else {
+            console.log("past_due_since set for subscription:", transaction.subscription_id);
+          }
+        }
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
