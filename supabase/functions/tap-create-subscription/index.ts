@@ -90,6 +90,24 @@ serve(async (req) => {
     const hasPriorExpiredSub =
       anyPriorSub && (anyPriorSub.status === "expired" || anyPriorSub.status === "cancelled");
 
+    // Check profile launch_trial_status to catch users whose free trial has been consumed
+    // but who have no prior user_subscriptions record (launch-trial-only path).
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("launch_trial_status")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    // True when the user already used their free launch trial and must not receive
+    // another trial period via the paid subscription flow.
+    //   "trial_expired" — free trial was granted and has now run out
+    //   "paid"          — user was previously a paying subscriber (profile marker set
+    //                     while their subscription was active); they must pay again
+    //                     immediately, no re-trial
+    const isLaunchTrialConsumed =
+      profile?.launch_trial_status === "trial_expired" ||
+      profile?.launch_trial_status === "paid";
+
     // Create Tap Charge (1 SAR verification)
     const origin = "https://www.consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
@@ -141,23 +159,24 @@ serve(async (req) => {
     /**
      * Trial Logic — determines subscription behavior based on user history:
      *
-     * 1. NEW USER (no prior subscription):
+     * 1. NEW USER (no prior subscription, launch trial not yet consumed):
      *    - Gets a 3-day free trial (trial_end = now + 3 days)
      *    - Status is set to "trialing"
      *    - Card is saved; subscription auto-renews after trial ends
      *
-     * 2. USER WITH ACTIVE TRIAL (status === "trialing"):
+     * 2. USER WITH ACTIVE PAID TRIAL (status === "trialing"):
      *    - Keeps existing trial dates (trial_start and trial_end unchanged)
      *    - Updates plan_id and card info on the existing record
      *    - This handles the case where a trialing user re-enters card details
      *
-     * 3. RETURNING USER (prior subscription expired or cancelled):
-     *    - trial_end is set to NOW (immediate expiration)
-     *    - Status is "trialing" temporarily, but because trial_end <= now,
-     *      the webhook handler (tap-webhook) will detect this as
-     *      "isTrialExpiredOrImmediate" and activate the subscription
-     *      immediately upon CAPTURED charge
-     *    - This ensures returning users do NOT get another free trial
+     * 3. NO-TRIAL USER — activated immediately:
+     *    a) Returning paid subscriber (hasPriorExpiredSub):
+     *       Prior user_subscriptions row is expired or cancelled.
+     *    b) Launch-trial-consumed user (isLaunchTrialConsumed):
+     *       Profile shows launch_trial_status = "trial_expired" or "paid" —
+     *       the free trial was already used, even if no paid sub record exists.
+     *    In both cases: trial_end = now → webhook activates subscription immediately
+     *    upon CAPTURED charge. No second free trial is granted.
      */
     const now = new Date();
     const trialEnd3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -182,9 +201,13 @@ serve(async (req) => {
         .single();
       subscription = result.data;
       subError = result.error;
-    } else if (hasPriorExpiredSub) {
-      /** Case 3: Returning user (expired/cancelled) — trial_end = now for immediate activation on webhook capture */
-      console.log("Returning user with prior expired sub — setting trial_end = now for immediate activation");
+    } else if (hasPriorExpiredSub || isLaunchTrialConsumed) {
+      /** Case 3: No-trial user — trial_end = now for immediate activation on webhook capture */
+      console.log(
+        hasPriorExpiredSub
+          ? "Returning user with prior expired/cancelled sub — activating immediately"
+          : "Launch-trial-consumed user with no prior paid sub — activating immediately (no re-trial)",
+      );
       const result = await adminClient
         .from("user_subscriptions")
         .insert({
@@ -204,8 +227,8 @@ serve(async (req) => {
       subscription = result.data;
       subError = result.error;
     } else {
-      /** Case 1: Brand new user — grant 3-day free trial */
-      console.log("New user — granting 3-day free trial");
+      /** Case 1: Trial-eligible user — grant 3-day free trial */
+      console.log("Trial-eligible user — granting 3-day free trial (launch_trial_status:", profile?.launch_trial_status ?? "null", ")");
       const result = await adminClient
         .from("user_subscriptions")
         .insert({
@@ -251,7 +274,7 @@ serve(async (req) => {
         subscription_id: subscription.id,
         charge_status: chargeData.status,
         redirect_url: chargeData.transaction?.url || null,
-        is_returning_user: hasPriorExpiredSub,
+        is_returning_user: hasPriorExpiredSub || isLaunchTrialConsumed,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
