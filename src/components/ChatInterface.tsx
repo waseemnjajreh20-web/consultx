@@ -739,10 +739,14 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       case "thinking": return t("thinking");
       case "writing": return t("writing");
       case "vision_1": return t("visionStage1");
-      case "vision_2": return t("visionStage2");
+      case "vision_2": return chatMode === "standard"
+        ? (language === "en" ? "Identifying required systems..." : "تحديد الأنظمة المطلوبة...")
+        : t("visionStage2");
       case "vision_3": return t("visionStage3");
       case "vision_4": return t("visionStage4");
-      case "vision_5": return t("visionStage5");
+      case "vision_5": return chatMode === "standard"
+        ? (language === "en" ? "Building design guidance..." : "بناء توجيهات التصميم...")
+        : t("visionStage5");
       default: return t("processing");
     }
   };
@@ -1114,9 +1118,13 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     if (waitingLevel >= 4) return language === "en" ? "Deep analysis in progress, this may take a few minutes... 🔔" : "الاستشارة تتطلب تحليلاً معمقاً وقد تستغرق بضع دقائق ⏳";
     if (waitingLevel === 3) return language === "en" ? "Analysis is taking longer than usual... 🔍" : "التحليل يأخذ وقتاً أطول من المعتاد... 🔍";
     if (waitingLevel === 2) return language === "en" ? "Deep analysis in progress, please wait... 📚" : "جاري تحليل معمّق، يرجى الانتظار... 📚";
-    if (waitingLevel === 1) return language === "en" ? "The advisor is working on your answer... ⏳" : "المستشار يعمل على إجابتك... ⏳";
-    if (chatMode === "standard") return language === "en" ? "📚 Searching engineering references..." : "جاري البحث في المراجع الهندسية... 📚";
-    if (chatMode === "analysis") return language === "en" ? "🔍 Analyzing the drawing..." : "جاري تحليل المخطط... 🔍";
+    if (waitingLevel === 1) {
+      if (chatMode === "standard") return language === "en" ? "Identifying required systems and clauses... ⏳" : "تحديد الأنظمة والاشتراطات المطلوبة... ⏳";
+      if (chatMode === "analysis") return language === "en" ? "Reviewing compliance requirements... ⏳" : "مراجعة متطلبات الامتثال... ⏳";
+      return language === "en" ? "The advisor is working on your answer... ⏳" : "المستشار يعمل على إجابتك... ⏳";
+    }
+    if (chatMode === "standard") return language === "en" ? "📐 Extracting design facts and requirements..." : "جاري استخلاص حقائق التصميم والاشتراطات... 📐";
+    if (chatMode === "analysis") return language === "en" ? "🔍 Checking compliance against SBC..." : "جاري التحقق من الامتثال للكود... 🔍";
     return language === "en" ? "Thinking..." : "جاري التفكير...";
   };
 

@@ -345,14 +345,21 @@ RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
 // ==================== VALIDATION PROMPTS ====================
 function getValidationPrompt(mode: string, language: string): string {
   if (mode === "analysis") {
-    return language === "en" 
-      ? `Your response lacked SBC references. Regenerate with exact citations (SBC XXX - Section X.X.X) and exact numerical values (no rounding).`
-      : `ردك يفتقر للاستشهادات. أعد الرد مع ذكر المراجع الدقيقة (SBC XXX - المادة X.X.X) والقيم العددية الدقيقة (بدون تقريب).`;
+    return language === "en"
+      ? `Your response lacked SBC references. Regenerate with: (1) exact citations (SBC XXX - Section X.X.X), (2) exact numerical values (no rounding), (3) clear distinction between confirmed facts and inferred assumptions — mark each claim as (CONFIRMED) or (INFERRED).`
+      : `ردك يفتقر للاستشهادات. أعد الرد مع: (1) مراجع دقيقة (SBC XXX - المادة X.X.X)، (2) قيم عددية دقيقة بدون تقريب، (3) تمييز واضح بين الحقائق المؤكدة والاستنتاجات — ضع (مؤكد) أو (مستنتج) بجانب كل ادعاء.`;
   }
-  
+
+  if (mode === "standard") {
+    return language === "en"
+      ? `Your response lacked design-stage guidance. Regenerate focusing on: (1) which fire-protection systems are required for this design, (2) exact SBC clause citations with section numbers, (3) clear explanation of each code requirement, (4) distinction between what is confirmed from the provided information (CONFIRMED) and what is inferred from standard practice (INFERRED).`
+      : `ردك افتقر لتوجيه مرحلة التصميم. أعد الرد مع التركيز على: (1) الأنظمة المطلوبة لهذا التصميم، (2) مراجع اشتراطات SBC الدقيقة مع أرقام المواد، (3) شرح واضح لكل اشتراط، (4) التمييز بين ما هو مؤكد من المعلومات المقدمة (مؤكد) وما هو مستنتج من الممارسة المعيارية (مستنتج).`;
+  }
+
+  // Primary mode — lightweight, no heavy structure requirement
   return language === "en"
-    ? `Your response didn't follow the format. Regenerate with: 1) Executive Summary first, 2) All A-F collapsible sections, 3) Exact values (no rounding).`
-    : `ردك لم يتبع التنسيق المطلوب. أعد مع: 1) الخلاصة التنفيذية أولاً، 2) جميع الأقسام A-F القابلة للطي، 3) القيم الدقيقة (بدون تقريب).`;
+    ? `Your response was incomplete or unclear. Regenerate with a direct, clear answer and relevant SBC references where applicable.`
+    : `الرد كان غير مكتمل أو غير واضح. أعد مع إجابة مباشرة وواضحة ومراجع SBC ذات الصلة حيث ينطبق.`;
 }
 
 // ==================== SMART FILE INDEX ====================
