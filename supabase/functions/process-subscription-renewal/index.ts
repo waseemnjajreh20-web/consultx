@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Must match GRACE_DAYS in check-subscription, fire-safety-chat,
+// tap-webhook, Workspace.tsx, and Account.tsx.
+const GRACE_DAYS = 7;
+
 // ============================================================
 // process-subscription-renewal
 //
@@ -102,7 +106,6 @@ serve(async (req) => {
   //
   // GRACE_DAYS must match the constant in check-subscription so access and
   // retry windows are coherent. Both currently use 7 days.
-  const GRACE_DAYS  = 7;
   const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: pastDueSubs, error: pastDueError } = await adminClient
@@ -434,13 +437,21 @@ serve(async (req) => {
 // Idempotent: only writes past_due_since if it is currently NULL so the
 // grace-period clock always reflects the first missed payment, not the
 // most recent retry.
+//
+// After the DB update, attempts an atomic claim on dunning_notified_at to send
+// exactly one dunning email per past_due episode. The atomic WHERE IS NULL
+// check prevents double-send when tap-webhook races this function.
 async function markPastDue(
   adminClient: ReturnType<typeof createClient>,
-  sub: { id: string; past_due_since: string | null },
+  sub: { id: string; user_id: string; past_due_since: string | null },
 ): Promise<void> {
+  // Capture the effective past_due_since timestamp now so the grace-end date
+  // in the email is consistent whether this is the first miss or a retry call.
+  const pastDueSince = sub.past_due_since ?? new Date().toISOString();
+
   const updates: Record<string, any> = { status: "past_due" };
   if (!sub.past_due_since) {
-    updates.past_due_since = new Date().toISOString();
+    updates.past_due_since = pastDueSince;
   }
   const { error } = await adminClient
     .from("user_subscriptions")
@@ -448,5 +459,157 @@ async function markPastDue(
     .eq("id", sub.id);
   if (error) {
     console.error(`markPastDue: failed on sub ${sub.id}:`, error);
+    return; // Do not attempt email if the status write failed.
+  }
+
+  // ── Dunning email — one send per past_due episode ──────────────────────────
+  // Atomic claim on dunning_notified_at (WHERE IS NULL) ensures exactly one
+  // email fires even when process-subscription-renewal and tap-webhook race
+  // on the very first failure event.
+  try {
+    const { data: claimed } = await adminClient
+      .from("user_subscriptions")
+      .update({ dunning_notified_at: new Date().toISOString() })
+      .eq("id", sub.id)
+      .is("dunning_notified_at", null)
+      .select("id");
+
+    if (claimed && claimed.length > 0) {
+      // Row claimed — we won the race; send the email.
+      const { data: userData } = await adminClient.auth.admin.getUserById(sub.user_id);
+      const userEmail = userData?.user?.email;
+      if (!userEmail) {
+        console.warn(`Dunning: no email for user ${sub.user_id} — email skipped`);
+      } else {
+        await sendDunningEmail({ userEmail, pastDueSince });
+      }
+    } else {
+      // dunning_notified_at was already set by tap-webhook.
+      console.log("Dunning already claimed for sub:", sub.id, "— email skipped");
+    }
+  } catch (dunningErr) {
+    // Email failure must never surface to callers or break the renewal loop.
+    console.error(
+      "Dunning email error (non-fatal):",
+      dunningErr instanceof Error ? dunningErr.message : String(dunningErr),
+    );
+  }
+  // ── End dunning email ───────────────────────────────────────────────────────
+}
+
+// ── Dunning email helper ──────────────────────────────────────────────────────
+// Sends a single bilingual (Arabic primary / English secondary) payment-failure
+// notification to the subscriber via Resend.
+//
+// Requires:
+//   RESEND_API_KEY  — Resend API key (Edge Function secret)
+//   FROM_EMAIL      — Sender address (optional; falls back to noreply@consultx.sa)
+//
+// All errors are caught and logged; this function never throws.
+async function sendDunningEmail(params: {
+  userEmail: string;
+  pastDueSince: string; // ISO timestamp of the first missed payment
+}): Promise<void> {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    console.warn("RESEND_API_KEY not configured — dunning email skipped");
+    return;
+  }
+
+  const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.sa>";
+  const accountUrl = "https://consultx.sa/account";
+
+  const graceEnd = new Date(
+    new Date(params.pastDueSince).getTime() + GRACE_DAYS * 24 * 60 * 60 * 1000,
+  );
+  const graceEndAr = graceEnd.toLocaleDateString("ar-SA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const graceEndEn = graceEnd.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head><meta charset="utf-8"><title>ConsultX</title></head>
+<body style="font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:24px 16px">
+<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:8px;padding:32px;border:1px solid #e5e7eb">
+
+  <p style="color:#6b7280;font-size:13px;margin:0 0 8px">ConsultX</p>
+  <h1 style="color:#111827;font-size:20px;margin:0 0 16px;font-weight:700">
+    تعذّر تجديد اشتراكك
+  </h1>
+  <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 12px">
+    تعذّر على نظامنا تجديد اشتراكك تلقائيًا.
+    يبقى وصولك الكامل محفوظًا حتى <strong>${graceEndAr}</strong>.
+  </p>
+  <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 24px">
+    يرجى مراجعة بيانات الدفع أو الاشتراك من جديد قبل انتهاء فترة السماح للحفاظ على وصولك.
+  </p>
+  <a href="${accountUrl}"
+     style="display:inline-block;background:#dc2626;color:#ffffff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px">
+    إدارة الاشتراك
+  </a>
+
+  <hr style="margin:32px 0;border:none;border-top:1px solid #e5e7eb">
+
+  <div dir="ltr" style="text-align:left">
+    <h2 style="color:#111827;font-size:16px;margin:0 0 10px;font-weight:700">
+      Your ConsultX subscription renewal failed
+    </h2>
+    <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 10px">
+      We were unable to renew your subscription automatically.
+      Your full access is preserved until <strong>${graceEndEn}</strong>.
+    </p>
+    <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 20px">
+      Please update your payment details or resubscribe before the grace period ends
+      to maintain uninterrupted access.
+    </p>
+    <a href="${accountUrl}"
+       style="display:inline-block;background:#dc2626;color:#ffffff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px">
+      Manage Subscription
+    </a>
+  </div>
+
+  <hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb">
+  <p style="color:#9ca3af;font-size:12px;margin:0;direction:ltr;text-align:left">
+    ConsultX &middot; support@consultx.sa &middot;
+    You are receiving this because you have an active or recent subscription.
+  </p>
+
+</div>
+</body>
+</html>`;
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [params.userEmail],
+        subject:
+          "تعذّر تجديد اشتراكك في ConsultX | Your ConsultX subscription renewal failed",
+        html,
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      console.error("Resend API error:", response.status, body.slice(0, 300));
+    } else {
+      console.log("Dunning email sent successfully to:", params.userEmail);
+    }
+  } catch (err) {
+    console.error(
+      "Dunning email network error:",
+      err instanceof Error ? err.message : String(err),
+    );
   }
 }
