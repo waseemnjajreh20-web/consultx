@@ -1333,8 +1333,22 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                     <ClipboardList className="w-4 h-4" />{t("advisoryMode")}
                   </div>
                 )}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm">
-                  <Eye className="w-4 h-4" />{t("uploadHint")}
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm"
+                  style={
+                    chatMode === "standard"
+                      ? { background: "rgba(255,140,0,0.08)", color: "#FF8C00", border: "1px solid rgba(255,140,0,0.25)" }
+                      : chatMode === "analysis"
+                      ? { background: "rgba(220,20,60,0.08)", color: "#DC143C", border: "1px solid rgba(220,20,60,0.25)" }
+                      : { background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }
+                  }
+                >
+                  <Eye className="w-4 h-4" />
+                  {chatMode === "standard"
+                    ? t("uploadHintAdvisory")
+                    : chatMode === "analysis"
+                    ? t("uploadHintAnalytical")
+                    : t("uploadHint")}
                 </div>
               </div>
               <div className="space-y-3">
@@ -1542,8 +1556,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       {/* Input Area */}
       <div className="border-t border-border/50 bg-card/30 backdrop-blur-xl p-4">
         <div className="max-w-4xl mx-auto">
+          {/* Mode-aware file-type hint — shown only when no files pending, advisory/analytical modes */}
+          {!hasFiles && !isProcessing && chatMode !== "primary" && (
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 mb-2">
+              <Paperclip className="w-3 h-3 shrink-0" />
+              <span>{chatMode === "standard" ? t("fileHintAdvisory") : t("fileHintAnalytical")}</span>
+            </div>
+          )}
+
           {/* Multi-file preview grid */}
-          <FilePreviewGrid files={pendingFiles} onRemove={removeFile} isProcessing={isProcessing} />
+          <FilePreviewGrid files={pendingFiles} onRemove={removeFile} isProcessing={isProcessing} mode={chatMode} />
 
           {/* Input box with mode glow — locked only until first chunk, then optimistically re-enabled */}
           <div

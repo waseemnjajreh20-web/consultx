@@ -1,16 +1,19 @@
-import { X, Eye, FileText, Loader2 } from "lucide-react";
+import { X, Eye, FileText, Loader2, ClipboardList, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import type { PendingFile } from "@/hooks/usePendingFiles";
 
+type ChatMode = "primary" | "standard" | "analysis";
+
 interface FilePreviewGridProps {
   files: PendingFile[];
   onRemove: (id: string) => void;
   isProcessing: boolean;
+  mode?: ChatMode;
 }
 
-export default function FilePreviewGrid({ files, onRemove, isProcessing }: FilePreviewGridProps) {
+export default function FilePreviewGrid({ files, onRemove, isProcessing, mode }: FilePreviewGridProps) {
   const { t } = useLanguage();
 
   if (!isProcessing && files.length === 0) return null;
@@ -77,16 +80,38 @@ export default function FilePreviewGrid({ files, onRemove, isProcessing }: FileP
             ))}
           </div>
 
-          {/* Vision analysis badge */}
-          <div className="mt-2 flex items-center gap-1 text-xs text-primary/80">
-            <Eye className="w-3 h-3" />
-            <span>{t("visionAnalysis")}</span>
-            <span className="text-muted-foreground">
-              · {files.length} {files.length === 1
-                ? (t("fileAttachedSingle") || "file")
-                : (t("filesAttachedMultiple") || "files")}
-            </span>
-          </div>
+          {/* Mode-aware analysis badge */}
+          {mode === "standard" ? (
+            <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: "#FF8C00" }}>
+              <ClipboardList className="w-3 h-3" />
+              <span>{t("visionAdvisoryLabel")}</span>
+              <span className="text-muted-foreground">
+                · {files.length} {files.length === 1
+                  ? (t("fileAttachedSingle") || "file")
+                  : (t("filesAttachedMultiple") || "files")}
+              </span>
+            </div>
+          ) : mode === "analysis" ? (
+            <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: "#DC143C" }}>
+              <ShieldCheck className="w-3 h-3" />
+              <span>{t("visionAnalyticalLabel")}</span>
+              <span className="text-muted-foreground">
+                · {files.length} {files.length === 1
+                  ? (t("fileAttachedSingle") || "file")
+                  : (t("filesAttachedMultiple") || "files")}
+              </span>
+            </div>
+          ) : (
+            <div className="mt-2 flex items-center gap-1 text-xs text-primary/80">
+              <Eye className="w-3 h-3" />
+              <span>{t("visionAnalysis")}</span>
+              <span className="text-muted-foreground">
+                · {files.length} {files.length === 1
+                  ? (t("fileAttachedSingle") || "file")
+                  : (t("filesAttachedMultiple") || "files")}
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>

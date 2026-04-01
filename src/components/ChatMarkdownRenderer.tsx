@@ -238,6 +238,15 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
       '<span class="inline-flex items-center gap-1 bg-red-500/15 text-red-400 border border-red-500/30 rounded-full px-2 py-0.5 text-xs font-medium">❌ $1</span>')
     .replace(/⚠️\s*(مشروط|Conditional)/gi,
       '<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5 text-xs font-medium">⚠️ $1</span>')
+    // Fact vs assumption inline markers (Advisory Vision prompt — Step 3)
+    .replace(/\(CONFIRMED\)/g,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 mx-0.5 leading-none">✓ confirmed</span>')
+    .replace(/\(INFERRED\)/g,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/25 mx-0.5 leading-none">~ inferred</span>')
+    .replace(/\(مؤكد\)/g,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 mx-0.5 leading-none">✓ مؤكد</span>')
+    .replace(/\(مستنتج\)/g,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/25 mx-0.5 leading-none">~ مستنتج</span>')
     // Bold — mode-aware
     .replace(/\*\*([^*]+)\*\*/g, (_, txt) => getBoldHtml(txt, mode))
     // Inline code
