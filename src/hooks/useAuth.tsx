@@ -25,6 +25,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Ensure auto-trial runs on every fresh sign-in, including Google OAuth.
+        //
+        // Why here and not in Auth.tsx:
+        //   AuthProvider is mounted outside BrowserRouter (see App.tsx) and is
+        //   never unmounted on route changes. When Google OAuth completes, the
+        //   browser is redirected to window.location.origin ("/"), which renders
+        //   Index — NOT Auth.tsx. Auth.tsx is not in the DOM, so its useEffect
+        //   handlers cannot fire. AuthProvider's onAuthStateChange is the only
+        //   listener that is guaranteed to run regardless of which page is active.
+        //
+        // SIGNED_IN fires on actual sign-in events (email/password, OAuth, magic
+        // link). It does NOT fire on getSession() session-restore page reloads
+        // (that event is INITIAL_SESSION), so this will not call auto-trial on
+        // every page refresh for already-signed-in users.
+        //
+        // auto-trial is idempotent: it returns {result:"already_exists"} in one
+        // DB query if a user_subscriptions row already exists. Safe for every
+        // auth method and returning users.
+        if (event === "SIGNED_IN" && session?.access_token) {
+          supabase.functions.invoke("auto-trial", {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          }).catch(() => {}); // Fire-and-forget — never block auth state update
+        }
       }
     );
 
