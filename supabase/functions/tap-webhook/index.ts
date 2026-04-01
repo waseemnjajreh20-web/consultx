@@ -105,16 +105,108 @@ serve(async (req) => {
     }
 
     // Find transaction by tap_charge_id
-    const { data: transaction } = await adminClient
+    // Destructure error explicitly — .maybeSingle() returns an error (not null data)
+    // when multiple rows match, which would happen if the partial unique index is
+    // somehow violated. Treating that as "not found" would silently drop the event.
+    const { data: transaction, error: txLookupError } = await adminClient
       .from("payment_transactions")
       .select("*, user_subscriptions(*)")
       .eq("tap_charge_id", chargeId)
       .maybeSingle();
 
+    if (txLookupError) {
+      // DB error (network, RLS, duplicate rows) — return 5xx so Tap retries.
+      console.error("Transaction lookup DB error for charge:", chargeId, txLookupError.message);
+      await insertDeadLetter(adminClient, {
+        chargeId,
+        tapStatus: status,
+        reason: "lookup_error",
+        payload,
+      });
+      return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: corsHeaders });
+    }
+
     if (!transaction) {
-      console.log("Transaction not found for charge:", chargeId);
+      // Verified payload but no matching row. Two causes:
+      //   1. Race: process-subscription-renewal has not yet written tap_charge_id
+      //      (inserted with null, Tap responded, but our UPDATE hasn't committed).
+      //      Tap will retry delivery; the next attempt will find the row.
+      //   2. Unknown charge: a Tap event for a charge created outside the app.
+      //      Returning 5xx here would cause perpetual retries for truly unknown
+      //      charges. Returning 200 acks the event; the dead-letter record gives
+      //      an audit trail and manual-replay capability for the race case.
+      // Decision: 200. The dead-letter table is the safety net.
+      console.error("Transaction not found for verified charge:", chargeId);
+      await insertDeadLetter(adminClient, {
+        chargeId,
+        tapStatus: status,
+        reason: "transaction_not_found",
+        payload,
+      });
       return new Response(JSON.stringify({ message: "Transaction not found" }), { status: 200, headers: corsHeaders });
     }
+
+    // ── Idempotency + status transition guard ────────────────────────────────
+    // Read the current DB status once — all guard branches use this value.
+    // This runs before any mutation so the guards are authoritative.
+    const currentStatus = transaction.status;
+
+    if (status === "CAPTURED" && currentStatus === "captured") {
+      // Duplicate CAPTURED delivery. Subscription period was already updated on
+      // the first delivery. Re-processing would silently reset current_period_end
+      // to a slightly later now() — making period timestamps unreliable.
+      // Acknowledge without touching billing state.
+      console.log(
+        "Idempotent CAPTURED: charge", chargeId,
+        "already processed — ack without reprocessing",
+      );
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
+
+    if (status === "FAILED" && currentStatus === "failed") {
+      // Duplicate FAILED delivery. The past_due_since + dunning guards would
+      // catch this downstream, but returning early is cleaner and explicit.
+      console.log(
+        "Idempotent FAILED: charge", chargeId,
+        "already processed — ack without reprocessing",
+      );
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
+
+    if (status === "FAILED" && currentStatus === "captured") {
+      // Impossible transition: a Tap charge has a permanent outcome.
+      // A charge that was captured cannot subsequently be reported as failed.
+      // Processing this would stamp past_due_since on an active subscription.
+      // Dead-letter for investigation; return 200 so Tap does not retry.
+      console.error(
+        "Impossible transition: FAILED webhook for already-captured charge", chargeId,
+      );
+      await insertDeadLetter(adminClient, {
+        chargeId,
+        tapStatus: status,
+        reason: "impossible_transition_failed_after_captured",
+        payload,
+      });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
+
+    if (status === "CAPTURED" && currentStatus === "failed") {
+      // Suspicious transition: each Tap charge has a unique, permanent outcome.
+      // A charge we already recorded as failed cannot later be captured.
+      // Processing this would wrongly activate a subscription for a bad charge.
+      // Dead-letter for investigation; return 200 so Tap does not retry.
+      console.error(
+        "Suspicious transition: CAPTURED webhook for already-failed charge", chargeId,
+      );
+      await insertDeadLetter(adminClient, {
+        chargeId,
+        tapStatus: status,
+        reason: "suspicious_transition_captured_after_failed",
+        payload,
+      });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
+    // ── End idempotency guard ─────────────────────────────────────────────────
 
     // Update transaction status (+ failure detail columns when FAILED)
     const mappedStatus = status === "CAPTURED" ? "captured" : status === "FAILED" ? "failed" : "initiated";
@@ -156,7 +248,14 @@ serve(async (req) => {
         .single();
 
       if (!sub) {
-        console.error("Subscription not found:", transaction.subscription_id);
+        console.error("Subscription not found for captured charge:", chargeId,
+          "subscription_id:", transaction.subscription_id);
+        await insertDeadLetter(adminClient, {
+          chargeId,
+          tapStatus: status,
+          reason: "subscription_not_found",
+          payload,
+        });
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
       }
 
@@ -322,6 +421,42 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: corsHeaders });
   }
 });
+
+// ── Dead-letter helper ───────────────────────────────────────────────────────
+// Inserts a record into webhook_dead_letters for a verified Tap event that
+// could not be processed. Never throws — any insertion failure is logged and
+// swallowed so the caller can still return a response to Tap.
+//
+// IMPORTANT: call this only after HMAC verification passes. Unverified payloads
+// must never be stored here.
+async function insertDeadLetter(
+  adminClient: ReturnType<typeof createClient>,
+  params: {
+    chargeId: string | null;
+    tapStatus: string;
+    reason: string;
+    payload: unknown;
+  },
+): Promise<void> {
+  try {
+    const { error } = await adminClient.from("webhook_dead_letters").insert({
+      charge_id:  params.chargeId,
+      tap_status: params.tapStatus,
+      reason:     params.reason,
+      payload:    params.payload,
+    });
+    if (error) {
+      console.error("Dead-letter insert failed (non-fatal):", error.message);
+    } else {
+      console.log("Dead-letter recorded:", params.reason, "charge:", params.chargeId);
+    }
+  } catch (err) {
+    console.error(
+      "Dead-letter insert threw (non-fatal):",
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+}
 
 // ── Dunning email helper ──────────────────────────────────────────────────────
 // Sends a single bilingual (Arabic primary / English secondary) payment-failure
