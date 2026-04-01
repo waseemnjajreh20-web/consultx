@@ -70,13 +70,34 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Active paid subscription already exists" }), { status: 409, headers: corsHeaders });
     }
 
-    // Check for TRIALING subscription — allow card addition
-    const { data: trialingSub } = await adminClient
+    // Check for any in-flight subscription (trialing or pending_activation).
+    //   pending_activation — returning user awaiting webhook CAPTURED; block re-entry.
+    //   trialing           — new user with active trial; card update is allowed (Case 2).
+    // Includes created_at so we can age-gate the pending_activation block (30 min TTL).
+    const { data: existingPendingSub } = await adminClient
       .from("user_subscriptions")
-      .select("id, status, trial_end")
+      .select("id, status, trial_end, created_at")
       .eq("user_id", userId)
-      .eq("status", "trialing")
+      .in("status", ["trialing", "pending_activation"])
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
+
+    // Block re-entry while a recent payment verification is in flight.
+    // 30-minute TTL: if the charge token expired without a webhook (user abandoned the
+    // Tap 3DS page), we allow a fresh attempt rather than permanently blocking the user.
+    if (existingPendingSub?.status === "pending_activation") {
+      const rowAgeMs = Date.now() - new Date(existingPendingSub.created_at).getTime();
+      if (rowAgeMs < 30 * 60 * 1000) {
+        return new Response(
+          JSON.stringify({ error: "Payment verification already in progress", pending: true }),
+          { status: 409, headers: corsHeaders },
+        );
+      }
+      // Stale pending_activation (> 30 min) — payment window expired, allow retry.
+    }
+
+    const trialingSub = existingPendingSub?.status === "trialing" ? existingPendingSub : null;
 
     // Check if user ever had ANY prior subscription (to detect expired trial users)
     const { data: anyPriorSub } = await adminClient
@@ -87,8 +108,15 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
+    // pending_activation rows that cleared the 30-min TTL above are stale (the Tap
+    // charge timed out or the user abandoned the 3DS page). Treat them identically
+    // to expired/cancelled so the user lands in Case 3 (immediate activation) rather
+    // than Case 1 (7-day free trial) on retry.
     const hasPriorExpiredSub =
-      anyPriorSub && (anyPriorSub.status === "expired" || anyPriorSub.status === "cancelled");
+      anyPriorSub &&
+      (anyPriorSub.status === "expired" ||
+        anyPriorSub.status === "cancelled" ||
+        anyPriorSub.status === "pending_activation");
 
     // Check profile launch_trial_status to catch users whose free trial has been consumed
     // but who have no prior user_subscriptions record (launch-trial-only path).
@@ -175,8 +203,10 @@ serve(async (req) => {
      *    b) Launch-trial-consumed user (isLaunchTrialConsumed):
      *       Profile shows launch_trial_status = "trial_expired" or "paid" —
      *       the free trial was already used, even if no paid sub record exists.
-     *    In both cases: trial_end = now → webhook activates subscription immediately
-     *    upon CAPTURED charge. No second free trial is granted.
+     *    In both cases: status = "pending_activation", trial_end = null.
+     *    tap-webhook transitions to "active" on CAPTURED (isTrialExpiredOrImmediate
+     *    is true when trial_end is null). check-subscription does not expire this
+     *    state, eliminating the activation race. No second free trial is granted.
      */
     const now = new Date();
     const trialEnd7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -202,20 +232,31 @@ serve(async (req) => {
       subscription = result.data;
       subError = result.error;
     } else if (hasPriorExpiredSub || isLaunchTrialConsumed) {
-      /** Case 3: No-trial user — trial_end = now for immediate activation on webhook capture */
+      /**
+       * Case 3: No-trial user — pending_activation.
+       *
+       * trial_start / trial_end are null. This row grants no access and cannot be
+       * expired by check-subscription. tap-webhook transitions it to "active" when
+       * the CAPTURED event arrives (isTrialExpiredOrImmediate = true when trial_end
+       * is null, so the immediate-activation branch in the webhook fires correctly).
+       *
+       * Prior design used status = "trialing" with trial_end = now, which caused
+       * check-subscription to immediately write status = "expired" on the first
+       * poll, destroying the pending activation before the webhook arrived.
+       */
       console.log(
         hasPriorExpiredSub
-          ? "Returning user with prior expired/cancelled sub — activating immediately"
-          : "Launch-trial-consumed user with no prior paid sub — activating immediately (no re-trial)",
+          ? "Returning user with prior expired/cancelled sub — inserting pending_activation"
+          : "Launch-trial-consumed user — inserting pending_activation (no re-trial)",
       );
       const result = await adminClient
         .from("user_subscriptions")
         .insert({
           user_id: userId,
           plan_id: plan_id,
-          status: "trialing",
-          trial_start: now.toISOString(),
-          trial_end: now.toISOString(), // expires immediately → activated by webhook
+          status: "pending_activation",
+          trial_start: null,
+          trial_end: null,
           tap_customer_id: chargeData.customer?.id || null,
           tap_card_id: chargeData.card?.id || null,
           tap_payment_agreement_id: chargeData.payment_agreement?.id || null,

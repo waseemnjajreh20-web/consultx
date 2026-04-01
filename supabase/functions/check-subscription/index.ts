@@ -104,7 +104,14 @@ serve(async (req) => {
     let dailyLimit        = 10;
 
     if (subscription) {
-      if (subscription.status === "trialing" && subscription.trial_end) {
+      if (subscription.status === "pending_activation") {
+        // Returning-user payment is in flight — tap-webhook has not yet delivered
+        // the CAPTURED event. Do NOT expire, mutate, or grant access.
+        // PaymentCallback polls this endpoint; once the webhook transitions this
+        // row to "active", the next poll will return active = true.
+        active    = false;
+        dailyLimit = 10;
+      } else if (subscription.status === "trialing" && subscription.trial_end) {
         const trialEnd = new Date(subscription.trial_end);
         if (now < trialEnd) {
           active             = true;
