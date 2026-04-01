@@ -24,8 +24,8 @@ const FAQS = [
   {
     qAr: "ماذا يحدث بعد انتهاء التجربة؟",
     qEn: "What happens after the trial ends?",
-    aAr: "بعد 3 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
-    aEn: "After 3 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
+    aAr: "بعد 7 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
+    aEn: "After 7 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
   },
   {
     qAr: "هل يمكنني رفع المخططات للتحليل؟",

@@ -308,7 +308,7 @@ const Subscribe = () => {
                     {plan.price_amount > 0 && (
                       <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
                         <Clock className="w-3 h-3 me-1" />
-                        {language === "ar" ? "3 أيام تجربة مجانية" : "3-day free trial"}
+                        {language === "ar" ? "7 أيام تجربة مجانية" : "7-day free trial"}
                       </Badge>
                     )}
                     {selected && <CheckCircle className="w-5 h-5 text-primary mx-auto mt-2" />}

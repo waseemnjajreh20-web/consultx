@@ -68,7 +68,7 @@ export default function CTASection() {
           }}
         >
           {isAr ? <ArrowLeft size={20} strokeWidth={2} /> : <ArrowRight size={20} strokeWidth={2} />}
-          {isAr ? "ابدأ مجاناً — 3 أيام كاملة" : "Start Free — 3 Full Days"}
+          {isAr ? "ابدأ مجاناً — 7 أيام كاملة" : "Start Free — 7 Full Days"}
         </button>
       </div>
 
