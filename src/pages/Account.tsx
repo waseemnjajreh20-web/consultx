@@ -611,25 +611,39 @@ const Account = () => {
             </div>
           )}
 
-          {/* Past-due payment warning with grace-window end date */}
+          {/* Past-due payment warning with grace-window end date + recovery CTA */}
           {subStatus === "past_due" && (
             <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm">
               <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-destructive">
                   {language === "ar" ? "تعذّر تجديد الدفع" : "Payment renewal failed"}
                 </p>
                 {graceEndDate ? (
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {language === "ar"
-                      ? `وصولك الكامل محفوظ حتى ${graceEndDate.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })} — تواصل مع الدعم إذا استمرت المشكلة`
-                      : `Your full access is preserved until ${graceEndDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} — contact support if the issue persists`}
+                      ? `وصولك الكامل محفوظ حتى ${graceEndDate.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })}`
+                      : `Your full access is preserved until ${graceEndDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`}
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {language === "ar" ? "يرجى التواصل مع الدعم" : "Please contact support"}
                   </p>
                 )}
+                {/* Recovery CTA — resubscribe with a new card via the existing subscribe flow */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+                  onClick={() => navigate("/subscribe")}
+                >
+                  {language === "ar" ? "اشتراك جديد لاستعادة الوصول" : "Resubscribe to restore access"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {language === "ar"
+                    ? "أو تواصل مع الدعم إذا استمرت المشكلة"
+                    : "Or contact support if the issue persists"}
+                </p>
               </div>
             </div>
           )}
