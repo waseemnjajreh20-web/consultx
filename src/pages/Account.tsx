@@ -24,9 +24,8 @@ import {
 } from "lucide-react";
 import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useSubscription } from "@/hooks/useSubscription";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,9 +132,12 @@ interface NavItem {
 // ---------------------------------------------------------------------------
 const Account = () => {
   const navigate = useNavigate();
-  const { user, session, signOut, loading: authLoading } = useAuth();
+  const {
+    user, session, signOut, authLoading, subscription, subLoading, refetch,
+    isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess,
+    trialDaysRemaining, rawAccessState,
+  } = useEntitlement();
   const { t, dir, language, setLanguage } = useLanguage();
-  const { subscription, loading: subLoading, refetch } = useSubscription();
   const { preferences, updatePreferences } = usePreferences();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -212,18 +214,6 @@ const Account = () => {
       icon: <HelpCircle size={18} />,
     },
   ];
-
-  // ---------------------------------------------------------------------------
-  // Derived subscription state
-  // ---------------------------------------------------------------------------
-  const accessState = subscription?.access_state ?? "none";
-  const trialDaysRemaining = subscription?.launch_trial_days_remaining ?? 0;
-  const isPaidActive =
-    accessState === "paid_active" || subscription?.status === "active";
-  const isTrialActive =
-    accessState === "trial_active" || subscription?.status === "trialing";
-  const isTrialExpired = accessState === "trial_expired";
-  const hasActiveAccess = isPaidActive || isTrialActive;
 
   const userInitials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -383,7 +373,7 @@ const Account = () => {
           <h2 className="text-xl font-bold text-foreground mb-1">{stateTitle}</h2>
           <p className="text-sm text-muted-foreground">{stateSubtitle}</p>
 
-          {(isTrialExpired || (!hasActiveAccess && accessState !== "trial_active")) && (
+          {(isTrialExpired || (!hasActiveAccess && rawAccessState !== "trial_active")) && (
             <Button
               variant="hero"
               size="sm"

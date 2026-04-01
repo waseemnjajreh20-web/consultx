@@ -1772,37 +1772,34 @@ serve(async (req) => {
   }
 
   try {
-    const isTestMode = req.headers.get("X-Test-Mode") === "consultx-internal-test";
-    let userId = "test-user";
+    let userId: string;
     let userEmail = "";
 
-    if (!isTestMode) {
-      const authHeader = req.headers.get("Authorization");
-      if (!authHeader?.startsWith("Bearer ")) {
-        return new Response(
-          JSON.stringify({ error: "Please login to continue" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_ANON_KEY")!,
-        { global: { headers: { Authorization: authHeader } } }
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Please login to continue" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        return new Response(
-          JSON.stringify({ error: "Invalid session, please login again" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      userId = user.id;
-      userEmail = user.email || "";
     }
-    console.log(`✅ ${isTestMode ? "⚠️ TEST MODE" : "Authenticated"} user: ${userId}`);
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid session, please login again" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    userId = user.id;
+    userEmail = user.email || "";
+    console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
     const { messages, retry, mode = "standard", language = "ar", image, images } = await req.json();
@@ -1816,7 +1813,7 @@ serve(async (req) => {
     console.log("Chat mode:", mode, "| Language:", language, "| Images:", resolvedImages.length);
 
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
-    if (!isTestMode) {
+    {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminClient    = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
       const now            = new Date();

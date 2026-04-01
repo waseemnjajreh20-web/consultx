@@ -2,6 +2,7 @@ const CACHE_NAME = 'consultx-v2';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
+  '/workspace',
   '/favicon.ico',
 ];
 

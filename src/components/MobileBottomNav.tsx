@@ -5,7 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 /** Pages where the global nav should NOT appear */
-const HIDDEN_PATHS = ["/payment-callback", "/"];
+const HIDDEN_PATHS = ["/payment-callback", "/workspace"];
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -25,9 +25,7 @@ const MobileBottomNav = () => {
       navigate("/auth");
       return;
     }
-    // Set chat flag and navigate to index
-    sessionStorage.setItem("consultx_showChat", "1");
-    navigate("/");
+    navigate("/workspace");
   };
 
   const handleHistory = () => {
@@ -35,8 +33,7 @@ const MobileBottomNav = () => {
       navigate("/auth");
       return;
     }
-    sessionStorage.setItem("consultx_showChat", "1");
-    navigate("/");
+    navigate("/workspace");
   };
 
   const handleMind = () => {

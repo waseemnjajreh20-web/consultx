@@ -4,9 +4,8 @@ import { CreditCard, Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft,
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
+import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -50,14 +49,9 @@ interface Plan {
 const Subscribe = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, session, loading: authLoading } = useAuth();
+  const { user, session, authLoading, subscription, subLoading, isReturningUser, isPaidActive } = useEntitlement();
   const { t, dir, language } = useLanguage();
-  const { subscription, loading: subLoading } = useSubscription();
   const { toast } = useToast();
-
-  // Detect if user is a returning user (expired/cancelled — no free trial)
-  const isReturningUser =
-    subscription?.status === "expired" || subscription?.status === "cancelled";
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -69,10 +63,10 @@ const Subscribe = () => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
-  // Redirect users who already have an active/trialing subscription to chat
+  // Redirect users who already have a paid active subscription away from subscribe page
   useEffect(() => {
-    if (!subLoading && subscription?.active) navigate("/");
-  }, [subscription, subLoading, navigate]);
+    if (!subLoading && isPaidActive) navigate("/");
+  }, [isPaidActive, subLoading, navigate]);
 
   // Fetch plans
   useEffect(() => {
