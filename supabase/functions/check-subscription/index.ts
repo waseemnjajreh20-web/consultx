@@ -170,7 +170,12 @@ serve(async (req) => {
     }
 
     const plan = subscription?.subscription_plans as any;
-    const isPaidActive = active && subscription?.status === "active";
+    // past_due within the grace window also sets active = true (see branch above).
+    // Include it here so isPaidActive correctly reflects full entitlement during
+    // the 7-day retry window and access_state returns "paid_active".
+    const isPaidActive =
+      active &&
+      (subscription?.status === "active" || subscription?.status === "past_due");
 
     // ── Launch trial state ──────────────────────────────────────────────────
     let launchTrialStatus   = profile?.launch_trial_status ?? null;

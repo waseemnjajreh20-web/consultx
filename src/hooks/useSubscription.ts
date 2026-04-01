@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 export interface SubscriptionStatus {
   // Existing paid-subscription fields
   active: boolean;
-  status: "none" | "trialing" | "active" | "expired" | "cancelled";
+  status: "none" | "trialing" | "active" | "expired" | "cancelled" | "past_due";
   trial_days_remaining: number;
   plan: { id: string; name_ar: string; name_en: string; price_amount: number; currency: string } | null;
   expires_at: string | null;
@@ -13,6 +13,9 @@ export interface SubscriptionStatus {
   card_last_four: string | null;
   daily_messages_used: number;
   daily_messages_limit: number;
+  // Lifecycle fields
+  cancel_at_period_end?: boolean;
+  past_due_since?: string | null;
 
   // Launch trial fields
   access_state?: string;

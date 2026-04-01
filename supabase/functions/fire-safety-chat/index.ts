@@ -1937,7 +1937,7 @@ serve(async (req) => {
         // ── Check active paid subscription ────────────────────────────────────
         const { data: sub } = await adminClient
           .from("user_subscriptions")
-          .select("status, trial_end, current_period_end")
+          .select("status, trial_end, current_period_end, past_due_since")
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -1952,6 +1952,16 @@ serve(async (req) => {
         } else if (sub?.status === "active" && sub.current_period_end && now < new Date(sub.current_period_end)) {
           dailyLimit    = 9999;
           hasPaidAccess = true;
+        } else if (sub?.status === "past_due" && sub.past_due_since) {
+          // Grace period: 7 days from first payment failure — mirrors check-subscription
+          // and process-subscription-renewal. The renewal job retries during this window.
+          const GRACE_DAYS = 7;
+          const graceEnd   = new Date(new Date(sub.past_due_since).getTime() + GRACE_DAYS * 86400000);
+          if (now < graceEnd) {
+            dailyLimit    = 9999;
+            hasPaidAccess = true;
+          }
+          // If grace has lapsed: hasPaidAccess stays false → free-tier enforcement below
         }
 
         if (hasPaidAccess) {
@@ -2051,7 +2061,21 @@ serve(async (req) => {
             }
 
           } else if (!trialIsActive) {
-            // Trial expired or no trial — enforce free daily limit
+            // ── Mode enforcement — server-side source of truth ─────────────────────
+            // Free logged-in users (expired trial, cancelled, expired paid, no sub)
+            // may only use primary (main) mode. Advisory (standard) and Analytical
+            // (analysis) modes require an active paid subscription or active launch
+            // trial. The frontend UI lock is a best-effort UX layer; this check is
+            // the authoritative gate that prevents direct API bypasses.
+            if (mode === "standard" || mode === "analysis") {
+              return new Response(
+                JSON.stringify({ error: "mode_locked", mode }),
+                { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            // Free daily limit (10 messages / 24h) — applies to all non-paid,
+            // non-trial users regardless of why their access lapsed.
             const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
             if (currentCount && currentCount > dailyLimit) {
               return new Response(
