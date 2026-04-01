@@ -88,7 +88,7 @@ serve(async (req) => {
       adminClient.rpc("get_daily_usage", { p_user_id: userId }),
       adminClient
         .from("profiles")
-        .select("launch_trial_status, launch_trial_start, launch_trial_end, launch_trial_welcomed, launch_trial_consumed, created_at")
+        .select("launch_trial_status, launch_trial_start, launch_trial_end, launch_trial_welcomed, launch_trial_consumed, created_at, plan_type")
         .eq("user_id", userId)
         .maybeSingle(),
     ]);
@@ -112,7 +112,11 @@ serve(async (req) => {
           expiresAt          = subscription.trial_end;
           dailyLimit         = 20;
         } else {
-          await adminClient.from("user_subscriptions").update({ status: "expired" }).eq("id", subscription.id);
+          // Trial expired — mark it and sync plan entitlement to free
+          await Promise.all([
+            adminClient.from("user_subscriptions").update({ status: "expired" }).eq("id", subscription.id),
+            adminClient.from("profiles").update({ plan_type: "free" }).eq("user_id", userId),
+          ]);
           subscription.status = "expired";
           dailyLimit          = 10;
         }
@@ -123,11 +127,44 @@ serve(async (req) => {
           expiresAt = subscription.current_period_end;
           dailyLimit = 9999;
         } else {
-          await adminClient.from("user_subscriptions").update({ status: "expired" }).eq("id", subscription.id);
-          subscription.status = "expired";
+          // Period ended — respect cancel_at_period_end for final status label,
+          // then sync plan entitlement to free in both cases.
+          const finalStatus = subscription.cancel_at_period_end ? "cancelled" : "expired";
+          await Promise.all([
+            adminClient.from("user_subscriptions").update({ status: finalStatus }).eq("id", subscription.id),
+            adminClient.from("profiles").update({ plan_type: "free" }).eq("user_id", userId),
+          ]);
+          subscription.status = finalStatus;
           dailyLimit          = 10;
         }
+      } else if (subscription.status === "past_due") {
+        // Grace period: keep access for GRACE_DAYS from first payment failure.
+        // The renewal job retries during this window. If retries succeed, the
+        // webhook transitions the subscription back to "active". If the grace
+        // window lapses without a successful retry, access is cut here and
+        // profiles.plan_type is synced to "free".
+        const GRACE_DAYS   = 7;
+        const pastDueSince = subscription.past_due_since ? new Date(subscription.past_due_since) : null;
+        const graceEnd     = pastDueSince
+          ? new Date(pastDueSince.getTime() + GRACE_DAYS * 24 * 60 * 60 * 1000)
+          : null;
+
+        if (graceEnd && now < graceEnd) {
+          // Within grace window — full access, surface the grace end date
+          active    = true;
+          expiresAt = graceEnd.toISOString();
+          dailyLimit = 9999;
+        } else {
+          // Grace window lapsed — revoke access and sync entitlement
+          await adminClient.from("profiles").update({ plan_type: "free" }).eq("user_id", userId);
+          dailyLimit = 10;
+        }
       } else if (subscription.status === "expired" || subscription.status === "cancelled") {
+        // Defensive sync: fix plan_type if it drifted (e.g. prior code left it
+        // set to a paid plan after cancellation). Only writes if truly stale.
+        if (profile?.plan_type && profile.plan_type !== "free") {
+          await adminClient.from("profiles").update({ plan_type: "free" }).eq("user_id", userId);
+        }
         dailyLimit = 10;
       }
     }
@@ -229,6 +266,9 @@ serve(async (req) => {
         card_last_four:       subscription?.card_last_four ?? null,
         daily_messages_used:  messagesUsed,
         daily_messages_limit: dailyLimit,
+        // Lifecycle fields — let the frontend surface cancellation and payment state
+        cancel_at_period_end: subscription?.cancel_at_period_end ?? false,
+        past_due_since:       subscription?.past_due_since ?? null,
 
         // Launch trial fields (new unified access object)
         access_state:                accessState,

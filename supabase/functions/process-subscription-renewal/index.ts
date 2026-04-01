@@ -92,21 +92,72 @@ serve(async (req) => {
     });
   }
 
-  if (!dueSubscriptions || dueSubscriptions.length === 0) {
-    console.log("Renewal job: no subscriptions due for renewal");
+  // ── 1b. Past-due retry: subscriptions that failed renewal within grace window ─
+  //
+  // Eligibility rules (all must be true):
+  //   • status = 'past_due'
+  //   • cancel_at_period_end = false  — user has NOT requested cancellation
+  //   • past_due_since >= NOW() - GRACE_DAYS  — within the 7-day retry window
+  //   • tap_card_id + tap_customer_id present — card on file
+  //
+  // GRACE_DAYS must match the constant in check-subscription so access and
+  // retry windows are coherent. Both currently use 7 days.
+  const GRACE_DAYS  = 7;
+  const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: pastDueSubs, error: pastDueError } = await adminClient
+    .from("user_subscriptions")
+    .select(`
+      id,
+      user_id,
+      plan_id,
+      tap_customer_id,
+      tap_card_id,
+      tap_payment_agreement_id,
+      next_billing_date,
+      current_period_end,
+      past_due_since,
+      subscription_plans (
+        price_amount,
+        currency,
+        duration_days,
+        name_en,
+        slug
+      )
+    `)
+    .eq("status", "past_due")
+    .eq("cancel_at_period_end", false)
+    .not("tap_card_id", "is", null)
+    .not("tap_customer_id", "is", null)
+    .not("past_due_since", "is", null)
+    .gte("past_due_since", graceCutoff);
+
+  if (pastDueError) {
+    console.error("Failed to query past_due subscriptions:", pastDueError);
+    // Non-fatal: continue with active-only results
+  }
+
+  // Merge both sets. Statuses are mutually exclusive so no deduplication needed.
+  const allDue = [...(dueSubscriptions ?? []), ...(pastDueSubs ?? [])];
+
+  if (allDue.length === 0) {
+    console.log("Renewal job: no subscriptions due for renewal or retry");
     return new Response(
       JSON.stringify({ processed: 0, skipped: 0, failed: 0, total: 0 }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  console.log(`Renewal job: found ${dueSubscriptions.length} subscription(s) due`);
+  console.log(
+    `Renewal job: ${dueSubscriptions?.length ?? 0} active due, ` +
+    `${pastDueSubs?.length ?? 0} past_due retries`,
+  );
 
   let processed = 0;
   let skipped = 0;
   let failed = 0;
 
-  for (const sub of dueSubscriptions) {
+  for (const sub of allDue) {
     const plan = sub.subscription_plans as any;
     if (!plan || plan.price_amount == null) {
       console.error(`Sub ${sub.id}: no plan data — skipping`);
@@ -370,7 +421,7 @@ serve(async (req) => {
     processed,
     skipped,
     failed,
-    total: dueSubscriptions.length,
+    total: allDue.length,
   };
   console.log("Renewal job complete:", JSON.stringify(summary));
   return new Response(JSON.stringify(summary), {
