@@ -54,8 +54,8 @@ export default function TrialExpiryModal({ onClose }: TrialExpiryModalProps) {
         </h2>
         <p className="text-sm mb-2" style={{ color: "rgba(200,220,240,0.65)" }}>
           {isAr
-            ? "لقد رأيت ما يقدمه الوضع الاستشاري والتحليلي. ConsultX Pro يواصل هذا المستوى بلا قيود يومية."
-            : "You've seen what Advisory and Analysis modes can do. ConsultX Pro continues at this level with no daily limits."}
+            ? "لقد رأيت ما يقدمه الوضع الاستشاري والتحليلي. باقة مهندس تواصل هذا المستوى بلا قيود يومية."
+            : "You've seen what Advisory and Analysis modes can do. The Engineer plan continues at this level with no daily limits."}
         </p>
         <p className="text-xs mb-6" style={{ color: "rgba(200,220,240,0.35)" }}>
           {isAr

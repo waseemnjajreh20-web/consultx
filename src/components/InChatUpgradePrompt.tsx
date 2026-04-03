@@ -1,10 +1,10 @@
 /**
  * InChatUpgradePrompt
  * Shown inside the chat conversation when a mode's daily trial limit is reached
- * or when the 3-day trial period has expired.
+ * or when the 7-day trial period has expired.
  *
  * Variant "mode_limit"  → user consumed today's standard/analysis quota
- * Variant "trial_expired" → 3-day window has ended
+ * Variant "trial_expired" → 7-day window has ended
  */
 
 import { useNavigate } from "react-router-dom";
@@ -53,14 +53,14 @@ export default function InChatUpgradePrompt({ variant, mode, language }: InChatU
   const body = isModeLimitVariant
     ? (mode === "analysis"
         ? (isAr
-            ? "الوضع التحليلي مخصص لكل متغيرات المشروع الحقيقي — معادلات، تحقق من الامتثال، ومسار قرار كامل. Pro يفتح التحليل غير المحدود يومياً."
-            : "Analysis mode is built for real project variables — equations, compliance verification, full decision paths. Pro unlocks unlimited daily analysis.")
+            ? "الوضع التحليلي مخصص لكل متغيرات المشروع الحقيقي — معادلات، تحقق من الامتثال، ومسار قرار كامل. باقة مهندس تفتح التحليل غير المحدود يومياً."
+            : "Analysis mode is built for real project variables — equations, compliance verification, full decision paths. Engineer plan unlocks unlimited daily analysis.")
         : (isAr
-            ? "الوضع الاستشاري يقدم المرجع القانوني الدقيق، الفقرة، والاشتقاق الهندسي الكامل. Pro يتيح الرجوع إليه بلا قيود يومية."
-            : "Advisory mode delivers precise legal references, clauses, and complete engineering derivations. Pro removes the daily ceiling."))
+            ? "الوضع الاستشاري يقدم المرجع القانوني الدقيق، الفقرة، والاشتقاق الهندسي الكامل. باقة مهندس تتيح الرجوع إليه بلا قيود يومية."
+            : "Advisory mode delivers precise legal references, clauses, and complete engineering derivations. Engineer plan removes the daily ceiling."))
     : (isAr
-        ? "ثلاثة أيام أثبتت ما يستطيع ConsultX Pro تقديمه. الخطوة التالية هي الوصول الكامل المستمر — بلا انقطاع، بلا قيود يومية."
-        : "Three days showed you what ConsultX Pro can do. The next step is continuous full access — no interruptions, no daily ceilings.");
+        ? "سبعة أيام أثبتت ما تستطيع باقة مهندس تقديمه. الخطوة التالية هي الوصول الكامل المستمر — بلا انقطاع، بلا قيود يومية."
+        : "Seven days showed you what ConsultX Engineer can do. The next step is continuous full access — no interruptions, no daily ceilings.");
 
   const ctaLabel = isAr ? "فعّل اشتراكك الآن" : "Activate Your Subscription";
 
@@ -85,12 +85,12 @@ export default function InChatUpgradePrompt({ variant, mode, language }: InChatU
         ? [
             "استشارات يومية غير محدودة في الوضع الاستشاري والتحليلي",
             "GraphRAG — كل إجابة مرتبطة بشبكة المراجع الهندسية",
-            "تصدير PDF وحفظ المحادثات 90 يوماً",
+            "الوصول الكامل إلى كود البناء السعودي (SBC)",
           ]
         : [
             "Unlimited daily use of Advisory and Analysis modes",
             "GraphRAG — every answer connected to the engineering reference graph",
-            "PDF export and 90-day conversation history",
+            "Full access to Saudi Building Code (SBC) database",
           ]);
 
   return (

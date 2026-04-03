@@ -349,8 +349,8 @@ const Account = () => {
           : "Engineering Trial Complete";
       stateSubtitle =
         language === "ar"
-          ? "فعّل اشتراك Pro للوصول الكامل"
-          : "Activate Pro subscription for full access";
+          ? "فعّل باقة مهندس للوصول الكامل"
+          : "Activate Engineer subscription for full access";
     } else if (subscription?.status === "past_due") {
       // past_due within grace — isPaidActive is true but a payment renewal failed.
       // GRACE_DAYS mirrors the constant in check-subscription and fire-safety-chat.
@@ -373,7 +373,7 @@ const Account = () => {
         ? language === "ar"
           ? subscription.plan.name_ar
           : subscription.plan.name_en
-        : "Pro";
+        : "Engineer";
       const expiryDate = subscription?.expires_at
         ? new Date(subscription.expires_at).toLocaleDateString(
             language === "ar" ? "ar-SA" : "en-US"
@@ -422,7 +422,7 @@ const Account = () => {
               onClick={() => navigate("/subscribe")}
             >
               <Zap className="w-4 h-4 me-2" />
-              {language === "ar" ? "فعّل اشتراك Pro" : "Activate Pro"}
+              {language === "ar" ? "فعّل باقة مهندس" : "Activate Engineer"}
             </Button>
           )}
         </div>
@@ -678,8 +678,8 @@ const Account = () => {
         {isTrialActive && (
           <div className="bg-cyan-500/5 rounded-xl border border-cyan-500/20 p-4 text-sm text-cyan-300">
             {language === "ar"
-              ? "اشتراكك Pro سيبدأ تلقائياً بعد انتهاء فترة التجربة"
-              : "Your Pro subscription will auto-start after the trial ends"}
+              ? "باقة مهندس الخاصة بك ستبدأ تلقائياً بعد انتهاء فترة التجربة"
+              : "Your Engineer subscription will auto-start after the trial ends"}
           </div>
         )}
       </div>
@@ -804,8 +804,8 @@ const Account = () => {
             {isUnlimited ? (
               <div className="text-sm text-green-400">
                 {language === "ar"
-                  ? "لا يوجد حد يومي في خطة Pro"
-                  : "No daily limit on Pro plan"}
+                  ? "لا يوجد حد يومي في باقة مهندس"
+                  : "No daily limit on Engineer plan"}
               </div>
             ) : (
               <div>
