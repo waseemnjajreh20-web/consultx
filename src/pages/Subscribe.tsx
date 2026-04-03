@@ -109,10 +109,14 @@ const Subscribe = () => {
   }, []);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (paymentModalOpen && sdkLoaded) {
       // Small delay to ensure the modal DOM node (#card-element) is fully mounted
-      setTimeout(() => initTapCard(), 300);
+      timer = setTimeout(() => initTapCard(), 300);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [paymentModalOpen, sdkLoaded]);
 
   const initTapCard = () => {
@@ -346,6 +350,7 @@ const Subscribe = () => {
 
           {/* Payment Modal */}
           <Dialog open={paymentModalOpen} onOpenChange={(open) => {
+            if (processing) return; // Prevent closing while payment is processing
             setPaymentModalOpen(open);
             if (!open) setCardReady(false); // Reset on close
           }}>
