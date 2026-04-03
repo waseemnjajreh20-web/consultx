@@ -1133,15 +1133,28 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
   const lower = query.toLowerCase();
   const sbc201Chapters = new Set<number>();
   const sbc801Chapters = new Set<number>();
-  
-  // Check keyword map
+
+  // Check keyword map against English terms
   for (const [keyword, chapters] of Object.entries(CHAPTER_KEYWORDS)) {
     if (lower.includes(keyword)) {
       chapters.sbc201.forEach(c => sbc201Chapters.add(c));
       chapters.sbc801.forEach(c => sbc801Chapters.add(c));
     }
   }
-  
+
+  // Also translate Arabic keywords via glossary and check CHAPTER_KEYWORDS
+  for (const [arWord, enWords] of Object.entries(AR_EN_GLOSSARY)) {
+    if (lower.includes(arWord)) {
+      for (const enWord of enWords) {
+        const chapters = (CHAPTER_KEYWORDS as Record<string, { sbc201: number[]; sbc801: number[] }>)[enWord];
+        if (chapters) {
+          chapters.sbc201.forEach(c => sbc201Chapters.add(c));
+          chapters.sbc801.forEach(c => sbc801Chapters.add(c));
+        }
+      }
+    }
+  }
+
   // Check for explicit chapter numbers
   const chapterMatch = lower.match(/(?:chapter|فصل)\s*(\d+)/gi);
   if (chapterMatch) {
@@ -1153,11 +1166,11 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
       }
     }
   }
-  
+
   // Check for explicit section numbers (e.g., 903.2 -> chapter 9, or "Section 1014" bare)
   const sectionMatch = lower.match(/(?:section\s+)?(\d{3,4})\.\d/gi);
-  // Also match bare integer section numbers when preceded by "section" / "مادة" / "clause"
-  const bareSectionMatch = lower.match(/(?:section|ال?مادة|clause)\s+(\d{3,4})\b/gi);
+  // Also match bare integer section numbers when preceded by "section" / Arabic article forms / "clause"
+  const bareSectionMatch = lower.match(/(?:section|(?:ال)?مادة|clause)\s+(\d{3,4})\b/gi);
   const allSectionMatches = [...(sectionMatch || []), ...(bareSectionMatch || [])];
   if (allSectionMatches.length > 0) {
     for (const m of allSectionMatches) {
