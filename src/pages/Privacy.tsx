@@ -48,7 +48,7 @@ export default function Privacy() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">7. الاحتفاظ بالبيانات</h2>
-                <p>نحتفظ بمحادثاتك وفق خطة اشتراكك (7 أيام للباقة الأساسية، 90 يوماً لباقة Pro، غير محدود لباقة Team). بعد إلغاء الحساب، يتم حذف البيانات خلال 30 يوماً.</p>
+                <p>نحتفظ بمحادثاتك طوال فترة اشتراكك النشط (باقة مهندس أو Enterprise). بعد إلغاء الحساب، يتم حذف البيانات خلال 30 يوماً.</p>
               </div>
 
               <div>
@@ -100,7 +100,7 @@ export default function Privacy() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">7. Data Retention</h2>
-                <p>We retain your conversations according to your subscription plan (7 days for Starter, 90 days for Pro, unlimited for Team). After account cancellation, data is deleted within 30 days.</p>
+                <p>We retain your conversations for the duration of your active subscription (Engineer or Enterprise plan). After account cancellation, data is deleted within 30 days.</p>
               </div>
 
               <div>

@@ -315,7 +315,7 @@ const Auth = () => {
               }}
             >
               <Building2 size={13} strokeWidth={1.5} className="shrink-0" />
-              <span>{isAr ? "سجّل ببريدك المؤسسي واحصل على تجربة باقة مهندس مجاناً لمدة 3 أيام" : "Sign up with your corporate email and get a free 3-day Engineer plan trial"}</span>
+              <span>{isAr ? "سجّل ببريدك المؤسسي واحصل على تجربة باقة مهندس مجاناً لمدة 7 أيام" : "Sign up with your corporate email and get a free 7-day Engineer plan trial"}</span>
             </div>
           )}
 
