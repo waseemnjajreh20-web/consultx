@@ -1318,9 +1318,16 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     const scored801 = sbc801Files.map(f => ({ file: f, score: scoreFile(f, sbc801Ranges) }))
       .sort((a, b) => b.score - a.score);
     
-    // Select top files: max balanced between codes (increased for better coverage)
-    const max201 = Math.min(scored201.length, sbc201Chapters.length > 0 ? 6 : 3);
-    const max801 = Math.min(scored801.length, sbc801Chapters.length > 0 ? 6 : 3);
+    // Select top files: when chapters are targeted, prefer only the scored files
+    // (score > 0 = overlaps target ranges). Zero-score files dilute the context budget.
+    const targeted201 = scored201.filter(s => s.score > 0);
+    const targeted801 = scored801.filter(s => s.score > 0);
+    const max201 = targeted201.length > 0
+      ? Math.min(targeted201.length, 4)  // only use files that actually cover the target chapters
+      : Math.min(scored201.length, 3);   // fallback: first 3
+    const max801 = targeted801.length > 0
+      ? Math.min(targeted801.length, 4)
+      : Math.min(scored801.length, 3);
 
     let selectedFiles = [
       ...scored201.slice(0, max201).map(s => s.file),
