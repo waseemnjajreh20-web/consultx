@@ -4,6 +4,7 @@ import { CreditCard, Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft,
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +54,7 @@ const Subscribe = () => {
   const [cardReady, setCardReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -90,13 +92,11 @@ const Subscribe = () => {
   useEffect(() => {
     if (sdkLoaded || window.CardSDK) {
       setSdkLoaded(true);
-      setTimeout(() => initTapCard(), 500);
       return;
     }
     const existingScript = document.querySelector('script[src*="tap-sdks"]');
     if (existingScript) {
       setSdkLoaded(true);
-      setTimeout(() => initTapCard(), 500);
       return;
     }
     const script = document.createElement("script");
@@ -104,10 +104,16 @@ const Subscribe = () => {
     script.async = true;
     script.onload = () => {
       setSdkLoaded(true);
-      setTimeout(() => initTapCard(), 500);
     };
     document.body.appendChild(script);
   }, []);
+
+  useEffect(() => {
+    if (paymentModalOpen && sdkLoaded) {
+      // Small delay to ensure the modal DOM node (#card-element) is fully mounted
+      setTimeout(() => initTapCard(), 300);
+    }
+  }, [paymentModalOpen, sdkLoaded]);
 
   const initTapCard = () => {
     if (!window.CardSDK) return;
@@ -316,7 +322,7 @@ const Subscribe = () => {
           {/* Selected Plan Summary */}
           {currentPlan && (
             <div className="max-w-lg mx-auto">
-              <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 mb-6 text-sm text-muted-foreground">
                 <Shield className="w-4 h-4 text-primary" />
                 <span>{t("cancelAnytime")}</span>
                 <span className="mx-2">•</span>
@@ -324,36 +330,57 @@ const Subscribe = () => {
                 <span>{t("fullAccess")}</span>
               </div>
 
-              {/* Verification note */}
-              <div className="bg-muted/30 border border-border/50 rounded-lg p-3 mb-4 text-xs text-muted-foreground text-center">
-                <CreditCard className="w-4 h-4 inline-block ms-1" />
-                {isReturningUser ? t("verificationChargeReturning") : t("verificationCharge")}
-              </div>
+              {/* Continue Button */}
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full"
+                onClick={() => setPaymentModalOpen(true)}
+                disabled={!selectedPlan || !sdkLoaded}
+              >
+                {isReturningUser ? t("startSubscription") : isTrialActive ? t("addCardContinue") : t("startFreeTrial")}
+                {dir === "rtl" ? <ArrowLeft className="w-5 h-5 me-2" /> : <ArrowRight className="w-5 h-5 ms-2" />}
+              </Button>
+            </div>
+          )}
+
+          {/* Payment Modal */}
+          <Dialog open={paymentModalOpen} onOpenChange={(open) => {
+            setPaymentModalOpen(open);
+            if (!open) setCardReady(false); // Reset on close
+          }}>
+            <DialogContent className="sm:max-w-[450px]">
+              <DialogHeader>
+                <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
+                <DialogDescription>
+                  {isReturningUser ? t("verificationChargeReturning") : t("verificationCharge")}
+                </DialogDescription>
+              </DialogHeader>
 
               {/* Card Element */}
-              <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl p-4 mb-4">
+              <div className="bg-card/80 border border-border/50 rounded-xl p-4 my-2" dir="ltr">
                 <div id="card-element" className="min-h-[120px] flex items-center justify-center">
                   {!sdkLoaded && <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />}
                 </div>
               </div>
 
-              {/* Subscribe Button */}
-              <Button
-                variant="hero"
-                size="lg"
-                className="w-full"
-                onClick={handleSubscribe}
-                disabled={!cardReady || processing || !selectedPlan}
-              >
-                {processing ? (
-                  <Loader2 className="w-5 h-5 animate-spin ms-2" />
-                ) : (
-                  <CreditCard className="w-5 h-5 ms-2" />
-                )}
-                {isReturningUser ? t("startSubscription") : isTrialActive ? t("addCardContinue") : t("startFreeTrial")}
-              </Button>
-            </div>
-          )}
+              <DialogFooter>
+                <Button
+                  variant="hero"
+                  className="w-full"
+                  onClick={handleSubscribe}
+                  disabled={!cardReady || processing}
+                >
+                  {processing ? (
+                    <Loader2 className="w-5 h-5 animate-spin ms-2" />
+                  ) : (
+                    <CreditCard className="w-5 h-5 ms-2" />
+                  )}
+                  {language === "ar" ? "تأكيد الدفع" : "Confirm Payment"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
