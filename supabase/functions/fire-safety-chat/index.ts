@@ -1262,9 +1262,32 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     console.log(`📁 Found ${files.length} total files`);
     
     // Get target chapters from query
-    const { sbc201Chapters, sbc801Chapters } = getTargetChapters(query);
+    let { sbc201Chapters, sbc801Chapters } = getTargetChapters(query);
+
+    // Secondary pass: if chapters are still empty, run chapter detection on the
+    // English-translated keywords (covers Arabic keyword queries where the in-function
+    // Unicode string comparison may not match due to runtime encoding).
+    if (sbc201Chapters.length === 0 && sbc801Chapters.length === 0) {
+      const translatedKeywords = buildQueryKeywords(query);
+      const sbc201Set = new Set<number>();
+      const sbc801Set = new Set<number>();
+      for (const kw of translatedKeywords) {
+        const ch = (CHAPTER_KEYWORDS as Record<string, { sbc201: number[]; sbc801: number[] }>)[kw];
+        if (ch) {
+          ch.sbc201.forEach(c => sbc201Set.add(c));
+          ch.sbc801.forEach(c => sbc801Set.add(c));
+        }
+      }
+      // Cross-reference
+      if (sbc201Set.has(9) || sbc201Set.has(10)) { sbc801Set.add(6); sbc801Set.add(7); }
+      if (sbc801Set.has(6) || sbc801Set.has(7)) { sbc201Set.add(9); sbc201Set.add(10); }
+      sbc201Chapters = [...sbc201Set];
+      sbc801Chapters = [...sbc801Set];
+      if (sbc201Chapters.length > 0) console.log("🔄 Secondary keyword-based chapter detection used");
+    }
+
     console.log(`🎯 Target chapters - SBC 201: [${sbc201Chapters.join(",")}], SBC 801: [${sbc801Chapters.join(",")}]`);
-    
+
     // Get target page ranges
     const sbc201Ranges = selectTargetPageRanges(sbc201Chapters, SBC201_INDEX);
     const sbc801Ranges = selectTargetPageRanges(sbc801Chapters, SBC801_INDEX);
