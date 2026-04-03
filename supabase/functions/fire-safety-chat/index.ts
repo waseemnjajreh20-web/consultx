@@ -1157,7 +1157,7 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
   // Check for explicit section numbers (e.g., 903.2 -> chapter 9, or "Section 1014" bare)
   const sectionMatch = lower.match(/(?:section\s+)?(\d{3,4})\.\d/gi);
   // Also match bare integer section numbers when preceded by "section" / "مادة" / "clause"
-  const bareSectionMatch = lower.match(/(?:section|مادة|clause)\s+(\d{3,4})\b/gi);
+  const bareSectionMatch = lower.match(/(?:section|ال?مادة|clause)\s+(\d{3,4})\b/gi);
   const allSectionMatches = [...(sectionMatch || []), ...(bareSectionMatch || [])];
   if (allSectionMatches.length > 0) {
     for (const m of allSectionMatches) {
