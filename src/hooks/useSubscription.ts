@@ -27,6 +27,13 @@ export interface SubscriptionStatus {
   show_welcome_banner?: boolean;
   upgrade_context?: string | null;
   recommended_plan?: string;
+
+  // Per-mode limits (new fields)
+  plan_slug?: string;
+  advisory_limit?: number | null;
+  advisory_used?: number;
+  analysis_limit?: number | null;
+  analysis_used?: number;
 }
 
 export function useSubscription() {

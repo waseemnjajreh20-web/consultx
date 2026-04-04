@@ -77,7 +77,7 @@ serve(async (req) => {
     const now         = new Date();
 
     // ── Parallel fetches ────────────────────────────────────────────────────
-    const [subResult, dailyUsageResult, profileResult] = await Promise.all([
+    const [subResult, dailyUsageResult, profileResult, modeUsageResult] = await Promise.all([
       adminClient
         .from("user_subscriptions")
         .select("*, subscription_plans(*)")
@@ -91,11 +91,20 @@ serve(async (req) => {
         .select("launch_trial_status, launch_trial_start, launch_trial_end, launch_trial_welcomed, launch_trial_consumed, created_at, plan_type")
         .eq("user_id", userId)
         .maybeSingle(),
+      adminClient.rpc("get_all_mode_daily_counts", { p_user_id: userId }),
     ]);
 
     const subscription = subResult.data;
     const messagesUsed = dailyUsageResult.data ?? 0;
     const profile      = profileResult.data;
+
+    // Parse mode usage into a map
+    const modeUsage: Record<string, number> = {};
+    if (modeUsageResult.data) {
+      for (const row of modeUsageResult.data) {
+        modeUsage[row.mode] = row.count;
+      }
+    }
 
     // ── Paid subscription check ─────────────────────────────────────────────
     let active            = false;
@@ -183,6 +192,17 @@ serve(async (req) => {
     const isPaidActive =
       active &&
       (subscription?.status === "active" || subscription?.status === "past_due");
+
+    // Compute per-mode limits from plan features
+    const planSlug = plan?.slug ?? profile?.plan_type ?? "free";
+    const planFeatures = plan?.features ?? {};
+    const isEnterprise = planSlug === "enterprise";
+    const isLimitedPaid = planSlug === "engineer" || planSlug === "pro";
+
+    const advisoryLimit = isEnterprise ? null : (planFeatures?.advisory_limit ?? (planSlug === "engineer" ? 20 : 100));
+    const analysisLimit = isEnterprise ? null : (planFeatures?.analysis_limit ?? (planSlug === "engineer" ? 10 : 50));
+    const advisoryUsed = modeUsage["standard"] ?? 0;
+    const analysisUsed = modeUsage["analysis"] ?? 0;
 
     // ── Launch trial state ──────────────────────────────────────────────────
     let launchTrialStatus   = profile?.launch_trial_status ?? null;
@@ -292,6 +312,13 @@ serve(async (req) => {
         show_welcome_banner:         showWelcomeBanner,
         upgrade_context:             upgradeContext,
         recommended_plan:            "pro",
+
+        // Per-mode limits (new fields)
+        plan_slug:                   planSlug,
+        advisory_limit:              advisoryLimit,
+        advisory_used:               advisoryUsed,
+        analysis_limit:              analysisLimit,
+        analysis_used:               analysisUsed,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

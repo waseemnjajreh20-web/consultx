@@ -39,6 +39,8 @@ interface Plan {
     graphrag: boolean;
     modes: string[];
     team_members?: number;
+    advisory_limit?: number;
+    analysis_limit?: number;
   };
 }
 
@@ -80,8 +82,8 @@ const Subscribe = () => {
         if (urlPlan && data.find((p) => p.id === urlPlan)) {
           setSelectedPlan(urlPlan);
         } else {
-          const engineerPlan = data.find((p) => p.slug === "engineer");
-          setSelectedPlan(engineerPlan?.id || data[0].id);
+          const proPlan = data.find((p) => p.slug === "pro");
+          setSelectedPlan(proPlan?.id || data[0].id);
         }
       }
     };
@@ -253,10 +255,10 @@ const Subscribe = () => {
           )}
 
           {/* Plan Selection Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 max-w-4xl mx-auto">
             {plans.map((plan, i) => {
               const selected = plan.id === selectedPlan;
-              const popular = plan.slug === "engineer";
+              const popular = plan.slug === "pro";
               return (
                 <Card
                   key={plan.id}
@@ -290,24 +292,35 @@ const Subscribe = () => {
                     </div>
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
                       <li>
-                        {plan.features.messages_per_day === null
-                          ? (language === "ar" ? "✓ رسائل غير محدودة" : "✓ Unlimited messages")
-                          : (language === "ar"
-                              ? `✓ ${plan.features.messages_per_day} رسائل يومياً`
-                              : `✓ ${plan.features.messages_per_day} messages/day`)}
-                      </li>
-                      <li>
                         {plan.features.graphrag
                           ? (language === "ar" ? "✓ GraphRAG متاح" : "✓ GraphRAG enabled")
                           : (language === "ar" ? "✗ GraphRAG غير متاح" : "✗ No GraphRAG")}
                       </li>
                       {Array.isArray(plan.features.modes) && plan.features.modes.length > 0 && (
-                        <li>
-                          {language === "ar" ? "✓ الأوضاع: " : "✓ Modes: "}
-                          {plan.features.modes.map((m: string) =>
-                            m === "primary" ? t("primary") : m === "standard" ? t("standard") : t("analysis")
-                          ).join(" · ")}
-                        </li>
+                        <>
+                          <li>
+                            {language === "ar" ? "✓ الوضع السريع: غير محدود" : "✓ Quick mode: Unlimited"}
+                          </li>
+                          {plan.features.advisory_limit !== undefined && plan.features.advisory_limit !== null && (
+                            <li>
+                              {language === "ar"
+                                ? `✓ الاستشاري: ${plan.features.advisory_limit} رسالة/يوم`
+                                : `✓ Advisory: ${plan.features.advisory_limit} msgs/day`}
+                            </li>
+                          )}
+                          {plan.features.analysis_limit !== undefined && plan.features.analysis_limit !== null && (
+                            <li>
+                              {language === "ar"
+                                ? `✓ التحليلي: ${plan.features.analysis_limit} رسالة/يوم`
+                                : `✓ Analysis: ${plan.features.analysis_limit} msgs/day`}
+                            </li>
+                          )}
+                          {(plan.features.advisory_limit === undefined || plan.features.advisory_limit === null) && (plan.features.analysis_limit === undefined || plan.features.analysis_limit === null) && (
+                            <li>
+                              {language === "ar" ? "✓ جميع الأوضاع غير محدودة" : "✓ All modes unlimited"}
+                            </li>
+                          )}
+                        </>
                       )}
                     </ul>
                     {plan.price_amount > 0 && (

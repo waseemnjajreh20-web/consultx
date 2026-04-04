@@ -4,6 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 /* ── Real plan definitions — must match subscription_plans DB ───────────────
  *   engineer:   9 900 halalas = 99 SAR/mo
+ *   pro:        24 500 halalas = 245 SAR/mo
  *   enterprise: 34 900 halalas = 349 SAR/mo
  *
  *   Monthly billing only. Yearly billing is not currently implemented.
@@ -18,21 +19,51 @@ function getPlans(isAr: boolean) {
         ? "للمهندسين الأفراد ومراجعة المشاريع"
         : "For individual engineers and project reviews",
       price: 99,
-      popular: true,
+      popular: false,
       features: isAr
         ? [
-            "رسائل يومية غير محدودة",
+            "رسائل يومية غير محدودة (الوضع السريع)",
+            "20 رسالة استشارية يومياً",
+            "10 رسائل تحليلية يومياً",
             "قاعدة بيانات SBC 201 و SBC 801 كاملة",
-            "الأوضاع الثلاثة: سريع، استشاري، تحليلي",
             "إحالة للفقرة القانونية الدقيقة",
             "حفظ المحادثات",
           ]
         : [
-            "Unlimited daily messages",
+            "Unlimited daily messages (Quick mode)",
+            "20 Advisory messages per day",
+            "10 Analysis messages per day",
             "Full SBC 201 & SBC 801 code database",
-            "All 3 modes: Quick, Advisory, Analysis",
             "Exact legal clause citation",
             "Conversation history",
+          ],
+    },
+    {
+      slug: "pro",
+      name: isAr ? "برو" : "Pro",
+      desc: isAr
+        ? "للمحترفين الذين يحتاجون وصول أعلى"
+        : "For professionals who need higher access",
+      price: 245,
+      popular: true,
+      features: isAr
+        ? [
+            "رسائل يومية غير محدودة (الوضع السريع)",
+            "100 رسالة استشارية يومياً",
+            "50 رسالة تحليلية يومياً",
+            "قاعدة بيانات SBC 201 و SBC 801 كاملة",
+            "إحالة للفقرة القانونية الدقيقة",
+            "حفظ المحادثات",
+            "تحليل مخططات (20 تحليل/شهر)",
+          ]
+        : [
+            "Unlimited daily messages (Quick mode)",
+            "100 Advisory messages per day",
+            "50 Analysis messages per day",
+            "Full SBC 201 & SBC 801 code database",
+            "Exact legal clause citation",
+            "Conversation history",
+            "Plan analysis (20 analyses/month)",
           ],
     },
     {
@@ -45,14 +76,16 @@ function getPlans(isAr: boolean) {
       popular: false,
       features: isAr
         ? [
-            "كل مميزات باقة مهندس",
+            "كل مميزات باقة برو",
+            "رسائل غير محدودة في جميع الأوضاع",
             "دعم فني أولوي عبر واتساب والبريد",
             "مناسب للفرق والمكاتب الهندسية",
             "استخدام مكثف بدون قيود",
             "إعداد مخصص للمؤسسة",
           ]
         : [
-            "Everything in Engineer",
+            "Everything in Pro",
+            "Unlimited messages in all modes",
             "Priority support via WhatsApp & email",
             "Suitable for teams and engineering firms",
             "High-volume usage without limits",
@@ -82,8 +115,8 @@ const PricingLanding = () => {
           <p className="text-muted-foreground mb-6">{t("pricingSubtitle")}</p>
         </div>
 
-        {/* Two Plan Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 max-w-2xl mx-auto">
+        {/* Plan Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 max-w-5xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.slug}

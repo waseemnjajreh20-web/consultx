@@ -250,12 +250,12 @@ export default function ChatSidebar({
                           modeLockTarget === "standard"
                             ? "Advisory Mode"
                             : "Analysis Mode"
-                        } requires an Engineer plan`
+                        } requires a paid plan`
                       : `${
                           modeLockTarget === "standard"
                             ? "الوضع الاستشاري"
                             : "الوضع التحليلي"
-                        } يتطلب باقة مهندس`}
+                        } يتطلب باقة مدفوعة`}
                   </p>
                   <button
                     onClick={() => {
