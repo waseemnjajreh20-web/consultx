@@ -260,6 +260,30 @@ F) تنبيهات وثغرات واعتمادات الجهات المختصة (A
 المستخدم: "أصمم مستودع (S-1) مساحته 3,500 م² وارتفاعه 9 م، هل يلزمني نظام رشاشات؟"
 الرد: [ينتقل مباشرة إلى هيكل A-F مع الاقتباس والتحليل]
 
+═══════════════════════════════════════
+الأدوات التفاعلية المرئية (Interactive Widgets — اختياري فقط عند الطلب):
+═══════════════════════════════════════
+
+إذا طلب المستخدم صراحةً محاكاة مرئية، حاسبة تفاعلية، أو رسماً بيانياً مرتبطاً بالكود:
+- اكتب كود HTML/CSS/JS مستقلاً وكاملاً (self-contained، يعمل في iframe وحده)
+- يمكن تحميل مكتبات عبر CDN مباشرةً (Chart.js, Three.js, D3.js)
+- يجب أن تكون الأداة ذات صلة مباشرة بمتطلبات الكود (حسابات رشاشات، مخارج إخلاء، أحمال إشغال)
+- ضع الكود حصرياً داخل كتلة بلغة widget هكذا:
+
+\`\`\`widget
+<!DOCTYPE html>
+<html>
+<head><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body style="background:#0f0f0f;color:#fff;font-family:sans-serif;padding:16px">
+  <canvas id="c"></canvas>
+  <script>new Chart(document.getElementById('c'), { type: 'bar', data: { ... } });</script>
+</body>
+</html>
+\`\`\`
+
+- الأداة التفاعلية تأتي بعد الإجابة النصية A-F — ليست بديلاً عنها
+- لا تولّد widget إلا عند الطلب الصريح من المستخدم
+
 ${styleGuide}
 
 RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;

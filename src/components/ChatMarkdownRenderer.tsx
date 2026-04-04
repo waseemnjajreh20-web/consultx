@@ -16,12 +16,13 @@ interface ChatMarkdownRendererProps {
 }
 
 interface ParsedSection {
-  type: "text" | "heading" | "accordion" | "table";
+  type: "text" | "heading" | "accordion" | "table" | "widget" | "widget-loading";
   content: string;
   title?: string;
   level?: number;
   sectionKey?: string;
   tableData?: { headers: string[]; rows: string[][] };
+  widgetCode?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,6 +161,8 @@ function parseTextContent(text: string): ParsedSection[] {
   let currentText: string[] = [];
   let tableLines: string[] = [];
   let inTable = false;
+  let inWidgetBlock = false;
+  let widgetLines: string[] = [];
 
   const flushText = () => {
     if (currentText.length > 0) {
@@ -180,6 +183,26 @@ function parseTextContent(text: string): ParsedSection[] {
   };
 
   for (const line of lines) {
+    // ── Widget block state machine ────────────────────────────────────────────
+    if (inWidgetBlock) {
+      if (line.trimEnd() === "```") {
+        flushText();
+        sections.push({ type: "widget", content: "", widgetCode: widgetLines.join("\n") });
+        inWidgetBlock = false;
+        widgetLines = [];
+      } else {
+        widgetLines.push(line);  // accumulate raw HTML/JS — never reaches renderTextLine
+      }
+      continue;
+    }
+    if (line.trimStart().startsWith("```widget")) {
+      flushTable(); flushText();
+      inWidgetBlock = true;
+      widgetLines = [];
+      continue;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     const h1Match = line.match(/^#\s+(.+)$/);
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
@@ -213,6 +236,10 @@ function parseTextContent(text: string): ParsedSection[] {
   }
   flushTable();
   flushText();
+  // If streaming ended mid-widget block (closing ``` not yet arrived), show spinner
+  if (inWidgetBlock) {
+    sections.push({ type: "widget-loading", content: "" });
+  }
   return sections;
 }
 
@@ -571,6 +598,37 @@ function HeadingCollapsible({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Widget Renderer — sandboxed iframe for AI-generated interactive tools
+// ─────────────────────────────────────────────────────────────────────────────
+function WidgetRenderer({ code }: { code: string }) {
+  return (
+    <div
+      className="my-4 rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black/40"
+      style={{ height: 480 }}
+    >
+      <iframe
+        title="ConsultX Interactive Widget"
+        srcDoc={code}
+        sandbox="allow-scripts"
+        style={{ width: "100%", height: "100%", border: "none" }}
+      />
+    </div>
+  );
+}
+
+function WidgetLoadingPlaceholder() {
+  return (
+    <div
+      className="my-4 rounded-xl border border-border/40 bg-muted/10 flex items-center justify-center gap-3 text-muted-foreground"
+      style={{ height: 120 }}
+    >
+      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin flex-shrink-0" />
+      <span className="text-sm">جارٍ توليد الأداة التفاعلية…</span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Requirement 1 — Main Component: Typography, RTL, line-height 1.8
 // ─────────────────────────────────────────────────────────────────────────────
 const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
@@ -590,6 +648,15 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
       dir={isArabic ? "rtl" : "ltr"}
     >
       {sections.map((section, index) => {
+        // ── Widget (complete — render sandboxed iframe) ───────────────────────
+        if (section.type === "widget") {
+          return <WidgetRenderer key={index} code={section.widgetCode ?? ""} />;
+        }
+        // ── Widget loading (streaming — block not yet complete) ───────────────
+        if (section.type === "widget-loading") {
+          return <WidgetLoadingPlaceholder key={index} />;
+        }
+
         // ── Collapsible H3/H4 headings ────────────────────────────────────────
         if (section.type === "collapsible-heading") {
           const s = section as { type: "collapsible-heading"; title: string; level: 3 | 4; children: ParsedSection[] };
