@@ -442,6 +442,12 @@ function validateResponse(content: string, mode: ChatMode, language: string = "a
   issues: string[];
 } {
   const issues: string[] = [];
+  
+  // Check for switch marker first - this is a valid intentional handoff, not an error
+  if (/\[SWITCH:(استشاري|تحليلي)\]/.test(content)) {
+    return { valid: true, issues: [] };
+  }
+  
   if (mode === "primary") return { valid: true, issues: [] };
   if (mode === "analysis") {
     // Analysis mode: check for Document:/Section: references or SBC refs
