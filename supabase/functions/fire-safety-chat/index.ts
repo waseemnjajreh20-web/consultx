@@ -2144,6 +2144,10 @@ serve(async (req) => {
         //               paid, ineligible.  Stale values eligible_new,
         //               eligible_existing_active, ineligible_window_closed removed.
         let launchTrialStatus = profile?.launch_trial_status ?? null;
+        // resolvedTrialEnd tracks the authoritative trial end date across all init paths.
+        // It is set wherever a trialEnd Date is computed so that trialIsActive can be
+        // evaluated even when `profile` is null (no row yet) or when Object.assign was a no-op.
+        let resolvedTrialEnd: Date | null = profile?.launch_trial_end ? new Date(profile.launch_trial_end) : null;
 
         // Auto-initialize if status not yet set (e.g. Google OAuth users whose
         // auto-trial call has not yet run)
@@ -2154,6 +2158,7 @@ serve(async (req) => {
             if (isNewUser) {
               const trialEnd = new Date(userCreatedAt.getTime() + TRIAL_DAYS_NUM * 86400000);
               launchTrialStatus = "trial_active";
+              resolvedTrialEnd  = trialEnd;
               await adminClient.from("profiles").update({
                 launch_trial_status:   "trial_active",
                 launch_trial_start:    userCreatedAt.toISOString(),
@@ -2167,6 +2172,7 @@ serve(async (req) => {
               const trialStart = now;
               const trialEnd   = new Date(now.getTime() + TRIAL_DAYS_NUM * 86400000);
               launchTrialStatus = "trial_active";
+              resolvedTrialEnd  = trialEnd;
               await adminClient.from("profiles").update({
                 launch_trial_status:   "trial_active",
                 launch_trial_start:    trialStart.toISOString(),
@@ -2180,6 +2186,7 @@ serve(async (req) => {
             launchTrialStatus = "ineligible";
             await adminClient.from("profiles").update({ launch_trial_status: "ineligible" }).eq("user_id", userId);
           }
+        } // end if (!launchTrialStatus)
 
         // Activate pending existing users on first chat
         if (launchTrialStatus === "eligible_existing_pending") {
@@ -2187,6 +2194,7 @@ serve(async (req) => {
             const trialStart = now;
             const trialEnd   = new Date(now.getTime() + TRIAL_DAYS_NUM * 86400000);
             launchTrialStatus = "trial_active";
+            resolvedTrialEnd  = trialEnd;
             await adminClient.from("profiles").update({
               launch_trial_status:   "trial_active",
               launch_trial_start:    trialStart.toISOString(),
@@ -2200,10 +2208,9 @@ serve(async (req) => {
           }
         }
 
-        const trialEndDate = profile?.launch_trial_end ? new Date(profile.launch_trial_end) : null;
         const trialIsActive =
           launchTrialStatus === "trial_active" &&
-          trialEndDate !== null && now < trialEndDate;
+          resolvedTrialEnd !== null && now < resolvedTrialEnd;
 
         if (trialIsActive) {
           // Trial users get the same 20-message daily limit as user_subscriptions
@@ -2221,7 +2228,7 @@ serve(async (req) => {
             );
           }
 
-        } else if (!trialIsActive) {
+        } else if (!hasPaidAccess && !trialIsActive) {
           // ── Mode enforcement — server-side source of truth ─────────────────────
           // Free logged-in users (expired trial, cancelled, expired paid, no sub)
           // may only use primary (main) mode. Advisory (standard) and Analytical
@@ -2418,10 +2425,16 @@ serve(async (req) => {
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
 
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
+    // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
+    // a data: {...} line split across two chunks is fully assembled before JSON.parse.
+    let lineBuffer = "";
     const transformStream = new TransformStream({
       transform(chunk, controller) {
-        const text = new TextDecoder().decode(chunk);
-        for (const line of text.split("\n")) {
+        lineBuffer += new TextDecoder().decode(chunk);
+        const lines = lineBuffer.split("\n");
+        lineBuffer = lines.pop() ?? "";          // retain incomplete trailing line for next chunk
+        for (const raw of lines) {
+          const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
           if (!line.startsWith("data: ")) continue;
           const jsonStr = line.slice(6).trim();
           if (!jsonStr) continue;
@@ -2438,6 +2451,25 @@ serve(async (req) => {
             }
           } catch { /* ignore parse errors */ }
         }
+      },
+      flush(controller) {
+        // Process any complete line remaining in the buffer when the stream ends.
+        const line = lineBuffer.endsWith("\r") ? lineBuffer.slice(0, -1) : lineBuffer;
+        if (line.startsWith("data: ")) {
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr && jsonStr !== "[DONE]") {
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (content) {
+                controller.enqueue(new TextEncoder().encode(
+                  `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`
+                ));
+              }
+            } catch { /* ignore */ }
+          }
+        }
+        controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
       },
     });
 

@@ -820,7 +820,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       duration: 3000,
       style: { borderLeft: `4px solid ${toastBorderColor}` },
     });
-  }, [chatMode, t, toast, isFreePlan]);
+  }, [chatMode, t, toast, isFreePlan, trialData]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) await addFiles(e.target.files);

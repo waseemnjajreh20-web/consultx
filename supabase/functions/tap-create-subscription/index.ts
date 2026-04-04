@@ -137,7 +137,7 @@ serve(async (req) => {
       profile?.launch_trial_status === "paid";
 
     // Create Tap Charge (1 SAR verification)
-    const origin = Deno.env.get("APP_ORIGIN") ?? "https://www.consultx.app";
+    const origin = Deno.env.get("APP_ORIGIN") ?? "https://consultx.app";
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "";
     const webhookUrl = projectRef
       ? `https://${projectRef}.supabase.co/functions/v1/tap-webhook`
