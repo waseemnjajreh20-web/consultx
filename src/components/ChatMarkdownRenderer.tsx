@@ -4,6 +4,7 @@ import {
   ClipboardList, Shield, GitCompareArrows, Scale, ListChecks, Table2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import WidgetRenderer, { WidgetLoading } from "@/components/widgets/WidgetRenderer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -16,12 +17,13 @@ interface ChatMarkdownRendererProps {
 }
 
 interface ParsedSection {
-  type: "text" | "heading" | "accordion" | "table";
+  type: "text" | "heading" | "accordion" | "table" | "widget" | "widget-loading";
   content: string;
   title?: string;
   level?: number;
   sectionKey?: string;
   tableData?: { headers: string[]; rows: string[][] };
+  widgetData?: any;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -574,8 +576,36 @@ function HeadingCollapsible({
 // Requirement 1 — Main Component: Typography, RTL, line-height 1.8
 // ─────────────────────────────────────────────────────────────────────────────
 const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
-  const rawSections = useMemo(() => parseDetailsBlocks(content), [content]);
-  const sections    = useMemo(() => groupCollapsibleHeadings(rawSections), [rawSections]);
+  const { filteredContent, widgets } = useMemo(() => {
+    let text = content;
+    const extractedWidgets: ParsedSection[] = [];
+    
+    // 1. Find closed widget blocks
+    const closedRegex = /```json\s*consultx-widget\s+([\s\S]*?)```/gi;
+    text = text.replace(closedRegex, (match, p1) => {
+      try {
+        const widgetData = JSON.parse(p1);
+        extractedWidgets.push({ type: "widget", content: "", widgetData });
+      } catch(e) {
+        // Ignore parsing errors to prevent UI crashes
+      }
+      return "";
+    });
+
+    // 2. Find open blocks (incomplete stream)
+    const openRegex = /```json\s*consultx-widget[\s\S]*$/gi;
+    const hasOpenBlock = openRegex.test(text);
+    if (hasOpenBlock) {
+      text = text.replace(openRegex, "");
+      extractedWidgets.push({ type: "widget-loading", content: "" });
+    }
+
+    return { filteredContent: text.trim(), widgets: extractedWidgets };
+  }, [content]);
+
+  const rawSections = useMemo(() => parseDetailsBlocks(filteredContent), [filteredContent]);
+  const parsedSections = useMemo(() => groupCollapsibleHeadings(rawSections), [rawSections]);
+  const sections = useMemo(() => [...parsedSections, ...widgets] as ParsedSection[], [parsedSections, widgets]);
   const isArabic = /[\u0600-\u06FF]/.test(content.slice(0, 300));
 
   return (
@@ -590,6 +620,14 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
       dir={isArabic ? "rtl" : "ltr"}
     >
       {sections.map((section, index) => {
+        // ── Widget Rendering ──────────────────────────────────────────────────
+        if (section.type === "widget") {
+          return <WidgetRenderer key={index} widgetData={section.widgetData} />;
+        }
+        if (section.type === "widget-loading") {
+          return <WidgetLoading key={index} />;
+        }
+
         // ── Collapsible H3/H4 headings ────────────────────────────────────────
         if (section.type === "collapsible-heading") {
           const s = section as { type: "collapsible-heading"; title: string; level: 3 | 4; children: ParsedSection[] };
