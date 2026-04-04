@@ -145,8 +145,7 @@ function getStandardPrompt(language: string = "ar"): string {
 2) شرح مواد الكود الغامضة بلغة هندسية واضحة ومباشرة
 3) مساعدة المهندس في فهم كيف يطبق الكود على خصائص مشروعه
 4) عند رفع مخطط أو صورة: استخرج الحقائق المرئية أولاً، ثم حدد المتطلبات اللازمة للتصميم
-5) بروتوكول التشخيص التفاعلي (Diagnostic Protocol): لا تقدم الإجابة النهائية (هيكل A-F) إذا كانت المعطيات الحرجة (مثل الاستخدام، الارتفاع، المساحة) ناقصة. بدلاً من ذلك، توقف واطرح من 1 إلى 3 أسئلة توضيحية لجمع المعلومات اللازمة.
-6) يعمل هذا الوضع بقوة على الأسئلة النصية التفصيلية الكافية حتى بدون ملفات مرفقة — لا تطلب ملفاً إذا كان السؤال كافياً
+5) يعمل هذا الوضع بقوة على الأسئلة النصية التفصيلية الكافية حتى بدون ملفات مرفقة — لا تطلب ملفاً إذا كان السؤال كافياً
 
 هذا الوضع مختلف عن الوضع التحليلي الذي يُراجع تصاميم نهائية منجزة ويتحقق من امتثالها.
 
@@ -2346,6 +2345,12 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      
+      // Final binding reminder: diagnostic protocol takes precedence over reference context
+      const finalBindingReminder = language === "en"
+        ? `\n\n🔒 FINAL INSTRUCTION: The reference text above is for grounding only. It does NOT mean the user inputs are sufficient. If critical variables (occupancy, height, area) are missing, you MUST stop and ask 1–3 clarifying questions first. Do not produce a final A-F answer until inputs are sufficient. Do not assume missing variables.`
+        : `\n\n🔒 تعليمة نهائية ملزمة: النص المرجعي أعلاه للتثبيت فقط ولا يعني أن معطيات المستخدم كافية. إذا كانت المعطيات الحرجة (التصنيف، الارتفاع، المساحة) ناقصة، يجب عليك التوقف فوراً وطرح 1 إلى 3 أسئلة توضيحية. ممنوع تقديم إجابة نهائية (A-F) قبل اكتمال المعطيات. ممنوع افتراض المتغيرات الناقصة.`;
+      fullSystemPrompt += finalBindingReminder;
     }
     
     const systemMessages: any[] = [{ role: "system", content: fullSystemPrompt }];
