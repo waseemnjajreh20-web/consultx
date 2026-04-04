@@ -185,7 +185,7 @@ function parseTextContent(text: string): ParsedSection[] {
   for (const line of lines) {
     // ── Widget block state machine ────────────────────────────────────────────
     if (inWidgetBlock) {
-      if (line.trimEnd() === "```") {
+      if (line.trim() === "```") {
         flushText();
         sections.push({ type: "widget", content: "", widgetCode: widgetLines.join("\n") });
         inWidgetBlock = false;
