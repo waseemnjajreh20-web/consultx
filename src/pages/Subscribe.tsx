@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreditCard, Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,14 @@ const Subscribe = () => {
   const [processing, setProcessing] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup resetCardSDK timer on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -145,7 +153,8 @@ const Subscribe = () => {
     setCardReady(false);
     const cardEl = document.getElementById("card-element");
     if (cardEl) cardEl.innerHTML = "";
-    setTimeout(() => initTapCard(), 400);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => initTapCard(), 400);
   };
 
   const handleSubscribe = async () => {
