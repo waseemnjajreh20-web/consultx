@@ -45,9 +45,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // DB query if a user_subscriptions row already exists. Safe for every
         // auth method and returning users.
         if (event === "SIGNED_IN" && session?.access_token) {
+          // auto-trial: idempotent — creates user_subscriptions trialing row if absent.
           supabase.functions.invoke("auto-trial", {
             headers: { Authorization: `Bearer ${session.access_token}` },
           }).catch(() => {}); // Fire-and-forget — never block auth state update
+          // corporate-trial: idempotent — creates profiles row if absent.
+          // Must run here (not only in Auth.tsx signup path) to cover email-confirmed
+          // signups where Auth.tsx had no session at the time signUp() returned.
+          supabase.functions.invoke("corporate-trial", {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          }).catch(() => {});
         }
       }
     );

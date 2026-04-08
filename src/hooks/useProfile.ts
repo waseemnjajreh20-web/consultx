@@ -57,6 +57,12 @@ export function useProfile() {
 
   const isFreePlan = () => {
     if (!profile) return true;
+    // Active launch trial always overrides free-plan classification regardless of plan_type.
+    if (
+      profile.launch_trial_status === "trial_active" &&
+      profile.launch_trial_end &&
+      new Date(profile.launch_trial_end) > new Date()
+    ) return false;
     if (profile.plan_type === "engineer" && profile.trial_end) {
       return new Date(profile.trial_end) < new Date();
     }

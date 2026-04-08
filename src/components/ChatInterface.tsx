@@ -423,16 +423,13 @@ function formatSourceName(fileName: string, lang: string = "ar"): string {
 }
 
 // ===== SWITCH MARKER PARSER =====
-const SWITCH_PATTERN = /\[SWITCH:(استشاري|تحليلي)\]/g;
-
+// Uses per-call regex literals — no module-level /g state, no lastIndex leakage.
 function hasSwitchMarker(content: string): { found: boolean; targetMode: ChatMode | null; cleanContent: string } {
-  const match = SWITCH_PATTERN.exec(content);
-  SWITCH_PATTERN.lastIndex = 0; // reset
+  const match = /\[SWITCH:(استشاري|تحليلي)\]/.exec(content);
   if (!match) return { found: false, targetMode: null, cleanContent: content };
   const modeMap: Record<string, ChatMode> = { "استشاري": "standard", "تحليلي": "analysis" };
   const targetMode = modeMap[match[1]] || null;
-  const cleanContent = content.replace(SWITCH_PATTERN, "").trim();
-  SWITCH_PATTERN.lastIndex = 0;
+  const cleanContent = content.replace(/\[SWITCH:(استشاري|تحليلي)\]/g, "").trim();
   return { found: true, targetMode, cleanContent };
 }
 
@@ -1227,31 +1224,41 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                     border: "1px solid rgba(0,212,255,0.2)",
                     backdropFilter: "blur(12px)",
                     boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-                    minWidth: "220px",
+                    minWidth: "240px",
                     top: "calc(100% + 8px)",
                     right: 0,
-                    whiteSpace: "nowrap",
                   }}
                 >
                   <div className="flex items-start gap-2">
                     <Lock size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "hsl(195 85% 50%)" }} />
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium text-foreground mb-1 text-xs">
                         {language === "en"
                           ? `${modeLockTarget === "standard" ? "Advisory Mode" : "Analysis Mode"} is available on the Engineer plan`
                           : `${modeLockTarget === "standard" ? "الوضع الاستشاري" : "الوضع التحليلي"} متاح في باقة مهندس`}
                       </p>
-                      <button
-                        onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
-                        className="text-xs font-semibold"
-                        style={{ color: "hsl(195 85% 50%)" }}
-                      >
-                        {language === "en" ? "Upgrade →" : "ترقية ←"}
-                      </button>
+                      {/* Pro trial offer */}
+                      <div className="mt-2 pt-2 border-t border-white/10">
+                        <p className="text-xs font-semibold mb-0.5" style={{ color: "hsl(195 85% 50%)" }}>
+                          {language === "en" ? "Try Pro free for 7 days" : "جرّب برو مجانًا لمدة 7 أيام"}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-2 leading-snug">
+                          {language === "en"
+                            ? "Unlock Advisory & Analysis modes. Worth SAR 254."
+                            : "افتح الوضع الاستشاري والتحليلي مجانًا لمدة أسبوع. قيمة الباقة 254 ر.س"}
+                        </p>
+                        <button
+                          onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
+                          className="w-full text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 hover:opacity-90"
+                          style={{ background: "hsl(195 85% 50%)", color: "#0a0a0a" }}
+                        >
+                          {language === "en" ? "Start Free Trial" : "ابدأ التجربة المجانية"}
+                        </button>
+                      </div>
                     </div>
                     <button
                       onClick={() => setModeLockTarget(null)}
-                      className="text-muted-foreground hover:text-foreground ms-auto"
+                      className="text-muted-foreground hover:text-foreground ms-auto shrink-0"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1265,6 +1272,21 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             {/* Launch trial days remaining pill */}
             {trialData?.trial_active && !subscription?.active && (
               <TrialDaysIndicator daysRemaining={trialData.days_remaining} />
+            )}
+            {/* Pro trial promo pill — visible to free users with no active trial or paid plan */}
+            {!trialData?.trial_active && !subscription?.active && isFreePlan() && (
+              <button
+                onClick={() => navigate("/subscribe")}
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200 hover:opacity-90 animate-fade-in"
+                style={{
+                  background: "rgba(0,212,255,0.12)",
+                  color: "#00D4FF",
+                  border: "1px solid rgba(0,212,255,0.28)",
+                }}
+              >
+                <span>⚡</span>
+                <span>{language === "ar" ? "جرّب برو مجانًا — 7 أيام" : "Try Pro free — 7 days"}</span>
+              </button>
             )}
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground hover:text-foreground">
@@ -1425,13 +1447,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               const message = item as Message;
               const msgMode = message.mode || chatMode;
               
-              // Parse switch markers for assistant messages
+              // Parse switch markers for assistant messages.
+              // Gated on msgMode === "primary": SWITCH tokens are only emitted by the primary-mode
+              // system prompt, so advisory/analysis messages must never render a switch button.
+              // message.mode is stamped at creation/load time, making this a safe per-message check.
               let displayContent = message.content;
               let switchTarget: ChatMode | null = null;
-              if (message.role === "assistant") {
+              if (message.role === "assistant" && msgMode === "primary") {
                 const parsed = hasSwitchMarker(message.content);
                 if (parsed.found) {
-                  displayContent = parsed.cleanContent;
+                  displayContent = parsed.cleanContent ||
+                    (language === "en" ? "Tap below to switch modes." : "انقر أدناه للانتقال إلى الوضع المقترح.");
                   switchTarget = parsed.targetMode;
                 }
               }

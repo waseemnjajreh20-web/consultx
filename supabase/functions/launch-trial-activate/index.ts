@@ -71,27 +71,55 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const isPaidActive =
-      (sub?.status === "active" && sub.current_period_end && now < new Date(sub.current_period_end)) ||
-      (sub?.status === "trialing" && sub.trial_end && now < new Date(sub.trial_end));
+    // ── 1a. Fully paid active subscription (not a trial) ───────────────────
+    const isFullyPaid =
+      sub?.status === "active" &&
+      sub.current_period_end &&
+      now < new Date(sub.current_period_end);
 
-    if (isPaidActive) {
-      // Ensure paid marker in profile
+    if (isFullyPaid) {
       await adminClient.from("profiles")
         .update({ launch_trial_status: "paid" })
         .eq("user_id", userId);
-
       return new Response(JSON.stringify({
-        access_state: "paid_active",
-        is_paid: true,
-        trial_active: false,
+        access_state:     "paid_active",
+        is_paid:          true,
+        trial_active:     false,
         trial_started_at: null,
-        trial_ends_at: null,
-        days_remaining: 0,
-        hours_remaining: 0,
+        trial_ends_at:    null,
+        days_remaining:   0,
+        hours_remaining:  0,
         show_welcome_banner: false,
         recommended_plan: "pro",
-        upgrade_context: null,
+        upgrade_context:  null,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ── 1b. Active trialing subscription (created by auto-trial) ───────────
+    // Trialing ≠ paid — return trial_active:true so the frontend unlocks modes.
+    const isSubTrialing =
+      sub?.status === "trialing" &&
+      sub.trial_end &&
+      now < new Date(sub.trial_end);
+
+    if (isSubTrialing) {
+      const subTrialEnd = new Date(sub!.trial_end!);
+      await adminClient.from("profiles").update({
+        launch_trial_status:   "trial_active",
+        launch_trial_end:      subTrialEnd.toISOString(),
+        launch_trial_consumed: true,
+      }).eq("user_id", userId);
+      return new Response(JSON.stringify({
+        access_state:     "trial_active",
+        is_paid:          false,
+        trial_active:     true,
+        trial_started_at: null,
+        trial_ends_at:    subTrialEnd.toISOString(),
+        days_remaining:   daysUntil(subTrialEnd, now),
+        hours_remaining:  hoursUntil(subTrialEnd, now),
+        show_welcome_banner: false,
+        recommended_plan: "pro",
+        upgrade_context:  null,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

@@ -16,7 +16,7 @@ const FREE_EMAIL_DOMAINS = new Set([
 const LAUNCH_PROMO = {
   enabled: true,
   name: "launch_engineer_trial",
-  trialDays: 3,
+  trialDays: 7,
   expiryDate: new Date("2026-06-30T23:59:59Z"),
   planGranted: "engineer",
 };
