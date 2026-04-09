@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.process-subscription-renewal]
 verify_jwt = false
+
+[functions.admin-manage-user]
+verify_jwt = false
+
+[functions.launch-trial-activate]
+verify_jwt = false
