@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
@@ -27,7 +27,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
-import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
+import SourcePanel, { CLOSED_PANEL, type SourcePanelState } from "./SourcePanel";
 import { resolveAllSources, formatSourceLabel } from "@/utils/sourceMetadata";
 
 interface Message {
@@ -65,17 +65,6 @@ type ChatItem = Message | DividerMessage | UpgradeItem;
 
 interface ChatInterfaceProps {
   onBack: () => void;
-  /**
-   * When set, source-panel state is synced to parent (AppShell) which renders
-   * the source panel as a 3rd pane. ChatInterface will NOT render its own
-   * SourcePanel overlay when this prop is provided.
-   */
-  onSourceStateChange?: (state: SourcePanelState) => void;
-  /**
-   * Populated by ChatInterface so the parent can imperatively trigger
-   * the conversation history modal (e.g. from the sidebar).
-   */
-  historyTriggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 type ChatMode = "primary" | "standard" | "analysis";
@@ -436,13 +425,16 @@ function formatSourceName(fileName: string, lang: string = "ar"): string {
 }
 
 // ===== SWITCH MARKER PARSER =====
-// Uses per-call regex literals — no module-level /g state, no lastIndex leakage.
+const SWITCH_PATTERN = /\[SWITCH:(استشاري|تحليلي)\]/g;
+
 function hasSwitchMarker(content: string): { found: boolean; targetMode: ChatMode | null; cleanContent: string } {
-  const match = /\[SWITCH:(استشاري|تحليلي)\]/.exec(content);
+  const match = SWITCH_PATTERN.exec(content);
+  SWITCH_PATTERN.lastIndex = 0; // reset
   if (!match) return { found: false, targetMode: null, cleanContent: content };
   const modeMap: Record<string, ChatMode> = { "استشاري": "standard", "تحليلي": "analysis" };
   const targetMode = modeMap[match[1]] || null;
-  const cleanContent = content.replace(/\[SWITCH:(استشاري|تحليلي)\]/g, "").trim();
+  const cleanContent = content.replace(SWITCH_PATTERN, "").trim();
+  SWITCH_PATTERN.lastIndex = 0;
   return { found: true, targetMode, cleanContent };
 }
 
@@ -646,7 +638,7 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
 }
 
 // ===== MAIN COMPONENT =====
-const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatInterfaceProps) => {
+const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userName =
@@ -681,17 +673,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
-  const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
-
-  // Sync source-panel state to parent (AppShell renders it as 3rd pane)
-  useEffect(() => { onSourceStateChange?.(sourcePanel); }, [sourcePanel, onSourceStateChange]);
-
-  // Expose history-modal trigger to parent sidebar
-  useEffect(() => {
-    if (historyTriggerRef) historyTriggerRef.current = () => setShowHistory(true);
-  }, [historyTriggerRef]);
-
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
   const waitingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1247,41 +1230,31 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                     border: "1px solid rgba(0,212,255,0.2)",
                     backdropFilter: "blur(12px)",
                     boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-                    minWidth: "240px",
+                    minWidth: "220px",
                     top: "calc(100% + 8px)",
                     right: 0,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   <div className="flex items-start gap-2">
                     <Lock size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "hsl(195 85% 50%)" }} />
-                    <div className="flex-1">
+                    <div>
                       <p className="font-medium text-foreground mb-1 text-xs">
                         {language === "en"
                           ? `${modeLockTarget === "standard" ? "Advisory Mode" : "Analysis Mode"} is available on the Engineer plan`
                           : `${modeLockTarget === "standard" ? "الوضع الاستشاري" : "الوضع التحليلي"} متاح في باقة مهندس`}
                       </p>
-                      {/* Pro trial offer */}
-                      <div className="mt-2 pt-2 border-t border-white/10">
-                        <p className="text-xs font-semibold mb-0.5" style={{ color: "hsl(195 85% 50%)" }}>
-                          {language === "en" ? "Try Pro free for 7 days" : "جرّب برو مجانًا لمدة 7 أيام"}
-                        </p>
-                        <p className="text-xs text-muted-foreground mb-2 leading-snug">
-                          {language === "en"
-                            ? "Unlock Advisory & Analysis modes. Worth SAR 254."
-                            : "افتح الوضع الاستشاري والتحليلي مجانًا لمدة أسبوع. قيمة الباقة 254 ر.س"}
-                        </p>
-                        <button
-                          onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
-                          className="w-full text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 hover:opacity-90"
-                          style={{ background: "hsl(195 85% 50%)", color: "#0a0a0a" }}
-                        >
-                          {language === "en" ? "Start Free Trial" : "ابدأ التجربة المجانية"}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
+                        className="text-xs font-semibold"
+                        style={{ color: "hsl(195 85% 50%)" }}
+                      >
+                        {language === "en" ? "Upgrade →" : "ترقية ←"}
+                      </button>
                     </div>
                     <button
                       onClick={() => setModeLockTarget(null)}
-                      className="text-muted-foreground hover:text-foreground ms-auto shrink-0"
+                      className="text-muted-foreground hover:text-foreground ms-auto"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1295,21 +1268,6 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             {/* Launch trial days remaining pill */}
             {trialData?.trial_active && !subscription?.active && (
               <TrialDaysIndicator daysRemaining={trialData.days_remaining} />
-            )}
-            {/* Pro trial promo pill — visible to free users with no active trial or paid plan */}
-            {!trialData?.trial_active && !subscription?.active && isFreePlan() && (
-              <button
-                onClick={() => navigate("/subscribe")}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200 hover:opacity-90 animate-fade-in"
-                style={{
-                  background: "rgba(0,212,255,0.12)",
-                  color: "#00D4FF",
-                  border: "1px solid rgba(0,212,255,0.28)",
-                }}
-              >
-                <span>⚡</span>
-                <span>{language === "ar" ? "جرّب برو مجانًا — 7 أيام" : "Try Pro free — 7 days"}</span>
-              </button>
             )}
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground hover:text-foreground">
@@ -1470,17 +1428,13 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
               const message = item as Message;
               const msgMode = message.mode || chatMode;
               
-              // Parse switch markers for assistant messages.
-              // Gated on msgMode === "primary": SWITCH tokens are only emitted by the primary-mode
-              // system prompt, so advisory/analysis messages must never render a switch button.
-              // message.mode is stamped at creation/load time, making this a safe per-message check.
+              // Parse switch markers for assistant messages
               let displayContent = message.content;
               let switchTarget: ChatMode | null = null;
-              if (message.role === "assistant" && msgMode === "primary") {
+              if (message.role === "assistant") {
                 const parsed = hasSwitchMarker(message.content);
                 if (parsed.found) {
-                  displayContent = parsed.cleanContent ||
-                    (language === "en" ? "Tap below to switch modes." : "انقر أدناه للانتقال إلى الوضع المقترح.");
+                  displayContent = parsed.cleanContent;
                   switchTarget = parsed.targetMode;
                 }
               }
@@ -1562,23 +1516,29 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                         {message.sources && message.sources.length > 0 && (() => {
                           const resolved = resolveAllSources(message.sources);
                           return (
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
-                              <span className="text-xs text-muted-foreground flex-shrink-0">{t("sourcesLabel")}</span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-3 border-t border-border/30">
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {t("sourcesLabel")}
+                              </span>
                               {resolved.map((meta) => (
                                 <button
                                   key={meta.pdfPath ?? meta.sourceFile}
-                                  onClick={() => {
-                                    if (meta.pdfUrl) {
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: resolved.length === 1 ? meta : null });
-                                    } else {
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
-                                    }
+                                  onClick={() => setSourcePanel({
+                                    open: true,
+                                    sources: message.sources!,
+                                    activeMeta: resolved.length === 1 ? meta : null,
+                                  })}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs transition-colors"
+                                  style={{
+                                    background: "rgba(0,212,255,0.07)",
+                                    border: "1px solid rgba(0,212,255,0.18)",
+                                    color: "#00D4FF",
                                   }}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
-                                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)" }}
-                                  title={meta.title}
+                                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,212,255,0.14)")}
+                                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,212,255,0.07)")}
+                                  title={language === "ar" ? "فتح المصدر" : "Open source"}
                                 >
-                                  {formatSourceLabel(meta, language as "ar" | "en")}
+                                  {formatSourceLabel(meta, language)}
                                 </button>
                               ))}
                             </div>
@@ -1735,16 +1695,14 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       {/* Bottom padding for mobile nav */}
       {isMobile && <div className="h-16" />}
 
-      {/* Source PDF viewer — only rendered here when not managed by AppShell */}
-      {!onSourceStateChange && (
-        <SourcePanel
-          state={sourcePanel}
-          language={language as "ar" | "en"}
-          onClose={() => setSourcePanel(CLOSED_PANEL)}
-          onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
-          onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
-        />
-      )}
+      {/* Source Panel — slide-over, mounted at root of ChatInterface */}
+      <SourcePanel
+        state={sourcePanel}
+        language={language}
+        onClose={() => setSourcePanel(CLOSED_PANEL)}
+        onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
+        onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
+      />
     </div>
   );
 };

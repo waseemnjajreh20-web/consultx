@@ -1024,7 +1024,7 @@ const Account = () => {
       <div className="bg-card/60 rounded-xl border border-border/40 p-6">
         <h2 className="text-lg font-semibold mb-4">{t("prefsStandardsTitle")}</h2>
         <div className="flex flex-wrap gap-2">
-          {["SBC 201", "SBC 801", "NFPA 13", "NFPA 72", "NFPA 101", "SFPE"].map(
+          {["SBC 201", "SBC 801"].map(
             (std) => {
               const isSelected = preferences.preferred_standards.includes(std);
               return (

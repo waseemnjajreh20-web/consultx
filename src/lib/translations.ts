@@ -36,7 +36,7 @@ export const translations = {
     // Hero
     heroTitle: "إجابة مرجعية دقيقة خلال ثوانٍ — بدلاً من ساعات بحث",
     heroSubtitle: "اطرح سؤالك، يحلّله ConsultX ويردّ بإجابة مستشهدة من الكود مباشرةً — يختصر وقتك ويرفع دقة قرارك",
-    heroTrustBadge: "مستند إلى · SBC 201 · SBC 801 · NFPA 13 · NFPA 101",
+    heroTrustBadge: "مستند إلى · SBC 201 · SBC 801 · الدفاع المدني",
     startConsultation: "ابدأ الاستشارة الآن",
     signInToConsult: "سجل دخول للاستشارة",
     learnMore: "تعرف على المزيد",
@@ -47,7 +47,7 @@ export const translations = {
     feature2Title: "تحليل المخططات",
     feature2Desc: "ارفع المخطط واحصل على مراجعة مبنية على الكود فوراً",
     feature3Title: "قرار مدعوم بمعايير معتمدة",
-    feature3Desc: "توافق تام مع NFPA والكود السعودي — ثقة في كل استشارة",
+    feature3Desc: "توافق تام مع الكود السعودي — ثقة في كل استشارة",
     
     // Footer
     copyright: "© 2026 ConsultX - جميع الحقوق محفوظة - Eng.WaseemNjajreh",
@@ -70,7 +70,7 @@ export const translations = {
     previousConversations: "المحادثات السابقة",
     welcomeTitle: "مرحباً بك في ConsultX",
     welcomeSubtitle: "شارك مشروعك أو ارفع مخططك وسأفسر لك مواد الكود المنطبقة بالتفصيل",
-    welcomeSubtitleAnalysis: "ارفع مخططاتك أو صف تصميمك — سأتحقق من امتثاله لمتطلبات الكود السعودي و NFPA",
+    welcomeSubtitleAnalysis: "ارفع مخططاتك أو صف تصميمك — سأتحقق من امتثاله لمتطلبات الكود السعودي",
     welcomeSubtitlePrimary: "أهلاً! أنا مستشارك للحماية من الحرائق. كيف أقدر أساعدك اليوم؟",
     primaryMode: "وضع الاستشارة السريعة",
     advisoryMode: "الوضع الاستشاري",
@@ -84,12 +84,12 @@ export const translations = {
     placeholder_standard: "صف مشروعك أو ارفع مخططك للمراجعة...",
     placeholder_analysis: "ارفع مخططك أو صف تصميمك للتحقق من الامتثال...",
     sourcesLabel: "المصادر:",
-    referencesNote: "ConsultX يستخدم SBC 201، SBC 801، NFPA كمراجع أساسية",
+    referencesNote: "ConsultX يستخدم SBC 201 و SBC 801 كمراجع أساسية",
     
     // Loading states (domain-specific thinking indicators)
     connecting: "يتصل بقاعدة المعرفة...",
     thinking: "يقرأ الكود السعودي...",
-    writing: "يقارن مع معايير NFPA...",
+    writing: "يصيغ الاستشارة الهندسية...",
     processing: "يصيغ التقرير...",
     retrying: "إعادة المحاولة",
     
@@ -142,10 +142,10 @@ export const translations = {
 
     // Dynamic suggestion pools — Analysis
     suggestion_analysis_1: "راجع هذا المخطط وتحقق من امتثاله لمتطلبات مخارج الطوارئ وفق SBC 201",
-    suggestion_analysis_2: "هل يمتثل تصميم نظام الرش التلقائي في مخططي لمتطلبات NFPA 13؟",
+    suggestion_analysis_2: "هل يمتثل تصميم نظام الرش التلقائي في مخططي لمتطلبات SBC 801؟",
     suggestion_analysis_3: "ارفع مخطط الطابق وسأتحقق من كفاية عدد المخارج والمسافات بينها",
     suggestion_analysis_4: "هل مسافات السفر إلى المخارج في تصميمي متوافقة مع الكود السعودي؟",
-    suggestion_analysis_5: "راجع مواصفات نظام الإنذار في مشروعي وتحقق من مطابقته لـ NFPA 72",
+    suggestion_analysis_5: "راجع مواصفات نظام الإنذار في مشروعي وتحقق من امتثاله لمتطلبات SBC 801",
     suggestion_analysis_6: "هل التفاصيل الإنشائية توفر تصنيف المقاومة للحريق المطلوب لنوع البناء؟",
     suggestion_analysis_7: "ارفع مخطط الحريق وسأحدد ما يحتاج تعديلاً قبل تقديم طلب الترخيص",
     suggestion_analysis_8: "تحقق من تصميم نظام التحكم بالدخان: هل يستوفي متطلبات الكود السعودي؟",
@@ -294,8 +294,8 @@ export const translations = {
 
     // ── Hero Rewrite ──
     heroHeadline: "إجابات هندسية دقيقة من كود الحماية من الحرائق",
-    heroSubline: "ConsultX يُحيل كل إجابة إلى الفقرة الدقيقة من SBC أو NFPA — في ثوانٍ لا ساعات.",
-    heroTrustLine: "مبني على SBC 201، SBC 801، NFPA، والدفاع المدني",
+    heroSubline: "ConsultX يُحيل كل إجابة إلى الفقرة الدقيقة من SBC 201 أو SBC 801 — في ثوانٍ لا ساعات.",
+    heroTrustLine: "مبني على SBC 201، SBC 801، والدفاع المدني",
 
     // ── Problem / Solution ──
     problemTitle: "التحديات اليومية للمهندس",
@@ -312,7 +312,7 @@ export const translations = {
     benefit1Title: "دقة مرجعية كاملة",
     benefit1Desc: "كل إجابة تُحيل إلى الفقرة الدقيقة من الكود — لا تخمين ولا غموض",
     benefit2Title: "تغطية شاملة للمعايير",
-    benefit2Desc: "SBC 201 وSBC 801 وNFPA وأنظمة الدفاع المدني في مكان واحد",
+    benefit2Desc: "SBC 201 وSBC 801 وأنظمة الدفاع المدني في مكان واحد",
     benefit3Title: "تحليل المخططات بصرياً",
     benefit3Desc: "ارفع مخططاتك للحصول على مراجعة مدعومة بالذكاء الاصطناعي",
     benefit4Title: "ثلاثة أوضاع استشارة",
@@ -326,7 +326,7 @@ export const translations = {
     // ── Trust Strip ──
     trustTitle: "موثّق بالمعايير الرسمية",
     trust1Label: "SBC 201 & 801",
-    trust2Label: "+70 معياراً NFPA",
+    trust2Label: "تفسيرات SBC",
     trust3Label: "الدفاع المدني",
     trust4Label: "+5,700 عقدة معرفية",
 
@@ -343,11 +343,11 @@ export const translations = {
 
     // ── FAQ (6 items redesign) ──
     faq1Q: "ما هو ConsultX؟",
-    faq1A: "ConsultX مستشار هندسي ذكي مخصص للحماية من الحرائق، يُجيب على أسئلتك الهندسية بإحالة مباشرة لفقرات كود البناء السعودي ومعايير NFPA.",
+    faq1A: "ConsultX مستشار هندسي ذكي مخصص للحماية من الحرائق، يُجيب على أسئلتك الهندسية بإحالة مباشرة لفقرات SBC 201 وSBC 801.",
     faq2Q: "ما مدى موثوقية الإجابات؟",
     faq2A: "كل إجابة تُحيل إلى الفقرة الدقيقة من المعيار المعتمد. ConsultX لا يخمّن — يستشهد بالمصدر الأصلي في كل مرة.",
     faq3Q: "ماذا يشمل كل اشتراك؟",
-    faq3A: "جميع الباقات تشمل الوصول لأكواد SBC وNFPA وأنظمة الدفاع المدني. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
+    faq3A: "جميع الباقات تشمل الوصول لأكواد SBC 201 وSBC 801 وأنظمة الدفاع المدني. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
     faq4Q: "ماذا يحدث بعد انتهاء التجربة؟",
     faq4A: "بعد 7 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
     faq5Q: "هل يمكنني رفع المخططات للتحليل؟",
@@ -356,7 +356,7 @@ export const translations = {
     faq6A: "نعم، يمكنك الإلغاء في أي وقت من صفحة حسابك. يستمر وصولك حتى نهاية فترة الاشتراك المدفوعة.",
 
     // ── SiteFooter ──
-    footerSummary: "مستشار هندسي ذكي للحماية من الحرائق — مبني على كود البناء السعودي ومعايير NFPA.",
+    footerSummary: "مستشار هندسي ذكي للحماية من الحرائق — مبني على SBC 201 وSBC 801.",
     footerProduct: "المنتج",
     footerReferences: "المراجع",
     footerAccount: "الحساب",
@@ -371,7 +371,7 @@ export const translations = {
     footerPricing: "الأسعار",
     footerSbc201: "SBC 201 — الحماية من الحريق",
     footerSbc801: "SBC 801 — سلامة الحياة",
-    footerNfpa: "معايير NFPA",
+    footerNfpa: "أنظمة الدفاع المدني",
     footerCivilDefense: "الدفاع المدني",
 
     // ── Legal Pages ──
@@ -434,8 +434,8 @@ export const translations = {
     
     // Hero
     heroTitle: "Code-Backed Fire Safety Answers in Seconds",
-    heroSubtitle: "Ask your question. ConsultX retrieves the exact SBC or NFPA clause and delivers a cited answer — faster than any manual search",
-    heroTrustBadge: "Powered by · SBC 201 · SBC 801 · NFPA 13 · NFPA 101",
+    heroSubtitle: "Ask your question. ConsultX retrieves the exact SBC 201 or SBC 801 clause and delivers a cited answer — faster than any manual search",
+    heroTrustBadge: "Powered by · SBC 201 · SBC 801 · Civil Defense",
     startConsultation: "Start Consultation",
     signInToConsult: "Sign in to Consult",
     learnMore: "Learn More",
@@ -446,7 +446,7 @@ export const translations = {
     feature2Title: "Plan Analysis",
     feature2Desc: "Upload a drawing and get an instant code-based review",
     feature3Title: "Standards-Backed Decisions",
-    feature3Desc: "Full compliance with NFPA and Saudi Building Code — confidence in every answer",
+    feature3Desc: "Full compliance with Saudi Building Code — confidence in every answer",
     
     // Footer
     copyright: "© 2026 ConsultX - All Rights Reserved - Eng.WaseemNjajreh",
@@ -469,7 +469,7 @@ export const translations = {
     previousConversations: "Previous Conversations",
     welcomeTitle: "Welcome to ConsultX",
     welcomeSubtitle: "Share your project or upload a plan and I'll explain the applicable code clauses in detail",
-    welcomeSubtitleAnalysis: "Upload your drawings or describe your design — I'll verify compliance with Saudi Building Code and NFPA requirements",
+    welcomeSubtitleAnalysis: "Upload your drawings or describe your design — I'll verify compliance with Saudi Building Code requirements",
     welcomeSubtitlePrimary: "Hello! I'm your fire safety consultant. How can I help you today?",
     primaryMode: "Quick Consultation Mode",
     advisoryMode: "Advisory Mode",
@@ -483,12 +483,12 @@ export const translations = {
     placeholder_standard: "Describe your project or upload a plan for review...",
     placeholder_analysis: "Upload your drawing or describe your design for compliance review...",
     sourcesLabel: "Sources:",
-    referencesNote: "ConsultX uses SBC 201, SBC 801, NFPA as primary references",
+    referencesNote: "ConsultX uses SBC 201 and SBC 801 as primary references",
     
     // Loading states (domain-specific thinking indicators)
     connecting: "Connecting to knowledge base...",
     thinking: "Reading Saudi Building Code...",
-    writing: "Cross-referencing NFPA standards...",
+    writing: "Drafting engineering response...",
     processing: "Drafting the report...",
     retrying: "Retrying",
     
@@ -541,10 +541,10 @@ export const translations = {
 
     // Dynamic suggestion pools — Analysis
     suggestion_analysis_1: "Review this plan and verify compliance with emergency exit requirements per SBC 201",
-    suggestion_analysis_2: "Does my sprinkler system design meet NFPA 13 requirements?",
+    suggestion_analysis_2: "Does my sprinkler system design meet SBC 801 requirements?",
     suggestion_analysis_3: "Upload a floor plan and I'll verify the exit count and travel distances are code-compliant",
     suggestion_analysis_4: "Are the travel distances to exits in my design within code limits?",
-    suggestion_analysis_5: "Review my fire alarm system specs and verify compliance with NFPA 72",
+    suggestion_analysis_5: "Review my fire alarm system specs and verify compliance with SBC 801",
     suggestion_analysis_6: "Do the structural details provide the required fire-resistance rating for the construction type?",
     suggestion_analysis_7: "Upload the fire plan and I'll identify what needs revision before permit submission",
     suggestion_analysis_8: "Verify this smoke control system design: does it meet Saudi Building Code requirements?",
@@ -693,8 +693,8 @@ export const translations = {
 
     // ── Hero Rewrite ──
     heroHeadline: "Precise Engineering Answers from Fire Safety Code",
-    heroSubline: "ConsultX cites every answer to the exact paragraph of SBC or NFPA — in seconds, not hours.",
-    heroTrustLine: "Built on SBC 201, SBC 801, NFPA, and Civil Defense standards",
+    heroSubline: "ConsultX cites every answer to the exact paragraph of SBC 201 or SBC 801 — in seconds, not hours.",
+    heroTrustLine: "Built on SBC 201, SBC 801, and Civil Defense standards",
 
     // ── Problem / Solution ──
     problemTitle: "The Engineer's Daily Challenges",
@@ -711,7 +711,7 @@ export const translations = {
     benefit1Title: "Full Citation Accuracy",
     benefit1Desc: "Every answer links to the exact code clause — no guessing, no ambiguity",
     benefit2Title: "Multi-Standard Coverage",
-    benefit2Desc: "SBC 201, SBC 801, NFPA, and Civil Defense regulations in one place",
+    benefit2Desc: "SBC 201, SBC 801, and Civil Defense regulations in one place",
     benefit3Title: "Visual Plan Analysis",
     benefit3Desc: "Upload your drawings for AI-assisted code compliance review",
     benefit4Title: "Three Consultation Modes",
@@ -725,7 +725,7 @@ export const translations = {
     // ── Trust Strip ──
     trustTitle: "Backed by Official Standards",
     trust1Label: "SBC 201 & 801",
-    trust2Label: "70+ NFPA Standards",
+    trust2Label: "SBC Commentary",
     trust3Label: "Civil Defense",
     trust4Label: "5,700+ Knowledge Nodes",
 
@@ -742,11 +742,11 @@ export const translations = {
 
     // ── FAQ (6 items redesign) ──
     faq1Q: "What is ConsultX?",
-    faq1A: "ConsultX is an intelligent engineering assistant for fire safety. It answers your questions with direct references to Saudi Building Code clauses and NFPA standards.",
+    faq1A: "ConsultX is an intelligent engineering assistant for fire safety. It answers your questions with direct references to SBC 201 and SBC 801 clauses.",
     faq2Q: "How reliable are the answers?",
     faq2A: "Every answer cites the exact clause from the applicable standard. ConsultX doesn't guess — it references the original source every time.",
     faq3Q: "What does each plan include?",
-    faq3A: "All plans include access to SBC and NFPA codes and Civil Defense regulations. Higher plans add plan analysis, unlimited conversations, and faster support.",
+    faq3A: "All plans include access to SBC 201, SBC 801, and Civil Defense regulations. Higher plans add plan analysis, unlimited conversations, and faster support.",
     faq4Q: "What happens after the trial ends?",
     faq4A: "After 7 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
     faq5Q: "Can I upload drawings for analysis?",
@@ -755,7 +755,7 @@ export const translations = {
     faq6A: "Yes, you can cancel anytime from your account page. Access continues until the end of your paid billing period.",
 
     // ── SiteFooter ──
-    footerSummary: "Intelligent fire safety engineering consultant — built on Saudi Building Code and NFPA standards.",
+    footerSummary: "Intelligent fire safety engineering consultant — built on SBC 201 and SBC 801.",
     footerProduct: "Product",
     footerReferences: "References",
     footerAccount: "Account",
@@ -770,7 +770,7 @@ export const translations = {
     footerPricing: "Pricing",
     footerSbc201: "SBC 201 — Fire Protection",
     footerSbc801: "SBC 801 — Life Safety",
-    footerNfpa: "NFPA Standards",
+    footerNfpa: "Civil Defense Regulations",
     footerCivilDefense: "Civil Defense",
 
     // ── Legal Pages ──

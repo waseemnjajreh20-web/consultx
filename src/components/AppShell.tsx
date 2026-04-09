@@ -492,17 +492,30 @@ function SettingsSection({ lang }: { lang: "ar" | "en" }) {
 // ════════════════════════════════════════════════════════════════════════════════
 function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
   const ar = lang === "ar";
-  const [companyName,   setCompanyName]   = useState(() => localStorage.getItem("cx_company_name")   || "");
-  const [reportHeader,  setReportHeader]  = useState(() => localStorage.getItem("cx_report_header")  || "");
-  const [reportFooter,  setReportFooter]  = useState(() => localStorage.getItem("cx_report_footer")  || "");
-  const [logoDataUrl,   setLogoDataUrl]   = useState(() => localStorage.getItem("cx_company_logo")   || "");
+  const [companyName,    setCompanyName]    = useState(() => localStorage.getItem("cx_company_name")      || "");
+  const [reportHeader,   setReportHeader]   = useState(() => localStorage.getItem("cx_report_header")     || "");
+  const [reportFooter,   setReportFooter]   = useState(() => localStorage.getItem("cx_report_footer")     || "");
+  const [logoDataUrl,    setLogoDataUrl]    = useState(() => localStorage.getItem("cx_company_logo")      || "");
+  const [reportStyle,    setReportStyle]    = useState(() => localStorage.getItem("cx_report_style")      || "detailed");
+  const [reportLanguage, setReportLanguage] = useState(() => localStorage.getItem("cx_report_language")   || "auto");
+  const [printLogo,      setPrintLogo]      = useState(() => localStorage.getItem("cx_print_logo")    !== "false");
+  const [printHeader,    setPrintHeader]    = useState(() => localStorage.getItem("cx_print_header")  !== "false");
+  const [printFooter,    setPrintFooter]    = useState(() => localStorage.getItem("cx_print_footer")  !== "false");
+  const [logoError,      setLogoError]      = useState("");
   const [saved, setSaved] = useState(false);
   const logoRef = useRef<HTMLInputElement>(null);
 
+  const COMPANY_NAME_MAX = 60;
+
   const save = () => {
-    localStorage.setItem("cx_company_name",   companyName);
-    localStorage.setItem("cx_report_header",  reportHeader);
-    localStorage.setItem("cx_report_footer",  reportFooter);
+    localStorage.setItem("cx_company_name",    companyName);
+    localStorage.setItem("cx_report_header",   reportHeader);
+    localStorage.setItem("cx_report_footer",   reportFooter);
+    localStorage.setItem("cx_report_style",    reportStyle);
+    localStorage.setItem("cx_report_language", reportLanguage);
+    localStorage.setItem("cx_print_logo",      String(printLogo));
+    localStorage.setItem("cx_print_header",    String(printHeader));
+    localStorage.setItem("cx_print_footer",    String(printFooter));
     if (logoDataUrl) localStorage.setItem("cx_company_logo", logoDataUrl);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -511,8 +524,10 @@ function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
   const handleLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setLogoError("");
     if (file.size > 500_000) {
-      alert(ar ? "الحجم الأقصى 500 كيلوبايت" : "Max logo size is 500 KB");
+      setLogoError(ar ? "الحجم الأقصى 500 كيلوبايت" : "Max logo size is 500 KB");
+      e.target.value = "";
       return;
     }
     const reader = new FileReader();
@@ -524,7 +539,51 @@ function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
     <p className="text-xs text-muted-foreground mb-1.5">{children}</p>
   );
 
+  const SubsectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider px-1 mb-2 mt-5 first:mt-0">
+      {children}
+    </p>
+  );
+
   const inputCls = "w-full px-3 py-2 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-[#00D4FF]/40 placeholder:text-muted-foreground/50 transition-colors";
+
+  const OptionBtn = ({ value, current, onChange, children }: {
+    value: string; current: string; onChange: (v: string) => void; children: React.ReactNode;
+  }) => (
+    <button
+      onClick={() => onChange(value)}
+      className="flex-1 py-1.5 rounded-lg text-xs font-medium transition-all"
+      style={{
+        background: current === value ? "rgba(0,212,255,0.15)" : "rgba(255,255,255,0.05)",
+        color: current === value ? ACCENT : "rgba(255,255,255,0.5)",
+        border: current === value ? `1px solid rgba(0,212,255,0.3)` : "1px solid transparent",
+      }}
+    >
+      {children}
+    </button>
+  );
+
+  const PrintCheckbox = ({
+    checked, onChange, children,
+  }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) => (
+    <button
+      onClick={() => onChange(!checked)}
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
+      style={{
+        background: checked ? "rgba(0,212,255,0.08)" : "rgba(255,255,255,0.03)",
+        border: checked ? `1px solid rgba(0,212,255,0.25)` : "1px solid transparent",
+        color: checked ? "white" : "rgba(255,255,255,0.5)",
+      }}
+    >
+      <div
+        className="w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center"
+        style={{ borderColor: checked ? ACCENT : "rgba(255,255,255,0.2)", background: checked ? "rgba(0,212,255,0.2)" : "transparent" }}
+      >
+        {checked && <CheckCircle className="w-3 h-3" style={{ color: ACCENT }} />}
+      </div>
+      {children}
+    </button>
+  );
 
   return (
     <div className="p-4 space-y-4">
@@ -548,9 +607,12 @@ function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
           )}
         </div>
         <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogo} />
+        {logoError && (
+          <p className="mt-1 text-xs text-red-400">{logoError}</p>
+        )}
         {logoDataUrl && (
           <button
-            onClick={() => { setLogoDataUrl(""); localStorage.removeItem("cx_company_logo"); }}
+            onClick={() => { setLogoDataUrl(""); setLogoError(""); localStorage.removeItem("cx_company_logo"); }}
             className="mt-1 text-xs text-muted-foreground hover:text-red-400 transition-colors"
           >
             {ar ? "إزالة الشعار" : "Remove logo"}
@@ -560,10 +622,16 @@ function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
 
       {/* Company name */}
       <div>
-        <FieldLabel>{ar ? "اسم الشركة / المكتب" : "Company / Office Name"}</FieldLabel>
+        <div className="flex items-baseline justify-between mb-1.5">
+          <FieldLabel>{ar ? "اسم الشركة / المكتب" : "Company / Office Name"}</FieldLabel>
+          <span className="text-xs tabular-nums" style={{ color: companyName.length >= COMPANY_NAME_MAX ? "#ef4444" : "rgba(255,255,255,0.3)" }}>
+            {companyName.length}/{COMPANY_NAME_MAX}
+          </span>
+        </div>
         <input
           className={inputCls}
           value={companyName}
+          maxLength={COMPANY_NAME_MAX}
           onChange={e => setCompanyName(e.target.value)}
           placeholder={ar ? "مكتب الاستشارات الهندسية" : "Engineering Consultancy Office"}
           dir={ar ? "rtl" : "ltr"}
@@ -594,6 +662,61 @@ function CustomizationSection({ lang }: { lang: "ar" | "en" }) {
           placeholder={ar ? "نص يظهر في تذييل التقارير المطبوعة..." : "Text shown at the bottom of printed reports..."}
           dir={ar ? "rtl" : "ltr"}
         />
+      </div>
+
+      {/* Report Style */}
+      <div>
+        <SubsectionLabel>{ar ? "أسلوب التقرير" : "Report Style"}</SubsectionLabel>
+        <div className="flex gap-2">
+          <OptionBtn value="detailed" current={reportStyle} onChange={setReportStyle}>
+            {ar ? "مفصّل" : "Detailed"}
+          </OptionBtn>
+          <OptionBtn value="concise" current={reportStyle} onChange={setReportStyle}>
+            {ar ? "موجز" : "Concise"}
+          </OptionBtn>
+          <OptionBtn value="formal" current={reportStyle} onChange={setReportStyle}>
+            {ar ? "رسمي" : "Formal"}
+          </OptionBtn>
+        </div>
+        <p className="text-xs text-muted-foreground/50 mt-1.5 leading-relaxed">
+          {reportStyle === "formal"
+            ? (ar ? "مناسب لوضع التحليل قبل تقديم المشروع للجهة المختصة" : "Best for Analysis mode before authority submission")
+            : reportStyle === "concise"
+            ? (ar ? "ملخص يركز على النتائج الرئيسية" : "Summary focused on key findings")
+            : (ar ? "مخرجات كاملة بجميع الأقسام" : "Full structured output with all sections")}
+        </p>
+      </div>
+
+      {/* Report Language */}
+      <div>
+        <SubsectionLabel>{ar ? "لغة التقرير" : "Report Language"}</SubsectionLabel>
+        <div className="flex gap-2">
+          <OptionBtn value="auto" current={reportLanguage} onChange={setReportLanguage}>
+            {ar ? "تلقائي" : "Auto"}
+          </OptionBtn>
+          <OptionBtn value="ar" current={reportLanguage} onChange={setReportLanguage}>
+            العربية
+          </OptionBtn>
+          <OptionBtn value="en" current={reportLanguage} onChange={setReportLanguage}>
+            English
+          </OptionBtn>
+        </div>
+      </div>
+
+      {/* Print & Export */}
+      <div>
+        <SubsectionLabel>{ar ? "الطباعة والتصدير" : "Print & Export"}</SubsectionLabel>
+        <div className="space-y-2">
+          <PrintCheckbox checked={printLogo} onChange={setPrintLogo}>
+            {ar ? "تضمين الشعار عند الطباعة" : "Include company logo in print"}
+          </PrintCheckbox>
+          <PrintCheckbox checked={printHeader} onChange={setPrintHeader}>
+            {ar ? "تضمين رأس التقرير عند الطباعة" : "Include report header in print"}
+          </PrintCheckbox>
+          <PrintCheckbox checked={printFooter} onChange={setPrintFooter}>
+            {ar ? "تضمين تذييل التقرير عند الطباعة" : "Include report footer in print"}
+          </PrintCheckbox>
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground/60 leading-relaxed">
