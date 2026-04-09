@@ -73,7 +73,7 @@ export function useEntitlement(): UseEntitlementResult {
 
   const isLoading = authLoading || (!!user && subLoading);
   const isAnonymous = !authLoading && !user;
-  const isAdmin = !!(user?.email && ADMIN_EMAILS.includes(user.email));
+  const isAdmin = !!(user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()));
 
   const rawAccessState: string = subscription?.access_state ?? "none";
 

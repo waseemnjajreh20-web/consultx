@@ -6,6 +6,7 @@ import {
   Loader2, Shield, BarChart3, Network, FileText, Zap, StopCircle,
   AlertTriangle, Ban,
 } from "lucide-react";
+import { AdminUserManagement } from "@/components/AdminUserManagement";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import consultxIcon from "@/assets/consultx-icon.png";
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+
+type AdminTab = "stats" | "users";
 
 interface AdminStats {
   users: { total: number; recent7Days: number };
@@ -120,7 +123,8 @@ export default function Admin() {
   const [autoIndexProgress, setAutoIndexProgress] = useState({ done: 0, total: 18, remaining: 18 });
   const stopAutoRef = useRef(false);
 
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
+  const [activeTab, setActiveTab] = useState<AdminTab>("stats");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -274,6 +278,30 @@ export default function Admin() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Tab switcher */}
+          <div className="flex items-center rounded-lg bg-muted/40 p-0.5 border border-border/40">
+            <button
+              onClick={() => setActiveTab("stats")}
+              className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                activeTab === "stats"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              الإحصائيات
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
+                activeTab === "users"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Users className="w-3 h-3" />
+              المستخدمون
+            </button>
+          </div>
           <Button variant="ghost" size="sm" onClick={fetchStats} disabled={loading}>
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
@@ -285,6 +313,14 @@ export default function Admin() {
       </header>
 
       <div className="relative z-10 p-6 pb-24 md:pb-6 max-w-6xl mx-auto space-y-6">
+
+        {/* ===== USERS TAB ===== */}
+        {activeTab === "users" && session && (
+          <AdminUserManagement accessToken={session.access_token} />
+        )}
+
+        {/* ===== STATS TAB ===== */}
+        {activeTab === "stats" && <>
 
         {/* ===== STATS CARDS ===== */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -717,6 +753,8 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+
+        </> /* end stats tab */}
 
       </div>
     </div>
