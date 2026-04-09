@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
@@ -27,7 +27,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
-import SourcePanel, { CLOSED_PANEL, type SourcePanelState } from "./SourcePanel";
+import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
 import { resolveAllSources, formatSourceLabel } from "@/utils/sourceMetadata";
 
 interface Message {
@@ -65,6 +65,17 @@ type ChatItem = Message | DividerMessage | UpgradeItem;
 
 interface ChatInterfaceProps {
   onBack: () => void;
+  /**
+   * When set, source-panel state is synced to parent (AppShell) which renders
+   * the source panel as a 3rd pane. ChatInterface will NOT render its own
+   * SourcePanel overlay when this prop is provided.
+   */
+  onSourceStateChange?: (state: SourcePanelState) => void;
+  /**
+   * Populated by ChatInterface so the parent can imperatively trigger
+   * the conversation history modal (e.g. from the sidebar).
+   */
+  historyTriggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 type ChatMode = "primary" | "standard" | "analysis";
@@ -502,11 +513,10 @@ function trimMessageHistory(messages: Message[], mode: ChatMode): ChatMessage[] 
 }
 
 async function streamChat({
-  messages, retry = false, mode = "standard", language = "ar", images, reportStyle,
+  messages, retry = false, mode = "standard", language = "ar", images,
   onDelta, onFirstChunk, onDone, onError, onSources, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
-  reportStyle?: string;
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
@@ -522,7 +532,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images, reportStyle }),
+    body: JSON.stringify({ messages, retry, mode, language, images }),
     signal,
   });
   if (!resp.ok) {
@@ -639,7 +649,7 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
 }
 
 // ===== MAIN COMPONENT =====
-const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
+const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userName =
@@ -674,8 +684,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
-  const abortControllerRef = useRef<AbortController | null>(null);
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
+
+  // Sync source-panel state to parent (AppShell renders it as 3rd pane)
+  useEffect(() => { onSourceStateChange?.(sourcePanel); }, [sourcePanel, onSourceStateChange]);
+
+  // Expose history-modal trigger to parent sidebar
+  useEffect(() => {
+    if (historyTriggerRef) historyTriggerRef.current = () => setShowHistory(true);
+  }, [historyTriggerRef]);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
   const waitingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -911,16 +930,9 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       });
     };
     let currentSources: string[] = [];
-    // Read output preferences stored by CustomizationSection
-    const storedReportLang = localStorage.getItem("cx_report_language") || "auto";
-    const effectiveLang = storedReportLang === "auto" ? currentLanguage : storedReportLang;
-    const reportStyle = localStorage.getItem("cx_report_style") || "detailed";
     try {
       await streamChat({
-        messages: chatMessages, retry: isRetry, mode: currentMode,
-        language: effectiveLang as "ar" | "en",
-        images: imageBase64s,
-        reportStyle: reportStyle !== "detailed" ? reportStyle : undefined,
+        messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
         signal: controller.signal,
         onDelta: upsertAssistant,
         onFirstChunk: () => {
@@ -1197,7 +1209,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
           <Button variant="ghost" size="icon" onClick={handleNewConversation} className="text-muted-foreground hover:text-foreground" title={t("newConversation")}>
             <Plus className="w-5 h-5" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowHistory(true)} className="text-muted-foreground hover:text-foreground" title={t("previousConversations")}>
+          <Button variant="ghost" size="icon" onClick={() => setShowHistory(true)} className="md:hidden text-muted-foreground hover:text-foreground" title={t("previousConversations")}>
             <MessageSquare className="w-5 h-5" />
           </Button>
           <LanguageToggle />
@@ -1278,12 +1290,12 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
               <TrialDaysIndicator daysRemaining={trialData.days_remaining} />
             )}
             {isAdmin && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="md:hidden text-muted-foreground hover:text-foreground">
                 <ShieldCheck className="w-4 h-4" />
                 <span className="hidden sm:inline ms-1">Admin</span>
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/account")} className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/account")} className="md:hidden text-muted-foreground hover:text-foreground">
               <UserCircle className="w-4 h-4" />
               <span className="hidden sm:inline ms-1">{displayName}</span>
             </Button>
@@ -1524,29 +1536,23 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                         {message.sources && message.sources.length > 0 && (() => {
                           const resolved = resolveAllSources(message.sources);
                           return (
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-3 border-t border-border/30">
-                              <span className="text-xs text-muted-foreground shrink-0">
-                                {t("sourcesLabel")}
-                              </span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
+                              <span className="text-xs text-muted-foreground flex-shrink-0">{t("sourcesLabel")}</span>
                               {resolved.map((meta) => (
                                 <button
                                   key={meta.pdfPath ?? meta.sourceFile}
-                                  onClick={() => setSourcePanel({
-                                    open: true,
-                                    sources: message.sources!,
-                                    activeMeta: resolved.length === 1 ? meta : null,
-                                  })}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs transition-colors"
-                                  style={{
-                                    background: "rgba(0,212,255,0.07)",
-                                    border: "1px solid rgba(0,212,255,0.18)",
-                                    color: "#00D4FF",
+                                  onClick={() => {
+                                    if (meta.pdfUrl) {
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: resolved.length === 1 ? meta : null });
+                                    } else {
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
+                                    }
                                   }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,212,255,0.14)")}
-                                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,212,255,0.07)")}
-                                  title={language === "ar" ? "فتح المصدر" : "Open source"}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
+                                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)" }}
+                                  title={meta.title}
                                 >
-                                  {formatSourceLabel(meta, language)}
+                                  {formatSourceLabel(meta, language as "ar" | "en")}
                                 </button>
                               ))}
                             </div>
@@ -1703,14 +1709,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       {/* Bottom padding for mobile nav */}
       {isMobile && <div className="h-16" />}
 
-      {/* Source Panel — slide-over, mounted at root of ChatInterface */}
-      <SourcePanel
-        state={sourcePanel}
-        language={language}
-        onClose={() => setSourcePanel(CLOSED_PANEL)}
-        onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
-        onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
-      />
+      {/* Source PDF viewer — only rendered here when not managed by AppShell */}
+      {!onSourceStateChange && (
+        <SourcePanel
+          state={sourcePanel}
+          language={language as "ar" | "en"}
+          onClose={() => setSourcePanel(CLOSED_PANEL)}
+          onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
+          onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
+        />
+      )}
     </div>
   );
 };

@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, UserCircle, CreditCard, Settings, Sliders,
   LogOut, ExternalLink, Upload, CheckCircle, X, ChevronRight,
+  ShieldCheck, ChevronLeft,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEntitlement } from "@/hooks/useEntitlement";
@@ -78,11 +79,19 @@ export default function AppShell({
 }: AppShellProps) {
   const { language } = useLanguage();
   const lang = language as "ar" | "en";
+  const isRtl = lang === "ar";
+  const { isAdmin } = useEntitlement();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SidebarSection>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleNavClick = (id: string) => {
     if (id === "conversations") {
       historyTriggerRef.current?.();
+      return;
+    }
+    if (id === "admin") {
+      navigate("/admin");
       return;
     }
     setActiveSection(prev => prev === id ? null : id as SidebarSection);
@@ -90,10 +99,16 @@ export default function AppShell({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* ── LEFT SIDEBAR ICON RAIL (desktop) ─────────────────────────────────── */}
+      {/* ── LEFT SIDEBAR (desktop) ───────────────────────────────────────────── */}
       <nav
-        className="hidden md:flex flex-col w-16 flex-shrink-0 py-3 gap-0.5"
-        style={{ background: SIDEBAR_BG, borderRight: `1px solid ${BORDER}` }}
+        className="hidden md:flex flex-col flex-shrink-0 py-3 gap-0.5 overflow-hidden transition-all duration-200"
+        style={{
+          width: sidebarOpen ? "192px" : "56px",
+          background: SIDEBAR_BG,
+          borderRight: isRtl ? "none" : `1px solid ${BORDER}`,
+          borderLeft: isRtl ? `1px solid ${BORDER}` : "none",
+        }}
+        dir={isRtl ? "rtl" : "ltr"}
       >
         {NAV_ITEMS.map(({ id, icon: Icon }) => {
           const isActive = id !== "conversations" && activeSection === id;
@@ -101,29 +116,70 @@ export default function AppShell({
             <button
               key={id}
               onClick={() => handleNavClick(id)}
-              title={label(id, lang)}
+              title={!sidebarOpen ? label(id, lang) : undefined}
               aria-label={label(id, lang)}
-              className="group flex flex-col items-center justify-center mx-2 p-2.5 rounded-xl transition-all duration-150"
+              className="group flex items-center mx-2 p-2.5 rounded-xl transition-all duration-150 min-w-0"
               style={{
                 background: isActive ? "rgba(0,212,255,0.12)" : "transparent",
                 color: isActive ? ACCENT : "rgba(255,255,255,0.4)",
                 border: isActive ? `1px solid rgba(0,212,255,0.3)` : "1px solid transparent",
               }}
             >
-              <Icon className="w-5 h-5 group-hover:opacity-90 transition-opacity" />
-              <span className="text-[9px] mt-1 font-medium leading-none opacity-70 group-hover:opacity-100">
-                {lang === "ar" ? id === "account" ? "حساب" : id === "subscription" ? "اشتراك" : id === "settings" ? "إعداد" : id === "customization" ? "تخصيص" : "محادثات" : id.charAt(0).toUpperCase() + id.slice(1, 4)}
-              </span>
+              <Icon className="w-5 h-5 flex-shrink-0 group-hover:opacity-90 transition-opacity" />
+              {sidebarOpen && (
+                <span className="text-xs font-medium ms-2.5 truncate opacity-80 group-hover:opacity-100 transition-opacity">
+                  {label(id, lang)}
+                </span>
+              )}
             </button>
           );
         })}
+
+        {/* Admin — only when user is admin */}
+        {isAdmin && (
+          <button
+            onClick={() => handleNavClick("admin")}
+            title={!sidebarOpen ? (isRtl ? "الإدارة" : "Admin") : undefined}
+            aria-label={isRtl ? "الإدارة" : "Admin"}
+            className="group flex items-center mx-2 p-2.5 rounded-xl transition-all duration-150 min-w-0"
+            style={{ color: "#FF8C00", border: "1px solid transparent" }}
+          >
+            <ShieldCheck className="w-5 h-5 flex-shrink-0 group-hover:opacity-90 transition-opacity" />
+            {sidebarOpen && (
+              <span className="text-xs font-medium ms-2.5 truncate opacity-80 group-hover:opacity-100 transition-opacity">
+                {isRtl ? "الإدارة" : "Admin"}
+              </span>
+            )}
+          </button>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Collapse / expand toggle */}
+        <button
+          onClick={() => setSidebarOpen(p => !p)}
+          title={sidebarOpen ? (isRtl ? "طي" : "Collapse") : (isRtl ? "توسيع" : "Expand")}
+          aria-label={sidebarOpen ? (isRtl ? "طي" : "Collapse") : (isRtl ? "توسيع" : "Expand")}
+          className="group flex items-center mx-2 p-2.5 rounded-xl transition-all duration-150"
+          style={{ color: "rgba(255,255,255,0.25)", border: "1px solid transparent" }}
+        >
+          {sidebarOpen
+            ? (isRtl ? <ChevronRight className="w-4 h-4 group-hover:text-white transition-colors" /> : <ChevronLeft className="w-4 h-4 group-hover:text-white transition-colors" />)
+            : (isRtl ? <ChevronLeft className="w-4 h-4 group-hover:text-white transition-colors" /> : <ChevronRight className="w-4 h-4 group-hover:text-white transition-colors" />)
+          }
+        </button>
       </nav>
 
       {/* ── SECTION CONTENT PANEL ─────────────────────────────────────────────── */}
       {activeSection && (
         <div
           className="hidden md:flex flex-col w-72 flex-shrink-0 overflow-hidden"
-          style={{ background: SECTION_BG, borderRight: `1px solid ${BORDER}` }}
+          style={{
+            background: SECTION_BG,
+            borderRight: isRtl ? "none" : `1px solid ${BORDER}`,
+            borderLeft: isRtl ? `1px solid ${BORDER}` : "none",
+          }}
         >
           <SectionPanel
             section={activeSection}
