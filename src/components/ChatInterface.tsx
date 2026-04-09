@@ -502,10 +502,11 @@ function trimMessageHistory(messages: Message[], mode: ChatMode): ChatMessage[] 
 }
 
 async function streamChat({
-  messages, retry = false, mode = "standard", language = "ar", images,
+  messages, retry = false, mode = "standard", language = "ar", images, reportStyle,
   onDelta, onFirstChunk, onDone, onError, onSources, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
+  reportStyle?: string;
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
@@ -521,7 +522,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images }),
+    body: JSON.stringify({ messages, retry, mode, language, images, reportStyle }),
     signal,
   });
   if (!resp.ok) {
@@ -910,9 +911,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
       });
     };
     let currentSources: string[] = [];
+    // Read output preferences stored by CustomizationSection
+    const storedReportLang = localStorage.getItem("cx_report_language") || "auto";
+    const effectiveLang = storedReportLang === "auto" ? currentLanguage : storedReportLang;
+    const reportStyle = localStorage.getItem("cx_report_style") || "detailed";
     try {
       await streamChat({
-        messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
+        messages: chatMessages, retry: isRetry, mode: currentMode,
+        language: effectiveLang as "ar" | "en",
+        images: imageBase64s,
+        reportStyle: reportStyle !== "detailed" ? reportStyle : undefined,
         signal: controller.signal,
         onDelta: upsertAssistant,
         onFirstChunk: () => {

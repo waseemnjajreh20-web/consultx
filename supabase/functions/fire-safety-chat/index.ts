@@ -2366,7 +2366,7 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, reportStyle } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
@@ -2768,7 +2768,21 @@ serve(async (req) => {
         : `\n\n🔒 تعليمة نهائية ملزمة: النص المرجعي أعلاه للتثبيت فقط ولا يعني أن معطيات المستخدم كافية. إذا كانت المعطيات الحرجة (التصنيف، الارتفاع، المساحة) ناقصة، يجب عليك التوقف فوراً وطرح 1 إلى 3 أسئلة توضيحية. ممنوع تقديم إجابة نهائية (A-F) قبل اكتمال المعطيات. ممنوع افتراض المتغيرات الناقصة.`;
       fullSystemPrompt += finalBindingReminder;
     }
-    
+
+    // Report-style modifier (from client cx_report_style preference)
+    // Only injected when non-default to keep token count low for the common case.
+    if (reportStyle === "concise") {
+      const conciseNote = language === "en"
+        ? `\n\n📋 OUTPUT STYLE (user preference): Concise. Prioritise brevity — drop sub-sections that add no new information. Lead with the key requirement and action. Omit verbose engineering derivations unless they change the answer.`
+        : `\n\n📋 أسلوب الإخراج (تفضيل المستخدم): مختصر. اجعل الإجابة موجزة — احذف الأقسام الفرعية التي لا تضيف معلومة جديدة. ابدأ بالمتطلب الرئيسي والإجراء. أغفل الاشتقاقات الهندسية المطوّلة ما لم تغيّر الإجابة.`;
+      fullSystemPrompt += conciseNote;
+    } else if (reportStyle === "formal") {
+      const formalNote = language === "en"
+        ? `\n\n📋 OUTPUT STYLE (user preference): Formal report. Use formal engineering report language throughout. Begin with a one-line "Regarding:" statement. Sections must be fully titled and numbered. Close with a professional sign-off line referencing SBC authority.`
+        : `\n\n📋 أسلوب الإخراج (تفضيل المستخدم): تقرير رسمي. استخدم لغة تقارير هندسية رسمية. ابدأ بجملة "الموضوع:" في سطر واحد. يجب أن تكون الأقسام مُعنونة بالكامل ومُرقَّمة. أنهِ بجملة ختامية احترافية تُشير إلى مرجعية الكود السعودي.`;
+      fullSystemPrompt += formalNote;
+    }
+
     const systemMessages: any[] = [{ role: "system", content: fullSystemPrompt }];
     if (retry) {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });

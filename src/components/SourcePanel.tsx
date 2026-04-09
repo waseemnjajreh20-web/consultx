@@ -53,7 +53,60 @@ function PanelHeader({
   onBack: () => void;
   onClose: () => void;
 }) {
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const printLogo   = localStorage.getItem("cx_print_logo")   !== "false";
+    const printHeader = localStorage.getItem("cx_print_header") !== "false";
+    const printFooter = localStorage.getItem("cx_print_footer") !== "false";
+    const logo        = localStorage.getItem("cx_company_logo")   || "";
+    const companyName = localStorage.getItem("cx_company_name")   || "";
+    const reportHdr   = localStorage.getItem("cx_report_header") || "";
+    const reportFtr   = localStorage.getItem("cx_report_footer") || "";
+
+    const showHeader = (printLogo && (logo || companyName)) || (printHeader && reportHdr);
+    const showFooter = printFooter && reportFtr;
+
+    const panel = document.querySelector(".print-source-panel");
+    const injected: HTMLElement[] = [];
+
+    if (panel && showHeader) {
+      const el = document.createElement("div");
+      el.className = "cx-print-only";
+      el.style.cssText = "padding:10px 16px;border-bottom:1px solid #ccc;background:#fff;color:#000;";
+      if (printLogo && logo) {
+        const img = document.createElement("img");
+        img.src = logo;
+        img.style.cssText = "height:36px;max-width:120px;display:block;margin-bottom:4px;";
+        el.appendChild(img);
+      }
+      if (printLogo && companyName) {
+        const d = document.createElement("div");
+        d.style.cssText = "font-weight:600;font-size:13px;";
+        d.textContent = companyName;
+        el.appendChild(d);
+      }
+      if (printHeader && reportHdr) {
+        const d = document.createElement("div");
+        d.style.cssText = "font-size:11px;margin-top:4px;white-space:pre-wrap;";
+        d.textContent = reportHdr;
+        el.appendChild(d);
+      }
+      panel.insertBefore(el, panel.firstChild);
+      injected.push(el);
+    }
+
+    if (panel && showFooter) {
+      const el = document.createElement("div");
+      el.className = "cx-print-only";
+      el.style.cssText = "padding:8px 16px;border-top:1px solid #ccc;background:#fff;color:#000;font-size:11px;white-space:pre-wrap;margin-top:auto;";
+      el.textContent = reportFtr;
+      panel.appendChild(el);
+      injected.push(el);
+    }
+
+    window.print();
+    // Clean up injected print-only elements after the print dialog closes
+    setTimeout(() => injected.forEach(el => el.remove()), 500);
+  };
 
   return (
     <div

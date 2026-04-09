@@ -820,5 +820,10 @@
   [data-radix-popper-content-wrapper] {
     display: none !important;
   }
+  /* Print-preference header/footer injected by SourcePanel handlePrint */
+  .cx-print-only { display: block !important; }
 }
+
+/* Hidden on screen; shown during print via the @media print rule above */
+.cx-print-only { display: none; }
 
