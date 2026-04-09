@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, X } from "lucide-react";
 import { useEntitlement } from "@/hooks/useEntitlement";
@@ -6,6 +6,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/hooks/useLanguage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
+import AppShell from "@/components/AppShell";
+import { CLOSED_PANEL } from "@/components/SourcePanel";
+import type { SourcePanelState } from "@/components/SourcePanel";
+import type { SourceMeta } from "@/utils/sourceMetadata";
 
 const ChatInterface = lazy(() => import("@/components/ChatInterface"));
 
@@ -18,12 +22,15 @@ const Workspace = () => {
   const { profile } = useProfile();
   const { language } = useLanguage();
 
-  // isReady gates render of ChatInterface — set once access is confirmed
   const [isReady, setIsReady] = useState(false);
   const [welcomeTrialEnd, setWelcomeTrialEnd] = useState<string | null>(null);
-  // Dismissible per session — restored from sessionStorage so a page reload
-  // within the same session keeps the banner hidden.
   const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  // Source panel state — lifted so AppShell can render it as a 3rd pane
+  const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
+
+  // Imperative ref so AppShell sidebar can trigger ChatInterface history modal
+  const historyTriggerRef = useRef<(() => void) | null>(null);
 
   // Restore banner-dismissed state from sessionStorage on mount / user change.
   useEffect(() => {
@@ -47,46 +54,26 @@ const Workspace = () => {
   // Access gate — runs once loading resolves
   useEffect(() => {
     if (isLoading) return;
-
-    // No user → send to login
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    // Any authenticated user (paid, trial, free-tier, admin) may enter the workspace.
-    // Backend enforces mode availability and daily message limits.
-    if (canAccessChat) {
-      setIsReady(true);
-    }
+    if (!user) { navigate("/auth"); return; }
+    if (canAccessChat) setIsReady(true);
   }, [isLoading, user, canAccessChat, navigate]);
 
   const handleDismissBanner = () => {
     setBannerDismissed(true);
-    if (user?.id) {
-      sessionStorage.setItem(`pastdue_dismissed_${user.id}`, "1");
-    }
+    if (user?.id) sessionStorage.setItem(`pastdue_dismissed_${user.id}`, "1");
   };
 
-  // Show banner only while past_due AND within the grace window.
-  // isPaidActive is true during grace (access_state = "paid_active") and false
-  // after grace lapses — so this condition self-extinguishes when access is revoked.
   const isPastDueInGrace = subscription?.status === "past_due" && isPaidActive;
   const graceEndDate =
     isPastDueInGrace && subscription?.past_due_since
-      ? new Date(
-          new Date(subscription.past_due_since).getTime() +
-            GRACE_DAYS * 86_400_000,
-        )
+      ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
       : null;
 
   if (isLoading || !isReady) return <LoadingSpinner />;
 
   return (
     <>
-      {/* Past-due grace banner — fixed top, non-blocking, dismissible per session.
-          Shown only while status=past_due AND isPaidActive (within 7-day grace).
-          Disappears automatically once grace lapses (isPastDueInGrace becomes false). */}
+      {/* Past-due grace banner — fixed top, non-blocking, dismissible per session */}
       {isPastDueInGrace && !bannerDismissed && (
         <div
           dir={language === "ar" ? "rtl" : "ltr"}
@@ -128,9 +115,26 @@ const Workspace = () => {
           onClose={() => setWelcomeTrialEnd(null)}
         />
       )}
-      <Suspense fallback={<LoadingSpinner />}>
-        <ChatInterface onBack={() => navigate("/")} />
-      </Suspense>
+
+      <AppShell
+        sourcePanel={sourcePanel}
+        onSourceClose={() => setSourcePanel(CLOSED_PANEL)}
+        onSourceSelectSource={(meta: SourceMeta) =>
+          setSourcePanel(prev => ({ ...prev, activeMeta: meta }))
+        }
+        onSourceBack={() =>
+          setSourcePanel(prev => ({ ...prev, activeMeta: null }))
+        }
+        historyTriggerRef={historyTriggerRef}
+      >
+        <Suspense fallback={<LoadingSpinner />}>
+          <ChatInterface
+            onBack={() => navigate("/")}
+            onSourceStateChange={setSourcePanel}
+            historyTriggerRef={historyTriggerRef}
+          />
+        </Suspense>
+      </AppShell>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
@@ -27,6 +27,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
+import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
+import { resolveAllSources, formatSourceLabel } from "@/utils/sourceMetadata";
 
 interface Message {
   id: string;
@@ -63,6 +65,17 @@ type ChatItem = Message | DividerMessage | UpgradeItem;
 
 interface ChatInterfaceProps {
   onBack: () => void;
+  /**
+   * When set, source-panel state is synced to parent (AppShell) which renders
+   * the source panel as a 3rd pane. ChatInterface will NOT render its own
+   * SourcePanel overlay when this prop is provided.
+   */
+  onSourceStateChange?: (state: SourcePanelState) => void;
+  /**
+   * Populated by ChatInterface so the parent can imperatively trigger
+   * the conversation history modal (e.g. from the sidebar).
+   */
+  historyTriggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 type ChatMode = "primary" | "standard" | "analysis";
@@ -636,7 +649,7 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
 }
 
 // ===== MAIN COMPONENT =====
-const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
+const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userName =
@@ -671,6 +684,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
+  const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
+
+  // Sync source-panel state to parent (AppShell renders it as 3rd pane)
+  useEffect(() => { onSourceStateChange?.(sourcePanel); }, [sourcePanel, onSourceStateChange]);
+
+  // Expose history-modal trigger to parent sidebar
+  useEffect(() => {
+    if (historyTriggerRef) historyTriggerRef.current = () => setShowHistory(true);
+  }, [historyTriggerRef]);
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const waitingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1510,13 +1533,31 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
                             language={language}
                           />
                         )}
-                        {message.sources && message.sources.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
-                            <span className="text-xs text-muted-foreground">
-                              {t("sourcesLabel")} {message.sources.map(s => formatSourceName(s, language)).join(language === "ar" ? '، ' : ', ')}
-                            </span>
-                          </div>
-                        )}
+                        {message.sources && message.sources.length > 0 && (() => {
+                          const resolved = resolveAllSources(message.sources);
+                          return (
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
+                              <span className="text-xs text-muted-foreground flex-shrink-0">{t("sourcesLabel")}</span>
+                              {resolved.map((meta) => (
+                                <button
+                                  key={meta.pdfPath ?? meta.sourceFile}
+                                  onClick={() => {
+                                    if (meta.pdfUrl) {
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: resolved.length === 1 ? meta : null });
+                                    } else {
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
+                                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)" }}
+                                  title={meta.title}
+                                >
+                                  {formatSourceLabel(meta, language as "ar" | "en")}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         {/* Requirement 4 — Utility Bar */}
                         <UtilityBar
                           content={displayContent}
@@ -1667,6 +1708,17 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
 
       {/* Bottom padding for mobile nav */}
       {isMobile && <div className="h-16" />}
+
+      {/* Source PDF viewer — only rendered here when not managed by AppShell */}
+      {!onSourceStateChange && (
+        <SourcePanel
+          state={sourcePanel}
+          language={language as "ar" | "en"}
+          onClose={() => setSourcePanel(CLOSED_PANEL)}
+          onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
+          onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
+        />
+      )}
     </div>
   );
 };
