@@ -940,9 +940,18 @@ function buildQueryKeywords(query: string): string[] {
   
   const patterns = [
     "sbc 201", "sbc 801", "sbc201", "sbc801",
-    "table 1006", "table 1004", "table 903", "table 1020",
-    "section 903", "section 1006", "section 1004", "section 1020",
-    "903.2", "903.3", "1006.3", "1004.5", "1020",
+    // Chapter 5 — Heights & Areas
+    "table 504", "table 506", "504.3", "504.4", "506.2",
+    // Chapter 6 — Construction Types
+    "table 601", "table 602", "601", "602",
+    // Chapter 7 — Fire & Smoke Protection
+    "table 705", "705.8",
+    // Chapter 10 — Means of Egress
+    "table 1006", "table 1004", "table 1017", "table 1020", "table 1021",
+    "section 1006", "section 1004", "section 1017", "section 1020", "section 1021",
+    "1004.5", "1006.3", "1017.2", "1020.1", "1021.2",
+    // SBC 801 — Fire Suppression
+    "table 903", "section 903", "903.2", "903.3",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1589,15 +1598,60 @@ function extractTableIds(query: string): string[] {
   }
 
   // Also match bare section numbers when they look like table IDs that we know about
+  // Keep this list in sync with the sbc_code_tables rows in the DB.
   const KNOWN_TABLE_IDS = [
+    // Chapter 5 — Heights & Areas
     "504.3", "504.4", "506.2",
+    // Chapter 6 — Construction Types
+    "601", "602",
+    // Chapter 7 — Fire & Smoke Protection
+    "705.8",
+    // Chapter 10 — Means of Egress
     "1004.5", "1006.3.3", "1006.3.4",
+    "1017.2", "1020.1", "1021.2",
+    // SBC 801 Chapter 9 — Fire Suppression
+    "903.2",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
     const escaped = id.replace(/\./g, "\\.");
     if (new RegExp(`\\b${escaped}\\b`).test(lower)) {
       found.add(id);
+    }
+  }
+
+  // Parent-section aliases — when user asks about a whole section/chapter
+  // without specifying a sub-table, inject the most-relevant known table.
+  const PARENT_ALIASES: Record<string, string[]> = {
+    "1017":   ["1017.2"],  // "Section 1017" or "travel distance" → Table 1017.2
+    "1020":   ["1020.1"],  // "Section 1020" or "corridor rating" → Table 1020.1
+    "1021":   ["1021.2"],  // "Section 1021" or "number of exits" → Table 1021.2
+  };
+  for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
+    const esc = parent.replace(/\./g, "\\.");
+    // Only fire if the bare parent section is mentioned without already having a child
+    if (new RegExp(`\\b${esc}\\b`).test(lower) &&
+        !children.some(c => found.has(c))) {
+      for (const c of children) found.add(c);
+    }
+  }
+
+  // Semantic aliases — common query phrases that map to specific tables
+  const SEMANTIC_ALIASES: Array<[RegExp, string[]]> = [
+    [/\b(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))\b/i,          ["1017.2"]],
+    [/\b(?:max(?:imum)?\s+travel|أقصى\s+مسافة)\b/i,                       ["1017.2"]],
+    [/\b(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)\b/i,            ["1020.1"]],
+    [/\b(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))\b/i,        ["1021.2"]],
+    [/\b(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)\b/i,            ["1021.2"]],
+    [/\b(?:structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق)\b/i, ["601"]],
+    [/\b(?:exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل)\b/i, ["602"]],
+    [/\b(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)\b/i, ["705.8"]],
+    [/\b(?:where\s+(?:are?\s+)?sprinkler|when\s+(?:are?\s+)?sprinkler|متى.*رشاش|الرشاشات.*إلزامي)\b/i, ["903.2"]],
+    [/\b(?:sprinkler\s+required|rquires?\s+sprinkler|تجب\s+الرشاشات?)\b/i, ["903.2"]],
+  ];
+  for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
+    if (pattern.test(query)) {
+      for (const id of tableIds) found.add(id);
     }
   }
 
@@ -1624,9 +1678,10 @@ function extractTableIds(query: string): string[] {
  * Returns a context block ready to be prepended to the system prompt, plus the list of
  * table IDs that were matched and returned.
  */
+// deno-lint-ignore no-explicit-any
 async function fetchStructuredTables(
   query: string,
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: any,
 ): Promise<{ context: string; matchedTableIds: string[] }> {
   const tableIds = extractTableIds(query);
   if (tableIds.length === 0) return { context: "", matchedTableIds: [] };
