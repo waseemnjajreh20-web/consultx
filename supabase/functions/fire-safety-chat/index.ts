@@ -940,16 +940,18 @@ function buildQueryKeywords(query: string): string[] {
   
   const patterns = [
     "sbc 201", "sbc 801", "sbc201", "sbc801",
-    // Chapter 5 — Heights & Areas
-    "table 504", "table 506", "504.3", "504.4", "506.2",
+    // Chapter 5 — Heights, Areas, Incidental Uses
+    "table 504", "table 506", "table 509", "504.3", "504.4", "506.2", "509",
     // Chapter 6 — Construction Types
     "table 601", "table 602", "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "table 705", "705.8",
     // Chapter 10 — Means of Egress
-    "table 1006", "table 1004", "table 1017", "table 1020", "table 1021",
-    "section 1006", "section 1004", "section 1017", "section 1020", "section 1021",
-    "1004.5", "1006.3", "1017.2", "1020.1", "1021.2",
+    "table 1004", "table 1005", "table 1006", "table 1011",
+    "table 1017", "table 1018", "table 1020", "table 1021",
+    "section 1004", "section 1005", "section 1006", "section 1011",
+    "section 1017", "section 1018", "section 1020", "section 1021",
+    "1004.5", "1005.1", "1006.3", "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     // SBC 801 — Fire Suppression
     "table 903", "section 903", "903.2", "903.3",
   ];
@@ -1600,15 +1602,15 @@ function extractTableIds(query: string): string[] {
   // Also match bare section numbers when they look like table IDs that we know about
   // Keep this list in sync with the sbc_code_tables rows in the DB.
   const KNOWN_TABLE_IDS = [
-    // Chapter 5 — Heights & Areas
-    "504.3", "504.4", "506.2",
+    // Chapter 5 — Heights & Areas + Incidental Uses
+    "504.3", "504.4", "506.2", "509",
     // Chapter 6 — Construction Types
     "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "705.8",
     // Chapter 10 — Means of Egress
-    "1004.5", "1006.3.3", "1006.3.4",
-    "1017.2", "1020.1", "1021.2",
+    "1004.5", "1005.1", "1006.3.3", "1006.3.4",
+    "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     // SBC 801 Chapter 9 — Fire Suppression
     "903.2",
   ];
@@ -1623,9 +1625,12 @@ function extractTableIds(query: string): string[] {
   // Parent-section aliases — when user asks about a whole section/chapter
   // without specifying a sub-table, inject the most-relevant known table.
   const PARENT_ALIASES: Record<string, string[]> = {
-    "1017":   ["1017.2"],  // "Section 1017" or "travel distance" → Table 1017.2
-    "1020":   ["1020.1"],  // "Section 1020" or "corridor rating" → Table 1020.1
-    "1021":   ["1021.2"],  // "Section 1021" or "number of exits" → Table 1021.2
+    "1005":   ["1005.1"],  // "Section 1005" → egress width per occupant
+    "1011":   ["1011.2"],  // "Section 1011" → stairway width
+    "1017":   ["1017.2"],  // "Section 1017" → travel distance
+    "1018":   ["1018.1"],  // "Section 1018" → corridor width
+    "1020":   ["1020.1"],  // "Section 1020" → corridor fire rating
+    "1021":   ["1021.2"],  // "Section 1021" → number of exits
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
@@ -1638,16 +1643,35 @@ function extractTableIds(query: string): string[] {
 
   // Semantic aliases — common query phrases that map to specific tables
   const SEMANTIC_ALIASES: Array<[RegExp, string[]]> = [
-    [/\b(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))\b/i,          ["1017.2"]],
-    [/\b(?:max(?:imum)?\s+travel|أقصى\s+مسافة)\b/i,                       ["1017.2"]],
-    [/\b(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)\b/i,            ["1020.1"]],
-    [/\b(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))\b/i,        ["1021.2"]],
-    [/\b(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)\b/i,            ["1021.2"]],
+    // Travel distance
+    [/\b(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))\b/i,                    ["1017.2"]],
+    [/\b(?:max(?:imum)?\s+travel|أقصى\s+مسافة)\b/i,                                 ["1017.2"]],
+    // Corridor fire rating
+    [/\b(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)\b/i,                      ["1020.1"]],
+    // Number of exits / minimum exits
+    [/\b(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))\b/i,                  ["1021.2"]],
+    [/\b(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)\b/i,                      ["1021.2"]],
+    // Construction type fire-resistance ratings
     [/\b(?:structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق)\b/i, ["601"]],
+    // Exterior wall by fire separation distance
     [/\b(?:exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل)\b/i, ["602"]],
-    [/\b(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)\b/i, ["705.8"]],
+    // Exterior wall openings / window area limits
+    [/\b(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)\b/i,   ["705.8"]],
+    // Sprinkler requirement
     [/\b(?:where\s+(?:are?\s+)?sprinkler|when\s+(?:are?\s+)?sprinkler|متى.*رشاش|الرشاشات.*إلزامي)\b/i, ["903.2"]],
-    [/\b(?:sprinkler\s+required|rquires?\s+sprinkler|تجب\s+الرشاشات?)\b/i, ["903.2"]],
+    [/\b(?:sprinkler\s+required|requires?\s+sprinkler|تجب\s+الرشاشات?)\b/i,          ["903.2"]],
+    // Egress / stair width per occupant
+    [/\b(?:egress\s+width|exit\s+width|stair(?:way)?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل)\b/i, ["1005.1"]],
+    [/\b(?:width\s+per\s+occupant|inches?\s+per\s+occupant|بوصة?\s+لكل\s+شخص)\b/i,  ["1005.1"]],
+    // Corridor width (min dimension)
+    [/\b(?:min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|عرض\s+الممر)\b/i, ["1018.1"]],
+    // Stair dimensions (risers, treads, headroom)
+    [/\b(?:riser\s+height|tread\s+depth|stair\s+dimen|headroom|ارتفاع\s+الدرجة|عمق\s+الدرجة)\b/i, ["1011.2"]],
+    [/\b(?:stair(?:way)?\s+(?:min|width|size)|أبعاد\s+(?:الدرج|السلم))\b/i,          ["1011.2"]],
+    // Incidental uses — generator room, boiler room, storage room fire separation
+    [/\b(?:generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل))\b/i, ["509"]],
+    [/\b(?:electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire))\b/i, ["509"]],
+    [/\b(?:الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق))\b/i,                ["509"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
