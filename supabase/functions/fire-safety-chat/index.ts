@@ -1566,6 +1566,120 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   }
 }
 
+// ==================== STRUCTURED TABLE LOOKUP (DB-backed, exact table retrieval) ====================
+//
+// When a user query explicitly references a known SBC table ID (e.g. "Table 1004.5",
+// "جدول 504.3", "Table 1006.3.3") the answer must be grounded in the exact structured
+// table row stored in sbc_code_tables rather than relying on storage-file chunk scoring,
+// which can truncate or miss table data.
+//
+// The lookup runs BEFORE keyword/vector retrieval and its result is prepended to the
+// system prompt context so Gemini sees it first and gives it highest citation priority.
+
+/** Extract table IDs referenced in a query, e.g. "Table 504.3" → ["504.3"] */
+function extractTableIds(query: string): string[] {
+  const lower = query.toLowerCase();
+  const found = new Set<string>();
+
+  // Match "table 504.3", "table 1006.3.3", "جدول 1004.5", etc.
+  const tblRegex = /(?:table|جدول)\s+(\d{3,4}(?:\.\d{1,2}){0,2})/gi;
+  let m: RegExpExecArray | null;
+  while ((m = tblRegex.exec(lower)) !== null) {
+    found.add(m[1]);
+  }
+
+  // Also match bare section numbers when they look like table IDs that we know about
+  const KNOWN_TABLE_IDS = [
+    "504.3", "504.4", "506.2",
+    "1004.5", "1006.3.3", "1006.3.4",
+  ];
+  for (const id of KNOWN_TABLE_IDS) {
+    // Match "1004.5" appearing as a standalone reference with word boundaries
+    const escaped = id.replace(/\./g, "\\.");
+    if (new RegExp(`\\b${escaped}\\b`).test(lower)) {
+      found.add(id);
+    }
+  }
+
+  // Legacy table IDs → map to their 2024 replacements and add both
+  const LEGACY_MAP: Record<string, string[]> = {
+    "503":       ["504.3", "504.4", "506.2"],
+    "1004.1.2":  ["1004.5"],
+    "1004.1":    ["1004.5"],
+  };
+  for (const [legacy, replacements] of Object.entries(LEGACY_MAP)) {
+    const escaped = legacy.replace(/\./g, "\\.");
+    if (new RegExp(`(?:table|جدول)\\s+${escaped}\\b`, "i").test(query) ||
+        new RegExp(`\\b${escaped}\\b`).test(lower)) {
+      found.add(legacy); // keep original for note
+      for (const r of replacements) found.add(r);
+    }
+  }
+
+  return [...found];
+}
+
+/**
+ * Fetch structured table rows from sbc_code_tables for any table IDs found in the query.
+ * Returns a context block ready to be prepended to the system prompt, plus the list of
+ * table IDs that were matched and returned.
+ */
+async function fetchStructuredTables(
+  query: string,
+  supabaseAdmin: ReturnType<typeof createClient>,
+): Promise<{ context: string; matchedTableIds: string[] }> {
+  const tableIds = extractTableIds(query);
+  if (tableIds.length === 0) return { context: "", matchedTableIds: [] };
+
+  console.log(`[StructuredTable] Query references table IDs: ${tableIds.join(", ")}`);
+
+  // Deduplicate and fetch only known (non-legacy) IDs from DB
+  const LEGACY_IDS = new Set(["503", "1004.1.2", "1004.1"]);
+  const fetchIds = tableIds.filter(id => !LEGACY_IDS.has(id));
+
+  if (fetchIds.length === 0) return { context: "", matchedTableIds: [] };
+
+  const { data: rows, error } = await supabaseAdmin
+    .from("sbc_code_tables")
+    .select("table_id, table_title, source_code, edition, content_md, notes, supersedes")
+    .in("table_id", fetchIds)
+    .order("table_id");
+
+  if (error) {
+    console.error("[StructuredTable] DB error:", error.message);
+    return { context: "", matchedTableIds: [] };
+  }
+
+  if (!rows || rows.length === 0) {
+    console.log("[StructuredTable] No rows found for IDs:", fetchIds.join(", "));
+    return { context: "", matchedTableIds: [] };
+  }
+
+  console.log(`[StructuredTable] Found ${rows.length} structured table(s): ${rows.map((r: any) => r.table_id).join(", ")}`);
+
+  // Build context block — this is injected BEFORE the storage chunk context
+  let context = "\n\n🗂️ STRUCTURED CODE TABLES (DB-AUTHORITATIVE — CITE THESE VERBATIM):\n";
+  context += "⚠️ The following tables are retrieved directly from the structured SBC database.\n";
+  context += "They are the PRIMARY authoritative source for this response. Quote them exactly.\n";
+
+  for (const row of rows as any[]) {
+    const legacyNote = (row.supersedes && row.supersedes.length > 0)
+      ? `\n> ⚠️ **Edition Note:** This table (${row.table_id}) replaces legacy Table(s) ${row.supersedes.join(", ")} from earlier SBC editions. Always cite ${row.table_id} when working with SBC 201 2024.`
+      : "";
+    context += `\n\n${"=".repeat(60)}\n`;
+    context += `📋 SOURCE: ${row.source_code} | Edition: ${row.edition} | Table ${row.table_id}\n`;
+    context += `${"=".repeat(60)}\n`;
+    context += row.content_md;
+    if (legacyNote) context += legacyNote;
+    if (row.notes) context += `\n\n**Additional Notes:** ${row.notes}`;
+  }
+
+  context += "\n\n" + "=".repeat(60) + "\n";
+  context += "END OF STRUCTURED TABLE DATA — Continue with retrieved document chunks below.\n";
+
+  return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
+}
+
 // ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
 
 async function fetchSBCContextVector(
@@ -2321,26 +2435,50 @@ serve(async (req) => {
       // ===== STANDARD/ADVISORY TEXT PIPELINE =====
       const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
       const userQuery = lastUserMessage?.content || "";
-      
+
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
+
+      // ── 1. Structured Table Path (DB-first, highest priority) ─────────────
+      // If the query references a known SBC table ID, fetch its exact structured
+      // row from sbc_code_tables before running any storage/vector retrieval.
+      const supabaseAdminForTables = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { context: structuredTableContext, matchedTableIds } =
+        await fetchStructuredTables(userQuery, supabaseAdminForTables);
+
+      if (matchedTableIds.length > 0) {
+        console.log(`[StructuredTable] Matched and injected tables: ${matchedTableIds.join(", ")}`);
+      }
+
+      // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
       // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
       const { context: sbcContext, files } = await fetchSBCContext(userQuery);
       usedFiles = files;
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
-      
-      const basePrompt = mode === "analysis" 
-        ? getAnalysisPrompt(language) 
+
+      // ── 3. Assemble final system prompt ──────────────────────────────────────
+      const basePrompt = mode === "analysis"
+        ? getAnalysisPrompt(language)
         : getStandardPrompt(language);
-      
+
       fullSystemPrompt = basePrompt;
+
+      // Structured table context is injected FIRST (highest citation priority).
+      // Storage chunk context follows.
+      if (structuredTableContext) {
+        fullSystemPrompt += structuredTableContext;
+      }
+
       if (sbcContext) {
         fullSystemPrompt += sbcContext;
-        const warningMsg = language === "en" 
+        const warningMsg = language === "en"
           ? `\n\n⚠️ CRITICAL: Cite exact clause numbers from above. If not found, say: "The required information is not available in the current files."`
           : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
         fullSystemPrompt += warningMsg;
-      } else {
-        // No SBC content loaded — storage retrieval failed entirely.
+      } else if (!structuredTableContext) {
+        // No SBC content loaded at all (neither structured tables nor storage chunks).
         // Return a clean 503 instead of calling Gemini with no context (which produces
         // misleading "text not available in provided files" responses).
         console.error("SBC context empty after retrieval — returning 503");
@@ -2352,6 +2490,8 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // If only structuredTableContext loaded (storage failed), we still proceed —
+      // the DB table data alone is sufficient to answer the specific table query.
       
       // Final binding reminder: diagnostic protocol takes precedence over reference context
       const finalBindingReminder = language === "en"
