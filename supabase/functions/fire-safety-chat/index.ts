@@ -962,6 +962,8 @@ function buildQueryKeywords(query: string): string[] {
     "occupant notification", "notification appliance", "strobe alarm",
     "supervising station", "monitoring station", "central station",
     "903.3.2", "quick response sprinkler", "qr head", "residential head",
+    "903.4", "waterflow alarm", "tamper signal", "sprinkler supervision", "supervisory signal",
+    "907.3", "smoke detector", "heat detector", "duct detector", "initiating device",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1626,8 +1628,8 @@ function extractTableIds(query: string): string[] {
     "508.3", "508.4", "508.5",
     // Chapter 10 — Exit Access Doorways (room-level)
     "1006.2.1",
-    // SBC 801 Chapter 9 — Fire Suppression + Standpipe + Sprinkler Type/Heads + Fire Alarm
-    "903.2", "903.3.1", "903.3.2", "905.3.1", "907.2", "907.5", "907.6",
+    // SBC 801 Chapter 9 — Fire Suppression + Supervision + Standpipe + Sprinkler Type/Heads + Fire Alarm
+    "903.2", "903.3.1", "903.3.2", "903.4", "905.3.1", "907.2", "907.3", "907.5", "907.6",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1651,8 +1653,8 @@ function extractTableIds(query: string): string[] {
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
     "508":    ["508.3", "508.4", "508.5"],  // "Section 508" → all three occupancy methods
     "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
-    "903":    ["903.2", "903.3.1", "903.3.2"],  // "Section 903" → sprinkler where-required + type + head type
-    "907":    ["907.2", "907.5", "907.6"],     // "Section 907" → fire alarm where-required + notification + monitoring
+    "903":    ["903.2", "903.3.1", "903.3.2", "903.4"],  // "Section 903" → sprinkler: where-required, type, head type, supervision
+    "907":    ["907.2", "907.3", "907.5", "907.6"],      // "Section 907" → fire alarm: where-required, initiating devices, notification, monitoring
     "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit access rules
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
@@ -1744,6 +1746,16 @@ function extractTableIds(query: string): string[] {
     [/\b(?:supervising\s+station|monitoring\s+(?:required|station|fire\s+alarm)|central\s+station|fire\s+alarm\s+monitor)\b/i, ["907.6"]],
     [/\b(?:UL\s+827|NFPA\s+72.*monitor|monitored.*alarm|alarm.*monitored|remote\s+station|proprietary\s+station)\b/i, ["907.6"]],
     [/\b(?:مراقبة\s+(?:نظام\s+)?الإنذار|محطة\s+الإشراف|مراكز\s+استقبال\s+الإنذار)\b/i, ["907.6"]],
+    // Initiating devices — smoke / heat / duct detectors (907.3)
+    [/\b(?:smoke\s+detector|heat\s+detector|initiating\s+device|automatic\s+(?:fire\s+)?detection)\b/i, ["907.3"]],
+    [/\b(?:duct\s+(?:smoke\s+)?detector|hvac\s+(?:smoke\s+)?detector|smoke\s+detector\s+(?:in\s+)?duct)\b/i, ["907.3"]],
+    [/\b(?:when.*smoke\s+detector|smoke\s+detector.*required|where.*smoke\s+detector|heat\s+detector.*(?:vs|instead|use|when))\b/i, ["907.3"]],
+    [/\b(?:كاشف\s+(?:الدخان|الحرارة)|كاشف\s+دخان|كاشف\s+حرارة|أجهزة\s+الكشف\s+التلقائي|كاشف\s+قناة\s+الهواء)\b/i, ["907.3"]],
+    // Sprinkler supervision / waterflow / tamper (903.4)
+    [/\b(?:sprinkler\s+supervision|waterflow\s+(?:alarm|switch|signal)|water\s+flow\s+alarm)\b/i, ["903.4"]],
+    [/\b(?:tamper\s+(?:switch|signal|alarm)|control\s+valve\s+(?:tamper|supervision)|supervisory\s+signal)\b/i, ["903.4"]],
+    [/\b(?:dry.pipe\s+supervision|sprinkler\s+(?:valve\s+)?monitor|pressure\s+supervisory)\b/i, ["903.4"]],
+    [/\b(?:مراقبة\s+(?:نظام\s+)?الرش|إشارة\s+التدفق|صمام\s+التحكم\s+(?:مراقبة|إنذار)|إشارة\s+المراقبة\s+رش)\b/i, ["903.4"]],
     // Exit access doorways — room-level (1006.2.1)
     [/\b(?:exit\s+access\s+doorway|how\s+many\s+doors?\s+(?:does\s+a\s+)?room|single\s+exit.*room|one\s+exit.*room|room.*one\s+exit)\b/i, ["1006.2.1"]],
     [/\b(?:one\s+exit\s+access|single\s+exit\s+access|single\s+door.*egress|one\s+door.*egress)\b/i, ["1006.2.1"]],
