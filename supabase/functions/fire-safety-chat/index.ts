@@ -2007,7 +2007,7 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
@@ -2360,6 +2360,32 @@ serve(async (req) => {
       fullSystemPrompt += finalBindingReminder;
     }
     
+    // ── Apply user preferences to system prompt ────────────────────────────
+    // output_format and preferred_standards come from the user's saved settings
+    // (profiles table). They are forwarded by the frontend with every request.
+
+    // output_format: adjust response style/length
+    if (output_format && output_format !== "detailed") {
+      const formatInstruction = output_format === "concise"
+        ? (language === "en"
+          ? "\n\n📏 FORMAT PREFERENCE: The user has requested CONCISE responses. Keep answers brief and direct. Avoid lengthy explanations. Use bullet points over prose where possible. Target under 300 words unless a code section requires verbatim quoting."
+          : "\n\n📏 تفضيل التنسيق: المستخدم طلب إجابات موجزة. أبقِ إجاباتك قصيرة ومباشرة. استخدم النقاط بدل الفقرات الطويلة كلما أمكن. هدف أقل من 300 كلمة ما لم يتطلب نص الكود اقتباساً حرفياً.")
+        : (language === "en"
+          ? "\n\n📄 FORMAT PREFERENCE: The user has requested a REPORT format. Structure your response as a formal engineering report with clear numbered sections, headers, a summary table if applicable, and a final verdict section. Use professional report language."
+          : "\n\n📄 تفضيل التنسيق: المستخدم طلب صيغة تقرير رسمي. نظّم إجابتك كتقرير هندسي رسمي بأقسام مرقمة وعناوين واضحة وجدول ملخص إن أمكن وقسم حكم نهائي. استخدم لغة تقارير مهنية.");
+      fullSystemPrompt += formatInstruction;
+    }
+
+    // preferred_standards: signal which SBC document the user wants prioritised
+    if (Array.isArray(preferred_standards) && preferred_standards.length > 0 && preferred_standards.length < 2) {
+      // Only apply when user has narrowed to a specific standard (not the default "both")
+      const stdNote = preferred_standards[0];
+      const stdInstruction = language === "en"
+        ? `\n\n📌 STANDARDS PREFERENCE: The user has set "${stdNote}" as their preferred standard. When both SBC 201 and SBC 801 are relevant, cite ${stdNote} first and give it primary prominence in your answer. Still cross-reference the other standard when required by code.`
+        : `\n\n📌 تفضيل المعيار: المستخدم حدد "${stdNote}" كمعياره المفضّل. عندما يكون كلا المعيارين SBC 201 وSBC 801 ذوي صلة، اذكر ${stdNote} أولاً وامنحه الأولوية في إجابتك. مع الإشارة إلى المعيار الآخر عند اشتراط الكود ذلك.`;
+      fullSystemPrompt += stdInstruction;
+    }
+
     const systemMessages: any[] = [{ role: "system", content: fullSystemPrompt }];
     if (retry) {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });
