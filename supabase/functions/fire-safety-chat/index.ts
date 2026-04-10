@@ -957,8 +957,11 @@ function buildQueryKeywords(query: string): string[] {
     "nfpa 13", "nfpa 13r", "nfpa 13d", "13r", "13d",
     "sprinkler system type", "which sprinkler",
     "section 905", "905.3", "905.3.1", "standpipe",
-    "section 907", "907.2", "fire alarm required", "fire detection",
-    "manual fire alarm", "occupant notification",
+    "section 907", "907.2", "907.5", "907.6",
+    "fire alarm required", "fire detection", "manual fire alarm",
+    "occupant notification", "notification appliance", "strobe alarm",
+    "supervising station", "monitoring station", "central station",
+    "903.3.2", "quick response sprinkler", "qr head", "residential head",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1623,8 +1626,8 @@ function extractTableIds(query: string): string[] {
     "508.3", "508.4", "508.5",
     // Chapter 10 — Exit Access Doorways (room-level)
     "1006.2.1",
-    // SBC 801 Chapter 9 — Fire Suppression + Standpipe + Sprinkler Type + Fire Alarm
-    "903.2", "903.3.1", "905.3.1", "907.2",
+    // SBC 801 Chapter 9 — Fire Suppression + Standpipe + Sprinkler Type/Heads + Fire Alarm
+    "903.2", "903.3.1", "903.3.2", "905.3.1", "907.2", "907.5", "907.6",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1648,8 +1651,8 @@ function extractTableIds(query: string): string[] {
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
     "508":    ["508.3", "508.4", "508.5"],  // "Section 508" → all three occupancy methods
     "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
-    "903":    ["903.2", "903.3.1"],  // "Section 903" → sprinkler where-required + system type
-    "907":    ["907.2"],   // "Section 907" → fire alarm where-required
+    "903":    ["903.2", "903.3.1", "903.3.2"],  // "Section 903" → sprinkler where-required + type + head type
+    "907":    ["907.2", "907.5", "907.6"],     // "Section 907" → fire alarm where-required + notification + monitoring
     "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit access rules
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
@@ -1730,6 +1733,17 @@ function extractTableIds(query: string): string[] {
     [/\b(?:which\s+(?:sprinkler\s+)?system|sprinkler\s+(?:type|standard)|type\s+of\s+sprinkler)\b/i, ["903.3.1"]],
     [/\b(?:13R\s+(?:allowed|permitted|vs|or)|13D\s+(?:allowed|permitted|vs|or)|residential\s+sprinkler\s+(?:type|standard))\b/i, ["903.3.1"]],
     [/\b(?:نظام\s+الرش\s+(?:نوع|أي)|NFPA.*مقابل|13R.*مسموح|13D.*مسموح|أي\s+نظام\s+رش)\b/i, ["903.3.1"]],
+    // Quick-response / residential sprinkler heads (903.3.2)
+    [/\b(?:quick.response\s+sprinkler|QR\s+(?:head|sprinkler)|residential\s+(?:head|sprinkler\s+head)|sprinkler\s+head\s+type)\b/i, ["903.3.2"]],
+    [/\b(?:standard.response\s+(?:head|sprinkler)|RTI\s+value|رشاشة\s+سريعة|رأس\s+رش\s+سكني|نوع\s+رأس\s+الرش)\b/i, ["903.3.2"]],
+    // Occupant notification — audible/visible (907.5)
+    [/\b(?:notification\s+appliance|occupant\s+notification|audible\s+alarm|visible\s+alarm|strobe\s+(?:alarm|light|requirement))\b/i, ["907.5"]],
+    [/\b(?:dba\s+requirement|sound\s+level.*alarm|alarm.*dba|75\s*dba|pillow\s+level|temporal.3)\b/i, ["907.5"]],
+    [/\b(?:when.*strobe|strobe.*required|visible\s+notification|إنذار\s+مرئي|الضوء\s+الوامض|أجهزة\s+الإنذار)\b/i, ["907.5"]],
+    // Monitoring / supervising station (907.6)
+    [/\b(?:supervising\s+station|monitoring\s+(?:required|station|fire\s+alarm)|central\s+station|fire\s+alarm\s+monitor)\b/i, ["907.6"]],
+    [/\b(?:UL\s+827|NFPA\s+72.*monitor|monitored.*alarm|alarm.*monitored|remote\s+station|proprietary\s+station)\b/i, ["907.6"]],
+    [/\b(?:مراقبة\s+(?:نظام\s+)?الإنذار|محطة\s+الإشراف|مراكز\s+استقبال\s+الإنذار)\b/i, ["907.6"]],
     // Exit access doorways — room-level (1006.2.1)
     [/\b(?:exit\s+access\s+doorway|how\s+many\s+doors?\s+(?:does\s+a\s+)?room|single\s+exit.*room|one\s+exit.*room|room.*one\s+exit)\b/i, ["1006.2.1"]],
     [/\b(?:one\s+exit\s+access|single\s+exit\s+access|single\s+door.*egress|one\s+door.*egress)\b/i, ["1006.2.1"]],
