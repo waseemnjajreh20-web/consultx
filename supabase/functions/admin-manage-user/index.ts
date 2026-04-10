@@ -115,13 +115,86 @@ serve(async (req) => {
       const plan_type = payload.plan_type as string;
       if (!validPlans.includes(plan_type)) return json({ error: `Invalid plan_type. Must be one of: ${validPlans.join(", ")}` }, 400);
 
-      const { error } = await adminClient
+      // 1. Capture old plan for the audit trail before mutating anything.
+      const { data: currentProfile } = await adminClient
+        .from("profiles")
+        .select("plan_type")
+        .eq("user_id", target_user_id)
+        .single();
+      const old_plan = currentProfile?.plan_type ?? "unknown";
+
+      // 2. Update profiles.plan_type — entitlement source for per-mode limits.
+      const { error: profileErr } = await adminClient
         .from("profiles")
         .update({ plan_type, updated_at: new Date().toISOString() })
         .eq("user_id", target_user_id);
-      if (error) throw error;
+      if (profileErr) throw profileErr;
 
-      await audit(target_user_id, { plan_type });
+      // 3. Align user_subscriptions so check-subscription reflects the change
+      //    immediately. Without this, check-subscription silently syncs
+      //    profiles.plan_type back to "free" on the next call whenever the
+      //    subscription row is "expired" or "cancelled" — overwriting the admin
+      //    change. We own the subscription row here as an admin grant.
+      const now = new Date();
+
+      if (plan_type === "free") {
+        // Revoke: cancel any active / trialing / past_due subscription rows.
+        await adminClient
+          .from("user_subscriptions")
+          .update({ status: "cancelled", updated_at: now.toISOString() })
+          .eq("user_id", target_user_id)
+          .in("status", ["active", "trialing", "past_due"]);
+      } else {
+        // Grant: upsert an admin-issued subscription — active, 1-year period.
+        const periodEnd = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+
+        const { data: existingSub } = await adminClient
+          .from("user_subscriptions")
+          .select("id")
+          .eq("user_id", target_user_id)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingSub) {
+          await adminClient
+            .from("user_subscriptions")
+            .update({
+              status: "active",
+              current_period_start: now.toISOString(),
+              current_period_end: periodEnd.toISOString(),
+              cancel_at_period_end: false,
+              updated_at: now.toISOString(),
+            })
+            .eq("id", existingSub.id);
+        } else {
+          await adminClient
+            .from("user_subscriptions")
+            .insert({
+              user_id: target_user_id,
+              status: "active",
+              current_period_start: now.toISOString(),
+              current_period_end: periodEnd.toISOString(),
+            });
+        }
+      }
+
+      // 4. Write in-app notification via auth app_metadata.
+      //    PlanChangeNotifier.tsx reads this on the next session token refresh
+      //    and shows a one-time toast to the affected user.
+      //    Fire-and-forget — never blocks the plan change itself.
+      adminClient.auth.admin.updateUserById(target_user_id, {
+        app_metadata: {
+          plan_notification: {
+            new_plan: plan_type,
+            old_plan,
+            changed_at: now.toISOString(),
+            changed_by: callerEmail,
+          },
+        },
+      }).catch((e: Error) => console.warn("plan_notification write failed:", e.message));
+
+      // 5. Audit with full before/after context.
+      await audit(target_user_id, { old_plan, new_plan: plan_type });
       return json({ ok: true });
     }
 
