@@ -29,6 +29,7 @@ import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
 import { resolveAllSources, formatSourceLabel } from "@/utils/sourceMetadata";
+import { usePreferences } from "@/hooks/usePreferences";
 
 interface Message {
   id: string;
@@ -180,17 +181,30 @@ function UtilityBar({ content, mode, messageId, userName }: {
     // 3. Timestamp
     const exportTs = new Date().toLocaleString("ar-SA");
 
+    // 4. Read customization from localStorage (saved by CustomizationSection)
+    const cxCompanyName   = localStorage.getItem("cx_company_name")   || "";
+    const cxReportHeader  = localStorage.getItem("cx_report_header")  || "";
+    const cxReportFooter  = localStorage.getItem("cx_report_footer")  || "";
+    const cxLogo          = localStorage.getItem("cx_company_logo")   || "";
+
     const sc = "</" + "script>";
 
     // Build HTML string pieces — NO unicode escapes, plain Arabic only
-    const titleText = "ConsultX \u2014 تقرير هندسي";
-    const platformText = "ConsultX \u2014 منصة الاستشارات الهندسية";
-    const subtitleText = "تقرير التدقيق الهندسي \u2014 اشتراطات كود البناء السعودي";
+    const titleText     = cxCompanyName ? cxCompanyName + " \u2014 تقرير هندسي" : "ConsultX \u2014 تقرير هندسي";
+    // Header brand: use company logo + name if set, otherwise ConsultX defaults
+    const logoSrc       = cxLogo || consultxIcon;
+    const platformText  = cxCompanyName || "ConsultX \u2014 منصة الاستشارات الهندسية";
+    const subtitleText  = "تقرير التدقيق الهندسي \u2014 اشتراطات كود البناء السعودي";
     const preparerLabel = "إعداد المهندس:";
-    const dateLabel = "تاريخ التصدير:";
-    const footerText = "ConsultX \u2014 منصة الاستشارات الهندسية والوقاية من الحريق";
-    const pageLabel = "صفحة ";
+    const dateLabel     = "تاريخ التصدير:";
+    // Footer: use custom footer text if set, otherwise ConsultX default
+    const footerText    = cxReportFooter || "ConsultX \u2014 منصة الاستشارات الهندسية والوقاية من الحريق";
+    const pageLabel     = "صفحة ";
     const preparerFooter = "إعداد المهندس: " + userName;
+    // Custom report header block (shown below the header bar if set)
+    const customHeaderBlock = cxReportHeader
+      ? `<div style="margin: 0 0 20px; padding: 10px 28px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.8rem; color: #374151; white-space: pre-line; direction: rtl;">${cxReportHeader.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>`
+      : "";
 
     const html = [
       "<!DOCTYPE html>",
@@ -208,14 +222,14 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "details > *:not(summary) { display: block !important; }",
       "summary::marker, summary::-webkit-details-marker { display: none !important; }",
       "button { display: none !important; }",
-      ".cx-hdr { background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%); border-bottom: 3px solid #00D4FF; padding: 18px 28px 16px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; page-break-inside: avoid; break-inside: avoid; }",
+      ".cx-hdr { background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%); border-bottom: 3px solid #00D4FF; padding: 18px 28px 16px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; page-break-inside: avoid; break-inside: avoid; }",
       ".cx-hdr-brand { display: flex; align-items: center; gap: 12px; }",
       ".cx-hdr-brand img { height: 40px; width: 40px; object-fit: contain; flex-shrink: 0; }",
       ".cx-hdr-brand h1 { margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; color: #0369a1; white-space: nowrap; }",
       ".cx-hdr-brand p { margin: 0; font-size: 0.72rem; color: #475569; }",
       ".cx-hdr-meta { text-align: left; font-size: 0.72rem; color: #475569; line-height: 1.9; white-space: nowrap; }",
       ".cx-hdr-meta strong { color: #1e3a5f; font-weight: 600; }",
-      ".cx-content { padding: 0 28px; }",
+      ".cx-content { padding: 20px 28px 0; }",
       ".consultx-bold-primary  { color: #005B70 !important; background: rgba(0,91,112,0.08) !important; border-bottom-color: #005B70 !important; }",
       ".consultx-bold-standard { color: #8B4500 !important; background: transparent !important; }",
       ".consultx-bold-analysis { color: #800000 !important; background: transparent !important; }",
@@ -242,7 +256,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "<body>",
       '<div class="cx-hdr">',
       '  <div class="cx-hdr-brand">',
-      '    <img src="' + consultxIcon + '" alt="ConsultX" onerror="this.style.display=\'none\'">',
+      '    <img src="' + logoSrc + '" alt="logo" onerror="this.style.display=\'none\'">',
       "    <div>",
       "      <h1>" + platformText + "</h1>",
       "      <p>" + subtitleText + "</p>",
@@ -253,6 +267,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "    <div><strong>" + dateLabel + "</strong> " + exportTs + "</div>",
       "  </div>",
       "</div>",
+      customHeaderBlock,
       '<div class="cx-content">' + renderedHtml + "</div>",
       '<div class="cx-footer">',
       "  <span>" + footerText + "</span>",
@@ -489,8 +504,29 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 // ===== SMART HISTORY TRIMMING =====
-function trimMessageHistory(messages: Message[], mode: ChatMode): ChatMessage[] {
+// ai_memory_level controls the history window:
+//   "none"       → only the most recent user + assistant pair (no prior context)
+//   "session"    → mode-specific defaults (current behaviour)
+//   "persistent" → all real messages up to a generous cap (50) — full session memory
+function trimMessageHistory(
+  messages: Message[],
+  mode: ChatMode,
+  aiMemoryLevel: "none" | "session" | "persistent" = "session"
+): ChatMessage[] {
   const real = messages.filter(m => !("type" in m));
+
+  if (aiMemoryLevel === "none") {
+    // No history — only send the last user message so the AI starts fresh each turn.
+    const lastUser = [...real].reverse().find(m => m.role === "user");
+    return lastUser ? [{ role: lastUser.role, content: lastUser.content }] : [];
+  }
+
+  if (aiMemoryLevel === "persistent") {
+    // Send up to the last 50 real messages — full in-session memory.
+    return real.slice(-50).map(m => ({ role: m.role, content: m.content }));
+  }
+
+  // "session" → original per-mode defaults
   if (mode === "primary") {
     // رئيسي: last 6 only — quick exchanges
     return real.slice(-6).map(m => ({ role: m.role, content: m.content }));
@@ -514,9 +550,12 @@ function trimMessageHistory(messages: Message[], mode: ChatMode): ChatMessage[] 
 
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
+  output_format, preferred_standards,
   onDelta, onFirstChunk, onDone, onError, onSources, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
+  output_format?: string;
+  preferred_standards?: string[];
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
@@ -532,7 +571,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images }),
+    body: JSON.stringify({ messages, retry, mode, language, images, output_format, preferred_standards }),
     signal,
   });
   if (!resp.ok) {
@@ -685,6 +724,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [isDragOver, setIsDragOver] = useState(false);
   const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
+  const { preferences } = usePreferences();
 
   // Sync source-panel state to parent (AppShell renders it as 3rd pane)
   useEffect(() => { onSourceStateChange?.(sourcePanel); }, [sourcePanel, onSourceStateChange]);
@@ -933,6 +973,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     try {
       await streamChat({
         messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
+        output_format: preferences.output_format,
+        preferred_standards: preferences.preferred_standards,
         signal: controller.signal,
         onDelta: upsertAssistant,
         onFirstChunk: () => {
@@ -1117,7 +1159,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     const assistantId = (Date.now() + 1).toString();
     // Build history using smart per-mode trimming
     const allRealMessages = [...messages, userMessage];
-    const chatMessages = trimMessageHistory(allRealMessages, chatMode);
+    const chatMessages = trimMessageHistory(allRealMessages, chatMode, preferences.ai_memory_level);
     handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language,
       pagesToSend.length > 0 ? pagesToSend : undefined);
   };

@@ -25,7 +25,7 @@ export function usePreferences() {
       const { data } = await supabase
         .from("profiles")
         .select("ai_memory_level, output_format, preferred_standards")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       if (data) {
         setPreferences({
@@ -43,7 +43,7 @@ export function usePreferences() {
     if (!user) return;
     const newPrefs = { ...preferences, ...updates };
     setPreferences(newPrefs);
-    await supabase.from("profiles").update(updates as any).eq("id", user.id);
+    await supabase.from("profiles").update(updates as any).eq("user_id", user.id);
   }, [user, preferences]);
 
   return { preferences, loading, updatePreferences };

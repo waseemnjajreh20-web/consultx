@@ -38,21 +38,6 @@ If clause not found, respond: "The required code text is not available in the pr
 - NEVER use vague words: "usually", "approximately", "probably", "generally", "often", "غالباً", "تقريباً", "عادةً"
 - ALWAYS be DEFINITIVE: state exact values, exact section numbers, exact requirements
 - If uncertain, say "requires AHJ determination" rather than guessing
-
-7️⃣ CORPUS BOUNDARY — ABSOLUTE
-The ONLY documents physically present in your retrieval corpus are SBC 201 and SBC 801.
-NFPA 13, NFPA 72, NFPA 101, NFPA 2, NFPA 30, NFPA 55, IBC, IFC, SFPE Handbook, and ALL other standards are NOT in your corpus.
-You must NEVER quote, paraphrase, or cite specific clause numbers, table values, density values, flow rates, spacing requirements, k-factors, pipe schedules, or design parameters from these documents.
-Using "as referenced by SBC 801" does NOT authorize citing NFPA content — the SBC reference is a pointer to an external document you do not have.
-If a question requires NFPA or SFPE content to answer safely, respond EXACTLY:
-  Arabic: "هذا الاشتراط يتطلب الرجوع إلى [NFPA XX / SFPE] مباشرةً — هذه الوثيقة غير متوفرة في قاعدة البيانات الحالية ولا يمكنني تقديم قيم تصميمية منها."
-  English: "This requirement references [NFPA XX / SFPE] directly — this document is not in the current corpus and I cannot provide design values from it."
-Do NOT substitute IBC values, training-data defaults, or "industry standard" values when SBC text is absent.
-
-8️⃣ CONSTRUCTION TYPE NOMENCLATURE — SBC ONLY
-SBC 201 uses its own construction type classification system. IBC Type I-A, I-B, II-A, II-B, III-A, III-B, IV, V-A, V-B labels and their associated allowable heights and areas are IBC-specific.
-Do NOT apply IBC construction type limits to SBC questions.
-If SBC construction type data is not present in your retrieved context, state: "The specific SBC construction type table was not retrieved — consult SBC 201 Table 503 directly." Do not substitute IBC values.
 `;
 
 // ==================== LANGUAGE-SPECIFIC CONTENT ====================
@@ -113,7 +98,7 @@ function getStandardPrompt(language: string = "ar"): string {
 
 أنت مستشار أول متخصص بالحماية من الحرائق وسلامة الحياة في المملكة العربية السعودية، تعمل ضمن منظومة ConsultX المكونة من 12 وكيلاً ذكياً بقيادة وكيل الأوركسترا.
 
-تخصصك: كود البناء السعودي (SBC 201, SBC 801).
+تخصصك: كود البناء السعودي (SBC 201, SBC 801)، معايير NFPA، معايير SFPE.
 مجالات الإجابة: الحماية من الحرائق، أنظمة الإنذار والكشف، التحكم بالدخان، الضغط، التصميم القائم على الأداء، الطرق البديلة.
 
 ═══════════════════════════════════════
@@ -170,7 +155,7 @@ ${CORE_RULES}
 قيود أساسية غير قابلة للتفاوض:
 ═══════════════════════════════════════
 
-1) استخدم فقط المستندات والمراجع المتاحة في قاعدة بيانات النظام (SBC 201, SBC 801, التفسيرات Commentary). لا تستخدم أي معلومة من خارج هذه المراجع مطلقاً.
+1) استخدم فقط المستندات والمراجع المتاحة في قاعدة بيانات النظام (SBC 201, SBC 801, ملفات NFPA, التفسيرات Commentary, SFPE). لا تستخدم أي معلومة من خارج هذه المراجع مطلقاً.
 
 2) يجب اقتباس النص الإنجليزي الأصلي من الكود حرفياً مع ذكر موقعه الدقيق (الفصل / القسم / الفقرة / الصفحة إن توفرت).
 
@@ -202,7 +187,7 @@ C) التحليل الفني بالعربية
 - إذا وجدت تفسيرات متعددة، اعرض كل واحدة بدون افتراض
 
 D) الاشتقاق الهندسي (Engineering Logic)
-- اشرح الأساس العلمي أو المنطقي باستخدام مصادر المراجع فقط (Commentary, SBC 201, SBC 801)
+- اشرح الأساس العلمي أو المنطقي باستخدام مصادر المراجع فقط (Commentary, NFPA, SFPE)
 - أضف المفاهيم الهندسية عند الحاجة: معاملات التدفق، حدود سرعة الهواء، معايير القابلية للبقاء، فروق الضغط
 - صنّف أي افتراض هندسي بوضوح كغير إلزامي (non-prescriptive)
 
@@ -277,6 +262,7 @@ F) تنبيهات وثغرات واعتمادات الجهات المختصة (A
 - وكيل مراجعة الكود: مطابقة حرفية وتحقق من أرقام السكاشن
 - وكيل المراجع التقاطعية: تتبع الإحالات بين الفقرات
 - وكيل تقييم الاستثناءات: البحث عن حالات الإعفاء وصلاحيات السلطات
+- وكيل التوافق الدولي: ربط SBC بمعايير NFPA/SFPE
 - وكيل دمج التغييرات: حل التعارضات (Git-style Merge)
 - وكيل بروتوكول الاستجابة: صياغة الرد بالسند القانوني الإلزامي
 
@@ -326,7 +312,7 @@ ${CORE_RULES}
 قيود أساسية غير قابلة للتفاوض:
 ═══════════════════════════════════════
 
-1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801). لا تستخدم معلومات خارجية مطلقاً.
+1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية مطلقاً.
 2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق.
 3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع.
 4) إذا لم تستطع قراءة جزء من المخطط أو كانت البيانات النصية غير كافية: قل ذلك صراحة. لا تخمّن.
@@ -387,7 +373,7 @@ F) تنبيهات الجهات المختصة (AHJ Notes)
 
 - وكيل التخطيط الذكي + Vision AI: تصنيف المبنى من أول نظرة
 - وكيل تحليل الجداول والرسومات: فك شفرة البيانات الرقمية
-- وكيل المعالجة المتوازية: فحص SBC 201 + SBC 801 بالتزامن
+- وكيل المعالجة المتوازية: فحص SBC 201 + SBC 801 + NFPA بالتزامن
 - وكيل المراجع التقاطعية: تتبع الإحالات
 - وكيل مراجعة الكود: تحقق حرفي قبل إصدار أي ملاحظة
 - وكيل صياغة المنطق الهندسي: شرح لماذا تم القرار + تأكيد سيادة الدفاع المدني
@@ -679,22 +665,11 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "additions": { sbc201: [34], sbc801: [] },
   "إضافات": { sbc201: [34], sbc801: [] },
   
-  // Hazardous materials storage facilities (SBC 801 Chapters 19-21)
-  // Covers: flammable storage, chemical storage, hazmat occupancies (H-occupancy)
+  // Hazardous Materials (SBC 801)
   "hazardous": { sbc201: [], sbc801: [19, 20, 21] },
-  "hazardous materials": { sbc201: [], sbc801: [19, 20, 21] },
+  "خطر": { sbc201: [], sbc801: [19, 20, 21] },
+  "خطرة": { sbc201: [], sbc801: [19, 20, 21] },
   "مواد خطرة": { sbc201: [], sbc801: [19, 20, 21] },
-  "مخزن مواد خطرة": { sbc201: [], sbc801: [19, 20, 21] },
-  // Incidental use areas / hazardous areas within buildings (SBC 201 Chapter 5, Table 509)
-  // Covers: rooms with incidental hazardous use inside a non-H-occupancy building
-  "incidental use": { sbc201: [5], sbc801: [] },
-  "incidental hazardous": { sbc201: [5], sbc801: [] },
-  "منطقة خطرة": { sbc201: [5], sbc801: [] },
-  "مناطق خطرة": { sbc201: [5], sbc801: [] },
-  "غرفة خطرة": { sbc201: [5], sbc801: [] },
-  // Bare خطر/خطرة without disambiguation — route to both paths
-  "خطر": { sbc201: [5], sbc801: [19, 20, 21] },
-  "خطرة": { sbc201: [5], sbc801: [19, 20, 21] },
   "flammable liquid": { sbc201: [], sbc801: [21] },
   "سوائل قابلة للاشتعال": { sbc201: [], sbc801: [21] },
   "gas": { sbc201: [], sbc801: [22, 23] },
@@ -748,16 +723,6 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "تبريد فائق": { sbc201: [], sbc801: [35] },
   "pipeline": { sbc201: [], sbc801: [36] },
   "أنابيب": { sbc201: [], sbc801: [36] },
-
-  // Atrium — SBC 201 Ch.4 (special occupancy provisions), Ch.10 (egress implications)
-  //          SBC 801 Ch.9 (smoke control for atriums)
-  "atrium": { sbc201: [4, 10], sbc801: [9] },
-  "atriums": { sbc201: [4, 10], sbc801: [9] },
-  "atria": { sbc201: [4, 10], sbc801: [9] },
-  "بهو": { sbc201: [4, 10], sbc801: [9] },
-  "فضاء بهوي": { sbc201: [4, 10], sbc801: [9] },
-  "أتريوم": { sbc201: [4, 10], sbc801: [9] },
-  "فراغ مفتوح متعدد الطوابق": { sbc201: [4, 10], sbc801: [9] },
 };
 
 // ==================== SBC FILE RETRIEVAL (OPTIMIZED) ====================
@@ -944,12 +909,6 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "هروب": ["egress", "escape", "evacuation"],
   "إخلاء": ["evacuation", "egress"],
   "تصريح": ["permit", "approval"],
-  // Atrium terms (previously absent — caused TC-037 retrieval failure)
-  "بهو": ["atrium", "atrium space"],
-  "فضاء بهوي": ["atrium", "open atrium"],
-  "أتريوم": ["atrium"],
-  "فراغ مفتوح متعدد الطوابق": ["atrium", "multi-story atrium"],
-  "فراغ مفتوح": ["atrium", "open space", "void"],
 };
 
 // ---- Smart Chunk Scoring (OPTIMIZED) ----
@@ -1322,11 +1281,8 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   const startTime = Date.now();
   const usedFiles: string[] = [];
   
-  // Check query cache first — use full-query SHA-256 hash to prevent prefix-collision
-  // (e.g. two queries differing only in building height sharing a 200-char prefix)
-  const queryBytes = new TextEncoder().encode(query.toLowerCase().trim());
-  const hashBuffer = await crypto.subtle.digest("SHA-256", queryBytes);
-  const cacheKey = Array.from(new Uint8Array(hashBuffer)).slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join("");
+  // Check query cache first
+  const cacheKey = query.slice(0, 200).toLowerCase();
   const cached = queryCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < QUERY_CACHE_TTL) {
     console.log(`⚡ Query cache hit! Returning cached result (${cached.result.context.length} chars)`);
@@ -1695,321 +1651,6 @@ async function fetchSBCContextVector(
   }
 }
 
-// ==================== BATCH 5 PILOT: TABLE-SAFE PATH ====================
-// Active pilot tables (SBC 201-CC-2024):
-//   SBC201:Table1004.5  — partial_verified (3 rows: Business, Loose chairs, Agriculture)
-//   SBC201:Table1006.3.3 — complete (3 rows: exit counts by occupant load)
-//   SBC201:Table504.3 / 504.4 / 506.2 — pending (stubs only)
-// Legacy stubs (legacy_only — no active patterns, redirect only):
-//   SBC201:Table503      → redirects to 504.3/504.4/506.2
-//   SBC201:Table1004.1.2 → redirects to Table1004.5
-// If rows populated → inject [TABLE SAFE] block.
-// If partial_verified → inject [TABLE SAFE] with partial notice.
-// If legacy_only → inject [TABLE REDIRECT] notice.
-// If pending (rows=[]) → inject [TABLE PENDING] hedge.
-// Step 0 in fetchPilotContext() — runs before structural and vector.
-
-const PILOT_TABLE_PATTERNS: Array<{
-  tableId: string;
-  tableNumber: string;
-  captionEn: string;
-  patterns: RegExp[];
-}> = [
-  {
-    // canonical occupant load factor table (SBC 201-CC-2024)
-    // also catches legacy queries for Table 1004.1.2 (old numbering)
-    tableId: "SBC201:Table1004.5",
-    tableNumber: "Table 1004.5",
-    captionEn: "Maximum Floor Area Allowances Per Occupant",
-    patterns: [
-      /table\s+1004\.5\b/i,
-      /جدول\s+1004\.5\b/,
-      /table\s+1004\.1\.2\b/i,
-      /جدول\s+1004\.1\.2\b/,
-      /occupant\s+load\s+(factor|table)/i,
-      /floor\s+area.*per\s+occupant/i,
-      /عامل\s+حِمل\s+الشاغل/,
-      /مساحة.*للشاغل/,
-    ],
-  },
-  {
-    // minimum exits per story by occupant load (SBC 201-CC-2024, p.1186)
-    tableId: "SBC201:Table1006.3.3",
-    tableNumber: "Table 1006.3.3",
-    captionEn: "Minimum Number of Exits or Access to Exits Per Story",
-    patterns: [
-      /table\s+1006\.3\.3\b/i,
-      /جدول\s+1006\.3\.3\b/,
-      /minimum\s+(number\s+of\s+)?exits?\s+(per\s+stor|required)/i,
-      /how\s+many\s+exits?\s+(are\s+)?(required|needed)/i,
-      /number\s+of\s+exits?\s+.*stor/i,
-      /exits?\s+.*occupant\s+load/i,
-      /عدد\s+المخارج.*طابق/,
-      /المخارج.*حِمل\s+الشاغل/,
-    ],
-  },
-  {
-    // height/area limit tables — pending stubs; catches queries about 504.3/504.4/506.2
-    tableId: "SBC201:Table504.3",
-    tableNumber: "Table 504.3",
-    captionEn: "Allowable Number of Stories Above Grade Plane",
-    patterns: [
-      /table\s+504\.3\b/i,
-      /جدول\s+504\.3\b/,
-      /allowable\s+(number\s+of\s+)?stor(y|ies)/i,
-      /maximum\s+stor(y|ies)\s+(above|height)/i,
-    ],
-  },
-  {
-    tableId: "SBC201:Table504.4",
-    tableNumber: "Table 504.4",
-    captionEn: "Allowable Building Height in Metres",
-    patterns: [
-      /table\s+504\.4\b/i,
-      /جدول\s+504\.4\b/,
-      /allowable\s+building\s+height/i,
-      /maximum\s+building\s+height\s+(in\s+m|metres?)/i,
-      /الارتفاع\s+المسموح\s+به\s+للمبنى/,
-    ],
-  },
-  {
-    tableId: "SBC201:Table506.2",
-    tableNumber: "Table 506.2",
-    captionEn: "Allowable Area Factor",
-    patterns: [
-      /table\s+506\.2\b/i,
-      /جدول\s+506\.2\b/,
-      /allowable\s+area\s+factor/i,
-      /area\s+modification\s+factor/i,
-      /معامل\s+المساحة\s+المسموح/,
-    ],
-  },
-  {
-    // Legacy stub — emits [TABLE REDIRECT] pointing to 504.3/504.4/506.2
-    tableId: "SBC201:Table503",
-    tableNumber: "Table 503",
-    captionEn: "Allowable Building Heights and Areas (superseded)",
-    patterns: [
-      /table\s+503\b/i,
-      /جدول\s+503\b/,
-    ],
-  },
-];
-
-interface PilotTableResult {
-  tableId: string;
-  tableNumber: string;
-  captionEn: string;
-  captionAr: string;
-  axisSchema: any;
-  rows: any[];
-  footnotes: any;
-  hasPendingData: boolean;
-  isLegacyOnly: boolean;
-  isPartialVerified: boolean;
-}
-
-async function fetchTableSafeContext(
-  supabaseAdmin: ReturnType<typeof createClient>,
-  query: string
-): Promise<{ context: string; tableHits: PilotTableResult[] }> {
-  // Detect which pilot tables the query references
-  const matchedTableIds: string[] = [];
-  for (const pt of PILOT_TABLE_PATTERNS) {
-    if (pt.patterns.some((re) => re.test(query))) {
-      matchedTableIds.push(pt.tableId);
-    }
-  }
-
-  if (matchedTableIds.length === 0) return { context: "", tableHits: [] };
-
-  const { data, error } = await supabaseAdmin
-    .from("document_tables")
-    .select("table_id, table_number, caption_en, caption_ar, axis_schema, rows, footnotes")
-    .in("table_id", matchedTableIds);
-
-  if (error || !data || data.length === 0) {
-    console.log(`[TableSafe] No rows fetched for: ${matchedTableIds.join(",")}`);
-    return { context: "", tableHits: [] };
-  }
-
-  const tableHits: PilotTableResult[] = data.map((row: any) => {
-    const status = row.footnotes?.status ?? "pending";
-    const rowArr = Array.isArray(row.rows) ? row.rows : [];
-    return {
-      tableId: row.table_id,
-      tableNumber: row.table_number,
-      captionEn: row.caption_en,
-      captionAr: row.caption_ar,
-      axisSchema: row.axis_schema,
-      rows: rowArr,
-      footnotes: row.footnotes,
-      isLegacyOnly: status === "legacy_only",
-      isPartialVerified: status === "partial_verified",
-      hasPendingData: status !== "legacy_only" && rowArr.length === 0,
-    };
-  });
-
-  let context = "\n=== SBC PILOT TABLE RETRIEVAL (Numeric data — highest trust) ===\n";
-  for (const t of tableHits) {
-    if (t.isLegacyOnly) {
-      // Table number superseded — emit redirect notice, never cite this table's data
-      const redirectTo = t.footnotes?.redirect_to;
-      const redirectStr = Array.isArray(redirectTo) ? redirectTo.join(", ") : (redirectTo ?? "see current edition");
-      context += `\n[TABLE REDIRECT | ${t.tableNumber}]\n`;
-      context += `This table number is superseded in SBC 201-CC-2024. Use instead: ${redirectStr}. Do not cite ${t.tableNumber} directly.\n`;
-    } else if (t.rows.length > 0) {
-      // Data available (complete or partial_verified)
-      const partialNote = t.isPartialVerified ? " — PARTIAL: only listed rows are verified; hedge for all other functions/conditions" : "";
-      context += `\n[TABLE SAFE | ${t.tableNumber} | ${t.captionEn}${partialNote}]\n`;
-      context += `Axis: ${JSON.stringify(t.axisSchema)}\n`;
-      context += `Rows: ${JSON.stringify(t.rows)}\n`;
-      if (t.footnotes?.note) context += `Note: ${t.footnotes.note}\n`;
-      if (t.footnotes?.source) context += `Source: ${t.footnotes.source}\n`;
-    } else {
-      // Pending — no data transcribed yet
-      context += `\n[TABLE PENDING | ${t.tableNumber} | ${t.captionEn}]\n`;
-      context += `Status: Numeric data for this table has not yet been transcribed into the corpus. Do not infer or estimate values from training data.\n`;
-    }
-  }
-
-  console.log(`[TableSafe] Matched ${tableHits.length} pilot table(s): ${tableHits.map((t) => `${t.tableId}(${t.footnotes?.status ?? "?"})` ).join(",")}`);
-  return { context, tableHits };
-}
-
-// ==================== BATCH 4 PILOT: STRUCTURAL RETRIEVAL ====================
-// Highest-priority path: explicit section/table refs fetched directly from sbc_documents.
-// Activated only when the query contains recognizable section numbers or table refs.
-
-async function fetchStructuralContext(
-  supabaseAdmin: ReturnType<typeof createClient>,
-  query: string,
-  authorizedSources: string[]
-): Promise<{ context: string; files: string[]; sectionHits: string[] }> {
-  const sectionRefs: string[] = [];
-  const secRe = /\b(\d{3,4}\.\d{1,3}(?:\.\d{1,2})?(?:\.\d{1,2})?)\b/g;
-  const tableRe = /(?:table|جدول)\s+(\d{2,4}(?:\.\d{1,2})?)/gi;
-  let m;
-  while ((m = secRe.exec(query)) !== null) sectionRefs.push(m[1]);
-  while ((m = tableRe.exec(query)) !== null) sectionRefs.push(m[1]);
-
-  if (sectionRefs.length === 0) return { context: "", files: [], sectionHits: [] };
-
-  const hits: any[] = [];
-  for (const ref of [...new Set(sectionRefs)]) {
-    const { data } = await supabaseAdmin
-      .from("sbc_documents")
-      .select("content, section_number, code_type, file_name, page_start, page_end")
-      .in("code_type", authorizedSources)
-      .ilike("section_number", `%${ref}%`)
-      .limit(5);
-    if (data?.length) hits.push(...data);
-  }
-
-  if (hits.length === 0) return { context: "", files: [], sectionHits: [] };
-
-  const usedFiles = [...new Set(hits.map((h: any) => h.file_name as string))];
-  const sectionHits = [...new Set(hits.map((h: any) => h.section_number as string).filter(Boolean))];
-
-  let context = "\n=== SBC STRUCTURAL RETRIEVAL (Section-exact matches — highest priority) ===\n";
-  for (const hit of hits) {
-    context += `\n[${hit.code_type} | Section: ${hit.section_number} | Pages: ${hit.page_start}-${hit.page_end}]\n${hit.content}\n`;
-  }
-
-  console.log(`[Structural] ${sectionRefs.length} refs → ${hits.length} chunks from ${usedFiles.length} files`);
-  return { context, files: usedFiles, sectionHits };
-}
-
-// ==================== BATCH 4 PILOT: SOURCE-REGISTRY AWARENESS ====================
-// Queries source_registry at runtime to determine which sources are authorized for retrieval.
-// Tier 3 (absent) sources are never treated as retrieval-backed.
-
-async function getAuthorizedSources(supabaseAdmin: ReturnType<typeof createClient>): Promise<{
-  tier2: string[];
-  tier2Partial: boolean;
-}> {
-  try {
-    const { data } = await supabaseAdmin
-      .from("source_registry")
-      .select("source_id, tier, ingestion_status")
-      .in("tier", [1, 2])
-      .in("ingestion_status", ["complete", "partial"]);
-    const tier2 = (data || []).map((r: any) => r.source_id as string);
-    const tier2Partial = (data || []).some((r: any) => r.ingestion_status === "partial");
-    return { tier2: tier2.length > 0 ? tier2 : ["SBC201", "SBC801"], tier2Partial };
-  } catch {
-    return { tier2: ["SBC201", "SBC801"], tier2Partial: true };
-  }
-}
-
-// ==================== BATCH 4 PILOT: ORCHESTRATED RETRIEVAL ====================
-// Priority chain: Structural (explicit refs) → Vector (semantic) → Keyword (fallback).
-// Keyword retrieval is never removed — it is the final fallback layer.
-// contextStrength drives prompt hedging: weak = hedge, partial/strong = cite normally.
-
-const WEAK_CONTEXT_CHARS = 2000;
-
-async function fetchPilotContext(
-  query: string,
-  mode: string,
-  extraKeywords?: string[]
-): Promise<{ context: string; files: string[]; contextStrength: "strong" | "partial" | "weak"; tableHits: PilotTableResult[] }> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    const kw = await fetchSBCContext(query, extraKeywords);
-    return { ...kw, contextStrength: kw.context.length > WEAK_CONTEXT_CHARS ? "partial" : "weak", tableHits: [] };
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-  // Source-registry: only serve content from authorized Tier 1/2 sources
-  const { tier2: authorizedSources } = await getAuthorizedSources(supabaseAdmin);
-  console.log(`[Pilot] Authorized sources: [${authorizedSources.join(",")}]`);
-
-  let context = "";
-  const allFiles: string[] = [];
-
-  // 0. Table-safe path — pilot tables with numeric data (step 0, highest trust)
-  const tableSafe = await fetchTableSafeContext(supabaseAdmin, query);
-  if (tableSafe.context) {
-    context += tableSafe.context;
-  }
-
-  // 1. Structural retrieval — explicit section/table refs (highest priority)
-  const structural = await fetchStructuralContext(supabaseAdmin, query, authorizedSources);
-  if (structural.context) {
-    context += structural.context;
-    allFiles.push(...structural.files);
-  }
-
-  // 2. Semantic vector search — covers paraphrased/concept queries
-  if (context.length < 8000) {
-    const vector = await fetchSBCContextVector(query, mode, extraKeywords);
-    if (vector.context.length > 500) {
-      context += vector.context;
-      vector.files.forEach((f: string) => { if (!allFiles.includes(f)) allFiles.push(f); });
-      console.log(`[Pilot] Vector added ${vector.context.length} chars`);
-    } else {
-      // 3. Keyword fallback — always available, never removed
-      console.log("[Pilot] Vector insufficient, using keyword fallback");
-      const kw = await fetchSBCContext(query, extraKeywords);
-      if (kw.context.length > 0) {
-        context += kw.context;
-        kw.files.forEach((f: string) => { if (!allFiles.includes(f)) allFiles.push(f); });
-      }
-    }
-  }
-
-  const contextStrength: "strong" | "partial" | "weak" =
-    context.length > 8000 ? "strong" :
-    context.length > WEAK_CONTEXT_CHARS ? "partial" : "weak";
-
-  console.log(`[Pilot] Final: ${context.length} chars, strength=${contextStrength}, files=${allFiles.length}, tables=${tableSafe.tableHits.length}`);
-  return { context: context.slice(0, 120000), files: [...new Set(allFiles)], contextStrength, tableHits: tableSafe.tableHits };
-}
-
 // ==================== GEMINI FORMAT CONVERTER ====================
 
 function convertToGeminiFormat(messages: any[]) {
@@ -2066,7 +1707,7 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
         body: JSON.stringify({
           systemInstruction,
           contents,
-          generationConfig: { temperature },
+          generationConfig: { temperature: 0.7 },
         }),
       }
     );
@@ -2366,7 +2007,7 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, reportStyle } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
@@ -2654,7 +2295,7 @@ serve(async (req) => {
       }
     } else if (mode === "primary") {
       // ===== PRIMARY MODE PIPELINE (no document loading, fast) =====
-      fullSystemPrompt = `أنت ConsultX، مستشار حماية من الحرائق. تتحدث بالعربية بأسلوب مهني ودود. مهمتك: فهم مشكلة المهندس بسرعة، الإجابة على الأسئلة السريعة عن الكود السعودي (SBC 201, SBC 801)، واقتراح الانتقال للوضع الاستشاري أو التحليلي إذا كان السؤال يحتاج تعمق أكثر. اجعل إجاباتك مختصرة ومباشرة. اسأل أسئلة استقصائية لفهم المشكلة.
+      fullSystemPrompt = `أنت ConsultX، مستشار حماية من الحرائق. تتحدث بالعربية بأسلوب مهني ودود. مهمتك: فهم مشكلة المهندس بسرعة، الإجابة على الأسئلة السريعة عن الكود السعودي (SBC 201, SBC 801) ومعايير NFPA، واقتراح الانتقال للوضع الاستشاري أو التحليلي إذا كان السؤال يحتاج تعمق أكثر. اجعل إجاباتك مختصرة ومباشرة. اسأل أسئلة استقصائية لفهم المشكلة.
 
 قواعد الانتقال بين الأوضاع:
 - إذا طلب المستخدم تحليل مخطط أو صورة هندسية ← اقترح الانتقال للوضع التحليلي
@@ -2670,7 +2311,7 @@ serve(async (req) => {
 
 قواعدك الصارمة:
 - سياسة صفر هلوسة: إذا لم تكن متأكداً من إجابة تتعلق بفقرة محددة، قل ذلك بصراحة واقترح الانتقال للوضع الاستشاري حيث تنشط وكلاء مراجعة الكود وGraphRAG
-- مصدر الحقيقة الوحيد: SBC 201 وSBC 801 حصرياً
+- مصدر الحقيقة الوحيد: الكود السعودي (إصدار 2024) ومعايير NFPA/SFPE حصرياً
 - سيادة الدفاع المدني: عند أي توصية تقنية، ذكّر أن الكود هو الحد الأدنى الفني وأن الدفاع المدني يملك حق التعديل ميدانياً
 
 قاعدة إضافية صارمة: إذا سُئلت عن رقم فقرة محددة أو متطلب تقني دقيق، لا تجب من ذاكرتك العامة. قل: "للحصول على إجابة مرجعية دقيقة مع نص الكود الأصلي، أنصحك بالانتقال للوضع الاستشاري." ثم أضف [SWITCH:استشاري]`;
@@ -2682,39 +2323,22 @@ serve(async (req) => {
       const userQuery = lastUserMessage?.content || "";
       
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
-      // Batch 4/5 pilot: Table-safe → Structural → Vector → Keyword retrieval chain
-      const { context: sbcContext, files, contextStrength, tableHits } = await fetchPilotContext(userQuery, mode);
+      // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
+      const { context: sbcContext, files } = await fetchSBCContext(userQuery);
       usedFiles = files;
-      console.log(`[Pilot] SBC context: ${sbcContext.length} chars, strength=${contextStrength}, files=${usedFiles.length}`);
-
-      const basePrompt = mode === "analysis"
-        ? getAnalysisPrompt(language)
+      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
+      
+      const basePrompt = mode === "analysis" 
+        ? getAnalysisPrompt(language) 
         : getStandardPrompt(language);
-
+      
       fullSystemPrompt = basePrompt;
       if (sbcContext) {
         fullSystemPrompt += sbcContext;
-        const warningMsg = language === "en"
+        const warningMsg = language === "en" 
           ? `\n\n⚠️ CRITICAL: Cite exact clause numbers from above. If not found, say: "The required information is not available in the current files."`
           : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
         fullSystemPrompt += warningMsg;
-
-        // Source-registry corpus posture (Batch 4): SBC201/SBC801 are Tier 2 partial.
-        // No NFPA/IBC/IFC/SFPE content is in the corpus — absent-source boundary preserved.
-        if (contextStrength !== "strong") {
-          const corpusPosture = language === "en"
-            ? `\n\n📋 CORPUS POSTURE: Active retrieval corpus = SBC 201 + SBC 801 only (Tier 2, partial ingestion). NFPA 13/72/101, IBC, IFC, and SFPE are absent — do not cite them. If a retrieved section appears incomplete, the corpus may have ingestion gaps; state this rather than substituting values from absent sources.`
-            : `\n\n📋 وضع القاعدة: قاعدة الاسترجاع النشطة = SBC 201 + SBC 801 فقط (المستوى 2، استيعاب جزئي). NFPA وIBC وIFC وSFPE غير موجودة — لا تستشهد بها. إذا بدا قسم مسترجع غير مكتمل، فقد يكون بسبب ثغرات الاستيعاب؛ صرّح بذلك بدلاً من استبدال قيم من مصادر غير متوفرة.`;
-          fullSystemPrompt += corpusPosture;
-        }
-
-        // Weak-context hedge: if retrieval returned little content, require explicit hedging.
-        if (contextStrength === "weak") {
-          const weakHedge = language === "en"
-            ? `\n\n⚠️ RETRIEVAL NOTICE: The corpus returned limited context for this query. For any specific section text or numeric value NOT present in the retrieved context above, you MUST respond: "The specific section was not retrieved from the current corpus — consult the physical SBC document directly." Do NOT infer or estimate values from training data.`
-            : `\n\n⚠️ تنبيه استرجاع: السياق المسترجع محدود لهذا الاستعلام. لأي نص قسم أو قيمة رقمية غير موجودة في السياق المسترجع أعلاه، يجب أن تقول: "لم يُسترجع هذا القسم المحدد من القاعدة الحالية — يُرجى الرجوع إلى نسخة SBC مباشرةً." لا تستنتج أو تقدّر قيماً من بيانات التدريب.`;
-          fullSystemPrompt += weakHedge;
-        }
       } else {
         // No SBC content loaded — storage retrieval failed entirely.
         // Return a clean 503 instead of calling Gemini with no context (which produces
@@ -2729,58 +2353,37 @@ serve(async (req) => {
         });
       }
       
-      // Batch 5 pilot: table numeric-trust note
-      if (tableHits && tableHits.length > 0) {
-        const legacyTables    = tableHits.filter((t) => t.isLegacyOnly);
-        const safeTables      = tableHits.filter((t) => !t.isLegacyOnly && t.rows.length > 0);
-        const partialTables   = safeTables.filter((t) => t.isPartialVerified);
-        const pendingTables   = tableHits.filter((t) => t.hasPendingData);
-
-        if (safeTables.length > 0) {
-          const partialNames = partialTables.map((t) => t.tableNumber).join(", ");
-          const partialWarning = partialTables.length > 0
-            ? ` Note: ${partialNames} contain only partial rows — cite only the exact rows present; state "consult SBC 201 directly" for any function/condition not in the listed rows.`
-            : "";
-          const safeNote = language === "en"
-            ? `\n\n📊 TABLE NUMERIC DATA: The [TABLE SAFE] block(s) above contain verified numeric data (SBC 201-CC-2024). Use these values directly — highest-trust data available. Cite the table number explicitly.${partialWarning}`
-            : `\n\n📊 بيانات الجدول الرقمية: تحتوي كتلة [TABLE SAFE] أعلاه على بيانات رقمية مُتحقَّق منها (SBC 201-CC-2024). استخدم هذه القيم مباشرةً. استشهد برقم الجدول صراحةً.`;
-          fullSystemPrompt += safeNote;
-        }
-        if (pendingTables.length > 0) {
-          const pendingNames = pendingTables.map((t) => t.tableNumber).join(", ");
-          const pendingNote = language === "en"
-            ? `\n\n⚠️ TABLE DATA PENDING: ${pendingNames} — numeric data has not yet been transcribed into the corpus. Do NOT estimate or infer table values from training data. Instead state: "The numeric values for ${pendingNames} are not yet available in the current corpus — consult the physical SBC 201 document directly."`
-            : `\n\n⚠️ بيانات الجدول قيد الانتظار: ${pendingNames} — لم يتم بعد نسخ البيانات الرقمية. لا تقدّر أو تستنتج. اذكر: "القيم الرقمية لـ ${pendingNames} غير متوفرة بعد في القاعدة."`;
-          fullSystemPrompt += pendingNote;
-        }
-        if (legacyTables.length > 0) {
-          const legacyNames = legacyTables.map((t) => t.tableNumber).join(", ");
-          const legacyNote = language === "en"
-            ? `\n\n🔄 TABLE NUMBERING: ${legacyNames} — this table number is from a prior SBC edition. The [TABLE REDIRECT] block above shows the current table reference. Do NOT cite the legacy number as current.`
-            : `\n\n🔄 ترقيم الجدول: ${legacyNames} — رقم الجدول من إصدار SBC سابق. يُرجى الرجوع إلى الرقم الحالي المُوضَّح في كتلة [TABLE REDIRECT].`;
-          fullSystemPrompt += legacyNote;
-        }
-      }
-
       // Final binding reminder: diagnostic protocol takes precedence over reference context
       const finalBindingReminder = language === "en"
         ? `\n\n🔒 FINAL INSTRUCTION: The reference text above is for grounding only. It does NOT mean the user inputs are sufficient. If critical variables (occupancy, height, area) are missing, you MUST stop and ask 1–3 clarifying questions first. Do not produce a final A-F answer until inputs are sufficient. Do not assume missing variables.`
         : `\n\n🔒 تعليمة نهائية ملزمة: النص المرجعي أعلاه للتثبيت فقط ولا يعني أن معطيات المستخدم كافية. إذا كانت المعطيات الحرجة (التصنيف، الارتفاع، المساحة) ناقصة، يجب عليك التوقف فوراً وطرح 1 إلى 3 أسئلة توضيحية. ممنوع تقديم إجابة نهائية (A-F) قبل اكتمال المعطيات. ممنوع افتراض المتغيرات الناقصة.`;
       fullSystemPrompt += finalBindingReminder;
     }
+    
+    // ── Apply user preferences to system prompt ────────────────────────────
+    // output_format and preferred_standards come from the user's saved settings
+    // (profiles table). They are forwarded by the frontend with every request.
 
-    // Report-style modifier (from client cx_report_style preference)
-    // Only injected when non-default to keep token count low for the common case.
-    if (reportStyle === "concise") {
-      const conciseNote = language === "en"
-        ? `\n\n📋 OUTPUT STYLE (user preference): Concise. Prioritise brevity — drop sub-sections that add no new information. Lead with the key requirement and action. Omit verbose engineering derivations unless they change the answer.`
-        : `\n\n📋 أسلوب الإخراج (تفضيل المستخدم): مختصر. اجعل الإجابة موجزة — احذف الأقسام الفرعية التي لا تضيف معلومة جديدة. ابدأ بالمتطلب الرئيسي والإجراء. أغفل الاشتقاقات الهندسية المطوّلة ما لم تغيّر الإجابة.`;
-      fullSystemPrompt += conciseNote;
-    } else if (reportStyle === "formal") {
-      const formalNote = language === "en"
-        ? `\n\n📋 OUTPUT STYLE (user preference): Formal report. Use formal engineering report language throughout. Begin with a one-line "Regarding:" statement. Sections must be fully titled and numbered. Close with a professional sign-off line referencing SBC authority.`
-        : `\n\n📋 أسلوب الإخراج (تفضيل المستخدم): تقرير رسمي. استخدم لغة تقارير هندسية رسمية. ابدأ بجملة "الموضوع:" في سطر واحد. يجب أن تكون الأقسام مُعنونة بالكامل ومُرقَّمة. أنهِ بجملة ختامية احترافية تُشير إلى مرجعية الكود السعودي.`;
-      fullSystemPrompt += formalNote;
+    // output_format: adjust response style/length
+    if (output_format && output_format !== "detailed") {
+      const formatInstruction = output_format === "concise"
+        ? (language === "en"
+          ? "\n\n📏 FORMAT PREFERENCE: The user has requested CONCISE responses. Keep answers brief and direct. Avoid lengthy explanations. Use bullet points over prose where possible. Target under 300 words unless a code section requires verbatim quoting."
+          : "\n\n📏 تفضيل التنسيق: المستخدم طلب إجابات موجزة. أبقِ إجاباتك قصيرة ومباشرة. استخدم النقاط بدل الفقرات الطويلة كلما أمكن. هدف أقل من 300 كلمة ما لم يتطلب نص الكود اقتباساً حرفياً.")
+        : (language === "en"
+          ? "\n\n📄 FORMAT PREFERENCE: The user has requested a REPORT format. Structure your response as a formal engineering report with clear numbered sections, headers, a summary table if applicable, and a final verdict section. Use professional report language."
+          : "\n\n📄 تفضيل التنسيق: المستخدم طلب صيغة تقرير رسمي. نظّم إجابتك كتقرير هندسي رسمي بأقسام مرقمة وعناوين واضحة وجدول ملخص إن أمكن وقسم حكم نهائي. استخدم لغة تقارير مهنية.");
+      fullSystemPrompt += formatInstruction;
+    }
+
+    // preferred_standards: signal which SBC document the user wants prioritised
+    if (Array.isArray(preferred_standards) && preferred_standards.length > 0 && preferred_standards.length < 2) {
+      // Only apply when user has narrowed to a specific standard (not the default "both")
+      const stdNote = preferred_standards[0];
+      const stdInstruction = language === "en"
+        ? `\n\n📌 STANDARDS PREFERENCE: The user has set "${stdNote}" as their preferred standard. When both SBC 201 and SBC 801 are relevant, cite ${stdNote} first and give it primary prominence in your answer. Still cross-reference the other standard when required by code.`
+        : `\n\n📌 تفضيل المعيار: المستخدم حدد "${stdNote}" كمعياره المفضّل. عندما يكون كلا المعيارين SBC 201 وSBC 801 ذوي صلة، اذكر ${stdNote} أولاً وامنحه الأولوية في إجابتك. مع الإشارة إلى المعيار الآخر عند اشتراط الكود ذلك.`;
+      fullSystemPrompt += stdInstruction;
     }
 
     const systemMessages: any[] = [{ role: "system", content: fullSystemPrompt }];
@@ -2792,12 +2395,6 @@ serve(async (req) => {
     // Primary → gemini-2.5-flash (fast), Standard/Analysis → gemini-2.5-pro (with flash fallback)
     const preferredModel = mode === "primary" ? "gemini-2.5-flash" : "gemini-2.5-pro";
     const fallbackModel = "gemini-2.5-flash";
-
-    // Temperature policy by mode (Phase 5 Patch A1):
-    // analysis = 0.05  — compliance verdicts; retrieved numeric values must not drift
-    // primary/standard = 0.15 — conversational/advisory; allows natural phrasing while
-    //                           keeping citations stable
-    const temperature = mode === "analysis" ? 0.05 : 0.15;
 
     const { systemInstruction, contents } = convertToGeminiFormat([
       ...systemMessages,
@@ -2815,7 +2412,7 @@ serve(async (req) => {
         body: JSON.stringify({
           systemInstruction,
           contents,
-          generationConfig: { temperature },
+          generationConfig: { temperature: 0.7 },
         }),
       }
     );
@@ -2832,7 +2429,7 @@ serve(async (req) => {
           body: JSON.stringify({
             systemInstruction,
             contents,
-            generationConfig: { temperature },
+            generationConfig: { temperature: 0.7 },
           }),
         }
       );
