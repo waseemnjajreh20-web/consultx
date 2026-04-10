@@ -204,13 +204,21 @@ serve(async (req) => {
       const role = payload.role as string;
       if (!validRoles.includes(role)) return json({ error: `Invalid role. Must be one of: ${validRoles.join(", ")}` }, 400);
 
+      // Capture old role so the audit log has full before/after context.
+      const { data: currentRoleProfile } = await adminClient
+        .from("profiles")
+        .select("role")
+        .eq("user_id", target_user_id)
+        .single();
+      const old_role = currentRoleProfile?.role ?? "unknown";
+
       const { error } = await adminClient
         .from("profiles")
         .update({ role, updated_at: new Date().toISOString() })
         .eq("user_id", target_user_id);
       if (error) throw error;
 
-      await audit(target_user_id, { role });
+      await audit(target_user_id, { old_role, new_role: role });
       return json({ ok: true });
     }
 
@@ -220,22 +228,90 @@ serve(async (req) => {
       const status = payload.status as string;
       if (!validStatuses.includes(status)) return json({ error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` }, 400);
 
+      // Fetch the most recent subscription row — need full state for:
+      //   a) old_status audit field
+      //   b) date repair to prevent check-subscription from auto-reverting the change
       const { data: existing } = await adminClient
         .from("user_subscriptions")
-        .select("id")
+        .select("id, status, current_period_end, trial_end")
         .eq("user_id", target_user_id)
+        .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!existing) return json({ error: "No subscription found for this user" }, 404);
+      const old_status = existing.status;
 
-      const { error } = await adminClient
+      const now = new Date();
+      const subUpdates: Record<string, unknown> = { status, updated_at: now.toISOString() };
+
+      // ── Date repair ──────────────────────────────────────────────────────────
+      // check-subscription immediately re-expires a row whose date field is null
+      // or in the past, even if the admin just set the status to "active" or
+      // "trialing". Fix the date field here so the change survives the next
+      // check-subscription call.
+      //
+      //  "active"   → current_period_end must be in the future
+      //  "trialing" → trial_end must be in the future
+      //  Other statuses have no date gate in check-subscription.
+      if (status === "active") {
+        const periodEnd = existing.current_period_end
+          ? new Date(existing.current_period_end)
+          : null;
+        if (!periodEnd || now >= periodEnd) {
+          // Admin-granted active period: 1 year from today.
+          subUpdates.current_period_end = new Date(
+            now.getTime() + 365 * 24 * 60 * 60 * 1000
+          ).toISOString();
+        }
+        subUpdates.cancel_at_period_end = false;
+      } else if (status === "trialing") {
+        const trialEnd = existing.trial_end ? new Date(existing.trial_end) : null;
+        if (!trialEnd || now >= trialEnd) {
+          // Admin-granted trial: 7 days from today.
+          subUpdates.trial_end = new Date(
+            now.getTime() + 7 * 24 * 60 * 60 * 1000
+          ).toISOString();
+        }
+      }
+
+      const { error: subErr } = await adminClient
         .from("user_subscriptions")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("user_id", target_user_id);
-      if (error) throw error;
+        .update(subUpdates)
+        .eq("id", existing.id);
+      if (subErr) throw subErr;
 
-      await audit(target_user_id, { status });
+      // ── profiles.plan_type sync ──────────────────────────────────────────────
+      // check-subscription lazily syncs plan_type to "free" when a subscription
+      // is cancelled/expired. Do it explicitly here so the admin UI reflects the
+      // correct plan immediately on the next loadUsers() call, and to prevent any
+      // race where the user loads the app before check-subscription runs.
+      //
+      //  cancelled / expired → "free" (access revoked)
+      //  active / trialing   → keep existing paid plan, or default to "engineer"
+      //                        if the profile is still on "free" (otherwise the
+      //                        user gets active subscription access with free limits)
+      //  suspended           → no change (plan preserved for future reinstatement)
+      if (status === "cancelled" || status === "expired") {
+        await adminClient
+          .from("profiles")
+          .update({ plan_type: "free", updated_at: now.toISOString() })
+          .eq("user_id", target_user_id);
+      } else if (status === "active" || status === "trialing") {
+        const { data: profileForSync } = await adminClient
+          .from("profiles")
+          .select("plan_type")
+          .eq("user_id", target_user_id)
+          .single();
+        if (!profileForSync?.plan_type || profileForSync.plan_type === "free") {
+          await adminClient
+            .from("profiles")
+            .update({ plan_type: "engineer", updated_at: now.toISOString() })
+            .eq("user_id", target_user_id);
+        }
+      }
+
+      await audit(target_user_id, { old_status, new_status: status });
       return json({ ok: true });
     }
 
@@ -245,23 +321,53 @@ serve(async (req) => {
       const plan_type = (payload.plan_type as string) || "engineer";
       const now = new Date();
       const trialEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      const trialEndIso = trialEnd.toISOString();
 
-      const { error } = await adminClient
+      const { error: trialProfileErr } = await adminClient
         .from("profiles")
         .update({
           plan_type,
           trial_start: now.toISOString(),
-          trial_end: trialEnd.toISOString(),
+          trial_end: trialEndIso,
           launch_trial_status: "trial_active",
           launch_trial_start: now.toISOString(),
-          launch_trial_end: trialEnd.toISOString(),
+          launch_trial_end: trialEndIso,
           updated_at: now.toISOString(),
         })
         .eq("user_id", target_user_id);
-      if (error) throw error;
+      if (trialProfileErr) throw trialProfileErr;
 
-      await audit(target_user_id, { days, plan_type, trial_end: trialEnd.toISOString() });
-      return json({ ok: true, trial_end: trialEnd.toISOString() });
+      // ── Prevent check-subscription from overwriting plan_type ────────────────
+      // check-subscription evaluates subscription rows BEFORE the launch-trial
+      // section. If the user has an existing "expired" or "cancelled" subscription,
+      // that branch syncs profiles.plan_type back to "free" (lines 181-183 of
+      // check-subscription) — silently undoing the plan_type we just set above.
+      //
+      // Fix: transition that subscription row to "trialing" with the same end
+      // date. check-subscription's trialing branch sets active=true, dailyLimit=20
+      // and does NOT reset plan_type, so the admin-granted plan_type sticks.
+      const { data: existingSubForTrial } = await adminClient
+        .from("user_subscriptions")
+        .select("id, status")
+        .eq("user_id", target_user_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingSubForTrial && ["expired", "cancelled"].includes(existingSubForTrial.status)) {
+        await adminClient
+          .from("user_subscriptions")
+          .update({
+            status: "trialing",
+            trial_start: now.toISOString(),
+            trial_end: trialEndIso,
+            updated_at: now.toISOString(),
+          })
+          .eq("id", existingSubForTrial.id);
+      }
+
+      await audit(target_user_id, { days, plan_type, trial_end: trialEndIso });
+      return json({ ok: true, trial_end: trialEndIso });
     }
 
     // ── extend_trial ────────────────────────────────────────────────────────
@@ -351,17 +457,34 @@ serve(async (req) => {
     if (action === "invite_user") {
       const email = (payload.email as string)?.toLowerCase();
       if (!email) return json({ error: "email is required" }, 400);
+      const invitedPlanType = (payload.plan_type as string) || "free";
 
-      const { data: invited, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
-        data: { plan_type: (payload.plan_type as string) || "free" },
-      });
-      if (error) throw error;
-
-      // Audit with the newly created user's ID
-      await audit(invited.user.id, {
+      const { data: invited, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(
         email,
-        plan_type: (payload.plan_type as string) || "free",
-      });
+        { data: { plan_type: invitedPlanType } },
+      );
+      if (inviteErr) throw inviteErr;
+
+      // inviteUserByEmail puts plan_type in raw_user_meta_data only. The DB
+      // trigger that creates the profiles row may not read it, leaving the
+      // profile with the default "free" plan regardless of what was requested.
+      // Upsert explicitly here so the invited user starts with the correct
+      // entitlement from their very first login.
+      await adminClient
+        .from("profiles")
+        .upsert(
+          {
+            user_id: invited.user.id,
+            plan_type: invitedPlanType,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        )
+        .then(({ error: e }) => {
+          if (e) console.warn("invite_user profile upsert failed:", e.message);
+        });
+
+      await audit(invited.user.id, { email, plan_type: invitedPlanType });
       return json({ ok: true, user_id: invited.user.id });
     }
 
