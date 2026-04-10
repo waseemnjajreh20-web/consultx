@@ -946,8 +946,12 @@ function buildQueryKeywords(query: string): string[] {
     "section 1017", "section 1018", "section 1020", "section 1021", "section 1029",
     "1004.5", "1005.1", "1006.3", "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     "1029.6",
-    // SBC 801 — Fire Suppression
+    // Chapter 5 — Mixed Occupancy
+    "section 508", "508.3", "508.4",
+    "accessory occupancy", "nonseparated occupancy", "mixed occupancy",
+    // SBC 801 — Fire Suppression + Standpipe
     "table 903", "section 903", "903.2", "903.3",
+    "section 905", "905.3", "905.3.1", "standpipe",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1608,8 +1612,10 @@ function extractTableIds(query: string): string[] {
     "1004.5", "1005.1", "1006.3.3", "1006.3.4",
     "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     "1029.6.3",
-    // SBC 801 Chapter 9 — Fire Suppression
-    "903.2",
+    // Chapter 5 — Mixed Occupancy
+    "508.3", "508.4",
+    // SBC 801 Chapter 9 — Fire Suppression + Standpipe
+    "903.2", "905.3.1",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1631,6 +1637,8 @@ function extractTableIds(query: string): string[] {
     "1020":   ["1020.1"],  // "Section 1020" → corridor fire rating
     "1021":   ["1021.2"],  // "Section 1021" → number of exits
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
+    "508":    ["508.3", "508.4"],  // "Section 508" → both mixed-occupancy rules
+    "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
@@ -1682,6 +1690,19 @@ function extractTableIds(query: string): string[] {
     // Assembly aisles
     [/\b(?:assembly\s+aisle|theater\s+aisle|cinema\s+aisle|aisle\s+width.*assembly|عرض\s+الممر.*(?:قاعة|مسرح)|ممرات\s+(?:المقاعد|التجمع))\b/i, ["1029.6.3"]],
     [/\b(?:seating\s+aisle|row\s+spacing|seats\s+per\s+row|مقاعد.*صف|صفوف.*مقاعد)\b/i, ["1029.6.3"]],
+    // Mixed / accessory occupancy (508.3)
+    [/\b(?:accessory\s+occupancy|accessory\s+use|10\s*%\s*(?:rule|threshold|occupancy)|ten\s+percent\s+rule)\b/i, ["508.3"]],
+    [/\b(?:الاستخدام\s+الفرعي|الاستخدام\s+الإضافي|10\s*بالمئة.*استخدام|عشرة\s+بالمئة\s+(?:قاعدة|مساحة))\b/i, ["508.3"]],
+    // Nonseparated / separated occupancy (508.4)
+    [/\b(?:non.?separated\s+occupanc|mixed\s+occupanc(?:y|ies)|most\s+restrictive\s+occupanc|multiple\s+occupanc(?:y|ies))\b/i, ["508.4"]],
+    [/\b(?:occupancy\s+(?:mix|classification|separation|combination)|mixed.use\s+building)\b/i, ["508.3", "508.4"]],
+    [/\b(?:الاستخدامات\s+غير\s+المفصولة|خلط\s+الاستخدامات|الاستخدام\s+الأكثر\s+تقييداً|فصل\s+الاستخدامات)\b/i, ["508.3", "508.4"]],
+    [/\b(?:separated\s+occupanc|fire\s+barrier\s+between\s+occupanc|section\s+508)\b/i, ["508.3", "508.4"]],
+    // Standpipe systems (905.3.1)
+    [/\b(?:standpipe|stand\s+pipe|hose\s+(?:cabinet|station|connection)|fire\s+hose\s+(?:cabinet|connection))\b/i, ["905.3.1"]],
+    [/\b(?:class\s+[123i]+\s+standpipe|standpipe\s+(?:required|class|system|where))\b/i, ["905.3.1"]],
+    [/\b(?:أنبوب\s+الإطفاء|خراطيم\s+الحريق|الأنابيب\s+الرأسية|مواسير\s+الإطفاء|الخراطيم\s+الداخلية)\b/i, ["905.3.1"]],
+    [/\b(?:where.*standpipe|standpipe.*require|when.*standpipe|متى.*أنبوب|أنبوب.*إلزامي)\b/i, ["905.3.1"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
