@@ -952,9 +952,13 @@ function buildQueryKeywords(query: string): string[] {
     "separated occupancy", "occupancy separation", "fire barrier between",
     // Chapter 10 — Exit Access Doorways (room-level)
     "1006.2", "1006.2.1", "exit access doorway", "table 1006.2",
-    // SBC 801 — Fire Suppression + Standpipe
-    "table 903", "section 903", "903.2", "903.3",
+    // SBC 801 — Fire Suppression + Standpipe + Sprinkler Type + Fire Alarm
+    "table 903", "section 903", "903.2", "903.3", "903.3.1",
+    "nfpa 13", "nfpa 13r", "nfpa 13d", "13r", "13d",
+    "sprinkler system type", "which sprinkler",
     "section 905", "905.3", "905.3.1", "standpipe",
+    "section 907", "907.2", "fire alarm required", "fire detection",
+    "manual fire alarm", "occupant notification",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1619,8 +1623,8 @@ function extractTableIds(query: string): string[] {
     "508.3", "508.4", "508.5",
     // Chapter 10 — Exit Access Doorways (room-level)
     "1006.2.1",
-    // SBC 801 Chapter 9 — Fire Suppression + Standpipe
-    "903.2", "905.3.1",
+    // SBC 801 Chapter 9 — Fire Suppression + Standpipe + Sprinkler Type + Fire Alarm
+    "903.2", "903.3.1", "905.3.1", "907.2",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1644,6 +1648,8 @@ function extractTableIds(query: string): string[] {
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
     "508":    ["508.3", "508.4", "508.5"],  // "Section 508" → all three occupancy methods
     "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
+    "903":    ["903.2", "903.3.1"],  // "Section 903" → sprinkler where-required + system type
+    "907":    ["907.2"],   // "Section 907" → fire alarm where-required
     "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit access rules
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
@@ -1714,6 +1720,16 @@ function extractTableIds(query: string): string[] {
     [/\b(?:class\s+[123i]+\s+standpipe|standpipe\s+(?:required|class|system|where))\b/i, ["905.3.1"]],
     [/\b(?:أنبوب\s+الإطفاء|خراطيم\s+الحريق|الأنابيب\s+الرأسية|مواسير\s+الإطفاء|الخراطيم\s+الداخلية)\b/i, ["905.3.1"]],
     [/\b(?:where.*standpipe|standpipe.*require|when.*standpipe|متى.*أنبوب|أنبوب.*إلزامي)\b/i, ["905.3.1"]],
+    // Fire alarm where-required (907.2)
+    [/\b(?:fire\s+alarm\s+(?:required|system\s+required|needed|when|where)|requires?\s+(?:a\s+)?fire\s+alarm)\b/i, ["907.2"]],
+    [/\b(?:manual\s+fire\s+alarm|occupant\s+notification|fire\s+detection\s+system\s+required)\b/i, ["907.2"]],
+    [/\b(?:does\s+(?:this|a|my)\s+(?:building|occupancy).*(?:need|require).*alarm|alarm.*(?:required|mandatory)\s+(?:for|in))\b/i, ["907.2"]],
+    [/\b(?:متى.*إنذار\s+الحريق|هل.*نظام\s+إنذار|إنذار\s+الحريق\s+(?:مطلوب|إلزامي)|نظام\s+الإنذار\s+(?:متى|أين))\b/i, ["907.2"]],
+    // Sprinkler system type (903.3.1) — NFPA 13 vs 13R vs 13D
+    [/\b(?:NFPA\s+13[RrDd]?|nfpa\s*13(?:\s*r|\s*d)?|13R|13D)\b/i, ["903.3.1"]],
+    [/\b(?:which\s+(?:sprinkler\s+)?system|sprinkler\s+(?:type|standard)|type\s+of\s+sprinkler)\b/i, ["903.3.1"]],
+    [/\b(?:13R\s+(?:allowed|permitted|vs|or)|13D\s+(?:allowed|permitted|vs|or)|residential\s+sprinkler\s+(?:type|standard))\b/i, ["903.3.1"]],
+    [/\b(?:نظام\s+الرش\s+(?:نوع|أي)|NFPA.*مقابل|13R.*مسموح|13D.*مسموح|أي\s+نظام\s+رش)\b/i, ["903.3.1"]],
     // Exit access doorways — room-level (1006.2.1)
     [/\b(?:exit\s+access\s+doorway|how\s+many\s+doors?\s+(?:does\s+a\s+)?room|single\s+exit.*room|one\s+exit.*room|room.*one\s+exit)\b/i, ["1006.2.1"]],
     [/\b(?:one\s+exit\s+access|single\s+exit\s+access|single\s+door.*egress|one\s+door.*egress)\b/i, ["1006.2.1"]],
