@@ -82,16 +82,25 @@ serve(async (req) => {
         .from("profiles")
         .select("user_id, plan_type, trial_type, trial_end, subscription_end, launch_trial_status, launch_trial_end, role");
 
+      // Fetch ALL subscription rows regardless of status so admin sees real state.
+      // The previous filter (.not "expired","cancelled") hid admin-changed rows
+      // immediately after the admin set them to those statuses — making changes
+      // look like they "disappeared" or reverted.
+      // We take the most-recent row per user via the subMap loop order (rows are
+      // returned ordered by created_at DESC in the select below).
       const { data: subs } = await adminClient
         .from("user_subscriptions")
         .select("user_id, id, status, trial_start, trial_end, current_period_end")
-        .not("status", "in", '("expired","cancelled")');
+        .order("created_at", { ascending: false });
 
       const profileMap: Record<string, typeof profiles extends (infer T)[] | null ? T : never> = {};
       for (const p of profiles ?? []) profileMap[p.user_id] = p;
 
+      // Build subMap: first row wins per user (most-recent due to ORDER BY DESC).
       const subMap: Record<string, typeof subs extends (infer T)[] | null ? T : never> = {};
-      for (const s of subs ?? []) subMap[s.user_id] = s;
+      for (const s of subs ?? []) {
+        if (!subMap[s.user_id]) subMap[s.user_id] = s;
+      }
 
       const users = authData.users.map((u) => ({
         id: u.id,
@@ -123,11 +132,16 @@ serve(async (req) => {
         .single();
       const old_plan = currentProfile?.plan_type ?? "unknown";
 
-      // 2. Update profiles.plan_type — entitlement source for per-mode limits.
+      // 2. Upsert profiles.plan_type — entitlement source for per-mode limits.
+      // Use upsert (not update) so that users whose profiles row is missing
+      // (Google SSO trigger failure) still get the correct plan applied.
+      // A plain UPDATE on a missing row silently succeeds with 0 rows changed.
       const { error: profileErr } = await adminClient
         .from("profiles")
-        .update({ plan_type, updated_at: new Date().toISOString() })
-        .eq("user_id", target_user_id);
+        .upsert(
+          { user_id: target_user_id, plan_type, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
       if (profileErr) throw profileErr;
 
       // 3. Align user_subscriptions so check-subscription reflects the change
@@ -214,8 +228,10 @@ serve(async (req) => {
 
       const { error } = await adminClient
         .from("profiles")
-        .update({ role, updated_at: new Date().toISOString() })
-        .eq("user_id", target_user_id);
+        .upsert(
+          { user_id: target_user_id, role, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
       if (error) throw error;
 
       await audit(target_user_id, { old_role, new_role: role });
@@ -295,8 +311,10 @@ serve(async (req) => {
       if (status === "cancelled" || status === "expired") {
         await adminClient
           .from("profiles")
-          .update({ plan_type: "free", updated_at: now.toISOString() })
-          .eq("user_id", target_user_id);
+          .upsert(
+            { user_id: target_user_id, plan_type: "free", updated_at: now.toISOString() },
+            { onConflict: "user_id" }
+          );
       } else if (status === "active" || status === "trialing") {
         const { data: profileForSync } = await adminClient
           .from("profiles")
@@ -306,8 +324,10 @@ serve(async (req) => {
         if (!profileForSync?.plan_type || profileForSync.plan_type === "free") {
           await adminClient
             .from("profiles")
-            .update({ plan_type: "engineer", updated_at: now.toISOString() })
-            .eq("user_id", target_user_id);
+            .upsert(
+              { user_id: target_user_id, plan_type: "engineer", updated_at: now.toISOString() },
+              { onConflict: "user_id" }
+            );
         }
       }
 
@@ -325,16 +345,19 @@ serve(async (req) => {
 
       const { error: trialProfileErr } = await adminClient
         .from("profiles")
-        .update({
-          plan_type,
-          trial_start: now.toISOString(),
-          trial_end: trialEndIso,
-          launch_trial_status: "trial_active",
-          launch_trial_start: now.toISOString(),
-          launch_trial_end: trialEndIso,
-          updated_at: now.toISOString(),
-        })
-        .eq("user_id", target_user_id);
+        .upsert(
+          {
+            user_id: target_user_id,
+            plan_type,
+            trial_start: now.toISOString(),
+            trial_end: trialEndIso,
+            launch_trial_status: "trial_active",
+            launch_trial_start: now.toISOString(),
+            launch_trial_end: trialEndIso,
+            updated_at: now.toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
       if (trialProfileErr) throw trialProfileErr;
 
       // ── Prevent check-subscription from overwriting plan_type ────────────────
@@ -389,13 +412,16 @@ serve(async (req) => {
 
       const { error } = await adminClient
         .from("profiles")
-        .update({
-          launch_trial_end: newEnd.toISOString(),
-          trial_end: newEnd.toISOString(),
-          launch_trial_status: "trial_active",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", target_user_id);
+        .upsert(
+          {
+            user_id: target_user_id,
+            launch_trial_end: newEnd.toISOString(),
+            trial_end: newEnd.toISOString(),
+            launch_trial_status: "trial_active",
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
       if (error) throw error;
 
       await audit(target_user_id, { days, new_end: newEnd.toISOString() });
@@ -407,13 +433,16 @@ serve(async (req) => {
       const past = new Date(Date.now() - 60_000).toISOString(); // 1 min ago
       const { error } = await adminClient
         .from("profiles")
-        .update({
-          launch_trial_end: past,
-          trial_end: past,
-          launch_trial_status: "expired",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", target_user_id);
+        .upsert(
+          {
+            user_id: target_user_id,
+            launch_trial_end: past,
+            trial_end: past,
+            launch_trial_status: "expired",
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
       if (error) throw error;
 
       await audit(target_user_id, { expired_at: past });
