@@ -946,9 +946,12 @@ function buildQueryKeywords(query: string): string[] {
     "section 1017", "section 1018", "section 1020", "section 1021", "section 1029",
     "1004.5", "1005.1", "1006.3", "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     "1029.6",
-    // Chapter 5 — Mixed Occupancy
-    "section 508", "508.3", "508.4",
+    // Chapter 5 — Mixed Occupancy (accessory / nonseparated / separated)
+    "section 508", "508.3", "508.4", "508.5",
     "accessory occupancy", "nonseparated occupancy", "mixed occupancy",
+    "separated occupancy", "occupancy separation", "fire barrier between",
+    // Chapter 10 — Exit Access Doorways (room-level)
+    "1006.2", "1006.2.1", "exit access doorway", "table 1006.2",
     // SBC 801 — Fire Suppression + Standpipe
     "table 903", "section 903", "903.2", "903.3",
     "section 905", "905.3", "905.3.1", "standpipe",
@@ -1612,8 +1615,10 @@ function extractTableIds(query: string): string[] {
     "1004.5", "1005.1", "1006.3.3", "1006.3.4",
     "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
     "1029.6.3",
-    // Chapter 5 — Mixed Occupancy
-    "508.3", "508.4",
+    // Chapter 5 — Mixed Occupancy (accessory / nonseparated / separated)
+    "508.3", "508.4", "508.5",
+    // Chapter 10 — Exit Access Doorways (room-level)
+    "1006.2.1",
     // SBC 801 Chapter 9 — Fire Suppression + Standpipe
     "903.2", "905.3.1",
   ];
@@ -1637,8 +1642,9 @@ function extractTableIds(query: string): string[] {
     "1020":   ["1020.1"],  // "Section 1020" → corridor fire rating
     "1021":   ["1021.2"],  // "Section 1021" → number of exits
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
-    "508":    ["508.3", "508.4"],  // "Section 508" → both mixed-occupancy rules
+    "508":    ["508.3", "508.4", "508.5"],  // "Section 508" → all three occupancy methods
     "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
+    "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit access rules
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
@@ -1693,16 +1699,26 @@ function extractTableIds(query: string): string[] {
     // Mixed / accessory occupancy (508.3)
     [/\b(?:accessory\s+occupancy|accessory\s+use|10\s*%\s*(?:rule|threshold|occupancy)|ten\s+percent\s+rule)\b/i, ["508.3"]],
     [/\b(?:الاستخدام\s+الفرعي|الاستخدام\s+الإضافي|10\s*بالمئة.*استخدام|عشرة\s+بالمئة\s+(?:قاعدة|مساحة))\b/i, ["508.3"]],
-    // Nonseparated / separated occupancy (508.4)
+    // Nonseparated occupancy (508.4)
     [/\b(?:non.?separated\s+occupanc|mixed\s+occupanc(?:y|ies)|most\s+restrictive\s+occupanc|multiple\s+occupanc(?:y|ies))\b/i, ["508.4"]],
-    [/\b(?:occupancy\s+(?:mix|classification|separation|combination)|mixed.use\s+building)\b/i, ["508.3", "508.4"]],
-    [/\b(?:الاستخدامات\s+غير\s+المفصولة|خلط\s+الاستخدامات|الاستخدام\s+الأكثر\s+تقييداً|فصل\s+الاستخدامات)\b/i, ["508.3", "508.4"]],
-    [/\b(?:separated\s+occupanc|fire\s+barrier\s+between\s+occupanc|section\s+508)\b/i, ["508.3", "508.4"]],
+    [/\b(?:occupancy\s+(?:mix|classification|combination)|mixed.use\s+building)\b/i, ["508.3", "508.4"]],
+    [/\b(?:الاستخدامات\s+غير\s+المفصولة|خلط\s+الاستخدامات|الاستخدام\s+الأكثر\s+تقييداً)\b/i, ["508.3", "508.4"]],
+    // Separated occupancy (508.5) — fire barriers between occupancies
+    [/\b(?:separated\s+occupanc|fire\s+barrier\s+between\s+occupanc|separation\s+of\s+occupanc|occupancy\s+separation)\b/i, ["508.5"]],
+    [/\b(?:how\s+many\s+hours.*occupanc|occupanc.*fire.?barrier|fire.?barrier.*occupanc|fire.?barrier\s+rating.*occupanc)\b/i, ["508.5"]],
+    [/\b(?:table\s+508\.4|508\.4\s+table|fire\s+barrier\s+hours?\s+between)\b/i, ["508.5"]],
+    [/\b(?:section\s+508)\b/i, ["508.3", "508.4", "508.5"]],
+    [/\b(?:الاستخدامات\s+المفصولة|فصل\s+الاستخدامات|جدار\s+حريق\s+بين\s+الاستخدامات|ساعات\s+الفصل)\b/i, ["508.5"]],
     // Standpipe systems (905.3.1)
     [/\b(?:standpipe|stand\s+pipe|hose\s+(?:cabinet|station|connection)|fire\s+hose\s+(?:cabinet|connection))\b/i, ["905.3.1"]],
     [/\b(?:class\s+[123i]+\s+standpipe|standpipe\s+(?:required|class|system|where))\b/i, ["905.3.1"]],
     [/\b(?:أنبوب\s+الإطفاء|خراطيم\s+الحريق|الأنابيب\s+الرأسية|مواسير\s+الإطفاء|الخراطيم\s+الداخلية)\b/i, ["905.3.1"]],
     [/\b(?:where.*standpipe|standpipe.*require|when.*standpipe|متى.*أنبوب|أنبوب.*إلزامي)\b/i, ["905.3.1"]],
+    // Exit access doorways — room-level (1006.2.1)
+    [/\b(?:exit\s+access\s+doorway|how\s+many\s+doors?\s+(?:does\s+a\s+)?room|single\s+exit.*room|one\s+exit.*room|room.*one\s+exit)\b/i, ["1006.2.1"]],
+    [/\b(?:one\s+exit\s+access|single\s+exit\s+access|single\s+door.*egress|one\s+door.*egress)\b/i, ["1006.2.1"]],
+    [/\b(?:when\s+(?:can|is)\s+(?:a\s+)?(?:room|space).*one\s+exit|occupant\s+load.*(?:exit\s+door|doorway))\b/i, ["1006.2.1"]],
+    [/\b(?:باب\s+(?:مخرج|الخروج)\s+واحد|فتحة\s+وصول\s+المخرج|مخرج\s+(?:الغرفة|غرفة)|كم\s+باب.*غرفة)\b/i, ["1006.2.1"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
