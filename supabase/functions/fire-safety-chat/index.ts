@@ -766,36 +766,63 @@ function cleanupQueryCache() {
 }
 
 // ---- Bilingual SBC Technical Glossary ----
+// Deduplication pass 2026-04-10: merged all duplicate keys, kept union of values.
 const AR_EN_GLOSSARY: Record<string, string[]> = {
+  // ── Fire systems ───────────────────────────────────────────────────────────
   "حريق": ["fire", "fire protection"],
   "الحريق": ["fire", "fire protection"],
   "إطفاء": ["suppression", "extinguishing", "fire suppression"],
-  "رش": ["sprinkler", "spray"],
-  "رشاش": ["sprinkler", "nozzle"],
+  "رش": ["sprinkler", "spray"],                                        // was duplicated
+  "رشاش": ["sprinkler", "nozzle", "sprinkler head"],                   // merged: added "sprinkler head"
   "الرش": ["sprinkler"],
-  "رشاشات": ["sprinklers"],
-  "إنذار": ["alarm", "detection", "notification"],
-  "كاشف": ["detector", "sensor"],
+  "رشاشات": ["sprinklers", "sprinkler system", "automatic sprinkler"], // merged: added "sprinkler system","automatic sprinkler"
+  "إنذار": ["alarm", "detection", "notification", "alert"],            // merged: added "alert"
+  "كاشف": ["detector", "sensor"],                                      // was duplicated
   "كواشف": ["detectors", "sensors"],
-  "مضخة": ["pump", "fire pump"],
+  "مضخة": ["pump", "fire pump"],                                       // was duplicated
   "خرطوم": ["hose", "standpipe"],
   "طفاية": ["extinguisher"],
-  "مقاومة": ["resistance", "fire resistance", "rated"],
-  "تصنيف": ["classification", "rating", "type"],
+  // ── Compound fire-system phrases (unique — kept from added-terms block) ───
+  "مقاومة حريق": ["fire resistance", "fire-resistance rating"],
+  "حمل إشغال": ["occupant load", "occupancy load"],
+  "مسافة سفر": ["travel distance", "exit travel"],
+  "كاشف دخان": ["smoke detector", "smoke detection"],
+  "كاشف حرارة": ["heat detector", "thermal detector"],
+  "نظام رش": ["sprinkler system", "automatic sprinkler"],
+  "إنذار حريق": ["fire alarm", "fire alarm system"],
+  "مضخة حريق": ["fire pump", "fire pump system"],
+  "صاعد": ["standpipe", "riser", "vertical pipe"],
+  "صاعد مائي": ["standpipe", "standpipe system"],
+  "حاجز حريق": ["fire barrier", "fire wall", "fire separation"],
+  "جدار حريق": ["fire wall", "firewall", "fire barrier"],
+  "فاصل حريق": ["fire separation", "fire partition"],
+  "مقاومة للحريق": ["fire-rated", "fire resistant", "fire resistance"],
+  "تحكم دخان": ["smoke control", "smoke management"],
+  "مانع دخان": ["smoke barrier", "smoke partition"],
+  // ── Building elements ─────────────────────────────────────────────────────
+  "مقاومة": ["resistance", "fire resistance", "rated", "rating"],      // merged: added "rating"
+  "تصنيف": ["classification", "rating", "type"],                       // was duplicated
   "مبنى": ["building", "structure"],
   "مباني": ["buildings", "structures"],
   "بناء": ["building", "construction"],
-  "ارتفاع": ["height", "elevation", "rise"],
-  "مساحة": ["area", "floor area", "square"],
-  "طابق": ["floor", "story", "storey", "level"],
-  "طوابق": ["floors", "stories", "storeys", "levels"],
+  "إنشاء": ["construction", "building construction"],
+  "نوع إنشاء": ["construction type", "type of construction"],
+  "ارتفاع": ["height", "elevation", "rise", "building height"],        // merged: added "building height"
+  "مساحة": ["area", "floor area", "square", "allowable area"],         // merged: added "allowable area"
+  "مساحة أرضية": ["floor area", "allowable area"],
+  "طابق": ["floor", "story", "storey", "level"],                       // was duplicated; kept richer first form
+  "طوابق": ["floors", "stories", "storeys", "levels"],                 // was duplicated; kept richer first form
   "أدوار": ["stories", "floors", "levels"],
   "دور": ["story", "floor", "level"],
   "سقف": ["roof", "ceiling"],
   "جدار": ["wall", "partition"],
   "جدران": ["walls", "partitions"],
   "عمود": ["column", "pillar"],
-  "إشغال": ["occupancy", "occupant", "use"],
+  "دخان": ["smoke", "smoke control"],
+  // ── Occupancy ─────────────────────────────────────────────────────────────
+  "إشغال": ["occupancy", "occupant", "use"],                           // was duplicated
+  "قسم": ["section", "division"],
+  "مجموعة": ["group", "occupancy group"],
   "سكني": ["residential", "dwelling", "R-occupancy"],
   "تجاري": ["commercial", "mercantile", "business", "M-occupancy", "B-occupancy"],
   "صناعي": ["industrial", "factory", "F-occupancy"],
@@ -810,20 +837,34 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "مسكن": ["dwelling", "residence", "habitable"],
   "وحدات": ["units", "dwelling units"],
   "وحدة": ["unit", "dwelling unit"],
-  "مخرج": ["exit", "egress", "means of egress"],
+  // ── Egress ────────────────────────────────────────────────────────────────
+  "مخرج": ["exit", "egress", "means of egress"],                       // was duplicated
   "مخارج": ["exits", "egress", "means of egress"],
-  "هروب": ["escape", "egress", "evacuation"],
-  "إخلاء": ["evacuation", "egress"],
-  "ممر": ["corridor", "passage", "aisle", "hallway"],
-  "درج": ["stair", "stairway", "staircase"],
-  "سلم": ["stair", "stairway", "ladder"],
+  "مخرج طوارئ": ["emergency exit", "exit"],
+  "طوارئ": ["emergency", "emergency exit"],
+  "مسار هروب": ["means of egress", "escape route", "exit path"],
+  "هروب": ["escape", "egress", "evacuation"],                          // was duplicated
+  "إخلاء": ["evacuation", "egress"],                                   // was duplicated
+  "ممر": ["corridor", "passage", "aisle", "hallway"],                  // was duplicated; kept richer first form
+  "درج": ["stair", "stairway", "staircase"],                           // was duplicated
+  "سلم": ["stair", "stairway", "ladder"],                              // was duplicated
   "سلالم": ["stairs", "stairways", "staircases"],
+  "مصعد": ["elevator", "lift"],
   "درابزين": ["handrail", "handrails", "guardrail", "railing", "guard"],
   "منحدر": ["ramp", "ramped aisle", "slope"],
+  "سفر": ["travel", "travel distance"],
+  "مسافة": ["distance", "travel distance", "separation"],
+  "عرض": ["width", "breadth"],
+  "طول": ["length", "height"],
+  // ── Openings ──────────────────────────────────────────────────────────────
   "باب": ["door", "doorway", "opening"],
   "أبواب": ["doors", "doorways"],
-  "فتحة": ["opening", "aperture"],
-  "فتحات": ["openings", "apertures"],
+  "فتحة": ["opening", "aperture", "penetration"],                      // merged: added "penetration"
+  "فتحات": ["openings", "apertures", "penetrations"],                  // merged: added "penetrations"
+  // ── Loads & capacity ─────────────────────────────────────────────────────
+  "حمل": ["load", "occupant load", "capacity"],
+  "سعة": ["capacity", "occupancy load"],
+  // ── MEP ──────────────────────────────────────────────────────────────────
   "نظام": ["system", "installation"],
   "أنظمة": ["systems", "installations"],
   "تهوية": ["ventilation", "HVAC", "air"],
@@ -836,6 +877,7 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "تعويض": ["compensation", "make-up", "makeup air"],
   "التعويض": ["compensation", "make-up air", "makeup"],
   "مراوح": ["fans", "blowers"],
+  // ── Code references ───────────────────────────────────────────────────────
   "متطلبات": ["requirements", "provisions", "criteria"],
   "اشتراطات": ["requirements", "provisions", "regulations"],
   "لائحة": ["regulation", "code", "standard"],
@@ -844,71 +886,19 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "فصل": ["chapter", "section"],
   "جدول": ["table", "schedule"],
   "ملحق": ["appendix", "annex", "supplement"],
-  "مسافة": ["distance", "travel distance", "separation"],
-  "عرض": ["width", "breadth"],
-  "طول": ["length", "height"],
-  "حمل": ["load", "occupant load", "capacity"],
-  "سعة": ["capacity", "occupancy load"],
+  "تصريح": ["permit", "approval"],
+  // ── Materials ─────────────────────────────────────────────────────────────
   "خرسانة": ["concrete", "reinforced concrete"],
   "حديد": ["steel", "iron", "metal"],
   "خشب": ["wood", "timber", "combustible"],
   "عازل": ["insulation", "barrier", "fire barrier"],
   "حاجز": ["barrier", "separation", "fire barrier"],
+  // ── Safety ────────────────────────────────────────────────────────────────
   "حماية": ["protection", "fire protection", "safeguard"],
   "وقاية": ["prevention", "protection", "safety"],
   "سلامة": ["safety", "life safety"],
   "تلقائي": ["automatic", "auto"],
   "يدوي": ["manual", "hand-operated"],
-  // --- Added terms for better RAG matching ---
-  "قسم": ["section", "division"],
-  "مجموعة": ["group", "occupancy group"],
-  "مقاومة حريق": ["fire resistance", "fire-resistance rating"],
-  "مقاومة": ["resistance", "rating"],
-  "حمل إشغال": ["occupant load", "occupancy load"],
-  "إشغال": ["occupancy", "occupant", "use"],
-  "مسافة سفر": ["travel distance", "exit travel"],
-  "سفر": ["travel", "travel distance"],
-  "كاشف دخان": ["smoke detector", "smoke detection"],
-  "كاشف": ["detector", "sensor"],
-  "كاشف حرارة": ["heat detector", "thermal detector"],
-  "نظام رش": ["sprinkler system", "automatic sprinkler"],
-  "رش": ["sprinkler", "spray"],
-  "رشاش": ["sprinkler", "sprinkler head", "nozzle"],
-  "رشاشات": ["sprinklers", "sprinkler system", "automatic sprinkler"],
-  "إنذار حريق": ["fire alarm", "fire alarm system"],
-  "إنذار": ["alarm", "notification", "alert"],
-  "مضخة حريق": ["fire pump", "fire pump system"],
-  "مضخة": ["pump", "fire pump"],
-  "صاعد": ["standpipe", "riser", "vertical pipe"],
-  "صاعد مائي": ["standpipe", "standpipe system"],
-  "مخرج طوارئ": ["emergency exit", "exit"],
-  "مخرج": ["exit", "means of egress", "egress"],
-  "طوارئ": ["emergency", "emergency exit"],
-  "ممر": ["corridor", "hallway", "passage"],
-  "درج": ["stair", "stairway", "staircase"],
-  "سلم": ["stair", "stairway", "ladder"],
-  "مصعد": ["elevator", "lift"],
-  "حاجز حريق": ["fire barrier", "fire wall", "fire separation"],
-  "جدار حريق": ["fire wall", "firewall", "fire barrier"],
-  "فاصل حريق": ["fire separation", "fire partition"],
-  "تصنيف": ["classification", "rating", "type"],
-  "نوع إنشاء": ["construction type", "type of construction"],
-  "إنشاء": ["construction", "building construction"],
-  "ارتفاع": ["height", "building height", "rise"],
-  "مساحة": ["area", "floor area", "allowable area"],
-  "مساحة أرضية": ["floor area", "allowable area"],
-  "طابق": ["story", "floor", "level"],
-  "طوابق": ["stories", "floors", "levels"],
-  "تحكم دخان": ["smoke control", "smoke management"],
-  "دخان": ["smoke", "smoke control"],
-  "مانع دخان": ["smoke barrier", "smoke partition"],
-  "فتحة": ["opening", "penetration"],
-  "فتحات": ["openings", "penetrations"],
-  "مقاومة للحريق": ["fire-rated", "fire resistant", "fire resistance"],
-  "مسار هروب": ["means of egress", "escape route", "exit path"],
-  "هروب": ["egress", "escape", "evacuation"],
-  "إخلاء": ["evacuation", "egress"],
-  "تصريح": ["permit", "approval"],
 };
 
 // ---- Smart Chunk Scoring (OPTIMIZED) ----
@@ -940,18 +930,22 @@ function buildQueryKeywords(query: string): string[] {
   
   const patterns = [
     "sbc 201", "sbc 801", "sbc201", "sbc801",
+    // Chapter 4 — Special Detailed Requirements
+    "section 403", "section 406", "403.1", "406.5", "406.6",
+    "high-rise", "high rise", "open parking", "enclosed parking",
     // Chapter 5 — Heights, Areas, Incidental Uses
     "table 504", "table 506", "table 509", "504.3", "504.4", "506.2", "509",
     // Chapter 6 — Construction Types
     "table 601", "table 602", "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "table 705", "705.8",
-    // Chapter 10 — Means of Egress
+    // Chapter 10 — Means of Egress + Assembly
     "table 1004", "table 1005", "table 1006", "table 1011",
-    "table 1017", "table 1018", "table 1020", "table 1021",
+    "table 1017", "table 1018", "table 1020", "table 1021", "table 1029",
     "section 1004", "section 1005", "section 1006", "section 1011",
-    "section 1017", "section 1018", "section 1020", "section 1021",
+    "section 1017", "section 1018", "section 1020", "section 1021", "section 1029",
     "1004.5", "1005.1", "1006.3", "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
+    "1029.6",
     // SBC 801 — Fire Suppression
     "table 903", "section 903", "903.2", "903.3",
   ];
@@ -1602,15 +1596,18 @@ function extractTableIds(query: string): string[] {
   // Also match bare section numbers when they look like table IDs that we know about
   // Keep this list in sync with the sbc_code_tables rows in the DB.
   const KNOWN_TABLE_IDS = [
-    // Chapter 5 — Heights & Areas + Incidental Uses
+    // Chapter 4 — Special Detailed Requirements
+    "403.1", "406.5", "406.6",
+    // Chapter 5 — Heights, Areas, Incidental Uses
     "504.3", "504.4", "506.2", "509",
     // Chapter 6 — Construction Types
     "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "705.8",
-    // Chapter 10 — Means of Egress
+    // Chapter 10 — Means of Egress + Assembly
     "1004.5", "1005.1", "1006.3.3", "1006.3.4",
     "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
+    "1029.6.3",
     // SBC 801 Chapter 9 — Fire Suppression
     "903.2",
   ];
@@ -1625,12 +1622,15 @@ function extractTableIds(query: string): string[] {
   // Parent-section aliases — when user asks about a whole section/chapter
   // without specifying a sub-table, inject the most-relevant known table.
   const PARENT_ALIASES: Record<string, string[]> = {
+    "403":    ["403.1"],   // "Section 403" or "high rise" → high-rise requirements
+    "406":    ["406.5", "406.6"],  // "Section 406" → both parking sections
     "1005":   ["1005.1"],  // "Section 1005" → egress width per occupant
     "1011":   ["1011.2"],  // "Section 1011" → stairway width
     "1017":   ["1017.2"],  // "Section 1017" → travel distance
     "1018":   ["1018.1"],  // "Section 1018" → corridor width
     "1020":   ["1020.1"],  // "Section 1020" → corridor fire rating
     "1021":   ["1021.2"],  // "Section 1021" → number of exits
+    "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
@@ -1672,6 +1672,16 @@ function extractTableIds(query: string): string[] {
     [/\b(?:generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل))\b/i, ["509"]],
     [/\b(?:electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire))\b/i, ["509"]],
     [/\b(?:الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق))\b/i,                ["509"]],
+    // High-rise buildings
+    [/\b(?:high.rise|high\s+rise|مبنى\s+شاهق|المباني\s+الشاهقة|شاهق|55\s*(?:ft|feet|قدم))\b/i, ["403.1"]],
+    [/\b(?:fire\s+command\s+center|مركز\s+قيادة\s+الحرائق|emergency\s+power\s+(?:high|building))\b/i, ["403.1"]],
+    // Parking
+    [/\b(?:open\s+parking|parking\s+(?:garage|structure)|مواقف\s+(?:السيارات\s+المفتوحة|مفتوحة))\b/i, ["406.5"]],
+    [/\b(?:enclosed\s+parking|covered\s+parking|مواقف\s+(?:السيارات\s+المغلقة|مغلقة|مغطاة))\b/i,    ["406.6"]],
+    [/\b(?:parking\s+sprinkler|sprinkler.*parking|رشاشات\s+مواقف|مواقف.*رشاشات)\b/i, ["406.5", "406.6"]],
+    // Assembly aisles
+    [/\b(?:assembly\s+aisle|theater\s+aisle|cinema\s+aisle|aisle\s+width.*assembly|عرض\s+الممر.*(?:قاعة|مسرح)|ممرات\s+(?:المقاعد|التجمع))\b/i, ["1029.6.3"]],
+    [/\b(?:seating\s+aisle|row\s+spacing|seats\s+per\s+row|مقاعد.*صف|صفوف.*مقاعد)\b/i, ["1029.6.3"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
