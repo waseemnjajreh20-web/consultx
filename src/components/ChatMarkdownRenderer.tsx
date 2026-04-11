@@ -249,6 +249,20 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
       '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 mx-0.5 leading-none">✓ مؤكد</span>')
     .replace(/\(مستنتج\)/g,
       '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/25 mx-0.5 leading-none">~ مستنتج</span>')
+    // Square-bracket epistemic state markers from Analytical mode prompt (e.g. [مؤكد — CONFIRMED])
+    .replace(/\[(?:مؤكد\s*[—–-]\s*CONFIRMED|CONFIRMED\s*[—–-]\s*مؤكد)\]/gi,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 mx-0.5 leading-none">✓ مؤكد</span>')
+    .replace(/\[(?:مستنتج\s*[—–-]\s*INFERRED|INFERRED\s*[—–-]\s*مستنتج)\]/gi,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/25 mx-0.5 leading-none">~ مستنتج</span>')
+    .replace(/\[(?:يتطلب تأكيداً?\s*[—–-]\s*REQUIRES CONFIRMATION|REQUIRES CONFIRMATION\s*[—–-]\s*يتطلب تأكيداً?)\]/gi,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-orange-500/10 text-orange-500 border border-orange-500/25 mx-0.5 leading-none">? يتطلب تأكيد</span>')
+    .replace(/\[(?:يُحظر الحسم\s*[—–-]\s*CANNOT CONCLUDE|CANNOT CONCLUDE\s*[—–-]\s*يُحظر الحسم)\]/gi,
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[0.7em] font-semibold bg-red-500/10 text-red-500 border border-red-500/25 mx-0.5 leading-none">✕ لا يمكن الحسم</span>')
+    // Additional compliance status tokens used in Analytical table cells
+    .replace(/⚠️\s*(?:يحتاج تحقق|Needs? Verif\w*)/gi,
+      '<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5 text-xs font-medium">⚠️ يحتاج تحقق</span>')
+    .replace(/🔲\s*(?:غير محدد|Undetermined)/gi,
+      '<span class="inline-flex items-center gap-1 bg-slate-500/15 text-slate-400 border border-slate-500/30 rounded-full px-2 py-0.5 text-xs font-medium">🔲 غير محدد</span>')
     // Bold — mode-aware
     .replace(/\*\*([^*]+)\*\*/g, (_, txt) => getBoldHtml(txt, mode))
     // Inline code
@@ -612,7 +626,7 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
     <div
       className="prose prose-invert prose-sm max-w-none space-y-1"
       style={{
-        lineHeight: 1.8,
+        lineHeight: isArabic ? 1.9 : 1.8,
         fontFamily: isArabic
           ? "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif"
           : "'Inter', system-ui, sans-serif",
