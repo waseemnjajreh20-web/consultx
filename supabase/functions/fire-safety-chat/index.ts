@@ -963,7 +963,10 @@ function buildQueryKeywords(query: string): string[] {
     "supervising station", "monitoring station", "central station",
     "903.3.2", "quick response sprinkler", "qr head", "residential head",
     "903.4", "waterflow alarm", "tamper signal", "sprinkler supervision", "supervisory signal",
+    "903.4.3", "floor control valve", "riser valve", "zone control valve", "sprinkler floor isolation",
     "907.3", "smoke detector", "heat detector", "duct detector", "initiating device",
+    "907.4", "907.4.2", "pull station", "manual fire alarm box", "fire alarm box location",
+    "fire alarm box height", "pull station location", "pull station height",
   ];
   for (const p of patterns) {
     if (raw.includes(p)) tokens.push(p);
@@ -1629,7 +1632,8 @@ function extractTableIds(query: string): string[] {
     // Chapter 10 — Exit Access Doorways (room-level)
     "1006.2.1",
     // SBC 801 Chapter 9 — Fire Suppression + Supervision + Standpipe + Sprinkler Type/Heads + Fire Alarm
-    "903.2", "903.3.1", "903.3.2", "903.4", "905.3.1", "907.2", "907.3", "907.5", "907.6",
+    "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3", "905.3.1",
+    "907.2", "907.3", "907.4", "907.4.2", "907.5", "907.6",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1653,8 +1657,9 @@ function extractTableIds(query: string): string[] {
     "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
     "508":    ["508.3", "508.4", "508.5"],  // "Section 508" → all three occupancy methods
     "905":    ["905.3.1"],  // "Section 905" → standpipe where-required
-    "903":    ["903.2", "903.3.1", "903.3.2", "903.4"],  // "Section 903" → sprinkler: where-required, type, head type, supervision
-    "907":    ["907.2", "907.3", "907.5", "907.6"],      // "Section 907" → fire alarm: where-required, initiating devices, notification, monitoring
+    "903":    ["903.2", "903.3.1", "903.3.2", "903.4", "903.4.3"],  // "Section 903" → sprinkler: where-required, type, head type, supervision, floor valves
+    "907":    ["907.2", "907.3", "907.4.2", "907.5", "907.6"],     // "Section 907" → fire alarm: where-required, initiating, manual boxes, notification, monitoring
+    "907.4":  ["907.4.2"],  // "Section 907.4" → manual fire alarm box specs
     "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit access rules
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
@@ -1756,6 +1761,17 @@ function extractTableIds(query: string): string[] {
     [/\b(?:tamper\s+(?:switch|signal|alarm)|control\s+valve\s+(?:tamper|supervision)|supervisory\s+signal)\b/i, ["903.4"]],
     [/\b(?:dry.pipe\s+supervision|sprinkler\s+(?:valve\s+)?monitor|pressure\s+supervisory)\b/i, ["903.4"]],
     [/\b(?:مراقبة\s+(?:نظام\s+)?الرش|إشارة\s+التدفق|صمام\s+التحكم\s+(?:مراقبة|إنذار)|إشارة\s+المراقبة\s+رش)\b/i, ["903.4"]],
+    // Floor control valves — high-rise only (903.4.3)
+    [/\b(?:floor\s+control\s+valve|riser\s+control\s+valve|zone\s+(?:control|isolation)\s+valve|floor\s+sprinkler\s+valve)\b/i, ["903.4.3"]],
+    [/\b(?:sprinkler\s+(?:floor\s+)?isolation|sprinkler\s+zone\s+(?:control|valve)|isolation\s+valve.*sprinkler|sprinkler.*isolation\s+valve)\b/i, ["903.4.3"]],
+    [/\b(?:valve\s+(?:at\s+)?(?:riser|each\s+floor|floor\s+level)|floor.by.floor\s+(?:valve|control))\b/i, ["903.4.3"]],
+    [/\b(?:صمام\s+(?:التحكم\s+)?(?:بالطابق|كل\s+طابق)|عزل\s+(?:رشاشات\s+)?الطابق|صمامات\s+الطوابق)\b/i, ["903.4.3"]],
+    // Manual fire alarm box installation specs (907.4.2) — distinct from "where required" (907.2)
+    [/\b(?:pull\s+station|fire\s+alarm\s+box(?:es)?|manual\s+(?:fire\s+alarm\s+)?box(?:es)?)\b/i, ["907.4.2"]],
+    [/\b(?:where\s+(?:to\s+)?(?:locate|place|mount|install)\s+(?:pull\s+station|fire\s+alarm\s+box)|location\s+of\s+(?:pull\s+station|fire\s+alarm\s+box))\b/i, ["907.4.2"]],
+    [/\b(?:(?:pull\s+station|fire\s+alarm\s+box)\s+(?:height|mounting|distance|60\s*m|1\.5\s*m)|height\s+of\s+(?:pull\s+station|fire\s+alarm\s+box))\b/i, ["907.4.2"]],
+    [/\b(?:pull\s+station\s+(?:not\s+required|exception|omit)|(?:manual\s+box|pull\s+station)\s+(?:waive|sprinkler\s+exception))\b/i, ["907.4.2"]],
+    [/\b(?:صندوق\s+إنذار\s+يدوي|زر\s+الإنذار\s+اليدوي|محطة\s+السحب|موقع\s+صندوق\s+الإنذار|ارتفاع\s+صندوق\s+الإنذار)\b/i, ["907.4.2"]],
     // Exit access doorways — room-level (1006.2.1)
     [/\b(?:exit\s+access\s+doorway|how\s+many\s+doors?\s+(?:does\s+a\s+)?room|single\s+exit.*room|one\s+exit.*room|room.*one\s+exit)\b/i, ["1006.2.1"]],
     [/\b(?:one\s+exit\s+access|single\s+exit\s+access|single\s+door.*egress|one\s+door.*egress)\b/i, ["1006.2.1"]],
