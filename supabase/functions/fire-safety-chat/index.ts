@@ -1843,6 +1843,12 @@ async function fetchStructuredTables(
   }
 
   context += "\n\n" + "=".repeat(60) + "\n";
+  context += "⚡ STRUCTURED CONTEXT PRESENT — RESPONSE INSTRUCTIONS:\n";
+  context += "1. CITE the structured table(s) above DIRECTLY and COMPLETELY in your answer.\n";
+  context += "2. DO NOT ask for project specifics before citing. Provide the full code requirement first.\n";
+  context += "3. If the user's specific conditions affect which row/threshold applies, state ALL applicable rows, then note what additional project detail would refine the answer further.\n";
+  context += "4. The consultation mode's clarifying-question instinct is SUSPENDED when structured tables are present. Lead with the citation, follow with any refinement questions.\n";
+  context += "=".repeat(60) + "\n";
   context += "END OF STRUCTURED TABLE DATA — Continue with retrieved document chunks below.\n";
 
   return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
