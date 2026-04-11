@@ -1646,22 +1646,27 @@ function extractTableIds(query: string): string[] {
   }
 
   // Also match bare section numbers when they look like table IDs that we know about
-  // Keep this list in sync with the sbc_code_tables rows in the DB.
+  // Keep this list in sync with the sbc_code_tables rows in the DB (currently 68 records).
   const KNOWN_TABLE_IDS = [
+    // Chapter 3 — Occupancy Classification
+    "302", "303", "304", "305", "306", "307", "308", "309", "310", "311", "312",
     // Chapter 4 — Special Detailed Requirements
-    "403.1", "406.5", "406.6",
-    // Chapter 5 — Heights, Areas, Incidental Uses
-    "504.3", "504.4", "506.2", "509",
+    "402", "403.1", "404", "405", "406.5", "406.6", "407", "408", "414", "415", "420",
+    // Chapter 5 — Heights, Areas, Mixed Occupancy, Incidental Uses
+    "504.3", "504.4", "506.2", "508", "508.3", "508.4", "508.5", "509",
     // Chapter 6 — Construction Types
     "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "705.8",
-    // Chapter 10 — Means of Egress + Assembly
-    "1004.5", "1005.1", "1006.3.3", "1006.3.4",
-    "1011.2", "1017.2", "1018.1", "1020.1", "1021.2",
-    "1029.6.3",
-    // SBC 801 Chapter 9 — Fire Suppression
-    "903.2",
+    // Chapter 10 — Means of Egress
+    "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4",
+    "1008", "1009", "1010", "1011.2", "1012", "1013", "1015",
+    "1017.2", "1018.1", "1020.1", "1021.2", "1024", "1029.6.3", "1030",
+    // SBC 801 Chapter 9 — Fire Protection Systems
+    "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3",
+    "905.3.1",
+    "907.2", "907.3", "907.4.2", "907.5", "907.6",
+    "909", "912", "913", "914", "915",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1672,17 +1677,47 @@ function extractTableIds(query: string): string[] {
   }
 
   // Parent-section aliases — when user asks about a whole section/chapter
-  // without specifying a sub-table, inject the most-relevant known table.
+  // without specifying a sub-table, inject the most-relevant known table(s).
   const PARENT_ALIASES: Record<string, string[]> = {
-    "403":    ["403.1"],   // "Section 403" or "high rise" → high-rise requirements
-    "406":    ["406.5", "406.6"],  // "Section 406" → both parking sections
-    "1005":   ["1005.1"],  // "Section 1005" → egress width per occupant
-    "1011":   ["1011.2"],  // "Section 1011" → stairway width
-    "1017":   ["1017.2"],  // "Section 1017" → travel distance
-    "1018":   ["1018.1"],  // "Section 1018" → corridor width
-    "1020":   ["1020.1"],  // "Section 1020" → corridor fire rating
-    "1021":   ["1021.2"],  // "Section 1021" → number of exits
-    "1029":   ["1029.6.3"], // "Section 1029" → assembly aisle width
+    // Chapter 3 — Occupancy Classification parents
+    "303":    ["303"],
+    "304":    ["304"],
+    "305":    ["305"],
+    "306":    ["306"],
+    "307":    ["307"],
+    "308":    ["308"],
+    "309":    ["309"],
+    "310":    ["310"],
+    "311":    ["311"],
+    "312":    ["312"],
+    // Chapter 4 — Special Detailed Requirements parents
+    "402":    ["402"],
+    "403":    ["403.1"],
+    "404":    ["404"],
+    "405":    ["405"],
+    "406":    ["406.5", "406.6"],
+    "407":    ["407"],
+    "408":    ["408"],
+    "414":    ["414"],
+    "415":    ["415"],
+    "420":    ["420"],
+    // Chapter 5 — Mixed occupancy parent
+    "508":    ["508", "508.3", "508.4", "508.5"],
+    // Chapter 10 — Egress parents
+    "1005":   ["1005.1"],
+    "1006":   ["1006.2.1", "1006.3.3", "1006.3.4"],
+    "1011":   ["1011.2"],
+    "1017":   ["1017.2"],
+    "1018":   ["1018.1"],
+    "1020":   ["1020.1"],
+    "1021":   ["1021.2"],
+    "1029":   ["1029.6.3"],
+    // SBC 801 Ch. 9 parents
+    "903":    ["903.2", "903.3.1", "903.3.2"],
+    "903.4":  ["903.4", "903.4.3"],
+    "905":    ["905.3.1"],
+    "907":    ["907.2", "907.3"],
+    "907.4":  ["907.4.2"],
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
@@ -1695,45 +1730,132 @@ function extractTableIds(query: string): string[] {
 
   // Semantic aliases — common query phrases that map to specific tables
   const SEMANTIC_ALIASES: Array<[RegExp, string[]]> = [
-    // Travel distance
-    [/\b(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))\b/i,                    ["1017.2"]],
-    [/\b(?:max(?:imum)?\s+travel|أقصى\s+مسافة)\b/i,                                 ["1017.2"]],
-    // Corridor fire rating
-    [/\b(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)\b/i,                      ["1020.1"]],
-    // Number of exits / minimum exits
-    [/\b(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))\b/i,                  ["1021.2"]],
-    [/\b(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)\b/i,                      ["1021.2"]],
-    // Construction type fire-resistance ratings
-    [/\b(?:structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق)\b/i, ["601"]],
-    // Exterior wall by fire separation distance
-    [/\b(?:exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل)\b/i, ["602"]],
-    // Exterior wall openings / window area limits
-    [/\b(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)\b/i,   ["705.8"]],
-    // Sprinkler requirement
-    [/\b(?:where\s+(?:are?\s+)?sprinkler|when\s+(?:are?\s+)?sprinkler|متى.*رشاش|الرشاشات.*إلزامي)\b/i, ["903.2"]],
-    [/\b(?:sprinkler\s+required|requires?\s+sprinkler|تجب\s+الرشاشات?)\b/i,          ["903.2"]],
-    // Egress / stair width per occupant
-    [/\b(?:egress\s+width|exit\s+width|stair(?:way)?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل)\b/i, ["1005.1"]],
-    [/\b(?:width\s+per\s+occupant|inches?\s+per\s+occupant|بوصة?\s+لكل\s+شخص)\b/i,  ["1005.1"]],
-    // Corridor width (min dimension)
-    [/\b(?:min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|عرض\s+الممر)\b/i, ["1018.1"]],
-    // Stair dimensions (risers, treads, headroom)
-    [/\b(?:riser\s+height|tread\s+depth|stair\s+dimen|headroom|ارتفاع\s+الدرجة|عمق\s+الدرجة)\b/i, ["1011.2"]],
-    [/\b(?:stair(?:way)?\s+(?:min|width|size)|أبعاد\s+(?:الدرج|السلم))\b/i,          ["1011.2"]],
-    // Incidental uses — generator room, boiler room, storage room fire separation
-    [/\b(?:generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل))\b/i, ["509"]],
-    [/\b(?:electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire))\b/i, ["509"]],
-    [/\b(?:الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق))\b/i,                ["509"]],
+    // ── CHAPTER 3 — Occupancy Classification ─────────────────────────────────
+    [/\b(?:occupancy\s+classif|تصنيف\s+الإشغال|كيف\s+أصنف|أي\s+إشغال)\b/i,          ["302"]],
+    [/\b(?:what\s+(?:group|occupancy)\s+is|ما\s+(?:تصنيف|مجموعة)\s+إشغال)\b/i,       ["302"]],
+    [/\b(?:assembly\s+(?:occup|group|A-[1-5])|مجموعة\s+(?:التجمع|أ)|مبنى\s+تجمع)\b/i, ["303"]],
+    [/\b(?:business\s+(?:occup|group\s+B)|مكاتب\s+إدارية|مجموعة\s+(?:ب|B)\b)\b/i,    ["304"]],
+    [/\b(?:educational\s+(?:occup|group\s+E)|school\s+occup|مجموعة\s+(?:التعليم|E)\b|مدارس)\b/i, ["305"]],
+    [/\b(?:factory\s+(?:occup|group\s+F)|F-[12]\s+(?:hazard|occup)|مصنع\s+إشغال|مجموعة\s+(?:F)\b)\b/i, ["306"]],
+    [/\b(?:high.hazard\s+(?:occup|group\s+H)|H-[1-5]\s+(?:class|occup)|مخزن\s+خطر|مجموعة\s+(?:H)\b)\b/i, ["307", "415"]],
+    [/\b(?:institutional\s+(?:occup|group\s+I)|I-[1-4]\s+(?:class|occup)|مستشفى\s+إشغال|مجموعة\s+(?:I)\b)\b/i, ["308"]],
+    [/\b(?:mercantile\s+(?:occup|group\s+M)|retail\s+occup|مجموعة\s+(?:M|التجزئة)\b|محلات\s+تجارية)\b/i, ["309"]],
+    [/\b(?:residential\s+(?:occup|group\s+R)|R-[1-4]\s+(?:class|occup)|سكني\s+إشغال|مجموعة\s+(?:R|السكني)\b)\b/i, ["310"]],
+    [/\b(?:storage\s+(?:occup|group\s+S)|S-[12]\s+(?:class|occup)|مستودع\s+إشغال|مجموعة\s+(?:S|التخزين)\b)\b/i, ["311"]],
+    [/\b(?:utility\s+(?:occup|group\s+U)|miscellaneous\s+occup|مجموعة\s+(?:U|المرافق)\b)\b/i, ["312"]],
+
+    // ── CHAPTER 4 — Special Use / Detailed Requirements ───────────────────────
+    [/\b(?:covered\s+mall|open\s+mall|mall\s+building|مول\s+تجاري|مبنى\s+مول)\b/i,    ["402"]],
     // High-rise buildings
     [/\b(?:high.rise|high\s+rise|مبنى\s+شاهق|المباني\s+الشاهقة|شاهق|55\s*(?:ft|feet|قدم))\b/i, ["403.1"]],
     [/\b(?:fire\s+command\s+center|مركز\s+قيادة\s+الحرائق|emergency\s+power\s+(?:high|building))\b/i, ["403.1"]],
+    [/\b(?:atrium|أتريوم|فناء\s+داخلي|بهو\s+(?:متعدد|مفتوح))\b/i,                   ["404"]],
+    [/\b(?:underground\s+(?:building|structure|level)|below.grade\s+(?:floor|level)|subterranean|تحت\s+الأرض|طابق\s+سفلي\s+(?:خاص|تحت))\b/i, ["405"]],
     // Parking
     [/\b(?:open\s+parking|parking\s+(?:garage|structure)|مواقف\s+(?:السيارات\s+المفتوحة|مفتوحة))\b/i, ["406.5"]],
     [/\b(?:enclosed\s+parking|covered\s+parking|مواقف\s+(?:السيارات\s+المغلقة|مغلقة|مغطاة))\b/i,    ["406.6"]],
     [/\b(?:parking\s+sprinkler|sprinkler.*parking|رشاشات\s+مواقف|مواقف.*رشاشات)\b/i, ["406.5", "406.6"]],
+    [/\b(?:healthcare\s+(?:building|facility|occup)|I-2\s+(?:occup|group)|hospital\s+(?:special|fire)|مستشفى\s+(?:اشتراطات|خاص))\b/i, ["407"]],
+    [/\b(?:detention|correctional\s+(?:facility|center)|I-3\s+(?:occup|group)|prison\s+(?:fire|egress)|مرفق\s+احتجاز)\b/i, ["408"]],
+    [/\b(?:hazardous\s+material|control\s+area|MAQ\s+|maximum\s+allowable\s+quantity|مواد\s+خطرة|كميات\s+المواد\s+الخطرة)\b/i, ["414"]],
+    [/\b(?:Group\s+H\s+(?:special|provision|require)|H\s+occupanc.*special|المتطلبات\s+الخاصة.*مجموعة\s+H)\b/i, ["415"]],
+    [/\b(?:sleeping\s+unit\s+(?:special|require)|hotel\s+(?:special\s+provision|sleep)|R-[12]\s+sleeping|I-1\s+sleeping|وحدات\s+النوم\s+الخاصة)\b/i, ["420"]],
+
+    // ── CHAPTER 5 — Mixed Occupancy ───────────────────────────────────────────
+    [/\b(?:mixed\s+occup|multiple\s+occup|إشغال\s+مختلط|إشغالات\s+متعددة)\b/i,       ["508", "508.3", "508.4", "508.5"]],
+    [/\b(?:accessory\s+occup|10\s*%\s*(?:rule|area)|ملحق\s+الإشغال)\b/i,              ["508.3"]],
+    [/\b(?:nonseparated\s+occup|most.restrictive\s+occup|غير\s+مفصولة)\b/i,            ["508.4"]],
+    [/\b(?:separated\s+occup|fire.barrier\s+(?:between|separation)\s+occup|إشغال\s+مفصول|فاصل\s+حريق\s+بين)\b/i, ["508.5"]],
+
+    // ── CHAPTER 6 — Construction Types ───────────────────────────────────────
+    [/\b(?:structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق)\b/i, ["601"]],
+    [/\b(?:exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل)\b/i, ["602"]],
+
+    // ── CHAPTER 7 — Exterior Wall Openings ───────────────────────────────────
+    [/\b(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)\b/i,     ["705.8"]],
+
+    // ── CHAPTER 10 — Means of Egress (original + new) ────────────────────────
+    // Occupant load
+    [/\b(?:occupant\s+load|floor\s+area\s+per\s+occup|حمل\s+الإشغال|عدد\s+الأشخاص\s+لكل)\b/i, ["1004.5"]],
+    // Egress / stair width per occupant
+    [/\b(?:egress\s+width|exit\s+width|stair(?:way)?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل)\b/i, ["1005.1"]],
+    [/\b(?:width\s+per\s+occupant|inches?\s+per\s+occupant|بوصة?\s+لكل\s+شخص)\b/i,    ["1005.1"]],
+    // One exit
+    [/\b(?:one\s+exit\s+(?:space|room|story)|single\s+exit|مخرج\s+واحد|جواز\s+مخرج\s+واحد)\b/i, ["1006.2.1", "1006.3.3", "1006.3.4"]],
+    // Emergency lighting / illumination
+    [/\b(?:emergency\s+lighting|emergency\s+illumin|إضاءة\s+(?:طوارئ|اضطرارية)|إنارة\s+طوارئ)\b/i, ["1008"]],
+    [/\b(?:egress\s+illumin|means\s+of\s+egress\s+lighting|إضاءة\s+مسار\s+الهروب)\b/i, ["1008"]],
+    // Accessible egress / area of refuge
+    [/\b(?:accessible\s+(?:egress|means\s+of\s+egress)|area\s+of\s+refuge|مناطق\s+الملاذ|ملاذ\s+(?:آمن|حريق)|إخلاء\s+ذوي)\b/i, ["1009"]],
+    // Doors / egress door hardware
+    [/\b(?:egress\s+door|door\s+(?:hardware|latch|lock|panic|release)|panic\s+hardware|باب\s+المخرج|أبواب\s+(?:الطوارئ|الخروج)\s+(?:متطلبات|أجهزة))\b/i, ["1010"]],
+    // Stairway dimensions
+    [/\b(?:riser\s+height|tread\s+depth|stair\s+dimen|headroom|ارتفاع\s+الدرجة|عمق\s+الدرجة)\b/i, ["1011.2"]],
+    [/\b(?:stair(?:way)?\s+(?:min|width|size)|أبعاد\s+(?:الدرج|السلم))\b/i,            ["1011.2"]],
+    // Handrails
+    [/\b(?:handrail\s+(?:height|grip|require|dimen)|درابزين\s+(?:اليد|الحماية|ارتفاع|أبعاد))\b/i, ["1012"]],
+    // Exit signs
+    [/\b(?:exit\s+sign\s+(?:require|illumin|location)|where\s+(?:are?\s+)?exit\s+signs?|لافتة\s+(?:المخرج|الخروج)|إشارات\s+المخرج)\b/i, ["1013"]],
+    // Guards / guardrails
+    [/\b(?:guard(?:rail)?\s+(?:height|require|where)|open\s+side\s+(?:guardrail|protection)|حواجز\s+الحماية|درابزين\s+(?:السقوط|الحماية))\b/i, ["1015"]],
+    // Travel distance
+    [/\b(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))\b/i,                        ["1017.2"]],
+    [/\b(?:max(?:imum)?\s+travel|أقصى\s+مسافة)\b/i,                                     ["1017.2"]],
+    // Corridor width
+    [/\b(?:min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|عرض\s+الممر)\b/i, ["1018.1"]],
+    // Corridor fire rating
+    [/\b(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)\b/i,                          ["1020.1"]],
+    // Number of exits
+    [/\b(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))\b/i,                      ["1021.2"]],
+    [/\b(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)\b/i,                          ["1021.2"]],
+    // Luminous egress path markings
+    [/\b(?:luminous\s+(?:egress|marking|path)|photoluminescent|glow.in.dark\s+egress|طوارئ\s+مضيء|علامات\s+مضيئة)\b/i, ["1024"]],
+    [/\b(?:egress\s+path\s+marking|floor.level\s+(?:marking|sign)|تعليم\s+(?:مسار|طريق)\s+الهروب)\b/i, ["1024"]],
     // Assembly aisles
     [/\b(?:assembly\s+aisle|theater\s+aisle|cinema\s+aisle|aisle\s+width.*assembly|عرض\s+الممر.*(?:قاعة|مسرح)|ممرات\s+(?:المقاعد|التجمع))\b/i, ["1029.6.3"]],
     [/\b(?:seating\s+aisle|row\s+spacing|seats\s+per\s+row|مقاعد.*صف|صفوف.*مقاعد)\b/i, ["1029.6.3"]],
+    // Emergency escape / rescue openings
+    [/\b(?:emergency\s+escape\s+(?:opening|window)|rescue\s+opening|bedroom\s+(?:window|egress)|sleeping\s+room\s+(?:window|opening)|نافذة\s+الإنقاذ|فتحة\s+(?:الهروب|النجاة))\b/i, ["1030"]],
+
+    // ── CHAPTER 5 — Heights / Areas / Incidental Uses ────────────────────────
+    // Incidental uses
+    [/\b(?:generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل))\b/i, ["509"]],
+    [/\b(?:electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire))\b/i, ["509"]],
+    [/\b(?:الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق))\b/i,                  ["509"]],
+
+    // ── SBC 801 CHAPTER 9 — Fire Protection Systems ──────────────────────────
+    // Sprinkler: where required
+    [/\b(?:where\s+(?:are?\s+)?sprinkler|when\s+(?:are?\s+)?sprinkler|متى.*رشاش|الرشاشات.*إلزامي)\b/i, ["903.2"]],
+    [/\b(?:sprinkler\s+required|requires?\s+sprinkler|تجب\s+الرشاشات?)\b/i,            ["903.2"]],
+    // Sprinkler type (NFPA 13 / 13R / 13D)
+    [/\b(?:NFPA\s+13R|NFPA\s+13D|sprinkler\s+(?:type|system\s+type)|13\s+vs\s+13R|نوع\s+نظام\s+الرشاشات)\b/i, ["903.3.1"]],
+    [/\b(?:residential\s+sprinkler\s+(?:system|type)|dwelling\s+sprinkler|منازل\s+رشاشات|شقق\s+رشاشات)\b/i, ["903.3.1", "903.3.2"]],
+    [/\b(?:quick.response\s+sprinkler|QR\s+(?:head|sprinkler)|رشاشة\s+(?:سريعة\s+الاستجابة|QR))\b/i, ["903.3.2"]],
+    // Sprinkler supervision
+    [/\b(?:sprinkler\s+(?:supervision|supervisory|monitor)|water.flow\s+(?:alarm|switch)|إشراف\s+الرشاشات|إنذار\s+تدفق\s+المياه)\b/i, ["903.4"]],
+    [/\b(?:floor\s+control\s+valve|zone\s+control\s+valve.*high.rise|صمام\s+تحكم\s+الطابق)\b/i, ["903.4.3"]],
+    // Standpipe systems
+    [/\b(?:standpipe\s+(?:system|class|require|where)|hose\s+(?:cabinet|connection|valve)\s+require|خرطوم\s+(?:الحريق|الإطفاء)|بكرة\s+خرطوم)\b/i, ["905.3.1"]],
+    // Fire alarm: where required by occupancy
+    [/\b(?:fire\s+alarm\s+(?:where|when|require|system\s+require)|where\s+(?:is\s+)?(?:a\s+)?fire\s+alarm|إنذار\s+الحريق\s+(?:متى|إلزامي|وجوب))\b/i, ["907.2"]],
+    // Fire alarm initiating devices
+    [/\b(?:smoke\s+detector\s+(?:require|where|place)|heat\s+detector\s+(?:require|where)|duct\s+(?:smoke\s+)?detector|كاشف\s+(?:دخان|حرارة)\s+(?:متطلبات|أين))\b/i, ["907.3"]],
+    // Manual pull stations / alarm boxes
+    [/\b(?:manual\s+pull\s+station|fire\s+alarm\s+(?:box|pull)|pull\s+station\s+(?:height|location|spacing)|نقطة\s+إنذار\s+يدوية|بوكس\s+الإنذار)\b/i, ["907.4.2"]],
+    // Occupant notification (horns, strobes)
+    [/\b(?:occupant\s+notif|horn\s+(?:strobe|device)|audible\s+(?:alarm|notif)|visible\s+(?:alarm|notif)|strobe\s+(?:light|alarm)|إنذار\s+(?:صوتي|مرئي)|أجهزة\s+الإخطار)\b/i, ["907.5"]],
+    // Fire alarm monitoring
+    [/\b(?:alarm\s+monitor|central\s+station\s+(?:connect|monitor)|supervising\s+station|مراقبة\s+الإنذار|محطة\s+المراقبة\s+المركزية)\b/i, ["907.6"]],
+    // Smoke control systems
+    [/\b(?:smoke\s+control|smoke\s+exhaust|pressurize.*stair|stair\s+pressurization|نظام\s+التحكم\s+بالدخان|ضغط\s+الدرج|إخراج\s+الدخان)\b/i, ["909"]],
+    // Fire department connections (FDC)
+    [/\b(?:fire\s+department\s+connection|FDC\b|Siamese\s+connection|وصلة\s+(?:الإطفاء|إطفاء)\s+(?:الحريق|الخارجية))\b/i, ["912"]],
+    // Fire pumps
+    [/\b(?:fire\s+pump\s+(?:require|where|size)|booster\s+pump|pump\s+room|جهاز\s+ضخ\s+الحريق|مضخة\s+(?:حريق|إطفاء))\b/i, ["913"]],
+    // Emergency responder radio coverage
+    [/\b(?:(?:in.building\s+)?radio\s+coverage|ERCES\b|emergency\s+responder\s+radio|first\s+responder.*radio|تغطية\s+(?:الراديو|الاتصالات)\s+(?:الطوارئ|داخل))\b/i, ["914"]],
+    // Carbon monoxide detection
+    [/\b(?:carbon\s+monoxide|CO\s+(?:alarm|detector|detection)|أول\s+أكسيد\s+الكربون|كاشف\s+(?:CO|أول\s+أكسيد))\b/i, ["915"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
