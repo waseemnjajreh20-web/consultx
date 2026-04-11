@@ -1,4 +1,4 @@
-import { X, Eye, FileText, Loader2, ClipboardList, ShieldCheck } from "lucide-react";
+import { X, Eye, FileText, Loader2, ClipboardList, ShieldCheck, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -41,6 +41,13 @@ export default function FilePreviewGrid({ files, onRemove, isProcessing, mode }:
                         {pf.name}
                       </span>
                     </div>
+                  ) : pf.type === "text" ? (
+                    <div className="flex flex-col items-center gap-1 p-1">
+                      <Table2 className="w-7 h-7 text-green-400/80" />
+                      <span className="text-[9px] text-muted-foreground text-center leading-tight line-clamp-2 px-1">
+                        {pf.name}
+                      </span>
+                    </div>
                   ) : (
                     <img
                       src={pf.previewUrl}
@@ -57,12 +64,26 @@ export default function FilePreviewGrid({ files, onRemove, isProcessing, mode }:
                   </div>
                 )}
 
+                {/* CSV row count badge */}
+                {pf.type === "text" && pf.rowCount !== undefined && (
+                  <div className="absolute bottom-1 start-1 bg-green-700/90 text-white text-[9px] px-1.5 py-0.5 rounded-full leading-none">
+                    {pf.rowCount}r
+                  </div>
+                )}
+
                 {/* PDF label */}
                 {pf.type === "pdf" && (
                   <div className={cn(
                     "absolute top-1 end-6 bg-black/70 text-white text-[9px] px-1 py-0.5 rounded"
                   )}>
                     PDF
+                  </div>
+                )}
+
+                {/* CSV/TXT label */}
+                {pf.type === "text" && (
+                  <div className="absolute top-1 end-6 bg-green-900/80 text-green-300 text-[9px] px-1 py-0.5 rounded">
+                    {pf.name.endsWith(".csv") ? "CSV" : "TXT"}
                   </div>
                 )}
 
