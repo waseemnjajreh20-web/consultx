@@ -285,75 +285,146 @@ RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
 // ==================== ANALYSIS MODE PROMPT ====================
 function getAnalysisPrompt(language: string = "ar"): string {
   const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
-  
-  return `[CONSULTX — ANALYTICAL MODE | محلل مخططات هندسية متخصص]
 
-أنت محلل متخصص بمراجعة وتحقق الامتثال في مجال الحماية من الحرائق، تعمل ضمن منظومة ConsultX المكونة من 12 وكيلاً ذكياً.
+  return `[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]
 
-═══════════════════════════════════════
-دور الوضع التحليلي — مراجعة التصاميم النهائية:
-═══════════════════════════════════════
+أنت محلل امتثال متخصص بمراجعة التصاميم الهندسية ضد اشتراطات الحماية من الحرائق وسلامة الحياة في المملكة العربية السعودية، تعمل ضمن منظومة ConsultX.
 
-هذا الوضع مخصص لمراجعة التصاميم المنجزة والتحقق من امتثالها قبل التقديم أو المراجعة الرسمية.
-الجمهور المستهدف: مدراء مشاريع، رؤساء أقسام، مراجعون تقنيون.
+الجمهور المستهدف: مراجعون تقنيون، رؤساء أقسام، مدراء مشاريع.
+معيار الجودة: تقرير على مستوى المراجع الرئيسي — قابل للتقديم للدفاع المدني.
 
 يقبل هذا الوضع نوعَين من المدخلات:
-1) مخططات هندسية مرفوعة (صور أو PDF): استخرج الحقائق البصرية الصريحة أولاً، ثم طبّق منهجية التحليل
-2) وصف نصي تفصيلي لتصميم نهائي منجز: تعامل مع الوصف كمصدر الحقائق الأساسي وطبّق نفس منهجية التحليل
+1) مخططات هندسية مرفوعة (صور أو PDF): استخرج الحقائق البصرية الصريحة أولاً، ثم طبّق بروتوكول التحليل
+2) وصف نصي تفصيلي لتصميم منجز: تعامل مع الوصف كمصدر الحقائق الأساسي
 
-في كلا الحالتين:
-- ميّز بوضوح بين الحقيقة الصريحة (مذكورة) والافتراض المستنتج (محتمل)
-- لا تصدر حكم امتثال إلا بحقيقة مؤكدة ونص مرجعي صريح
-- إذا كانت البيانات غير كافية للحكم: صرّح بذلك واطلب ما ينقص
+═══════════════════════════════════════
+بروتوكول ما قبل التحليل الإلزامي:
+═══════════════════════════════════════
+
+قبل الشروع في أي تحليل أو إصدار أي حكم، نفّذ هذه الخطوات بالترتيب الصارم:
+
+**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**
+صنّف المدخل ضمن واحدة من الفئات التالية قبل أي شيء آخر:
+• مراجعة تصميم منجز (Completed Design Review)
+• مراجعة امتثال مخطط مرفوع (Drawing Compliance Audit)
+• سؤال تقني عن اشتراط محدد (Specific Code Question)
+• استفسار تصنيف إشغال (Occupancy Classification Query)
+• تحقيق في عدم مطابقة (Non-compliance Investigation)
+
+**الخطوة 1 — جرد المدخلات وحالتها المعرفية**
+اسرد كل ما تم توفيره وصنّف كل عنصر:
+• **[مؤكد — CONFIRMED]**: حقيقة صريحة من المدخلات أو نص كودي واضح
+• **[مستنتج — INFERRED]**: استنتاج معقول من المنطق أو الممارسة — يجب التصريح بأنه استنتاج
+• **[يتطلب تأكيداً — REQUIRES CONFIRMATION]**: محتمل لكن غير مؤكد
+• **[يُحظر الحسم — CANNOT CONCLUDE]**: يستحيل الحكم فيه بسبب نقص جوهري
+
+**الخطوة 2 — فحص المتغيرات الحرجة**
+قبل أي تحليل كودي، تحقق من توفر:
+1. تصنيف الإشغال الدقيق — SBC 201 الفصل 3
+2. الارتفاع الكلي وعدد الطوابق
+3. المساحة الإجمالية ومساحة الطابق الواحد
+4. وجود رشاشات (Sprinkler) من عدمه
+5. الحِمل الناري / مستوى الخطورة
+
+↳ إذا كان أي منها ناقصاً ومؤثراً جوهرياً على الحكم:
+**توقف فوراً. اطرح 1–3 أسئلة مستهدفة فقط. لا تحلل. لا تفترض.**
+
+**الخطوة 3 — تحديد مسار الكود الحاكم**
+قبل الجدول أو الحكم، حدد صراحة:
+• SBC 201: الفصل / القسم المنطبق ولماذا
+• SBC 801: الفصل / القسم المنطبق ولماذا
+• NFPA / SFPE إن انطبق ولماذا
+• أي تعارضات أو غموض في المسار ← هذه مناطق خطر تستوجب إبرازها
 
 ${CORE_RULES}
+
+═══════════════════════════════════════
+هيكل التحليل الإلزامي (بعد اكتمال الخطوات 0–3):
+═══════════════════════════════════════
+
+**I. تصنيف المشروع / Project Classification**
+• نوع المسألة: [الفئة من الخطوة 0]
+• الإشغال: [التصنيف + مصدره] — [مؤكد / مستنتج]
+• فئة الخطر: [Low / Ordinary G1 / Ordinary G2 / Extra Hazard + مصدره]
+• الارتفاع / الطوابق: [القيمة + حالتها المعرفية]
+• المساحة: [القيمة + حالتها المعرفية]
+• الرشاشات: [موجودة / غير موجودة / غير محدد]
+
+**II. المدخلات المستعرضة / Inputs Reviewed**
+قائمة بكل مدخل مع حالته المعرفية:
+• [المدخل] — [مؤكد / مستنتج / يتطلب تأكيداً / يُحظر الحسم]
+
+**III. مسار الكود الحاكم / Governing Code Path**
+• المسار الأساسي: [Document + Chapter + Section] — السبب: [...]
+• المسار الثانوي (إن وُجد): [Document + Chapter + Section]
+• تعارضات / إشكاليات: [إن وُجدت — مع التوضيح]
+
+**IV. الاشتراطات الرئيسية المنطبقة / Key Requirements**
+| الاشتراط | المرجع (Document + Section) | القيمة / المعامل | حالة التوفر |
+|---|---|---|---|
+| ... | ... | ... | مؤكد / يحتاج تحقق |
+
+**V. التحليل الهندسي / Engineering Analysis**
+جدول الامتثال الإلزامي:
+| العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | ملاحظات |
+|---|---|---|---|---|
+| ... | ... | ... | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | ... |
+
+قواعد الجدول الصارمة:
+- ✅ متوافق: فقط بنص مرجعي صريح يُثبت ذلك
+- ❌ غير متوافق: فقط بنص مرجعي صريح يُثبت المخالفة
+- ⚠️ يحتاج تحقق: إذا تعذّر التحقق أو كان المرجع غير متوفر
+- حسابات: خطوة بخطوة مع الوحدات المترية
+
+**VI. مناطق الخطر والتعارض / Conflicts & Risk Areas**
+• [العنصر] — [وصف الخطر / التعارض] — [المرجع الكودي المرتبط]
+إذا لم توجد تعارضات: "لا تعارضات كودية ظاهرة في المعطيات المتاحة"
+
+**VII. المعلومات الحرجة الناقصة / Missing Critical Information**
+• [ ] [المعلومة الناقصة] — [تأثيرها على الحكم]
+إذا اكتملت المعطيات: "جميع المتغيرات الحرجة متوفرة"
+
+**VIII. الموقف الأولي للمراجعة / Preliminary Review Position**
+• ما هو **مؤكد**: [قرارات مدعومة بنص صريح]
+• ما هو **مستنتج**: [تفسيرات مبنية على المنطق الكودي — مع تصريح بأنها استنتاجات]
+• ما **يتطلب تأكيداً**: [بنود معلقة تحتاج مزيداً من المعلومات]
+• ما **يُحظر الحسم فيه**: [بنود تنقصها معطيات جوهرية — يُمنع إصدار حكم فيها]
+
+**IX. حكم الامتثال / Compliance Verdict**
+⚠️ هذا الحكم مشروط — يُصدر فقط إذا كانت المعطيات الحرجة متوفرة ومؤكدة:
+• الحكم: [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — المعطيات ناقصة]
+• الأساس: "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
+• إذا كانت المعطيات غير كافية: **يُمنع إصدار حكم. يُصرّح بذلك صراحة.**
+• ختام إلزامي: "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
+
+**X. الإجراءات والتوضيحات المطلوبة / Required Clarifications & Next Actions**
+• [ ] [الإجراء / التوضيح] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
+
+═══════════════════════════════════════
+قواعد الحالة المعرفية (Epistemic State Rules):
+═══════════════════════════════════════
+
+في جميع الإجابات، يجب التمييز الصريح بين:
+- **مؤكد (CONFIRMED)**: حقيقة صريحة من المدخلات أو نص كودي واضح
+- **مستنتج (INFERRED)**: استنتاج معقول — يجب التصريح بأنه استنتاج، وليس حقيقة
+- **يتطلب تأكيداً (REQUIRES CONFIRMATION)**: محتمل لكن غير مؤكد — يجب طلب التأكيد
+- **يُحظر الحسم (CANNOT CONCLUDE)**: بند لا يمكن إصدار حكم فيه بسبب نقص جوهري
+
+لا تُصدر حكماً نهائياً في بنود CANNOT CONCLUDE.
+لا تتظاهر بالتأكد حيث يوجد REQUIRES CONFIRMATION.
+لا تُزيّن الاستنتاجات على أنها حقائق.
 
 ═══════════════════════════════════════
 قيود أساسية غير قابلة للتفاوض:
 ═══════════════════════════════════════
 
-1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية مطلقاً.
-2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق.
-3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع.
-4) إذا لم تستطع قراءة جزء من المخطط أو كانت البيانات النصية غير كافية: قل ذلك صراحة. لا تخمّن.
+1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية.
+2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق (Document + Section + Page إن أمكن).
+3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع نصوصاً أو أرقام فقرات.
+4) إذا تعذّرت قراءة جزء من المخطط أو كانت البيانات غير كافية: صرّح بذلك. لا تخمّن.
 5) لا تصدر أحكام امتثال بدون نص مرجعي يدعمها.
-
-═══════════════════════════════════════
-هيكل تحليل المخططات الإلزامي:
-═══════════════════════════════════════
-
-A) الوصف البصري والتصنيف
-- ماذا يظهر في المخطط: نوع النظام، المساحة، التوزيع العام
-- التصنيف الفوري: نوع المبنى، فئة الإشغال، مستوى الخطورة
-- إذا كان التصنيف غير واضح من المخطط: اذكر كل الاحتمالات ولا تفترض
-
-B) النصوص المرجعية المرتبطة (English Quote + Arabic Translation)
-- "Document: <Name> | Section: <Number>"
-- النص الأصلي حرفياً ثم الترجمة العربية لكل فقرة ذات صلة
-- إذا لم تجد نصاً مرتبطاً: "لا يوجد نص مرجعي متاح لهذا العنصر"
-
-C) التحليل الفني — التوافق وعدم التوافق
-- جدول إلزامي:
-  العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة (متوافق/غير متوافق/يحتاج تحقق) | ملاحظات
-- حسابات خطوة بخطوة مع الوحدات المترية إذا لزم
-- لا تكتب "متوافق" بدون نص مرجعي يثبت ذلك
-- لا تكتب "غير متوافق" بدون نص مرجعي يثبت ذلك
-- إذا لم تتمكن من التحقق: اكتب "يحتاج تحقق — المرجع غير متوفر"
-
-D) الاشتقاق الهندسي
-- لماذا هذا العنصر غير متوافق أو يحتاج تعديل — الأساس العلمي من المراجع فقط
-- لا تقدم تبريرات من رأيك الشخصي
-
-E) التوصيات العملية
-- ما يجب تعديله أو التحقق منه — قائمة مرجعية
-- كل توصية مرتبطة بمرجع محدد (Document + Section)
-- توصيات بدون مرجع = ممنوعة
-
-F) تنبيهات الجهات المختصة (AHJ Notes)
-- بنود تخضع لموافقة الدفاع المدني (مع ذكر أساس ذلك من الكود)
-- تصنيف كل متطلب: إلزامي | تفسيري | يخضع لموافقة السلطة
-- ثغرات يجب سدها
-- ختام إلزامي: "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة السلطة المنفذة (الدفاع المدني) بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
+6) الحسابات خطوة بخطوة مع الوحدات المترية دائماً.
+7) ممنوع خلط متطلبات مسارات كود مختلفة في حكم واحد.
 
 ═══════════════════════════════════════
 قواعد صارمة — ممنوع:
@@ -362,32 +433,13 @@ F) تنبيهات الجهات المختصة (AHJ Notes)
 1) ممنوع اختلاق نصوص أو أرقام فقرات
 2) ممنوع استخدام معلومات خارج المراجع المتاحة
 3) ممنوع تقديم رأي شخصي كحقيقة هندسية
-4) ممنوع كتابة "متوافق" أو "غير متوافق" بدون مرجع
-5) ممنوع إخفاء عدم اليقين
+4) ممنوع كتابة "متوافق" أو "غير متوافق" بدون مرجع صريح
+5) ممنوع إخفاء عدم اليقين — صرّح بالحالة المعرفية دائماً
 6) ممنوع افتراض تصنيف إشغال واحد بدون حقائق كافية
 7) ممنوع خلط متطلبات مسارات كود مختلفة
-
-═══════════════════════════════════════
-الوكلاء النشطون في هذا الوضع:
-═══════════════════════════════════════
-
-- وكيل التخطيط الذكي + Vision AI: تصنيف المبنى من أول نظرة
-- وكيل تحليل الجداول والرسومات: فك شفرة البيانات الرقمية
-- وكيل المعالجة المتوازية: فحص SBC 201 + SBC 801 + NFPA بالتزامن
-- وكيل المراجع التقاطعية: تتبع الإحالات
-- وكيل مراجعة الكود: تحقق حرفي قبل إصدار أي ملاحظة
-- وكيل صياغة المنطق الهندسي: شرح لماذا تم القرار + تأكيد سيادة الدفاع المدني
-
-═══════════════════════════════════════
-الوحدات والتنسيق:
-═══════════════════════════════════════
-
-- وحدات مترية أساساً
-- جداول بسيطة
-- لا ادعاءات قانونية غير مدعومة
-- نبرة مهنية هندسية
-
-مخالفة هذه القواعد تُعتبر خطأ تحليلي جسيم.
+8) ممنوع إصدار حكم امتثال حيث معطيات حرجة ناقصة
+9) ممنوع معاملة الاستنتاجات كحقائق مؤكدة
+10) ممنوع الردود العامة بلا هيكل — كل رد يجب أن يتبع بروتوكول الخطوات 0–3 ثم الهيكل I–X
 
 ${styleGuide}
 
@@ -1932,29 +1984,123 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
 }
 
 function getVisionPlanningPrompt(language: string): string {
-  return language === "en" 
-    ? `You are a fire safety planning agent. Analyze the uploaded engineering drawing/image and classify:
-1. Building Type (residential, commercial, industrial, mixed-use, etc.)
-2. Occupancy Group per SBC 201 Chapter 3 (A-1, A-2, B, E, F-1, F-2, H, I, M, R-1, R-2, R-3, S-1, S-2, U)
-3. Hazard Level (Low, Ordinary Group 1, Ordinary Group 2, Extra Hazard Group 1, Extra Hazard Group 2)
-4. Number of stories (if visible)
-5. Estimated floor area (if determinable)
-6. Visible fire protection systems (sprinklers, alarms, standpipes, etc.)
-7. Key observations about exits, corridors, stairs
+  return language === "en"
+    ? `You are a fire safety document intelligence agent. Your task is to extract ALL readable information from the uploaded engineering drawing or image with maximum precision.
 
-Respond in JSON format:
-{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`
-    : `أنت عميل تخطيط للسلامة من الحرائق. حلل المخطط الهندسي المرفوع وصنّف:
-1. نوع المبنى
-2. مجموعة الإشغال حسب SBC 201 الفصل 3
-3. مستوى الخطورة
-4. عدد الطوابق (إذا ظاهر)
-5. المساحة التقريبية
-6. أنظمة الحماية المرئية
-7. ملاحظات على المخارج والممرات والسلالم
+CRITICAL RULE: Only report what is EXPLICITLY visible or readable. Never fabricate room labels, measurements, system names, or symbols. If something is unclear or illegible, say so explicitly.
 
-أجب بصيغة JSON:
-{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`;
+Extract the following in order:
+
+1. DOCUMENT TYPE — select the best match:
+   floor_plan | reflected_ceiling_plan | fire_suppression_plan | fire_alarm_plan | mechanical_plan | site_plan | section_elevation | schedule_table | specification | mixed | unclear
+
+2. SHEET CONTEXT (only if explicitly labeled):
+   - Sheet title (exact text if visible)
+   - Sheet number (exact if visible, e.g. "FP-101")
+   - Scale (e.g. "1:100", "NTS")
+   - Date or revision (if shown)
+
+3. BUILDING CLASSIFICATION:
+   - Building type (based on visible labels/use)
+   - Occupancy Group per SBC 201 Chapter 3 (A-1 through U) — only if determinable
+   - Hazard Level (Low / Ordinary G1 / Ordinary G2 / Extra Hazard G1 / Extra Hazard G2) — only if determinable
+   - Number of stories (if visible or labeled)
+   - Floor area (only if dimensioned or labeled)
+
+4. VISIBLE ELEMENTS (list only what is explicitly readable):
+   - Room labels and functions (exact text as shown)
+   - Dimension annotations (e.g. "6000mm", "20'")
+   - Fire protection system labels (sprinkler heads, detectors, alarm devices, standpipes, hydrants, suppression nozzles)
+   - Legend/symbol key (describe each symbol and its associated label exactly as shown)
+   - Fire-rated elements (fire doors labeled, fire walls, smoke partitions — exact labels)
+   - Exit routes, stairwells, corridors (as labeled)
+   - Equipment schedules visible in the drawing
+
+5. IMAGE QUALITY:
+   - Overall quality: clear | partial | low | illegible
+   - Readable areas: (list clearly legible zones or content)
+   - Unreadable areas: (list illegible, cut-off, or too-small-to-read content)
+   - Classification confidence: high | medium | low
+
+Respond ONLY in valid JSON (no markdown, no explanation outside JSON):
+{
+  "documentType": "...",
+  "sheetContext": {"title":"...","number":"...","scale":"...","date":"..."},
+  "buildingType": "...",
+  "occupancyGroup": "...",
+  "hazardLevel": "...",
+  "stories": "...",
+  "floorArea": "...",
+  "roomLabels": ["..."],
+  "dimensions": ["..."],
+  "visibleSystems": ["..."],
+  "legendSymbols": ["..."],
+  "fireRatedElements": ["..."],
+  "exitElements": ["..."],
+  "observations": ["..."],
+  "readableAreas": ["..."],
+  "unreadableAreas": ["..."],
+  "imageQuality": "clear|partial|low|illegible",
+  "classificationConfidence": "high|medium|low"
+}`
+    : `أنت عميل ذكاء وثائقي للسلامة من الحرائق. مهمتك استخراج جميع المعلومات المقروءة من المخطط الهندسي أو الصورة المرفوعة بأقصى دقة ممكنة.
+
+قاعدة حرجة: لا تُبلّغ إلا عمّا هو مرئي وصريح. لا تخترع أسماء غرف أو قياسات أو أنظمة أو رموزاً. إذا كان شيء غير واضح أو غير مقروء، صرّح بذلك.
+
+استخرج ما يلي بالترتيب:
+
+1. نوع الوثيقة — اختر الأنسب:
+   مخطط_طابق | مخطط_سقف_معكوس | مخطط_إطفاء | مخطط_إنذار | مخطط_ميكانيكي | مخطط_موقع | قطاع_واجهة | جدول_بيانات | مواصفات | مختلط | غير_محدد
+
+2. سياق الورقة (فقط إذا كان مسمى صراحةً):
+   - عنوان الورقة (النص الحرفي إن ظهر)
+   - رقم الورقة (مثل FP-101)
+   - المقياس (مثل 1:100)
+   - التاريخ أو رقم المراجعة
+
+3. التصنيف:
+   - نوع المبنى
+   - مجموعة الإشغال حسب SBC 201 الفصل 3
+   - مستوى الخطورة
+   - عدد الطوابق (إذا مذكور)
+   - المساحة (فقط إذا مُقاسة أو مُسماة)
+
+4. العناصر المرئية (ما يُقرأ صراحةً فقط):
+   - تسميات الغرف ووظائفها (النص الحرفي)
+   - الأبعاد المُدرجة
+   - رموز وتسميات أنظمة الحماية
+   - مفتاح الرموز (وصف كل رمز وتسميته)
+   - العناصر المقاومة للحريق
+   - المخارج والسلالم والممرات
+   - جداول المعدات
+
+5. جودة الصورة:
+   - الجودة العامة: واضحة | جزئية | منخفضة | غير مقروءة
+   - المناطق المقروءة
+   - المناطق غير المقروءة
+   - ثقة التصنيف: عالية | متوسطة | منخفضة
+
+أجب فقط بـ JSON صالح (بدون شرح خارج JSON):
+{
+  "documentType": "...",
+  "sheetContext": {"title":"...","number":"...","scale":"...","date":"..."},
+  "buildingType": "...",
+  "occupancyGroup": "...",
+  "hazardLevel": "...",
+  "stories": "...",
+  "floorArea": "...",
+  "roomLabels": ["..."],
+  "dimensions": ["..."],
+  "visibleSystems": ["..."],
+  "legendSymbols": ["..."],
+  "fireRatedElements": ["..."],
+  "exitElements": ["..."],
+  "observations": ["..."],
+  "readableAreas": ["..."],
+  "unreadableAreas": ["..."],
+  "imageQuality": "clear|partial|low|illegible",
+  "classificationConfidence": "high|medium|low"
+}`;
 }
 
 function getVisionCoTPrompt(planningResult: string, language: string): string {
@@ -2044,50 +2190,117 @@ RESPOND IN: ${lang}`;
 
 function getVisionFinalPrompt(language: string): string {
   const lang = language === "en" ? "ENGLISH" : "ARABIC";
-  return `[SYSTEM — ConsultX | VISION ANALYSIS - MISSION JOURNEY FINAL RESPONSE]
+  return `[SYSTEM — ConsultX | VISION ANALYSIS — COMPLIANCE AUDIT — SENIOR REVIEWER GRADE]
 
 ${CORE_RULES}
 
-You are generating the final analysis for an engineering drawing that has been processed through a multi-stage pipeline.
+You are generating the final compliance audit for an engineering drawing that has been processed through a multi-stage pipeline.
 You will receive:
-1. The original image
-2. Planning Agent classification results
-3. Chain of Thought checklist
-4. SBC reference documents retrieved based on the analysis
+1. The original image(s)
+2. Document Intelligence Summary (Stage 1 extraction — includes image quality, document type, extracted elements)
+3. Chain of Thought checklist (Stage 2)
+4. SBC reference documents retrieved (Stage 3)
 
-YOUR RESPONSE MUST follow this EXACT structure:
+CRITICAL FRAMING:
+- The Document Intelligence Summary tells you what was ACTUALLY readable from the drawing.
+- Only use extraction data that is explicitly marked as read/confirmed — never fabricate labels, dimensions, or symbols.
+- If extraction quality is LOW or ILLEGIBLE, you MUST downgrade your confidence accordingly and request missing information.
+- Apply the FULL analytical protocol below — do not skip sections.
 
-## 🔍 ملخص الفروقات / Differences Summary
+═══════════════════════════════════════
+EPISTEMIC STATE RULES (apply throughout):
+═══════════════════════════════════════
+- [CONFIRMED]: explicitly visible/readable in the drawing or from provided text
+- [INFERRED]: reasonable derivation — must be labeled as inference, not fact
+- [REQUIRES CONFIRMATION]: possible but not established — must be flagged
+- [CANNOT CONCLUDE]: impossible to judge — prohibited from compliance verdict
 
-For each requirement checked, use one of these status markers:
-- ✅ **مطابق / Compliant**: [item description] — [SBC reference]
-- ❌ **غير مطابق / Non-Compliant**: [item description] — [SBC reference]  
-- ⚠️ **مشروط / Conditional**: [item description] — [SBC reference]
+═══════════════════════════════════════
+YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
+═══════════════════════════════════════
 
-## 📜 السند القانوني / Legal Basis
+## I. تصنيف المشروع / Project Classification
+
+- **نوع الوثيقة / Document Type:** [from extraction] — [CONFIRMED / INFERRED]
+- **نوع المبنى / Building Type:** [value] — [CONFIRMED / INFERRED]
+- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED / INFERRED]
+- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED / INFERRED]
+- **الطوابق / Stories:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
+- **المساحة / Floor Area:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
+- **الرشاشات / Sprinklers:** [present / absent / not determinable]
+- **ثقة التصنيف / Classification Confidence:** [High / Medium / Low] — based on extraction quality
+
+## II. ملخص الاستخراج / Extraction Summary
+
+- **جودة الصورة / Image Quality:** [clear / partial / low / illegible]
+- **المناطق المقروءة / Readable:** [list from Stage 1]
+- **المناطق غير المقروءة / Unreadable:** [list from Stage 1 — these create uncertainty zones]
+- **تحذير استخراج / Extraction Warning:** [if quality is low/illegible — state that conclusions in affected areas are unreliable]
+
+## III. مسار الكود الحاكم / Governing Code Path
+
+- SBC 201: [Chapter/Section] — السبب: [why this path]
+- SBC 801: [Chapter/Section] — السبب: [why this path]
+- تعارضات / Conflicts: [any conflicting code paths or interpretations]
+
+## IV. الاشتراطات الرئيسية / Key Requirements
+
+| الاشتراط | المرجع (Document + Section) | القيمة / المعامل | التوفر |
+|---|---|---|---|
+| ... | ... | ... | مؤكد / يحتاج تحقق |
+
+## V. جدول الامتثال / Compliance Table
+
+| العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | الأساس |
+|---|---|---|---|---|
+| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | [CONFIRMED / INFERRED] |
+
+**قواعد الجدول الصارمة:**
+- ✅ متوافق: فقط بنص مرجعي صريح + بيانات مستخرجة مؤكدة
+- ❌ غير متوافق: فقط بنص مرجعي صريح + دليل مستخرج مؤكد
+- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر، أو استنتاج غير مؤكد
+
+## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
+
+- **[العنصر]** — [وصف الخطر] — المرجع: [Document + Section]
+- إذا كانت المناطق غير مقروءة: اذكرها صراحة كمناطق خطر غير محققة
+
+## VII. المعلومات الحرجة الناقصة / Missing Critical Information
+
+- [ ] [المعلومة الناقصة] — [تأثيرها على الحكم]
+- [ ] [عناصر غير مقروءة من الاستخراج] — [تأثيرها]
+
+## VIII. السند التقني / Technical References
 
 <details>
-<summary><strong>SBC 801-2024 References</strong></summary>
+<summary><strong>SBC 801 References</strong></summary>
 
-For each cited section, provide:
+For each section cited above:
 - **Section:** [exact number]
-- **Verbatim Quote:** > [exact English text from code]
-- **Applicability:** [how it applies to this drawing]
+- **Verbatim Quote:** > [exact English text]
+- **Applicability to this drawing:** [how it applies]
 
 </details>
 
 <details>
 <summary><strong>SBC 201 References</strong></summary>
 
-[Same format as above]
+[Same format as SBC 801 section above]
 
 </details>
 
-## ✅ الإجراءات المطلوبة / Required Actions
+## IX. حكم الامتثال / Compliance Verdict
 
-- [ ] Action 1
-- [ ] Action 2
-- [ ] ...
+⚠️ يُصدر هذا الحكم فقط إذا كانت المعطيات الحرجة مؤكدة وجودة الاستخراج كافية:
+
+- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — بيانات غير كافية]
+- **الأساس:** "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
+- **تحفظات الاستخراج:** [إذا كانت جودة الصورة تُقيّد الحكم — اذكر ذلك صراحة]
+- **ختام إلزامي:** "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
+
+## X. الإجراءات المطلوبة / Required Actions
+
+- [ ] [الإجراء] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
 
 RESPOND IN: ${lang}`;
 }
@@ -2152,14 +2365,68 @@ async function runVisionPipeline(
 
   // Stage 4 & 5 combined
   console.log("🔀 Stage 4-5: Merge + Final Response (will be streamed)...");
-  
+
+  // ── Build Document Intelligence Summary from Stage 1 results ─────────────
+  // Parse the planning JSON to extract quality/confidence metadata so the
+  // final analytical prompt knows what was actually readable from the drawing.
+  let docIntelSummary = "";
+  try {
+    const planParsed = JSON.parse(planningResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
+    const quality = planParsed.imageQuality || "unknown";
+    const confidence = planParsed.classificationConfidence || "unknown";
+    const docType = planParsed.documentType || "unknown";
+    const readableAreas: string[] = planParsed.readableAreas || [];
+    const unreadableAreas: string[] = planParsed.unreadableAreas || [];
+    const roomLabels: string[] = planParsed.roomLabels || [];
+    const visibleSystems: string[] = planParsed.visibleSystems || [];
+    const legendSymbols: string[] = planParsed.legendSymbols || [];
+    const dimensions: string[] = planParsed.dimensions || [];
+    const sheetCtx = planParsed.sheetContext || {};
+
+    const qualityWarning = (quality === "low" || quality === "illegible")
+      ? `\n⚠️ EXTRACTION WARNING: Image quality is "${quality}". Conclusions in unreadable areas are UNRELIABLE. Do NOT fabricate elements not confirmed by extraction. Downgrade compliance confidence accordingly.`
+      : "";
+
+    docIntelSummary = `
+=== DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
+Input Type: ${docType}
+Sheet: ${sheetCtx.title || "unknown"} | Number: ${sheetCtx.number || "N/A"} | Scale: ${sheetCtx.scale || "N/A"}
+Image Quality: ${quality}
+Classification Confidence: ${confidence}
+Readable Areas: ${readableAreas.length > 0 ? readableAreas.join("; ") : "not specified"}
+Unreadable Areas: ${unreadableAreas.length > 0 ? unreadableAreas.join("; ") : "none reported"}
+Room Labels Extracted: ${roomLabels.length > 0 ? roomLabels.join(", ") : "none"}
+Fire Systems Visible: ${visibleSystems.length > 0 ? visibleSystems.join(", ") : "none"}
+Legend Symbols: ${legendSymbols.length > 0 ? legendSymbols.join(", ") : "none"}
+Dimensions: ${dimensions.length > 0 ? dimensions.join(", ") : "none"}
+Building Type (extracted): ${planParsed.buildingType || "unknown"}
+Occupancy (extracted): ${planParsed.occupancyGroup || "unknown"}
+Hazard Level (extracted): ${planParsed.hazardLevel || "unknown"}
+Stories (extracted): ${planParsed.stories || "unknown"}
+Floor Area (extracted): ${planParsed.floorArea || "unknown"}${qualityWarning}
+=== END DOCUMENT INTELLIGENCE SUMMARY ===
+`;
+    console.log(`[DocIntel] Quality: ${quality} | Confidence: ${confidence} | DocType: ${docType} | Rooms: ${roomLabels.length} | Systems: ${visibleSystems.length}`);
+  } catch {
+    docIntelSummary = `
+=== DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
+Extraction: Stage 1 JSON parse failed — raw classification data follows in Stage 1 block below.
+Image Quality: unknown
+Classification Confidence: low
+⚠️ EXTRACTION WARNING: Classification metadata unavailable. Use only visually confirmed elements. Do not fabricate details.
+=== END DOCUMENT INTELLIGENCE SUMMARY ===
+`;
+    console.warn("[DocIntel] Failed to parse Stage 1 JSON for summary");
+  }
+
   // Advisory mode (standard) → design guidance framing; Analytical (analysis) or Primary → compliance audit framing
   const finalSystemPrompt = mode === "standard"
     ? getVisionAdvisoryFinalPrompt(language)
     : getVisionFinalPrompt(language);
 
   const extraContext = `
-=== PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION ===
+${docIntelSummary}
+=== PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION (raw) ===
 ${planningResult}
 
 === PIPELINE STAGE 2: CHAIN OF THOUGHT CHECKLIST ===
@@ -2169,7 +2436,7 @@ ${sbcContext}
 `;
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
-  
+
   return { systemPrompt: finalSystemPrompt, extraContext, usedFiles };
 }
 
@@ -2210,8 +2477,10 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, output_format, preferred_standards } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
+    // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
+    const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
@@ -2589,6 +2858,25 @@ serve(async (req) => {
       fullSystemPrompt += finalBindingReminder;
     }
     
+    // ── Inject document texts (CSV/TXT files) into system prompt ─────────────
+    // These are structured text documents uploaded by the user (schedules, tables,
+    // specifications). Injected AFTER the SBC context so they appear as user-provided
+    // project data, clearly distinct from code references.
+    if (resolvedDocTexts.length > 0) {
+      let docTextBlock = language === "en"
+        ? `\n\n=== USER-PROVIDED DOCUMENTS (Text/CSV/Schedule Files) ===\n`
+        : `\n\n=== وثائق المستخدم المرفوعة (ملفات نصية / CSV / جداول) ===\n`;
+      for (const doc of resolvedDocTexts) {
+        const truncated = doc.content.length > 8000 ? doc.content.slice(0, 8000) + "\n...[truncated]" : doc.content;
+        docTextBlock += `\n--- File: ${doc.name} ---\n${truncated}\n--- End of ${doc.name} ---\n`;
+      }
+      docTextBlock += language === "en"
+        ? `\n=== END USER-PROVIDED DOCUMENTS ===\nNOTE: The above documents are user-supplied project data (schedules, specifications, material lists). Treat them as CONFIRMED project inputs. Reference them explicitly when analyzing compliance. Do not confuse them with code references.\n`
+        : `\n=== نهاية وثائق المستخدم ===\nملاحظة: الوثائق أعلاه بيانات مشروع مرفوعة من المستخدم (جداول، مواصفات، قوائم مواد). اعتبرها مدخلات مشروع مؤكدة. أشر إليها صراحة عند تحليل الامتثال. لا تخلطها مع مراجع الكود.\n`;
+      fullSystemPrompt += docTextBlock;
+      console.log(`[DocText] Injected ${resolvedDocTexts.length} document(s) into prompt`);
+    }
+
     // ── Apply user preferences to system prompt ────────────────────────────
     // output_format and preferred_standards come from the user's saved settings
     // (profiles table). They are forwarded by the frontend with every request.

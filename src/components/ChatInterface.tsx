@@ -550,10 +550,12 @@ function trimMessageHistory(
 
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
+  documentTexts,
   output_format, preferred_standards,
   onDelta, onFirstChunk, onDone, onError, onSources, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
+  documentTexts?: Array<{ name: string; content: string }>;
   output_format?: string;
   preferred_standards?: string[];
   onDelta: (deltaText: string) => void;
@@ -571,7 +573,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images, output_format, preferred_standards }),
+    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, output_format, preferred_standards }),
     signal,
   });
   if (!resp.ok) {
@@ -722,7 +724,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [showHistory, setShowHistory] = useState(false);
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
+  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages, allDocumentTexts } = usePendingFiles();
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
   const { preferences } = usePreferences();
 
@@ -929,6 +931,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     chatMessages: ChatMessage[], assistantId: string, isRetry: boolean = false,
     currentRetryCount: number = 0, currentMode: ChatMode = "standard",
     convId: string | null = null, currentLanguage: string = "ar", imageBase64s?: string[],
+    docTexts?: Array<{ name: string; content: string }>,
   ) => {
     // Abort any previous request
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -973,6 +976,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     try {
       await streamChat({
         messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
+        documentTexts: docTexts,
         output_format: preferences.output_format,
         preferred_standards: preferences.preferred_standards,
         signal: controller.signal,
@@ -1109,6 +1113,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     // Snapshot pending files before clearing
     const filesToSend = [...pendingFiles];
     const pagesToSend = [...allBase64Pages];
+    const docTextsToSend = [...allDocumentTexts];
     setIsVisionRequest(filesToSend.length > 0);
     clearAll();
 
@@ -1161,7 +1166,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     const allRealMessages = [...messages, userMessage];
     const chatMessages = trimMessageHistory(allRealMessages, chatMode, preferences.ai_memory_level);
     handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language,
-      pagesToSend.length > 0 ? pagesToSend : undefined);
+      pagesToSend.length > 0 ? pagesToSend : undefined,
+      docTextsToSend.length > 0 ? docTextsToSend : undefined);
   };
 
 
@@ -1689,7 +1695,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             )}
             style={{ borderColor: getModeAccentColor(chatMode).replace("0.6", "0.4") }}
           >
-            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple onChange={handleFileSelect} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf,text/csv,text/plain,.csv,.txt" multiple onChange={handleFileSelect} className="hidden" />
             {/* Folder upload input — desktop only */}
             {!isMobile && (
               // @ts-expect-error webkitdirectory is non-standard

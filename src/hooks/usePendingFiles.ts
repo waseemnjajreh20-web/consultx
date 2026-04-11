@@ -7,14 +7,22 @@ const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
 const MAX_FILES = 10;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ALLOWED_PDF_TYPE = "application/pdf";
+const ALLOWED_TEXT_TYPES = ["text/csv", "text/plain"];
+// Excel files: guide user to save as CSV; we accept the mime types browsers report
+const EXCEL_TYPES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.ms-excel",                                           // .xls
+];
 
 export interface PendingFile {
   id: string;
   file: File;
-  type: "image" | "pdf";
-  base64Pages: string[]; // images: [dataURL]; PDFs: [page1, page2, ...]
-  previewUrl: string;    // first page for thumbnail
+  type: "image" | "pdf" | "text";
+  base64Pages: string[]; // images/PDFs: base64 data URIs; text: empty (content in textContent)
+  textContent?: string;  // extracted text for CSV/TXT files
+  previewUrl: string;    // first page or placeholder for thumbnail
   name: string;
+  rowCount?: number;     // for CSV: number of data rows
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -45,12 +53,30 @@ export function usePendingFiles() {
 
         const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
         const isPdf = file.type === ALLOWED_PDF_TYPE;
+        const isText = ALLOWED_TEXT_TYPES.includes(file.type)
+          || file.name.endsWith(".csv")
+          || file.name.endsWith(".txt");
+        const isExcel = EXCEL_TYPES.includes(file.type)
+          || file.name.endsWith(".xlsx")
+          || file.name.endsWith(".xls");
 
-        if (!isImage && !isPdf) {
+        if (!isImage && !isPdf && !isText && !isExcel) {
           toast({
             title: language === "en" ? "Error" : "خطأ",
             description: language === "en" ? "Unsupported file type" : "نوع الملف غير مدعوم",
             variant: "destructive",
+          });
+          continue;
+        }
+
+        // Excel: guide user to CSV
+        if (isExcel) {
+          toast({
+            title: language === "en" ? "Excel file" : "ملف Excel",
+            description: language === "en"
+              ? `"${file.name}": For best results, save your Excel file as CSV first. CSV files are fully supported.`
+              : `"${file.name}": للحصول على أفضل نتيجة، احفظ ملف Excel بصيغة CSV أولاً. ملفات CSV مدعومة بالكامل.`,
+            variant: "default",
           });
           continue;
         }
@@ -83,6 +109,33 @@ export function usePendingFiles() {
               description: language === "en"
                 ? `Failed to read image: ${file.name}`
                 : `تعذّر قراءة الصورة: ${file.name}`,
+              variant: "destructive",
+            });
+          }
+        } else if (isText) {
+          // CSV / TXT — read as plain text
+          try {
+            const text = await file.text();
+            if (!text.trim()) continue;
+            // Count data rows for CSV (lines minus header)
+            const lines = text.split("\n").filter(l => l.trim().length > 0);
+            const rowCount = lines.length > 1 ? lines.length - 1 : lines.length;
+            candidates.push({
+              id,
+              file,
+              type: "text",
+              base64Pages: [],
+              textContent: text,
+              previewUrl: "",
+              name: file.name,
+              rowCount,
+            });
+          } catch {
+            toast({
+              title: language === "en" ? "Error" : "خطأ",
+              description: language === "en"
+                ? `Failed to read file: ${file.name}`
+                : `تعذّر قراءة الملف: ${file.name}`,
               variant: "destructive",
             });
           }
@@ -133,6 +186,10 @@ export function usePendingFiles() {
   }, []);
 
   const allBase64Pages = pendingFiles.flatMap(f => f.base64Pages);
+  // Collected text content from CSV/TXT files — passed to backend as structured document context
+  const allDocumentTexts = pendingFiles
+    .filter(f => f.type === "text" && f.textContent)
+    .map(f => ({ name: f.name, content: f.textContent! }));
 
   return {
     pendingFiles,
@@ -142,5 +199,6 @@ export function usePendingFiles() {
     clearAll,
     hasFiles: pendingFiles.length > 0,
     allBase64Pages,
+    allDocumentTexts,
   };
 }
