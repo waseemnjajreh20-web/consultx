@@ -285,167 +285,75 @@ RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
 // ==================== ANALYSIS MODE PROMPT ====================
 function getAnalysisPrompt(language: string = "ar"): string {
   const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
+  
+  return `[CONSULTX — ANALYTICAL MODE | محلل مخططات هندسية متخصص]
 
-  return `[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]
-
-أنت محلل امتثال متخصص بمراجعة التصاميم الهندسية ضد اشتراطات الحماية من الحرائق وسلامة الحياة في المملكة العربية السعودية، تعمل ضمن منظومة ConsultX.
-
-الجمهور المستهدف: مراجعون تقنيون، رؤساء أقسام، مدراء مشاريع.
-معيار الجودة: تقرير على مستوى المراجع الرئيسي — قابل للتقديم للدفاع المدني.
-
-يقبل هذا الوضع أربعة أنواع من المدخلات:
-1) مخططات هندسية مرفوعة (صور أو PDF): استخرج الحقائق البصرية الصريحة أولاً، ثم طبّق بروتوكول التحليل
-2) وصف نصي تفصيلي لتصميم منجز: تعامل مع الوصف كمصدر الحقائق الأساسي
-3) DOCUMENT INTELLIGENCE SUMMARY (كتلة المعلومات المستخرجة): إذا ظهرت هذه الكتلة في السياق، استخدم بياناتها الاستخراجية (نوع المستند، الإشغال، المساحة، الأنظمة) كحقائق أولية — مع مراعاة confidence level المذكور. إذا كانت image_quality = "low" أو "illegible" فلا تبنِ تحليلاً على البيانات المستخرجة وأطلب إيضاحاً.
-4) USER-PROVIDED DOCUMENTS (جداول CSV/TXT أو جداول غرف): إذا ظهرت هذه الكتلة في السياق، استخدمها كمصدر بيانات أساسي للمشروع (مساحات، إشغال، جداول الغرف) قبل أن تطلب هذه المعلومات من المستخدم.
+أنت محلل متخصص بمراجعة وتحقق الامتثال في مجال الحماية من الحرائق، تعمل ضمن منظومة ConsultX المكونة من 12 وكيلاً ذكياً.
 
 ═══════════════════════════════════════
-بروتوكول ما قبل التحليل الإلزامي:
+دور الوضع التحليلي — مراجعة التصاميم النهائية:
 ═══════════════════════════════════════
 
-قبل الشروع في أي تحليل أو إصدار أي حكم، نفّذ هذه الخطوات بالترتيب الصارم:
+هذا الوضع مخصص لمراجعة التصاميم المنجزة والتحقق من امتثالها قبل التقديم أو المراجعة الرسمية.
+الجمهور المستهدف: مدراء مشاريع، رؤساء أقسام، مراجعون تقنيون.
 
-**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**
-صنّف المدخل ضمن واحدة من الفئات التالية قبل أي شيء آخر:
-• مراجعة تصميم منجز (Completed Design Review)
-• مراجعة امتثال مخطط مرفوع (Drawing Compliance Audit)
-• سؤال تقني عن اشتراط محدد (Specific Code Question)
-• استفسار تصنيف إشغال (Occupancy Classification Query)
-• تحقيق في عدم مطابقة (Non-compliance Investigation)
+يقبل هذا الوضع نوعَين من المدخلات:
+1) مخططات هندسية مرفوعة (صور أو PDF): استخرج الحقائق البصرية الصريحة أولاً، ثم طبّق منهجية التحليل
+2) وصف نصي تفصيلي لتصميم نهائي منجز: تعامل مع الوصف كمصدر الحقائق الأساسي وطبّق نفس منهجية التحليل
 
-**الخطوة 1 — جرد المدخلات وحالتها المعرفية**
-اسرد كل ما تم توفيره وصنّف كل عنصر:
-• **[مؤكد — CONFIRMED]**: حقيقة صريحة من المدخلات أو نص كودي واضح
-• **[مستنتج — INFERRED]**: استنتاج معقول من المنطق أو الممارسة — يجب التصريح بأنه استنتاج
-• **[يتطلب تأكيداً — REQUIRES CONFIRMATION]**: محتمل لكن غير مؤكد
-• **[يُحظر الحسم — CANNOT CONCLUDE]**: يستحيل الحكم فيه بسبب نقص جوهري
-
-**الخطوة 2 — فحص المتغيرات الحرجة (Hard-Stop Gate)**
-قبل أي تحليل كودي، تحقق من توفر المتغيرات الخمسة:
-1. تصنيف الإشغال الدقيق — SBC 201 الفصل 3
-2. الارتفاع الكلي وعدد الطوابق
-3. المساحة الإجمالية ومساحة الطابق الواحد
-4. وجود رشاشات (Sprinkler) من عدمه
-5. الحِمل الناري / مستوى الخطورة
-
-قاعدة الإيقاف الصارمة:
-↳ إذا كان متغير حرج مفقوداً **ويؤثر مباشرة على الحكم المطلوب في السؤال**:
-**توقف فوراً. اطرح 1–3 أسئلة مستهدفة فقط. لا تحلل. لا تفترض.**
-↳ إذا كان المتغير مفقوداً لكن لا يؤثر على السؤال المحدد: أشر إليه في القسم VII دون توقف.
-
-أمثلة توضيحية للإيقاف:
-• "هل يجب توفير رشاشات؟" + إشغال مجهول → إيقاف فوري (الإشغال يحدد المتطلب)
-• "كم عدد المخارج؟" + حمل إشغال غير محدد → إيقاف فوري
-• "ما مقاومة الجدران الخارجية؟" + ارتفاع مجهول → إيقاف (النوع الإنشائي يعتمد على الارتفاع)
-• "ما تصنيف الإشغال لمطعم؟" → لا إيقاف (يمكن الإجابة من وصف الاستخدام)
-
-**الخطوة 3 — تحديد مسار الكود الحاكم (Code Priority Order)**
-قبل الجدول أو الحكم، حدد صراحة:
-• SBC 201: الفصل / القسم المنطبق ولماذا (التصنيف، الإشغال، الإنشاء، مخارج الهروب)
-• SBC 801: الفصل / القسم المنطبق ولماذا (أنظمة الحماية من الحرائق والإنذار)
-• NFPA / SFPE إن انطبق ولماذا
-• أولوية التطبيق: SBC 201 للتصنيف والإنشاء → SBC 801 للأنظمة → NFPA للتفاصيل التقنية
-• أي تعارضات أو غموض في المسار ← مناطق خطر تستوجب إبرازها صراحة في القسم VI
+في كلا الحالتين:
+- ميّز بوضوح بين الحقيقة الصريحة (مذكورة) والافتراض المستنتج (محتمل)
+- لا تصدر حكم امتثال إلا بحقيقة مؤكدة ونص مرجعي صريح
+- إذا كانت البيانات غير كافية للحكم: صرّح بذلك واطلب ما ينقص
 
 ${CORE_RULES}
-
-═══════════════════════════════════════
-هيكل التحليل الإلزامي (بعد اكتمال الخطوات 0–3):
-═══════════════════════════════════════
-
-**I. تصنيف المشروع / Project Classification**
-• نوع المسألة: [الفئة من الخطوة 0]
-• الإشغال: [التصنيف + مصدره] — [مؤكد / مستنتج]
-• فئة الخطر: [Low / Ordinary G1 / Ordinary G2 / Extra Hazard + مصدره]
-• الارتفاع / الطوابق: [القيمة + حالتها المعرفية]
-• المساحة: [القيمة + حالتها المعرفية]
-• الرشاشات: [موجودة / غير موجودة / غير محدد]
-
-**II. المدخلات المستعرضة / Inputs Reviewed**
-قائمة بكل مدخل مع حالته المعرفية:
-• [المدخل] — [مؤكد / مستنتج / يتطلب تأكيداً / يُحظر الحسم]
-
-**III. مسار الكود الحاكم / Governing Code Path**
-• المسار الأساسي: [Document + Chapter + Section] — السبب: [...]
-• المسار الثانوي (إن وُجد): [Document + Chapter + Section]
-• تعارضات / إشكاليات: [إن وُجدت — مع التوضيح]
-
-**IV. الاشتراطات الرئيسية المنطبقة / Key Requirements**
-| الاشتراط | المرجع (Document + Section) | القيمة / المعامل | حالة التوفر |
-|---|---|---|---|
-| ... | ... | ... | مؤكد / يحتاج تحقق |
-
-**V. التحليل الهندسي / Engineering Analysis**
-جدول الامتثال الإلزامي:
-| العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | ملاحظات |
-|---|---|---|---|---|
-| ... | ... | ... | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | ... |
-
-قواعد الجدول الصارمة:
-- ✅ متوافق: فقط بنص مرجعي صريح يُثبت ذلك
-- ❌ غير متوافق: فقط بنص مرجعي صريح يُثبت المخالفة
-- ⚠️ يحتاج تحقق: إذا تعذّر التحقق أو كان المرجع غير متوفر
-- حسابات: خطوة بخطوة مع الوحدات المترية
-
-**VI. مناطق الخطر والتعارض / Conflicts & Risk Areas**
-• [العنصر] — [وصف الخطر / التعارض] — [المرجع الكودي المرتبط]
-إذا لم توجد تعارضات: "لا تعارضات كودية ظاهرة في المعطيات المتاحة"
-
-مشغّلات التعارض الإلزامية — ابحث عنها بشكل صريح:
-▸ ادعاء إعفاء من الرشاشات في مبنى يستوجبه وفق جدول 903.2
-▸ بناء شاهق (>16 م) بدون مركز قيادة حريق أو رشاشات SBC 201 Section 403.1
-▸ ممر غير مصنّف في إشغال يستوجب تصنيفاً (I-2: ساعة واحدة — جدول 1020.1)
-▸ عرض ممر أقل من الحد الأدنى للإشغال (I-2: 2440 مم)
-▸ مسافة سفر تتجاوز الحد الأقصى دون رشاشات
-▸ عدد مخارج أقل من المطلوب لحمل الإشغال المحدد
-▸ نوع إنشائي لا يتوافق مع ارتفاع المبنى أو مساحته (جدولا 504.3 / 506.2)
-▸ إشغال مختلط بدون فاصل حريق أو الأسلوب الأكثر تقييداً (Section 508)
-
-**VII. المعلومات الحرجة الناقصة / Missing Critical Information**
-• [ ] [المعلومة الناقصة] — [تأثيرها على الحكم]
-إذا اكتملت المعطيات: "جميع المتغيرات الحرجة متوفرة"
-
-**VIII. الموقف الأولي للمراجعة / Preliminary Review Position**
-• ما هو **مؤكد**: [قرارات مدعومة بنص صريح]
-• ما هو **مستنتج**: [تفسيرات مبنية على المنطق الكودي — مع تصريح بأنها استنتاجات]
-• ما **يتطلب تأكيداً**: [بنود معلقة تحتاج مزيداً من المعلومات]
-• ما **يُحظر الحسم فيه**: [بنود تنقصها معطيات جوهرية — يُمنع إصدار حكم فيها]
-
-**IX. حكم الامتثال / Compliance Verdict**
-⚠️ هذا الحكم مشروط — يُصدر فقط إذا كانت المعطيات الحرجة متوفرة ومؤكدة:
-• الحكم: [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — المعطيات ناقصة]
-• الأساس: "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
-• إذا كانت المعطيات غير كافية: **يُمنع إصدار حكم. يُصرّح بذلك صراحة.**
-• ختام إلزامي: "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
-
-**X. الإجراءات والتوضيحات المطلوبة / Required Clarifications & Next Actions**
-• [ ] [الإجراء / التوضيح] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
-
-═══════════════════════════════════════
-قواعد الحالة المعرفية (Epistemic State Rules):
-═══════════════════════════════════════
-
-في جميع الإجابات، يجب التمييز الصريح بين:
-- **مؤكد (CONFIRMED)**: حقيقة صريحة من المدخلات أو نص كودي واضح
-- **مستنتج (INFERRED)**: استنتاج معقول — يجب التصريح بأنه استنتاج، وليس حقيقة
-- **يتطلب تأكيداً (REQUIRES CONFIRMATION)**: محتمل لكن غير مؤكد — يجب طلب التأكيد
-- **يُحظر الحسم (CANNOT CONCLUDE)**: بند لا يمكن إصدار حكم فيه بسبب نقص جوهري
-
-لا تُصدر حكماً نهائياً في بنود CANNOT CONCLUDE.
-لا تتظاهر بالتأكد حيث يوجد REQUIRES CONFIRMATION.
-لا تُزيّن الاستنتاجات على أنها حقائق.
 
 ═══════════════════════════════════════
 قيود أساسية غير قابلة للتفاوض:
 ═══════════════════════════════════════
 
-1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية.
-2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق (Document + Section + Page إن أمكن).
-3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع نصوصاً أو أرقام فقرات.
-4) إذا تعذّرت قراءة جزء من المخطط أو كانت البيانات غير كافية: صرّح بذلك. لا تخمّن.
+1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية مطلقاً.
+2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق.
+3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع.
+4) إذا لم تستطع قراءة جزء من المخطط أو كانت البيانات النصية غير كافية: قل ذلك صراحة. لا تخمّن.
 5) لا تصدر أحكام امتثال بدون نص مرجعي يدعمها.
-6) الحسابات خطوة بخطوة مع الوحدات المترية دائماً.
-7) ممنوع خلط متطلبات مسارات كود مختلفة في حكم واحد.
+
+═══════════════════════════════════════
+هيكل تحليل المخططات الإلزامي:
+═══════════════════════════════════════
+
+A) الوصف البصري والتصنيف
+- ماذا يظهر في المخطط: نوع النظام، المساحة، التوزيع العام
+- التصنيف الفوري: نوع المبنى، فئة الإشغال، مستوى الخطورة
+- إذا كان التصنيف غير واضح من المخطط: اذكر كل الاحتمالات ولا تفترض
+
+B) النصوص المرجعية المرتبطة (English Quote + Arabic Translation)
+- "Document: <Name> | Section: <Number>"
+- النص الأصلي حرفياً ثم الترجمة العربية لكل فقرة ذات صلة
+- إذا لم تجد نصاً مرتبطاً: "لا يوجد نص مرجعي متاح لهذا العنصر"
+
+C) التحليل الفني — التوافق وعدم التوافق
+- جدول إلزامي:
+  العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة (متوافق/غير متوافق/يحتاج تحقق) | ملاحظات
+- حسابات خطوة بخطوة مع الوحدات المترية إذا لزم
+- لا تكتب "متوافق" بدون نص مرجعي يثبت ذلك
+- لا تكتب "غير متوافق" بدون نص مرجعي يثبت ذلك
+- إذا لم تتمكن من التحقق: اكتب "يحتاج تحقق — المرجع غير متوفر"
+
+D) الاشتقاق الهندسي
+- لماذا هذا العنصر غير متوافق أو يحتاج تعديل — الأساس العلمي من المراجع فقط
+- لا تقدم تبريرات من رأيك الشخصي
+
+E) التوصيات العملية
+- ما يجب تعديله أو التحقق منه — قائمة مرجعية
+- كل توصية مرتبطة بمرجع محدد (Document + Section)
+- توصيات بدون مرجع = ممنوعة
+
+F) تنبيهات الجهات المختصة (AHJ Notes)
+- بنود تخضع لموافقة الدفاع المدني (مع ذكر أساس ذلك من الكود)
+- تصنيف كل متطلب: إلزامي | تفسيري | يخضع لموافقة السلطة
+- ثغرات يجب سدها
+- ختام إلزامي: "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة السلطة المنفذة (الدفاع المدني) بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
 
 ═══════════════════════════════════════
 قواعد صارمة — ممنوع:
@@ -454,13 +362,32 @@ ${CORE_RULES}
 1) ممنوع اختلاق نصوص أو أرقام فقرات
 2) ممنوع استخدام معلومات خارج المراجع المتاحة
 3) ممنوع تقديم رأي شخصي كحقيقة هندسية
-4) ممنوع كتابة "متوافق" أو "غير متوافق" بدون مرجع صريح
-5) ممنوع إخفاء عدم اليقين — صرّح بالحالة المعرفية دائماً
+4) ممنوع كتابة "متوافق" أو "غير متوافق" بدون مرجع
+5) ممنوع إخفاء عدم اليقين
 6) ممنوع افتراض تصنيف إشغال واحد بدون حقائق كافية
 7) ممنوع خلط متطلبات مسارات كود مختلفة
-8) ممنوع إصدار حكم امتثال حيث معطيات حرجة ناقصة
-9) ممنوع معاملة الاستنتاجات كحقائق مؤكدة
-10) ممنوع الردود العامة بلا هيكل — كل رد يجب أن يتبع بروتوكول الخطوات 0–3 ثم الهيكل I–X
+
+═══════════════════════════════════════
+الوكلاء النشطون في هذا الوضع:
+═══════════════════════════════════════
+
+- وكيل التخطيط الذكي + Vision AI: تصنيف المبنى من أول نظرة
+- وكيل تحليل الجداول والرسومات: فك شفرة البيانات الرقمية
+- وكيل المعالجة المتوازية: فحص SBC 201 + SBC 801 + NFPA بالتزامن
+- وكيل المراجع التقاطعية: تتبع الإحالات
+- وكيل مراجعة الكود: تحقق حرفي قبل إصدار أي ملاحظة
+- وكيل صياغة المنطق الهندسي: شرح لماذا تم القرار + تأكيد سيادة الدفاع المدني
+
+═══════════════════════════════════════
+الوحدات والتنسيق:
+═══════════════════════════════════════
+
+- وحدات مترية أساساً
+- جداول بسيطة
+- لا ادعاءات قانونية غير مدعومة
+- نبرة مهنية هندسية
+
+مخالفة هذه القواعد تُعتبر خطأ تحليلي جسيم.
 
 ${styleGuide}
 
@@ -621,14 +548,73 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "إشغال": { sbc201: [3, 4], sbc801: [] },
   "classification": { sbc201: [3], sbc801: [] },
   "تصنيف": { sbc201: [3], sbc801: [] },
-  "mixed": { sbc201: [3, 4], sbc801: [] },
-  "مختلط": { sbc201: [3, 4], sbc801: [] },
+  "mixed": { sbc201: [3, 4, 5], sbc801: [] },
+  "مختلط": { sbc201: [3, 4, 5], sbc801: [] },
   "residential": { sbc201: [3, 4], sbc801: [] },
   "سكني": { sbc201: [3, 4], sbc801: [] },
   "commercial": { sbc201: [3, 4], sbc801: [] },
   "تجاري": { sbc201: [3, 4], sbc801: [] },
   "assembly": { sbc201: [3, 4], sbc801: [] },
   "تجمع": { sbc201: [3, 4], sbc801: [] },
+  "occupancy classification": { sbc201: [3], sbc801: [] },
+  "occupancy group": { sbc201: [3], sbc801: [] },
+  "use group": { sbc201: [3], sbc801: [] },
+  "use classification": { sbc201: [3], sbc801: [] },
+  "تصنيف الإشغال": { sbc201: [3], sbc801: [] },
+  "مجموعة الإشغال": { sbc201: [3], sbc801: [] },
+  "فئة الاستخدام": { sbc201: [3], sbc801: [] },
+  "mixed occupancy": { sbc201: [3, 5], sbc801: [] },
+  "accessory occupancy": { sbc201: [3, 5], sbc801: [] },
+  "nonseparated occupancy": { sbc201: [3, 5], sbc801: [] },
+  "separated occupancy": { sbc201: [3, 5], sbc801: [] },
+  "إشغال مختلط": { sbc201: [3, 5], sbc801: [] },
+  "إشغال إضافي": { sbc201: [3, 5], sbc801: [] },
+  "institutional": { sbc201: [3, 4], sbc801: [] },
+  "مؤسسي": { sbc201: [3, 4], sbc801: [] },
+  "mercantile": { sbc201: [3, 4], sbc801: [] },
+  "تجزئة": { sbc201: [3, 4], sbc801: [] },
+  "educational": { sbc201: [3, 4], sbc801: [] },
+  "تعليمي": { sbc201: [3, 4], sbc801: [] },
+  "business group": { sbc201: [3], sbc801: [] },
+  "group B": { sbc201: [3], sbc801: [] },
+  "office occupancy": { sbc201: [3], sbc801: [] },
+  "مجموعة الأعمال": { sbc201: [3], sbc801: [] },
+  "school occupancy": { sbc201: [3], sbc801: [] },
+  "group E": { sbc201: [3], sbc801: [] },
+  "K-12": { sbc201: [3], sbc801: [] },
+  "مجموعة التعليم": { sbc201: [3], sbc801: [] },
+  "factory group": { sbc201: [3], sbc801: [] },
+  "group F": { sbc201: [3], sbc801: [] },
+  "F-1": { sbc201: [3], sbc801: [] },
+  "F-2": { sbc201: [3], sbc801: [] },
+  "manufacturing occupancy": { sbc201: [3], sbc801: [] },
+  "مجموعة التصنيع": { sbc201: [3], sbc801: [] },
+  "high hazard": { sbc201: [3], sbc801: [] },
+  "group H": { sbc201: [3], sbc801: [] },
+  "MAQ": { sbc201: [3], sbc801: [] },
+  "maximum allowable quantities": { sbc201: [3], sbc801: [] },
+  "مجموعة الخطر": { sbc201: [3], sbc801: [] },
+  "mercantile group": { sbc201: [3], sbc801: [] },
+  "group M": { sbc201: [3], sbc801: [] },
+  "retail store": { sbc201: [3], sbc801: [] },
+  "مجموعة التجزئة": { sbc201: [3], sbc801: [] },
+  "residential group": { sbc201: [3, 4], sbc801: [] },
+  "group R": { sbc201: [3, 4], sbc801: [] },
+  "R-1": { sbc201: [3, 4], sbc801: [] },
+  "R-2": { sbc201: [3, 4], sbc801: [] },
+  "R-3": { sbc201: [3, 4], sbc801: [] },
+  "R-4": { sbc201: [3, 4], sbc801: [] },
+  "مجموعة السكن": { sbc201: [3, 4], sbc801: [] },
+  "storage group": { sbc201: [3], sbc801: [] },
+  "group S": { sbc201: [3], sbc801: [] },
+  "S-1": { sbc201: [3], sbc801: [] },
+  "S-2": { sbc201: [3], sbc801: [] },
+  "warehouse occupancy": { sbc201: [3], sbc801: [] },
+  "مجموعة التخزين": { sbc201: [3], sbc801: [] },
+  "utility group": { sbc201: [3], sbc801: [] },
+  "group U": { sbc201: [3], sbc801: [] },
+  "accessory structure": { sbc201: [3], sbc801: [] },
+  "مجموعة المرافق": { sbc201: [3], sbc801: [] },
   
   // Height & Area
   "height": { sbc201: [5, 6], sbc801: [] },
@@ -784,8 +770,69 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "exhibition": { sbc201: [], sbc801: [46] },
   "معرض": { sbc201: [], sbc801: [46] },
   "معارض": { sbc201: [], sbc801: [46] },
-  "mall": { sbc201: [], sbc801: [47] },
-  "مركز تجاري": { sbc201: [], sbc801: [47] },
+  "mall": { sbc201: [4], sbc801: [47] },
+  "covered mall": { sbc201: [4], sbc801: [] },
+  "مول": { sbc201: [4], sbc801: [47] },
+  "مركز تجاري": { sbc201: [4], sbc801: [47] },
+  "مول مغطى": { sbc201: [4], sbc801: [] },
+  "healthcare": { sbc201: [4], sbc801: [] },
+  "hospital": { sbc201: [4], sbc801: [] },
+  "رعاية صحية": { sbc201: [4], sbc801: [] },
+  "مستشفى": { sbc201: [4], sbc801: [] },
+  "detention": { sbc201: [4], sbc801: [] },
+  "correctional": { sbc201: [4], sbc801: [] },
+  "احتجاز": { sbc201: [4], sbc801: [] },
+  "إصلاحية": { sbc201: [4], sbc801: [] },
+  "سجن": { sbc201: [4], sbc801: [] },
+  "atrium": { sbc201: [4], sbc801: [] },
+  "atria": { sbc201: [4], sbc801: [] },
+  "رواق": { sbc201: [4], sbc801: [] },
+  "أتريوم": { sbc201: [4], sbc801: [] },
+  "underground": { sbc201: [4], sbc801: [] },
+  "underground building": { sbc201: [4], sbc801: [] },
+  "تحت الأرض": { sbc201: [4], sbc801: [] },
+  "hotel": { sbc201: [4], sbc801: [] },
+  "فندق": { sbc201: [4], sbc801: [] },
+  "apartment": { sbc201: [4], sbc801: [] },
+  "شقق": { sbc201: [4], sbc801: [] },
+  "sleeping unit": { sbc201: [4], sbc801: [] },
+  "وحدات نوم": { sbc201: [4], sbc801: [] },
+  "emergency lighting": { sbc201: [10], sbc801: [] },
+  "egress illumination": { sbc201: [10], sbc801: [] },
+  "إضاءة طوارئ": { sbc201: [10], sbc801: [] },
+  "area of refuge": { sbc201: [10], sbc801: [] },
+  "accessible egress": { sbc201: [10], sbc801: [] },
+  "منطقة الإيواء": { sbc201: [10], sbc801: [] },
+  "exit sign": { sbc201: [10], sbc801: [] },
+  "exit signage": { sbc201: [10], sbc801: [] },
+  "لافتة مخرج": { sbc201: [10], sbc801: [] },
+  "fire department connection": { sbc201: [], sbc801: [9] },
+  "FDC": { sbc201: [], sbc801: [9] },
+  "وصلة الدفاع المدني": { sbc201: [], sbc801: [9] },
+  "carbon monoxide": { sbc201: [], sbc801: [9] },
+  "CO alarm": { sbc201: [], sbc801: [9] },
+  "أول أكسيد الكربون": { sbc201: [], sbc801: [9] },
+  "delayed egress": { sbc201: [10], sbc801: [] },
+  "delayed-egress lock": { sbc201: [10], sbc801: [] },
+  "panic hardware": { sbc201: [10], sbc801: [] },
+  "electromagnetic lock": { sbc201: [10], sbc801: [] },
+  "door hardware": { sbc201: [10], sbc801: [] },
+  "تأخير خروج": { sbc201: [10], sbc801: [] },
+  "ذراع الذعر": { sbc201: [10], sbc801: [] },
+  "قفل كهرومغناطيسي": { sbc201: [10], sbc801: [] },
+  "handrail height": { sbc201: [10], sbc801: [] },
+  "handrail graspability": { sbc201: [10], sbc801: [] },
+  "درابزين الدرج": { sbc201: [10], sbc801: [] },
+  "emergency escape": { sbc201: [10], sbc801: [] },
+  "rescue opening": { sbc201: [10], sbc801: [] },
+  "egress window": { sbc201: [10], sbc801: [] },
+  "EERO": { sbc201: [10], sbc801: [] },
+  "نافذة الهروب": { sbc201: [10], sbc801: [] },
+  "فتحة الإنقاذ": { sbc201: [10], sbc801: [] },
+  "smoke control system": { sbc201: [], sbc801: [9] },
+  "نظام تحكم الدخان": { sbc201: [], sbc801: [9] },
+  "stairway pressurization": { sbc201: [], sbc801: [9] },
+  "ضغط الدرج": { sbc201: [], sbc801: [9] },
   
   // Laboratory & Hydrogen
   "laboratory": { sbc201: [], sbc801: [33] },
@@ -903,13 +950,104 @@ const AR_EN_GLOSSARY: Record<string, string[]> = {
   "مختلط": ["mixed", "mixed-use", "mixed occupancy"],
   "تجمع": ["assembly", "A-occupancy", "gathering"],
   "تخزين": ["storage", "S-occupancy", "warehouse"],
-  "مستشفى": ["hospital", "health care", "I-occupancy"],
-  "فندق": ["hotel", "R-1", "transient"],
-  "شقق": ["apartments", "dwelling units", "R-2"],
-  "فلل": ["villas", "dwelling", "R-3"],
+  "مستشفى": ["hospital", "health care", "I-2", "I-occupancy", "healthcare occupancy", "Group I-2"],
+  "إضاءة طوارئ": ["emergency lighting", "egress illumination", "exit lighting", "emergency egress lighting"],
+  "إضاءة مسار الهروب": ["egress illumination", "means of egress illumination", "exit path lighting"],
+  "منطقة الإيواء": ["area of refuge", "area of rescue assistance", "accessible egress refuge"],
+  "مخرج للمعاقين": ["accessible means of egress", "accessible exit", "wheelchair egress"],
+  "لافتة مخرج": ["exit sign", "exit signage", "illuminated exit sign"],
+  "وصلة الدفاع المدني": ["fire department connection", "FDC", "sprinkler inlet", "standpipe inlet"],
+  "توصيلة الإطفاء": ["fire department connection", "FDC", "fire inlet"],
+  "أول أكسيد الكربون": ["carbon monoxide", "CO alarm", "CO detector", "CO detection"],
+  "كاشف CO": ["CO detector", "carbon monoxide detector", "CO alarm"],
+  "رواق": ["atrium", "atria", "multi-story opening", "floor opening"],
+  "أتريوم": ["atrium", "atria", "floor opening multiple stories"],
+  "فتحة الطوابق": ["atrium", "floor opening", "multi-story opening"],
+  "بهو مفتوح": ["atrium lobby", "open atrium", "multi-story atrium"],
+  "تحت الأرض": ["underground", "below grade", "subterranean"],
+  "مبنى تحت الأرض": ["underground building", "below grade building", "subterranean"],
+  "دور الميزانين": ["mezzanine", "underground level", "below grade floor"],
+  "مول": ["mall", "covered mall", "shopping mall", "mall building"],
+  "مول مغطى": ["covered mall", "covered mall building", "enclosed mall"],
+  "مركز التسوق": ["shopping mall", "covered mall", "mall building"],
+  "رعاية صحية": ["health care", "healthcare", "I-2", "Group I-2", "patient care"],
+  "مرضى": ["patients", "inpatient", "patient care", "I-2"],
+  "احتجاز": ["detention", "correctional", "I-3", "Group I-3", "jail", "prison"],
+  "إصلاحية": ["correctional facility", "detention facility", "I-3", "Group I-3"],
+  "سجن": ["prison", "detention", "I-3", "correctional"],
+  "سجون": ["prisons", "detention facilities", "I-3"],
+  "حالة الاستخدام": ["use condition", "use condition I", "use condition II", "use condition III", "use condition IV", "use condition V"],
+  "مقصورة دخان": ["smoke compartment", "smoke barrier", "smoke zone"],
+  "مقصورات دخان": ["smoke compartments", "smoke barriers", "smoke zones"],
+  "كشك": ["kiosk", "mall kiosk", "temporary structure"],
+  "فندق": ["hotel", "R-1", "transient", "sleeping unit", "Group R-1"],
+  "شقق": ["apartments", "dwelling units", "R-2", "Group R-2"],
+  "فلل": ["villas", "dwelling", "R-3", "Group R-3"],
+  "وحدات نوم": ["sleeping units", "sleeping rooms", "I-1", "R-1", "R-2", "R-3"],
+  "فصل الوحدات": ["unit separation", "dwelling unit separation", "fire partition between units"],
+  "كاشف دخان غرفة نوم": ["smoke alarm sleeping room", "smoke detector bedroom"],
+  "تأخير خروج": ["delayed egress", "delayed-egress lock", "15-second delay", "30-second delay"],
+  "قفل تأخير": ["delayed-egress lock", "delayed egress lock", "15-second delay"],
+  "قفل كهرومغناطيسي": ["electromagnetic lock", "access-controlled egress door", "mag-lock"],
+  "ذراع الذعر": ["panic hardware", "panic bar", "panic device", "exit device", "horizontal push bar"],
+  "أجهزة الباب": ["door hardware", "egress hardware", "door latch", "door operation"],
+  "نافذة الهروب": ["emergency escape opening", "egress window", "rescue opening", "EERO"],
+  "فتحة الإنقاذ": ["rescue opening", "emergency escape opening", "egress window", "EERO"],
+  "ارتفاع العتبة": ["sill height", "window sill height", "44-inch sill", "maximum sill height"],
+  "نظام تحكم الدخان": ["smoke control system", "smoke exhaust system", "mechanical smoke control"],
+  "طبقة الدخان": ["smoke layer", "smoke interface", "smoke layer interface", "smoke layer height"],
+  "ضغط الدرج": ["stairway pressurization", "pressurized stairway", "positive pressure stairway"],
+  "درابزين": ["handrail", "handrails", "stair rail", "ramp rail"],
+  "دار مسنين": ["assisted living", "care facility", "I-1", "Group I-1"],
+  "رعاية مقيمة": ["residential care", "assisted living", "I-1", "Group I-1"],
   "مسكن": ["dwelling", "residence", "habitable"],
   "وحدات": ["units", "dwelling units"],
   "وحدة": ["unit", "dwelling unit"],
+  // ── Occupancy classification (Ch.3) ────────────────────────────────────────
+  "تصنيف الإشغال": ["occupancy classification", "use group", "occupancy group", "classify occupancy"],
+  "مجموعة الإشغال": ["occupancy group", "use group", "occupancy classification"],
+  "فئة الاستخدام": ["use group", "occupancy group", "use classification"],
+  "مجموعة التجمع": ["assembly group", "Group A", "A occupancy"],
+  "إشغال التجمع": ["assembly occupancy", "Group A", "A-1 A-2 A-3 A-4 A-5"],
+  "مجموعة الأعمال": ["business group", "Group B", "B occupancy"],
+  "مجموعة التعليم": ["educational group", "Group E", "E occupancy"],
+  "مجموعة التصنيع": ["factory group", "Group F", "F-1 F-2 occupancy"],
+  "مجموعة الخطر": ["high hazard group", "Group H", "H occupancy", "hazardous occupancy"],
+  "مجموعة المؤسسية": ["institutional group", "Group I", "I occupancy"],
+  "إشغال مؤسسي": ["institutional occupancy", "Group I", "I-1 I-2 I-3 I-4"],
+  "مجموعة التجزئة": ["mercantile group", "Group M", "M occupancy"],
+  "مجموعة السكن": ["residential group", "Group R", "R occupancy", "R-1 R-2 R-3 R-4"],
+  "مجموعة التخزين": ["storage group", "Group S", "S occupancy", "S-1 S-2"],
+  "مجموعة المرافق": ["utility group", "Group U", "U occupancy", "miscellaneous"],
+  "إشغال مختلط": ["mixed occupancy", "multiple occupancy", "mixed use"],
+  "مبنى متعدد الاستخدامات": ["mixed-use building", "mixed occupancy", "multiple occupancy"],
+  "إشغال إضافي": ["accessory occupancy", "ancillary occupancy", "10 percent accessory"],
+  "فصل الإشغال": ["occupancy separation", "fire barrier between occupancies", "separated occupancies"],
+  "إشغال غير مفصول": ["nonseparated occupancy", "nonseparated mixed occupancy", "508.3"],
+  "إشغال مفصول": ["separated occupancy", "separated mixed occupancy", "508.4"],
+  // ── Group detail terms ─────────────────────────────────────────────────────
+  "عيادة خارجية": ["outpatient clinic", "ambulatory clinic", "Group B", "B occupancy"],
+  "مبنى مكاتب": ["office building", "Group B", "B occupancy", "professional office"],
+  "مدرسة K-12": ["K-12 school", "Group E", "educational occupancy"],
+  "حضانة أطفال": ["day care", "child day care", "I-4", "E occupancy", "Group E"],
+  "روضة أطفال": ["kindergarten", "Group E", "K-12 school", "educational occupancy"],
+  "مصنع": ["factory", "Group F", "F-1", "F-2", "manufacturing"],
+  "منشأة صناعية": ["industrial facility", "factory", "Group F", "F-1 F-2"],
+  "مواد خطرة": ["hazardous materials", "Group H", "MAQ", "maximum allowable quantities"],
+  "كميات مسموح بها": ["maximum allowable quantities", "MAQ", "Group H threshold"],
+  "متجر تجزئة": ["retail store", "Group M", "mercantile occupancy"],
+  "سوبرماركت": ["supermarket", "grocery store", "Group M", "mercantile"],
+  "معرض سيارات": ["vehicle showroom", "car showroom", "Group M", "mercantile"],
+  "شقق فندقية": ["hotel apartments", "R-1 or R-2", "transient residential", "extended stay"],
+  "سكن عمال": ["staff accommodation", "worker housing", "R-2", "Group R-2"],
+  "فيلا": ["villa", "single-family", "R-3", "Group R-3"],
+  "مستودع بضائع": ["merchandise warehouse", "S-1", "storage occupancy", "combustible storage"],
+  "تخزين بارد": ["cold storage", "refrigerated warehouse", "S-2", "Group S-2"],
+  "مرآب خاص": ["private garage", "Group U", "utility occupancy"],
+  "مبنى زراعي": ["agricultural building", "Group U", "utility and miscellaneous"],
+  "دار رعاية المسنين": ["assisted living", "elderly care", "I-1", "R-4", "Group I-1"],
+  "رعاية نهارية": ["day care", "I-4", "Group I-4", "adult day care", "child day care"],
+  "القدرة على الإخلاء الذاتي": ["self-preservation", "self-preservation ability", "incapacitated occupant"],
   // ── Egress ────────────────────────────────────────────────────────────────
   "مخرج": ["exit", "egress", "means of egress"],                       // was duplicated
   "مخارج": ["exits", "egress", "means of egress"],
@@ -1667,27 +1805,36 @@ function extractTableIds(query: string): string[] {
   }
 
   // Also match bare section numbers when they look like table IDs that we know about
-  // Keep this list in sync with the sbc_code_tables rows in the DB (currently 68 records).
+  // Keep this list in sync with the sbc_code_tables rows in the DB.
   const KNOWN_TABLE_IDS = [
     // Chapter 3 — Occupancy Classification
     "302", "303", "304", "305", "306", "307", "308", "309", "310", "311", "312",
-    // Chapter 4 — Special Detailed Requirements
-    "402", "403.1", "404", "405", "406.5", "406.6", "407", "408", "414", "415", "420",
-    // Chapter 5 — Heights, Areas, Mixed Occupancy, Incidental Uses
-    "504.3", "504.4", "506.2", "508", "508.3", "508.4", "508.5", "509",
+    // Chapter 4 — Special Detailed Requirements (special occupancies)
+    "402", "403.1", "404", "405", "406.5", "406.6", "407", "408", "412", "413", "414", "415", "416", "417", "420",
+    // Chapter 5 — Heights, Areas, Incidental Uses + Mixed Occupancy
+    "504.3", "504.4", "506.2", "508", "509",
     // Chapter 6 — Construction Types
     "601", "602",
     // Chapter 7 — Fire & Smoke Protection
     "705.8",
-    // Chapter 10 — Means of Egress
-    "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4",
-    "1008", "1009", "1010", "1011.2", "1012", "1013", "1015",
-    "1017.2", "1018.1", "1020.1", "1021.2", "1024", "1029.6.3", "1030",
-    // SBC 801 Chapter 9 — Fire Protection Systems
+    // Chapter 10 — Means of Egress + Assembly + Life Safety
+    "1004.5", "1005.1", "1006.3.3", "1006.3.4",
+    "1008", "1009", "1010", "1011.2", "1012", "1013", "1017.2", "1018.1", "1019", "1020.1", "1021.2",
+    "1022", "1023", "1029.6.3", "1030",
+    // Chapter 10 — Means of Egress single-exit spaces
+    "1006.2.1",
+    // Chapter 10 — Luminous egress path markings
+    "1024",
+    // Chapter 15 — Guardrails
+    "1015",
+    // SBC 801 Chapter 9 — Fire Suppression + Life Safety Systems
     "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3",
+    "904",
     "905.3.1",
     "907.2", "907.3", "907.4.2", "907.5", "907.6",
-    "909", "912", "913", "914", "915",
+    "909", "910", "911", "912", "913", "914", "915", "916",
+    // Chapter 5 — Mixed occupancy sub-sections
+    "508.3", "508.4", "508.5",
   ];
   for (const id of KNOWN_TABLE_IDS) {
     // Match "1004.5" appearing as a standalone reference with word boundaries
@@ -1698,172 +1845,307 @@ function extractTableIds(query: string): string[] {
   }
 
   // Parent-section aliases — when user asks about a whole section/chapter
-  // without specifying a sub-table, inject the most-relevant known table(s).
+  // without specifying a sub-table, inject the most-relevant known table.
   const PARENT_ALIASES: Record<string, string[]> = {
-    // Chapter 3 — Occupancy Classification parents
-    "303":    ["303"],
-    "304":    ["304"],
-    "305":    ["305"],
-    "306":    ["306"],
-    "307":    ["307"],
-    "308":    ["308"],
-    "309":    ["309"],
-    "310":    ["310"],
-    "311":    ["311"],
-    "312":    ["312"],
-    // Chapter 4 — Special Detailed Requirements parents
-    "402":    ["402"],
-    "403":    ["403.1"],
-    "404":    ["404"],
-    "405":    ["405"],
-    "406":    ["406.5", "406.6"],
-    "407":    ["407"],
-    "408":    ["408"],
-    "414":    ["414"],
-    "415":    ["415"],
-    "420":    ["420"],
-    // Chapter 5 — Mixed occupancy parent
-    "508":    ["508", "508.3", "508.4", "508.5"],
-    // Chapter 10 — Egress parents
-    "1005":   ["1005.1"],
-    "1006":   ["1006.2.1", "1006.3.3", "1006.3.4"],
-    "1011":   ["1011.2"],
-    "1017":   ["1017.2"],
-    "1018":   ["1018.1"],
-    "1020":   ["1020.1"],
-    "1021":   ["1021.2"],
-    "1029":   ["1029.6.3"],
-    // SBC 801 Ch. 9 parents
-    "903":    ["903.2", "903.3.1", "903.3.2"],
-    "903.4":  ["903.4", "903.4.3"],
-    "905":    ["905.3.1"],
-    "907":    ["907.2", "907.3"],
-    "907.4":  ["907.4.2"],
+    "302":    ["302"],            // "Section 302" → master occupancy classification table
+    "303":    ["303"],            // "Section 303" → Assembly Group A sub-classification
+    "304":    ["304"],            // "Section 304" → Business Group B classification
+    "305":    ["305"],            // "Section 305" → Educational Group E classification
+    "306":    ["306"],            // "Section 306" → Factory Group F (F-1/F-2)
+    "307":    ["307"],            // "Section 307" → High Hazard Group H (H-1..H-5)
+    "308":    ["308"],            // "Section 308" → Institutional Group I sub-classification
+    "309":    ["309"],            // "Section 309" → Mercantile Group M classification
+    "310":    ["310"],            // "Section 310" → Residential Group R (R-1..R-4)
+    "311":    ["311"],            // "Section 311" → Storage Group S (S-1/S-2)
+    "312":    ["312"],            // "Section 312" → Utility Group U
+    "508":    ["508"],            // "Section 508" → mixed occupancy (accessory/nonseparated/separated)
+    "402":    ["402"],            // "Section 402" → covered mall requirements
+    "403":    ["403.1"],          // "Section 403" or "high rise" → high-rise requirements
+    "404":    ["404"],            // "Section 404" → atrium requirements
+    "412":    ["412"],            // "Section 412" → aircraft-related occupancies (core pass: 412.3 commercial hangars)
+    "413":    ["413"],            // "Section 413" → combustible storage / high-piled storage
+    "416":    ["416"],            // "Section 416" → spray finishing / dip tanks (application groups)
+    "417":    ["417"],            // "Section 417" → drying rooms
+    "405":    ["405"],            // "Section 405" → underground structure requirements
+    "406":    ["406.5", "406.6"], // "Section 406" → both parking sections
+    "407":    ["407"],            // "Section 407" → Group I-2 healthcare requirements
+    "414":    ["414"],            // "Section 414" → hazardous materials / control areas / MAQ
+    "415":    ["415"],            // "Section 415" → H-1 through H-5 high-hazard occupancy
+    "408":    ["408"],            // "Section 408" → Group I-3 detention requirements
+    "420":    ["420"],            // "Section 420" → I-1/R-1/R-2/R-3 sleeping units
+    "1005":   ["1005.1"],    // "Section 1005" → egress width per occupant
+    "1008":   ["1008"],      // "Section 1008" → egress illumination / emergency lighting
+    "1009":   ["1009"],      // "Section 1009" → accessible means of egress / area of refuge
+    "1010":   ["1010"],      // "Section 1010" → doors, gates, delayed-egress, panic hardware
+    "1011":   ["1011.2"],    // "Section 1011" → stairway width
+    "1012":   ["1012"],      // "Section 1012" → handrails
+    "1013":   ["1013"],      // "Section 1013" → exit signs
+    "1017":   ["1017.2"],    // "Section 1017" → travel distance
+    "1018":   ["1018.1"],    // "Section 1018" → corridor width
+    "1020":   ["1020.1"],    // "Section 1020" → corridor fire rating
+    "1021":   ["1021.2"],    // "Section 1021" → number of exits
+    "1029":   ["1029.6.3"],  // "Section 1029" → assembly aisle width
+    "1030":   ["1030"],      // "Section 1030" → emergency escape and rescue openings
+    "904":    ["904"],        // "Section 904"  → alternative automatic fire-extinguishing systems (SBC 801)
+    "909":    ["909"],        // "Section 909"  → smoke control systems (SBC 801)
+    "910":    ["910"],        // "Section 910"  → smoke and heat removal / roof vents (SBC 801)
+    "911":    ["911"],        // "Section 911"  → commercial cooking hood suppression (SBC 801)
+    "912":    ["912"],        // "Section 912"  → fire department connections (SBC 801)
+    "913":    ["913"],        // "Section 913"  → fire pumps (SBC 801)
+    "914":    ["914"],        // "Section 914"  → emergency responder radio coverage (SBC 801)
+    "915":    ["915"],        // "Section 915"  → carbon monoxide detection (SBC 801)
+    "916":    ["916"],        // "Section 916"  → gas detection systems (SBC 801)
+    // Sprinkler sub-sections
+    "903":    ["903.2", "903.3.1", "903.3.2", "903.4"],  // "Section 903" → all sprinkler sub-tables
+    "903.3":  ["903.3.1", "903.3.2"],  // "Section 903.3" → sprinkler type + head type
+    "903.4":  ["903.4", "903.4.3"],    // "Section 903.4" → supervision + floor control valves
+    // Standpipe sub-sections
+    "905":    ["905.3.1"],    // "Section 905" → standpipe where required
+    "905.3":  ["905.3.1"],    // "Section 905.3" → standpipe where required
+    // Fire alarm sub-sections
+    "907":    ["907.2", "907.3", "907.4.2", "907.5", "907.6"],  // "Section 907" → all fire alarm sub-tables
+    "907.4":  ["907.4.2"],    // "Section 907.4" → manual pull stations
+    // Single-exit spaces
+    "1006":   ["1006.3.3", "1006.3.4", "1006.2.1"],  // "Section 1006" → all exit-count sub-tables
+    "1006.2": ["1006.2.1"],   // "Section 1006.2" → spaces with one exit access doorway
+    // Guardrails
+    "1015":   ["1015"],       // "Section 1015" → guardrails
+    // Luminous egress path markings
+    "1019":   ["1019"],      // "Section 1019" → exit access stairways and ramps
+    "1022":   ["1022"],      // "Section 1022" → exit passageways
+    "1023":   ["1023"],      // "Section 1023" → interior exit stairways and ramps (enclosed exit shaft)
+    "1024":   ["1024"],       // "Section 1024" → luminous egress path markings
+    // Mixed occupancy sub-sections
+    "508.3":  ["508.3"],      // "Section 508.3" → nonseparated occupancy
+    "508.4":  ["508.4"],      // "Section 508.4" → separated occupancy
+    "508.5":  ["508.5"],      // "Section 508.5" → separated occupancy fire protection
   };
   for (const [parent, children] of Object.entries(PARENT_ALIASES)) {
     const esc = parent.replace(/\./g, "\\.");
-    // Always expand all children when parent matches — Set handles deduplication
-    if (new RegExp(`\\b${esc}\\b`).test(lower)) {
+    // Only fire if the bare parent section is mentioned without already having a child
+    if (new RegExp(`\\b${esc}\\b`).test(lower) &&
+        !children.some(c => found.has(c))) {
       for (const c of children) found.add(c);
     }
   }
 
-  // Semantic aliases — common query phrases that map to specific tables.
-  // Regex design rules:
-  //   1. No outer \b wrappers — Arabic Unicode chars break \b; patterns are specific enough
-  //   2. Use \b only at English pattern starts where helpful
-  //   3. Use \w* to absorb word suffixes where trailing \b would fail on prefixes (e.g. "occupancy")
-  //   4. Handle Arabic definite article ال with (?:ال)? where nouns may be prefixed
+  // Semantic aliases — common query phrases that map to specific tables
   const SEMANTIC_ALIASES: Array<[RegExp, string[]]> = [
-    // ── CHAPTER 3 — Occupancy Classification ─────────────────────────────────
-    [/occupancy\s+classif|تصنيف\s+الإشغال|كيف\s+أصنف|أي\s+إشغال/i,                    ["302"]],
-    [/what\s+(?:group|occupancy)\s+is|ما\s+(?:تصنيف|مجموعة)\s+إشغال/i,                 ["302"]],
-    // Assembly — covers "assembly occupancy", "A-2 assembly", restaurant/café
-    [/assembly\s+(?:occup\w*|group\w*|A-[1-5])|A-[1-5]\s+(?:occup\w*|assembly)|\brestaurant\b|\bcafé?\b|مجموعة\s+(?:التجمع|أ)|مبنى\s+تجمع|مطعم/i, ["303"]],
-    // Business — offices, Group B
-    [/business\s+occup\w*|\bGroup\s+B\b|open.plan\s+office|office\s+(?:building|floor|space|occup\w*)|مكاتب\s+(?:إدارية|تجارية)|مجموعة\s+ب\b/i, ["304"]],
-    // Educational — schools, Group E
-    [/educational\s+occup\w*|\bGroup\s+E\b|school\s+(?:occup\w*|build\w*)|مبنى\s+(?:تعليمي|مدرسي)|مجموعة\s+(?:التعليم|هـ)\b|مدارس/i, ["305"]],
-    // Factory — Group F
-    [/factory\s+occup\w*|\bGroup\s+F[12]?\b|F-[12]\s+(?:hazard|occup\w*)|مصنع\s+إشغال\w*|مجموعة\s+F\b/i, ["306"]],
-    // High-hazard — Group H
-    [/high.hazard\s+occup\w*|\bGroup\s+H[1-5]?\b|H-[1-5]\s+(?:class|occup\w*)|مخزن\s+خطر|مجموعة\s+H\b/i, ["307", "415"]],
-    // Institutional — Group I, I-2
-    [/institutional\s+occup\w*|\bGroup\s+I[1-4]?\b|I-[1-4]\s+(?:class|occup\w*|group)|مستشفى\s+إشغال|مجموعة\s+I\b/i, ["308"]],
-    // Mercantile — retail, Group M
-    [/mercantile\s+occup\w*|\bGroup\s+M\b|retail\s+(?:shop\w*|store\w*|occup\w*|space\w*)|محلات\s+تجارية|مجموعة\s+(?:M|التجزئة)\b/i, ["309"]],
-    // Residential — Group R, مبنى سكني
-    [/residential\s+occup\w*|\bGroup\s+R[1-4]?\b|R-[1-4]\s+(?:class|occup\w*)|سكني\s+إشغال|مبنى\s+سكني|مجموعة\s+(?:R|السكني)\b/i, ["310"]],
-    // Storage — Group S
-    [/storage\s+occup\w*|\bGroup\s+S[12]?\b|S-[12]\s+(?:class|occup\w*)|مستودع\s+إشغال|مجموعة\s+(?:S|التخزين)\b/i, ["311"]],
-    // Utility — Group U
-    [/utility\s+occup\w*|\bGroup\s+U\b|miscellaneous\s+occup\w*|مجموعة\s+(?:U|المرافق)\b/i, ["312"]],
-
-    // ── CHAPTER 4 — Special Use / Detailed Requirements ───────────────────────
-    [/covered\s+mall|open\s+mall|mall\s+building|مول\s+تجاري|مبنى\s+مول/i,             ["402"]],
-    // High-rise buildings
-    [/high.rise|high\s+rise|مبنى\s+شاهق|المباني\s+الشاهقة|شاهق|55\s*(?:ft|feet|قدم)/i, ["403.1"]],
-    [/fire\s+command\s+center|مركز\s+قيادة\s+الحرائق|emergency\s+power\s+(?:high|building)/i, ["403.1"]],
-    [/atrium|أتريوم|فناء\s+داخلي|بهو\s+(?:متعدد|مفتوح)/i,                              ["404"]],
-    [/underground\s+(?:building|structure|level)|below.grade\s+(?:floor|level)|subterranean|تحت\s+الأرض|طابق\s+سفلي/i, ["405"]],
-    // Parking
-    [/open\s+parking|parking\s+(?:garage|structure)|مواقف\s+(?:السيارات\s+المفتوحة|مفتوحة)/i, ["406.5"]],
-    [/enclosed\s+parking|covered\s+parking|مواقف\s+(?:السيارات\s+المغلقة|مغلقة|مغطاة)/i,  ["406.6"]],
-    [/parking\s+sprinkler|sprinkler.*parking|رشاشات\s+مواقف|مواقف.*رشاشات/i,             ["406.5", "406.6"]],
-    [/healthcare\s+(?:building|facility|occup\w*)|I-2\s+(?:occup\w*|group)|hospital\s+(?:special|fire)|مستشفى\s+(?:اشتراطات|خاص)/i, ["407"]],
-    [/detention|correctional\s+(?:facility|center)|I-3\s+(?:occup\w*|group)|prison\s+(?:fire|egress)|مرفق\s+احتجاز/i, ["408"]],
-    [/hazardous\s+material|control\s+area|MAQ\s+|maximum\s+allowable\s+quantity|مواد\s+خطرة|كميات\s+المواد\s+الخطرة/i, ["414"]],
-    [/Group\s+H\s+(?:special|provision|require\w*)|المتطلبات\s+الخاصة.*مجموعة\s+H/i,    ["415"]],
-    [/sleeping\s+unit\s+(?:special|require\w*)|hotel\s+(?:special\s+provision|sleep)|R-[12]\s+sleeping|I-1\s+sleeping|وحدات\s+النوم\s+الخاصة/i, ["420"]],
-
-    // ── CHAPTER 5 — Mixed Occupancy ───────────────────────────────────────────
-    [/mixed\s+occup\w*|multiple\s+occup\w*|إشغال\s+مختلط|إشغالات\s+متعددة/i,           ["508", "508.3", "508.4", "508.5"]],
-    [/accessory\s+occup\w*|10\s*%\s*(?:rule|area)|ملحق\s+الإشغال/i,                     ["508.3"]],
-    [/nonseparated\s+occup\w*|most.restrictive\s+occup\w*|غير\s+مفصولة/i,               ["508.4"]],
-    [/separated\s+occup\w*|fire.barrier\s+(?:between|separation)\s+occup\w*|إشغال\s+مفصول|فاصل\s+حريق\s+بين/i, ["508.5"]],
-
-    // ── CHAPTER 6 — Construction Types ───────────────────────────────────────
-    [/structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق/i, ["601"]],
-    [/Type\s+(?:I{1,3}|IV|V)[A-B]|construction\s+type\s+(?:I|II|III|IV|V)|fireproof\w*|spray\s+fire/i, ["601"]],
-    [/exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل/i,    ["602"]],
-
-    // ── CHAPTER 7 — Exterior Wall Openings ───────────────────────────────────
-    [/exterior\s+wall\s+opening\w*|window\s+(?:area|limit)|فتحات\s+الجدار/i,             ["705.8"]],
-
-    // ── CHAPTER 10 — Means of Egress ─────────────────────────────────────────
-    [/occupant\s+load|floor\s+area\s+per\s+occup\w*|حمل\s+الإشغال|عدد\s+الأشخاص\s+لكل/i, ["1004.5"]],
-    [/egress\s+width|exit\s+width|stairway?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل/i, ["1005.1"]],
-    [/width\s+per\s+occup\w*|inches?\s+per\s+occup\w*|بوصة?\s+لكل\s+شخص/i,              ["1005.1"]],
-    [/one\s+exit\s+(?:space|room|story)|single\s+exit|مخرج\s+واحد|جواز\s+مخرج\s+واحد/i, ["1006.2.1", "1006.3.3", "1006.3.4"]],
-    // Emergency lighting — handle Arabic definite article ال
-    [/emergency\s+lighting|emergency\s+illumin\w*|إضاءة\s+(?:ال)?(?:طوارئ|اضطرارية)|إنارة\s+(?:ال)?طوارئ/i, ["1008"]],
-    [/egress\s+illumin\w*|means\s+of\s+egress\s+lighting|إضاءة\s+مسار\s+الهروب/i,       ["1008"]],
-    [/accessible\s+(?:egress|means\s+of\s+egress)|area\s+of\s+refuge|مناطق\s+الملاذ|ملاذ\s+(?:آمن|حريق)|إخلاء\s+ذوي/i, ["1009"]],
-    [/egress\s+door\w*|door\s+(?:hardware|latch|lock|panic|release)|panic\s+hardware|باب\s+المخرج|أبواب\s+(?:الطوارئ|الخروج)\s+(?:متطلبات|أجهزة)/i, ["1010"]],
-    [/riser\s+height|tread\s+depth|stair\s+dimen\w*|headroom|ارتفاع\s+الدرجة|عمق\s+الدرجة/i, ["1011.2"]],
-    [/stairway?\s+(?:min\w*|width|size)|أبعاد\s+(?:الدرج|السلم)/i,                       ["1011.2"]],
-    [/handrail\s+(?:height|grip|require\w*|dimen\w*)|درابزين\s+(?:اليد|الحماية|ارتفاع|أبعاد)/i, ["1012"]],
-    [/exit\s+sign\s+(?:require\w*|illumin\w*|location)|where\s+(?:are?\s+)?exit\s+signs?|لافتة\s+(?:المخرج|الخروج)|إشارات\s+المخرج/i, ["1013"]],
-    [/guardrail?\s+(?:height|require\w*)|open\s+side\s+(?:stair|ramp|floor)|درابزين\s+الحماية/i, ["1015"]],
     // Travel distance
-    [/travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر)/i,                                 ["1017.2"]],
-    [/max(?:imum)?\s+travel|أقصى\s+مسافة/i,                                             ["1017.2"]],
-    // Corridor width — also handles "unrated corridor" → fire rating check needed
-    [/min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|corridor.*width|width.*corridor|عرض\s+(?:ال)?ممر/i, ["1018.1"]],
-    // Corridor fire rating — handle "unrated" as a fire rating concern
-    [/corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم|unrated.*corridor|corridor.*unrat\w*/i, ["1020.1"]],
-    // Number of exits — handle Arabic ال prefix
-    [/number\s+of\s+exits?|(?:عدد|كم)\s+(?:ال)?(?:مخارج|مخرج)|كم\s+عدد\s+(?:ال)?(?:مخارج|مخرج)/i, ["1021.2"]],
-    [/min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج/i,                                  ["1021.2"]],
-    [/luminous\s+(?:egress|marking\w*|path)|photoluminescent|مسار\s+مضيء|علامات\s+مضيئة/i, ["1024"]],
-    [/assembly\s+aisle\s+(?:width|access\w*)|aisle\s+accessway\s+(?:width|min\w*)|ممر\s+التجمع|عرض\s+الممر\s+المتقاطع/i, ["1029.6.3"]],
-    [/emergency\s+escape\s+(?:opening|window)|rescue\s+opening|نافذة\s+الإنقاذ|فتحة\s+الطوارئ/i, ["1030"]],
-
-    // ── CHAPTER 5 — Incidental Uses ──────────────────────────────────────────
-    [/generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل)/i, ["509"]],
-    [/electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire)/i, ["509"]],
-    [/الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق)/i,                             ["509"]],
-
-    // ── SBC 801 CHAPTER 9 — Fire Protection Systems ──────────────────────────
-    [/where\s+(?:are?\s+)?sprinklers?|when\s+(?:are?\s+)?sprinklers?|متى.*رشاش|الرشاشات.*إلزامي/i, ["903.2"]],
-    [/sprinklers?\s+required|requires?\s+sprinklers?|تجب\s+الرشاشات?/i,                 ["903.2"]],
-    [/are\s+sprinklers?\s+required|هل.*رشاشات|يحتاج.*رشاشات|الرشاشات.*إلزامية/i,        ["903.2"]],
-    [/sprinkler.exempt|exempt.*sprinkler/i,                                              ["903.2"]],
-    [/NFPA\s+13R|13R\s+sprinkler|residential\s+sprinkler\s+system|رشاشات\s+13R/i,        ["903.3.1"]],
-    [/NFPA\s+13D|13D\s+sprinkler|one.two\s+family\s+sprinkler|رشاشات\s+13D/i,           ["903.3.2"]],
-    [/sprinkler\s+(?:supervision|monitoring|alarm\s+valve)|alarm\s+valve|رشاشات.*إنذار|صمام\s+إنذار\s+الرشاشات/i, ["903.4"]],
-    [/floor\s+control\s+valve|zone\s+control\s+valve|صمام\s+تحكم\s+الطابق/i,            ["903.4.3"]],
-    [/standpipe\s+(?:where|required|class|system)|أنابيب\s+(?:الحريق|الإطفاء)\s+(?:متطلبات|أين)/i, ["905.3.1"]],
-    [/fire\s+alarm\s+(?:where|required|system\s+required)|نظام\s+إنذار\s+حريق\s+(?:أين|متطلبات|إلزامي)|تستوجب\s+نظام\s+إنذار\s+حريق/i, ["907.2"]],
-    [/smoke\s+detector\s+(?:where|required)|heat\s+detector\s+(?:where|required)|كاشف\s+دخان\s+(?:أين|متطلبات)/i, ["907.3"]],
-    [/manual\s+pull\s+station|fire\s+alarm\s+initiating|زر\s+إنذار|بادئات\s+الإنذار/i,  ["907.4.2"]],
-    [/notification\s+(?:appliance|device|requirement)|audible.*alarm|visible.*alarm|أجهزة\s+الإنذار\s+المرئية|أجهزة\s+الإخطار/i, ["907.5"]],
-    [/fire\s+alarm\s+(?:monitor\w*|supervis\w*|connection\s+to\s+dispatch)|مراقبة\s+نظام\s+الإنذار/i, ["907.6"]],
-    [/smoke\s+control\s+system|pressurization\s+system|نظام\s+التحكم\s+في\s+الدخان|ضغط\s+مسالك\s+الهروب/i, ["909"]],
-    [/fire\s+department\s+connection|\bFDC\b|siamese\s+connection|وصلة\s+الدفاع\s+المدني/i, ["912"]],
-    [/fire\s+pump\s+(?:where|required|sizing\w*)|مضخة\s+(?:حريق|إطفاء)\s+(?:متطلبات|أين)/i, ["913"]],
-    [/emergency\s+responder\s+radio|radio\s+coverage|indoor\s+DAS|تغطية\s+راديو\s+الطوارئ/i, ["914"]],
-    [/carbon\s+monoxide\s+(?:detector|alarm|CO)|\bCO\s+detection|أول\s+أكسيد\s+الكربون\s+(?:كاشف|إنذار)/i, ["915"]],
+    [/(?:travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر))/i,                    ["1017.2"]],
+    [/(?:max(?:imum)?\s+travel|أقصى\s+مسافة)/i,                                 ["1017.2"]],
+    // Corridor fire rating
+    [/(?:corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم)/i,                      ["1020.1"]],
+    // Number of exits / minimum exits
+    [/(?:number\s+of\s+exits?|(?:عدد|كم)\s+(?:مخارج|مخرج))/i,                  ["1021.2"]],
+    [/(?:min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج)/i,                      ["1021.2"]],
+    // Construction type fire-resistance ratings
+    [/(?:structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق)/i, ["601"]],
+    // Exterior wall by fire separation distance
+    [/(?:exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل)/i, ["602"]],
+    // Exterior wall openings / window area limits
+    [/(?:exterior\s+wall\s+opening|window\s+(?:area|limit)|فتحات\s+الجدار)/i,   ["705.8"]],
+    // Combustible / high-piled storage — Section 413 (SBC 201)
+    [/\b(?:high.piled\s+(?:combustible\s+)?storage|high\s+pile\s+storage|combustible\s+(?:high.piled|high\s+pile)\s+storage|storage\s+pile\s+height|pile\s+height\s+(?:12|threshold|trigger|storage|over)|storage\s+(?:piles?\s+)?(?:over|exceeds?|above|more\s+than)\s+(?:12|twelve)\s+(?:ft|feet|foot)|storage\s+height\s+(?:over|above|exceeds?|more\s+than|change\w*|trigger\w*|fire|protection|path)\s*(?:12|feet|ft)?|12.(?:ft|foot|feet)\s+(?:pile|storage|threshold|high)|pile\s+height\s+(?:limit|rule|trigger|over)|rack\s+storage|in.rack\s+sprinklers?|in\s+rack\s+sprinklers?|commodity\s+class\s+(?:storage|fire|NFPA|sprinkler)|group\s+a\s+plastics\s+(?:storage|sprinkler|fire|require\w*)|class\s+(?:i|ii|iii|iv|[1234])\s+(?:storage|commodity)\s+(?:sprinkler|fire|require\w*)|storage\s+(?:aisle|access)\s+width\s+(?:44|minimum|require\w*)|44.inch\s+(?:storage\s+)?aisle|when\s+(?:does\s+)?(?:storage\s+)?(?:become\s+)?high.piled|when\s+(?:is\s+)?high.piled\s+(?:storage\s+)?(?:trigger|require\w*|apply)|warehouse\s+(?:pile\s+height|storage\s+height|sprinkler\s+threshold|high.piled)|section\s+413|413\b)\b/i, ["413"]],
+    [/(?:تخزين(?:اً|ا)?\s+(?:مرتفع(?:اً|ا)?|عالٍ|عالياً?)|تخزين\s+(?:قابل\s+للاشتعال\s+)?(?:مرتفع|عالٍ|عالي)|مستودع\s+(?:ال)?تخزين\s+(?:ال)?مرتفع|ارتفاع\s+(?:ال)?تخزين|ارتفاع\s+(?:ال)?كومة|ارتفاع\s+12\s+(?:قدم|قدماً)\s+(?:تخزين|مستودع)|تخزين\s+على\s+(?:ال)?رفوف|رفوف\s+(?:ال)?تخزين\s+(?:المرتفعة|الحريق)|رشاشات\s+داخل\s+(?:ال)?رفوف|رشاشات\s+(?:ال)?رفوف|اشتراطات\s+(?:ال)?تخزين\s+(?:المرتفع|العالي)|متى\s+(?:يلزم|يجب)\s+(?:نظام\s+)?(?:ال)?رشاشات\s+(?:في\s+)?(?:ال)?مستودع|فئة\s+(?:ال)?بضائع\s+(?:(?:ال)?تخزين|NFPA)|بلاستيك\s+(?:من\s+)?(?:المجموعة\s+أ|Group\s+A)\s+(?:تخزين|رشاشات|حريق)|عرض\s+ممر\s+(?:ال)?تخزين|413\b)/i, ["413"]],
+    // Aircraft-related occupancies — Section 412 (SBC 201, core path = 412.3 commercial hangars)
+    [/\b(?:aircraft\s+(?:related\s+occupanc(?:y|ies)|hangars?|paint\s+hangars?)|commercial\s+(?:aircraft\s+)?hangars?|hangar\s+(?:fire\s+suppression|suppression|classification|group\s+i|group\s+ii|group\s+iii|group\s+iv|hazardous\s+operations?|fuel\s+transfer|hot\s+work|floor\s+drains?|oil\s+separator|heating\s+equipment|basements?)|group\s+iii\s+hangar|hazardous\s+operations?\s+(?:in|for)\s+(?:a\s+)?(?:group\s+iii\s+)?hangar|heating\s+equipment\s+(?:in|for)\s+(?:a\s+)?(?:commercial\s+)?hangar|table\s+412\.3\.6|section\s+412|412\b)\b/i, ["412"]],
+    [/(?:حظيرة\s+طائرات|حظائر\s+الطائرات|إشغالات\s+الطائرات|المادة\s+412|جدول\s+412\.3\.6|إطفاء\s+حظيرة\s+الطائرات|تصنيف\s+حظيرة\s+الطائرات|عمليات\s+خطرة\s+في\s+الحظيرة|عمليات\s+خطرة\s+في\s+حظيرة\s+group\s*iii|حظيرة\s+group\s*(?:i|ii|iii|iv)|تصريف\s+أرضية\s+الحظيرة|تصريف\s+أرضية\s+حظيرة\s+الطائرات|فاصل\s+زيوت\s+.*حظيرة|NFPA\s*409|412\b)/i, ["412"]],
+    // Drying rooms — Section 417 (SBC 201)
+    [/\b(?:drying\s+rooms?|dry\s+kilns?|kiln\s+drying|section\s+417|417\b|overhead\s+heating\s+pipes?\s+(?:clearance|50\s*mm)|operating\s+temperature\s+(?:80\s*c|80c)|dryer\s+temperature\s+(?:is\s+)?80\s*c|80\s*c\s+dry(?:ing|er)|insulation\s+(?:required|for)\s+.*80\s*c|drying\s+room\s+(?:noncombustible|insulation|fire\s+protection|automatic\s+fire.extinguishing)|high.hazard\s+materials?\s+and\s+processes?\s+drying)\b/i, ["417"]],
+    [/(?:غرفة\s+التجفيف|غرف\s+التجفيف|فرن\s+تجفيف|كيلن\s+تجفيف|المادة\s+417|417\b|خلوص\s+أنابيب\s+التسخين\s+50\s*مم|80\s*درجة\s*مئوية|عزل\s+غرفة\s+التجفيف|حماية\s+حريق\s+غرفة\s+التجفيف|نظام\s+إطفاء\s+تلقائي\s+لغرفة\s+التجفيف|مواد\s+غير\s+قابلة\s+للاحتراق\s+تجفيف)/i, ["417"]],
+    // Sprinkler requirement
+    [/(?:where\s+(?:are?\s+)?sprinkler|when\s+(?:is\s+an?\s+)?(?:automatic\s+)?sprinkler\s+(?:system\s+)?required|when\s+(?:are?\s+)?sprinkler|متى.*رشاش|الرشاشات.*إلزامي)/i, ["903.2"]],
+    [/(?:sprinkler\s+(?:system\s+)?required|requires?\s+sprinkler|تجب\s+الرشاشات?)/i, ["903.2"]],
+    // Egress / stair width per occupant
+    [/(?:egress\s+width|exit\s+width|stair(?:way)?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل)/i, ["1005.1"]],
+    [/(?:width\s+per\s+occupant|inches?\s+per\s+occupant|بوصة?\s+لكل\s+شخص)/i,  ["1005.1"]],
+    // Corridor width (min dimension)
+    [/(?:min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|عرض\s+الممر)/i, ["1018.1"]],
+    // Stair dimensions (risers, treads, headroom)
+    [/(?:riser\s+height|tread\s+depth|stair\s+dimen|headroom|ارتفاع\s+الدرجة|عمق\s+الدرجة)/i, ["1011.2"]],
+    [/(?:stair(?:way)?\s+(?:min|width|size)|أبعاد\s+(?:الدرج|السلم))/i,          ["1011.2"]],
+    // Incidental uses — generator room, boiler room, storage room fire separation
+    [/(?:generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل))/i, ["509"]],
+    [/\b(?:electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire))\b/i, ["509"]],
+    [/(?:(?:ال)?استخدامات\s+(?:ال)?عرضية|غرفة\s+(?:ال)?(?:تخزين|مولد|مرجل)\s+(?:فصل|حريق|اشتراطات))/i,                ["509"]],
+    // High-rise buildings
+    [/(?:high.rise|high\s+rise|(?:ال)?مبنى\s+(?:ال)?شاهق|(?:ال)?مباني\s+(?:ال)?شاهقة|شاهق|55\s*(?:ft|feet|قدم))/i, ["403.1"]],
+    [/(?:fire\s+command\s+center|مركز\s+قيادة\s+الحرائق|emergency\s+power\s+(?:high|building))/i, ["403.1"]],
+    // Parking
+    [/(?:open\s+parking|parking\s+(?:garage|structure)|مواقف\s+(?:السيارات\s+المفتوحة|مفتوحة))/i, ["406.5"]],
+    [/(?:enclosed\s+parking|covered\s+parking|مواقف\s+(?:السيارات\s+المغلقة|مغلقة|مغطاة))/i,    ["406.6"]],
+    [/(?:parking\s+sprinkler|sprinkler.*parking|رشاشات\s+مواقف|مواقف.*رشاشات)/i, ["406.5", "406.6"]],
+    // Assembly aisles
+    [/(?:assembly\s+aisle|theater\s+aisle|cinema\s+aisle|aisle\s+width.*assembly|عرض\s+الممر.*(?:قاعة|مسرح)|ممرات\s+(?:المقاعد|التجمع))/i, ["1029.6.3"]],
+    [/(?:seating\s+aisle|row\s+spacing|seats\s+per\s+row|مقاعد.*صف|صفوف.*مقاعد)/i, ["1029.6.3"]],
+    // Covered mall buildings (Section 402)
+    [/\b(?:covered\s+mall|mall\s+building|open\s+mall|shopping\s+mall\s+(?:code|require|fire|sprinkler|egress)|anchor\s+(?:store|building)|mall\s+(?:smoke|sprinkler|egress|exit|travel))\b/i, ["402"]],
+    [/(?:مبنى\s+(?:المول|التسوق)\s+المغطى|المول\s+المغطى|مول\s+مغطى|اشتراطات\s+(?:المول|مركز\s+التسوق)|تحكم\s+دخان\s+المول|رشاشات\s+المول)/i, ["402"]],
+    [/(?:mall\s+occupant\s+load|kiosk\s+(?:fire|material|construct)|ما\s+(?:هو|هي|يجعل)\s+(?:المول|التسوق))/i, ["402"]],
+    // Group I-2 healthcare (Section 407)
+    [/\b(?:group\s+i-?2|i-?2\s+occupancy|healthcare\s+occupancy|hospital\s+(?:code|fire|require|corridor|sprinkler|egress)|nursing\s+home\s+(?:code|fire|require)|smoke\s+compartment\s+(?:hospital|healthcare|i-?2)|defend.in.place)\b/i, ["407"]],
+    [/(?:مجموعة\s+i-?2|إشغال\s+i-?2|اشتراطات\s+المستشفى|ممر\s+المستشفى|مقصورة\s+دخان\s+(?:المستشفى|الرعاية)|رعاية\s+صحية)/i, ["407"]],
+    [/\b(?:patient\s+(?:corridor|room\s+egress|transport\s+width)|smoke\s+compartment\s+(?:i-?2|healthcare)|i-?2\s+(?:corridor|smoke|sprinkler|egress))\b/i, ["407"]],
+    // Group I-3 detention / correctional (Section 408)
+    [/\b(?:group\s+i-?3|i-?3\s+occupancy|detention\s+(?:occupancy|facility|building|code|fire|require)|correctional\s+(?:facility|occupancy|building)|prison\s+(?:code|fire|require)|jail\s+(?:code|fire|require)|use\s+condition\s+(?:i|ii|iii|iv|v|1|2|3|4|5))\b/i, ["408"]],
+    [/(?:مجموعة\s+i-?3|إشغال\s+i-?3|مرفق\s+(?:احتجاز|إصلاحي)|سجن|إصلاحية|حالة\s+الاستخدام|درجة\s+التقييد)/i, ["408"]],
+    [/\b(?:staff.assisted\s+evacuation|restrained\s+occupant|locking\s+(?:detention|i-?3)|i-?3\s+(?:sprinkler|smoke|egress|condition))\b/i, ["408"]],
+    // Egress illumination / emergency lighting (Section 1008)
+    [/\b(?:emergency\s+lighting|egress\s+illumination|means\s+of\s+egress\s+illumination|exit\s+lighting|exit\s+(?:path\s+)?illumin|1\s*foot.candle|0\.1\s*foot.candle|90.?min(?:ute)?\s+(?:battery|backup|emergency\s+power)\s+(?:light|egress|illumin)|emergency\s+power\s+(?:lighting|egress))\b/i, ["1008"]],
+    [/(?:إضاءة\s+(?:مسار\s+الهروب|الطوارئ|مخارج|ممرات\s+الهروب)|طاقة\s+الطوارئ\s+للإضاءة|قانديلة\s+قدم|إضاءة\s+مسار\s+الإخلاء)/i, ["1008"]],
+    // Accessible means of egress / area of refuge (Section 1009)
+    [/\b(?:accessible\s+(?:means\s+of\s+)?egress|area(?:s)?\s+of\s+refuge|area\s+of\s+rescue\s+assistance|wheelchair\s+(?:egress|exit|evacuation)|two.way\s+communication\s+(?:egress|refuge)|assisted\s+(?:rescue|evacuation)\s+area)\b/i, ["1009"]],
+    [/(?:منطقة\s+الإيواء|مخرج\s+للمعاقين|مخرج\s+للكراسي\s+المتحركة|وسيلة\s+هروب\s+ميسرة|اتصال\s+ثنائي\s+الاتجاه\s+مخرج)/i, ["1009"]],
+    // Exit signs (Section 1013)
+    [/\b(?:exit\s+signs?\s+(?:required|where\s+required|needed)|exit\s+sign|exit\s+signage|illuminated\s+exit|exit\s+sign\s+(?:require|locat|power|light|illumin|visible|100)|100\s*(?:ft|feet)\s+(?:exit\s+sign|from\s+sign)|where\s+are\s+exit\s+signs?\s+required|photoluminescent\s+exit|exit\s+sign\s+emergency\s+power)\b/i, ["1013"]],
+    [/(?:لافتة\s+(?:مخرج|المخارج)|علامة\s+مخرج|إشارة\s+مخرج|لافتات\s+مسار\s+الهروب|إضاءة\s+لافتة\s+مخرج)/i, ["1013"]],
+    // Fire department connections (Section 912, SBC 801)
+    [/\b(?:fire\s+department\s+connection|FDC|fire\s+dept\s+connection|siamese\s+connection|sprinkler\s+inlet|standpipe\s+inlet|FDC\s+(?:location|sign|access|require|100)|100\s*ft\s+(?:from\s+)?hydrant\s+(?:FDC|connection))\b/i, ["912"]],
+    [/(?:(?:ال)?تشعب(?:ات)?\s+(?:ال)?(?:سيامي(?:ة)?|الحريق|إطفاء)|وصلة\s+(?:الدفاع\s+المدني|رجال\s+الإطفاء|الإطفاء)|توصيلة\s+(?:الإطفاء|الدفاع\s+المدني|FDC)|موقع\s+توصيلة\s+الإطفاء)/i, ["912"]],
+    // Carbon monoxide detection (Section 915, SBC 801)
+    [/\b(?:carbon\s+monoxide|CO\s+(?:alarm|detector|detection|sensor|require)|co\s+alarm|co\s+detector|co\s+detection|fuel.burning\s+(?:appliance|fireplace)\s+(?:alarm|detect)|co\s+source|co\s+required|carbon\s+monoxide\s+(?:alarm|detect|require|source|sensor))\b/i, ["915"]],
+    [/(?:أول\s+أكسيد\s+الكربون|كاشف\s+(?:CO|أول\s+أكسيد|أكسيد\s+الكربون|غاز\s+السيارات|مولد\s+كهرباء\s+CO)|منبه\s+(?:CO|أكسيد\s+الكربون))/i, ["915"]],
+    // Emergency responder radio coverage (Section 914, SBC 801)
+    [/\b(?:emergency\s+responder\s+(?:radio|communication)|ERCES|in.building\s+(?:radio|wireless)\s+coverage|radio\s+(?:coverage|signal)\s+(?:building|required|dead\s+zone|amplif)|bi.directional\s+amplifi\w*|BDA\s+(?:fire|required|amplif)|public\s+safety\s+(?:communication|radio)\s+(?:system|coverage|building)|radio\s+dead\s+(?:zone|spot)\s+(?:building|stairwell|underground)|NFPA\s+1221|first\s+responder\s+radio\s+(?:coverage|building)|914\b|section\s+914|-95\s*dBm|signal\s+booster\s+(?:emergency|fire)|in.building\s+emergency\s+communication)\b/i, ["914"]],
+    [/(?:تغطية\s+(?:(?:ال)?راديو|لاسلكي)\s+(?:المبنى|للمستجيبين|(?:ال)?طوارئ)|نظام\s+تعزيز\s+(?:(?:ال)?اتصالات|(?:ال)?راديو)(?:\s+(?:(?:ال)?طوارئ|مبنى|(?:ال)?راديو))?|مضخم\s+(?:إشارة|(?:ال)?راديو)\s+(?:(?:ال)?طوارئ|المبنى)|914\b)/i, ["914"]],
+    // Atriums (Section 404)
+    [/\b(?:atri(?:um|a)|atrium\s+(?:smoke|fire|enclosure|barrier|sprinkler|control|require)|multi.?stor(?:y|ey)\s+(?:floor\s+)?opening|floor\s+opening\s+(?:multiple|two|connecting)\s+stor|building\s+with\s+atrium)\b/i, ["404"]],
+    [/(?:رواق|أتريوم|فتحة\s+(?:الطوابق|متعددة\s+الطوابق)|بهو\s+مفتوح|تحكم\s+دخان\s+الأتريوم|حاجز\s+حريق\s+الأتريوم)/i, ["404"]],
+    [/\b(?:atrium\s+(?:interior\s+finish|class\s+b|travel\s+distance|standby\s+power)|smoke\s+(?:exhaust|control)\s+atrium)\b/i, ["404"]],
+    // Underground structures (Section 405)
+    [/(?:underground\s+(?:building|structure|floor|level|occupancy)|below.?grade\s+(?:building|structure|floor|level)|subterranean\s+(?:building|structure)|(?:30|thirty)\s*(?:ft|feet|foot|قدم)\s+below\s+grade|basement\s+(?:fire\s+requirements|smoke\s+control|compartment))/i, ["405"]],
+    [/(?:مبنى\s+تحت\s+الأرض|إنشاء\s+تحت\s+الأرض|طابق\s+تحت\s+مستوى\s+الأرض|اشتراطات\s+(?:تحت\s+الأرض|الطابق\s+الأرضي)|تحكم\s+دخان\s+تحت\s+الأرض)/i, ["405"]],
+    [/\b(?:underground\s+(?:sprinkler|smoke\s+control|compartmentation|fire\s+command|standpipe)|section\s+405)\b/i, ["405"]],
+    // Groups I-1 / R-1 / R-2 / R-3 sleeping units (Section 420)
+    [/\b(?:group\s+(?:i-?1|r-?1|r-?2|r-?3)|(?:i-?1|r-?1|r-?2|r-?3)\s+occupancy|sleeping\s+units?\s+(?:separation|fire|partition|require)|dwelling\s+units?\s+(?:separation|fire\s+partition|separate\w*)|separates?\s+dwelling\s+units?|between\s+hotel\s+rooms?|hotel\s+rooms?\s+(?:separation|fire|partition|separate\w*)|fire\s+partition\s+(?:between\s+)?hotel\s+rooms?|hotel\s+(?:room\s+separation|fire\s+partition|unit\s+separation)|apartment\s+(?:fire\s+partition|separation\s+require)|residential\s+(?:fire\s+partition|unit\s+separation)|420\b|section\s+420)\b/i, ["420"]],
+    [/(?:مجموعة\s+(?:i-?1|r-?1|r-?2|r-?3)|(?:ال)?فصل\s+(?:بين\s+)?(?:وحدات\s+(?:الفندق|الشقق|النوم)|غرف\s+(?:ال)?فندق|(?:ال)?شقق\s+(?:ال)?سكنية?|(?:ال)?شقق)|اشتراطات\s+(?:الفندق|الشقق|السكن)|حاجز\s+حريق\s+بين\s+(?:ال)?وحدات|كاشف\s+(?:ال)?دخان\s+(?:في\s+)?(?:غرفة\s+(?:ال)?نوم|كل\s+غرفة|(?:ال)?وحدات\s+(?:ال)?سكنية)|كاشف\s+(?:CO|أول\s+أكسيد\s+الكربون)\s+(?:في\s+)?(?:(?:ال)?فنادق|(?:ال)?شقق|R-1|R-2)|ترابط\s+(?:كواشف|أجهزة)\s+(?:ال)?دخان|420\b)/i, ["420"]],
+    [/\b(?:smoke\s+alarms?\s+(?:required|needed)\s+(?:in\s+)?(?:every|each|sleeping|bedroom)|smoke\s+alarms?\s+(?:in\s+)?(?:every|each)\s+(?:sleeping|bedroom)|smoke\s+alarms?\s+(?:be\s+)?interconnected|inter(?:connect|linked)\s+smoke\s+alarm|smoke\s+alarm\s+(?:sleeping|hotel|apartment|residential|r-?[123]|i-?1)|carbon\s+monoxide\s+alarms?\s+(?:required\s+)?(?:in\s+)?(?:hotels?|apartments?|r-?1|r-?2|residential|sleeping)|carbon\s+monoxide\s+alarm\s+(?:residential|hotel|sleeping)|unit\s+fire\s+separation|smoke\s+alarm\s+interconnect\w*)\b/i, ["420"]],
+    // Doors, gates, special locking (Section 1010)
+    [/\b(?:delayed.egress\s+lock|delayed\s+egress\s+(?:lock|door|15|30)|15.second\s+(?:delay|lock)|30.second\s+(?:delay|lock)|access.controlled\s+egress\s+door|electromagnetic\s+lock\s+(?:egress|door|exit)|mag.lock\s+(?:egress|door)|panic\s+(?:hardware|bar|device|push)|door\s+swing\s+(?:direction|egress|travel)|min(?:imum)?\s+door\s+width|door\s+(?:clear\s+)?width\s+(?:min|32|require)|door\s+width\s+(?:for\s+an?\s+)?exit|32.inch\s+(?:door|clear)|door\s+(?:latch|hardware|operation)\s+(?:one|single|1)\s+(?:action|operation|motion)|where\s+(?:is\s+)?panic\s+hardware\s+required)\b/i, ["1010"]],
+    [/(?:قفل\s+تأخير\s+(?:الخروج|خروج)|تأخير\s+(?:خروج|15|30)\s*(?:ثانية)?|باب\s+(?:ذراع\s+الذعر|الذعر|التدافع)|ذراع\s+الذعر|قفل\s+كهرومغناطيسي|اتجاه\s+فتح\s+الباب|(?:ال)?حد\s+(?:ال)?أدنى\s+(?:لعرض|عرض)\s+(?:ال)?باب|عرض\s+الباب\s+(?:الأدنى|الصافي|32)|باب\s+مخرج\s+(?:ال)?طوارئ|أجهزة\s+(?:الباب|المخرج)|عتاد\s+الباب)/i, ["1010"]],
+    // Handrails (Section 1012)
+    [/\b(?:handrail\s+(?:height|graspability|clearance|extension|require|both\s+side|dimension|type\s+[iI]|circular|non.circular|1\.25|1\.5\s+in|34\s*in|38\s*in|stair|ramp|continue|wall|return|load)|stair\s+(?:handrail|railing|rail\s+height)|ramp\s+handrail|both\s+sides\s+(?:handrail|stair\s+rail)|34.(?:inch|in)\s+(?:handrail|railing)|38.(?:inch|in)\s+(?:handrail|railing)|1\.5.inch\s+(?:clearance\s+)?handrail|type\s+[iI]\s+handrail|12.inch\s+extension\s+handrail)\b/i, ["1012"]],
+    [/(?:درابزين\s+(?:الدرج|السلم|المنحدر|الارتفاع|الأبعاد|الإمساك|الجانبين|امتداد|مسافة|جدار|(?:ال)?يد|(?:ال)?اليد)|ارتفاع\s+(?:ال)?درابزين|أبعاد\s+الدرابزين|متطلبات\s+الدرابزين|إمساك\s+الدرابزين)/i, ["1012"]],
+    // Emergency escape and rescue openings (Section 1030)
+    [/\b(?:emergency\s+escape\s+(?:opening|rescue|window|and\s+rescue)|rescue\s+(?:opening|window)|emergency\s+rescue\s+opening|EERO|egress\s+window\s+(?:require|size|dimension|sleep)|sleeping\s+room\s+(?:window|escape|egress\s+opening)|5\.7\s*sq\s*ft|5\.0\s*sq\s*ft|24.inch\s+(?:escape\s+)?opening\s+height|sill\s+height\s+(?:44|max)|44.inch\s+sill|window\s+well\s+(?:egress|escape)|bars?\s+over\s+(?:egress|escape)\s+window)\b/i, ["1030"]],
+    [/(?:فتحة\s+(?:الهروب\s+(?:الطارئ|والإنقاذ)|الإنقاذ)|نافذة\s+(?:الهروب|الطوارئ|الإنقاذ\s+الطارئ)|فتحة\s+هروب\s+طارئ|هروب\s+طارئ\s+من\s+غرفة\s+النوم|ارتفاع\s+عتبة\s+(?:النافذة|الفتحة)|مساحة\s+فتحة\s+الهروب)/i, ["1030"]],
+    // Alternative automatic fire-extinguishing systems — Section 904 (SBC 801)
+    [/\b(?:alternative\s+(?:automatic\s+)?fire.?(?:extinguish\w*|suppress\w*)\s+(?:system|required|where)|alternative\s+suppress\w*\s+system|non.water\s+(?:fire\s+suppress\w*|extinguish\w*)|clean\s+agent\s+(?:system|suppress\w*|fire|required|data|room)|NFPA\s*2001|FM.?200|NOVEC\s*1230|halon\s+(?:alternative|1301|replacement|substitute)|carbon\s+dioxide\s+(?:suppress\w*|total\s+flood\w*|fire\s+system|system)|CO2\s+(?:suppress\w*|fire\s+system|total\s+flood\w*|data\s+center|computer\s+room|required)|NFPA\s*12\s+(?:CO2|carbon|suppress\w*)|foam\s+(?:suppress\w*|fire\s+system|required|deluge|hangar|aircraft)|NFPA\s*11\s+(?:foam|suppress\w*)|NFPA\s*16\s+(?:foam|water\s+spray)|NFPA\s*409\s+(?:hangar|foam|aircraft)|aircraft\s+hangar|suppress\w*\s+(?:system\s+)?(?:is\s+)?(?:required|needed|used?)\s+(?:in|for)\s+(?:an?\s+)?aircraft\s+hangar|dry\s+chemical\s+(?:suppress\w*|NFPA\s*17|fire\s+system)\b|NFPA\s*17\b|water\s+mist\s+(?:system|suppress\w*|fire|required)|NFPA\s*750\s+(?:water|mist|suppress\w*)|data\s+center\s+(?:fire\s+suppress\w*|clean\s+agent|CO2\s+suppress\w*)|server\s+room\s+(?:fire\s+suppress\w*|clean\s+agent)|computer\s+room\s+(?:fire\s+suppress\w*|clean\s+agent|CO2)|telecom\s+room\s+suppress\w*|archive\s+(?:fire\s+suppress\w*|clean\s+agent)|pre.discharge\s+(?:alarm|warning)\s+(?:clean\s+agent|CO2|total\s+flood\w*)|total.flooding\s+(?:system|CO2|clean\s+agent)\s+(?:occupied|alarm|pre.discharge)|alternative\s+system\s+(?:substitute|replac\w*)\s+sprinkler|section\s+904|904\.11|904\.12|904\b)\b/i, ["904"]],
+    [/(?:نظام\s+(?:ال)?إطفاء\s+(?:(?:ال)?بديل|(?:ال)?تلقائي\s+(?:ال)?بديل|(?:ال)?الخاص|(?:ال)?بديل)|أنظمة\s+(?:ال)?إطفاء\s+(?:البديلة|(?:ال)?بديلة)|عامل\s+إطفاء\s+نظيف|نظام\s+(?:ال)?عامل\s+(?:ال)?نظيف|NFPA\s*2001|FM-?200|NOVEC\s*1230|بديل\s+(?:الهالون|هالون)|إطفاء\s+(?:ثاني\s+أكسيد\s+الكربون|CO2)|نظام\s+(?:CO2|ثاني\s+أكسيد\s+الكربون)\s+(?:إطفاء|كلي|تفريغ)|NFPA\s*12|رغوة\s+(?:(?:ال)?إطفاء|حريق)|نظام\s+(?:ال)?رغوة|NFPA\s*11|حظيرة\s+(?:ال)?طائرات|إطفاء\s+(?:ال)?حظيرة|(?:نظام\s+)?(?:ال)?إطفاء\s+(?:(?:ال)?مناسب\s+)?(?:في|ل(?:ـ)?)\s*(?:غرفة\s+)?(?:ال)?خوادم|إطفاء\s+غرفة\s+(?:ال)?خوادم|إطفاء\s+مركز\s+(?:ال)?بيانات|إطفاء\s+غرفة\s+(?:ال)?حاسب|عامل\s+نظيف\s+مركز\s+(?:ال)?بيانات|مادة\s+كيميائية\s+جافة\s+(?:إطفاء|نظام)|NFPA\s*17|مياه\s+رذاذية?\s+(?:نظام|إطفاء)|NFPA\s*750|إنذار\s+(?:ما\s+قبل|قبل)\s+(?:التفريغ|الإطلاق)|إطفاء\s+بديل\s+(?:عن\s+)?(?:الرشاشات?|ال)?|904\b)/i, ["904"]],
+    // Smoke control systems (Section 909, SBC 801)
+    [/\b(?:smoke\s+control\s+(?:system|design|required|testing|standby|power|interface|layer|where|accepted?\s+test|commission)|mechanical\s+smoke\s+(?:control|exhaust|management)|smoke\s+layer\s+(?:interface|height|6\s*ft|1828\s*mm)|smoke\s+exhaust\s+(?:system|design|rate)|2.hour\s+standby\s+(?:smoke|power\s+smoke)|stairway\s+pressuri[sz]ation|pressuri[sz]ed\s+stair|smoke\s+control\s+accept\w+\s+test|section\s+909|sbc\s+801\s+909)\b/i, ["909"]],
+    [/(?:نظام\s+(?:ال)?تحكم\s+(?:في\s+)?(?:ال)?دخان|نظام\s+تحكم\s+(?:الدخان|دخان)|مستوى\s+طبقة\s+الدخان|طبقة\s+الدخان\s+(?:6|ستة)|إخلاء\s+الدخان\s+الميكانيكي|طاقة\s+احتياطية\s+(?:تحكم\s+)?الدخان|اختبار\s+نظام\s+(?:تحكم\s+)?الدخان|ضغط\s+سلم\s+(?:الهروب|الطوارئ))/i, ["909"]],
+    // Business Group B — Section 304
+    [/\b(?:group\s+b\s+(?:occupancy|classif)|business\s+(?:group|occupancy|classif)|is\s+(?:this\s+)?(?:a\s+)?(?:business|office)\s+(?:occupancy|group)|office\s+(?:occupancy|classif|group)|professional\s+office\s+(?:occupancy|classif)|ambulatory\s+clinic\s+(?:occupancy|classif)|outpatient\s+(?:clinic\s+)?(?:occupancy|classif)|b\s+vs\s+(?:a|m|e|i)|is\s+(?:this\s+)?(?:group\s+b|group\s+a)|section\s+304|group\s+b\s+threshold)\b/i, ["304"]],
+    [/(?:إشغال\s+(?:الأعمال|مكاتب|مهني)|مجموعة\s+B\s+(?:إشغال|تصنيف)|تصنيف\s+(?:مبنى\s+مكاتب|مكتب|عيادة\s+خارجية)|مستوصف\s+إشغال\s+مجموعة)/i, ["304"]],
+    // Educational Group E — Section 305
+    [/\b(?:group\s+e\s+(?:occupancy|classif)|educational\s+(?:group|occupancy|classif)|school\s+(?:occupancy|classif|group)|K.12\s+(?:occupancy|classif|group)|is\s+(?:this\s+)?(?:a\s+)?(?:school|educational)\s+(?:occupancy|group)|E\s+vs\s+(?:B|I-4|I4)|day\s+care\s+(?:school|educational)|section\s+305|12th\s+grade\s+(?:occupancy|school)|educational\s+threshold)\b/i, ["305"]],
+    [/(?:إشغال\s+(?:تعليمي|مدرسة)|مجموعة\s+E\s+(?:إشغال|تصنيف)|تصنيف\s+(?:مدرسة|مدارس|مدرسة\s+K-12)|مدرسة\s+إشغال\s+مجموعة)/i, ["305"]],
+    // Factory Group F — Section 306
+    [/\b(?:group\s+f\s+(?:occupancy|classif)|factory\s+(?:group|occupancy|classif)|industrial\s+(?:occupancy|classif|group)|F-[12]\s+(?:occupancy|classif)|group\s+F-[12]|manufacturing\s+(?:occupancy|classif|group)|is\s+(?:this\s+)?(?:a\s+)?(?:factory|industrial|manufacturing)\s+(?:occupancy|group)|F-1\s+vs\s+F-2|moderate\s+hazard\s+factory|low\s+hazard\s+factory|section\s+306|woodworking\s+occupancy|metal\s+fabrication\s+(?:occupancy|group))\b/i, ["306"]],
+    [/(?:إشغال\s+(?:تصنيعي|مصنع|صناعي)|مجموعة\s+F\s+(?:إشغال|تصنيف)|تصنيف\s+(?:مصنع|منشأة\s+صناعية)|F-1\s+(?:مقابل|vs)\s+F-2)/i, ["306"]],
+    // High Hazard Group H — Section 307
+    [/\b(?:group\s+h\s+(?:occupancy|classif)|high\s+hazard\s+(?:group|occupancy|classif)|H-[12345]\s+(?:occupancy|classif)|group\s+H-[12345]|maximum\s+allowable\s+(?:quantities?|quantity)|MAQ\s+(?:exceed|trigger|threshold|hazardous)|when\s+is\s+(?:a\s+)?(?:building\s+)?high\s+hazard|hazardous\s+(?:materials?\s+)?(?:occupancy|classif|group)|is\s+(?:this\s+)?(?:a\s+)?(?:high\s+hazard|group\s+h)|section\s+307|detonation\s+(?:hazard|occupancy)|deflagration\s+(?:hazard|occupancy)|HPM\s+occupancy|semiconductor\s+(?:fab|fabrication)\s+occupancy)\b/i, ["307"]],
+    [/(?:إشغال\s+(?:خطر|عالي\s+الخطورة)|مجموعة\s+H\s+(?:إشغال|تصنيف)|H-[12345]\s+إشغال|الكميات\s+المسموح\s+بها\s+(?:من\s+المواد\s+)?الخطرة|مواد\s+خطرة\s+(?:فوق|تجاوزت)\s+(?:الحد|الكمية))/i, ["307"]],
+    // Mercantile Group M — Section 309
+    [/\b(?:group\s+m\s+(?:occupancy|classif)|mercantile\s+(?:group|occupancy|classif)|retail\s+(?:occupancy|classif|group)|store\s+(?:occupancy|classif|group)|is\s+(?:this\s+)?(?:a\s+)?(?:retail|mercantile)\s+(?:occupancy|group)|M\s+vs\s+(?:S|B|A)|shop\s+(?:occupancy|classif)|supermarket\s+(?:occupancy|classif)|showroom\s+(?:occupancy|classif)|section\s+309|mall\s+(?:store\s+|tenant\s+)?(?:occupancy|classif|group))\b/i, ["309"]],
+    [/(?:إشغال\s+(?:تجزئة|متجر|محل\s+تجاري)|مجموعة\s+M\s+(?:إشغال|تصنيف)|تصنيف\s+(?:متجر|سوبرماركت|مركز\s+تسوق))/i, ["309"]],
+    // Residential Group R — Section 310
+    [/\b(?:group\s+r\s+(?:occupancy|classif)|residential\s+(?:group|occupancy|classif)|R-[1234]\s+(?:occupancy|classif)|group\s+R-[1234]|is\s+(?:this\s+)?(?:a\s+)?(?:residential|hotel|apartment|dwelling)\s+(?:occupancy|group)|R-1\s+vs\s+R-2|R-[1234]\s+or\s+R-[1234]|transient\s+(?:residential|occupancy|30\s*day)|30.day\s+(?:residential|threshold|transient)|hotel\s+(?:occupancy|classif|group|R-1)|apartment\s+(?:building\s+R-[1234]|occupancy|classif|group|R-2)|single\s+family\s+(?:occupancy|classif)|section\s+310|residential\s+classification)\b/i, ["310"]],
+    [/(?:(?:ال)?إشغال\s+(?:السكني|سكني|الفندقي|فندقي|شقق)|مجموعة\s+R\s+(?:إشغال|تصنيف)|R-[1234]\s+(?:إشغال|تصنيف)|(?:ال)?فندق\s+(?:يصنف|تصنيف|كإشغال)|مبنى\s+(?:ال)?شقق\s+(?:السكنية|سكنية)?|تصنيف\s+(?:مبنى\s+)?(?:فندق|(?:ال)?شقق|(?:ال)?فيلا|سكن|(?:ال)?سكن)|سكن\s+(?:مؤقت|دائم)\s+(?:ال)?إشغال)/i, ["310"]],
+    // Storage Group S — Section 311
+    [/\b(?:group\s+s\s+(?:occupancy|classif)|storage\s+(?:group|occupancy|classif)|S-[12]\s+(?:occupancy|classif)|group\s+S-[12]|is\s+(?:this\s+)?(?:a\s+)?(?:storage|warehouse)\s+(?:occupancy|group)|S-1\s+vs\s+S-2|moderate\s+hazard\s+storage|low\s+hazard\s+storage|warehouse\s+(?:occupancy|classif|group)|parking\s+garage\s+(?:occupancy\s+group|classif|S-2|group\s+s)|section\s+311)\b/i, ["311"]],
+    [/(?:إشغال\s+(?:تخزين|مستودع)|مجموعة\s+S\s+(?:إشغال|تصنيف)|S-[12]\s+إشغال|تصنيف\s+(?:مستودع|مخزن|مواقف\s+سيارات))/i, ["311"]],
+    // Utility Group U — Section 312
+    [/\b(?:group\s+u\s+(?:occupancy|classif)|utility\s+(?:group|occupancy|classif)|miscellaneous\s+(?:occupancy|group)|accessory\s+structure\s+(?:occupancy|classif|group)|private\s+garage\s+(?:occupancy|classif|group|U)|shed\s+(?:occupancy|classif|group)|agricultural\s+building\s+(?:occupancy|group)|section\s+312|group\s+u\s+examples|fence\s+(?:occupancy|6\s*ft\s*building|over\s*6))\b/i, ["312"]],
+    [/(?:إشغال\s+(?:مرافق|ملحق)|مجموعة\s+U\s+(?:إشغال|تصنيف)|تصنيف\s+(?:مرآب\s+خاص|مخزن\s+أدوات|مبنى\s+زراعي))/i, ["312"]],
+    // Master occupancy classification — Section 302
+    [/\b(?:what\s+(?:is\s+the\s+)?occupancy\s+(?:group|classification|type)|which\s+(?:occupancy\s+)?group|how\s+(?:do\s+I\s+|to\s+)?classify\s+(?:a\s+)?(?:building|space|use|occupancy)|occupancy\s+classif\w+|use\s+(?:group|classif\w+)|classify\s+(?:this\s+)?(?:building|space|use)|is\s+this\s+(?:group|occupancy)\s+[abefhimrsu]|all\s+occupancy\s+groups|list\s+(?:of\s+)?occupancy\s+groups|chapter\s+3\s+(?:classif|occupancy)|section\s+302)\b/i, ["302"]],
+    [/(?:ما\s+(?:هو\s+|هي\s+)?(?:تصنيف\s+(?:ال)?إشغال|(?:ال)?مجموعة\s+(?:ال)?إشغال)|كيف\s+(?:أصنف|نصنف|يُصنَّف)|تصنيف\s+(?:الاستخدام|الإشغال|المبنى|استخدام|إشغال|مبنى)|أي\s+(?:مجموعة\s+إشغال|تصنيف|مجموعة)|مجموعات\s+(?:ال)?إشغال|قائمة\s+مجموعات\s+(?:ال)?إشغال|الفصل\s+3\s+(?:تصنيف|إشغال))/i, ["302"]],
+    // Assembly Group A classification — Section 303
+    [/\b(?:group\s+a\s+(?:classif|sub|occup)|assembly\s+(?:sub.?classif|group\s+a|occupancy\s+type|A-[12345])|A-[12345]\s+occupancy|occupancy\s+A-[12345]|(?:restaurant|theater|church|mosque|museum|arena|stadium|gymnasium|banquet|nightclub|cinema)\s+(?:occupancy|classif|group)|assembly\s+(?:OL|occupant\s+load)\s+(?:50|threshold)|OL\s+(?:50|less\s+than\s+50)\s+assembly|assembly\s+occupancy\s+classification)\b/i, ["303"]],
+    [/(?:تصنيف\s+مجموعة\s+(?:التجمع|أ)|إشغال\s+(?:مسجد|مطعم|مسرح|متحف|ملعب|قاعة\s+أفراح)|تصنيف\s+فرعي\s+(?:للتجمع|مجموعة\s+أ)|حمل\s+إشغال\s+50\s+(?:تجمع|مجموعة))/i, ["303"]],
+    // Institutional Group I classification — Section 308
+    [/\b(?:group\s+i\s+(?:classif|sub|occup)|institutional\s+(?:sub.?classif|group\s+i|A-[1234])|I-[1234]\s+(?:occupancy|classif)|(?:assisted\s+living|hospital|jail|prison|nursing\s+home|day\s+care)\s+(?:occupancy|classif|group)|what\s+(?:occupancy\s+group\s+is\s+a?\s+)?hospital|hospital.*I-[1234]|I-1\s+vs\s+R-4|16\s+(?:persons|occupants)\s+(?:assisted|I-1|institutional)|I-1\s+(?:threshold|persons|16)|self.preservation\s+(?:ability|occupancy)|institutional\s+occupancy\s+(?:classif|group))\b/i, ["308"]],
+    [/(?:تصنيف\s+مجموعة\s+(?:المؤسسية|I)|إشغال\s+(?:مؤسسي|دار\s+رعاية|مستشفى\s+(?:تصنيف|كإشغال|إشغال)|سجن\s+(?:تصنيف|كإشغال|إشغال))|(?:ال)?مستشفى\s+(?:كإشغال|تصنيف\s+إشغال|إشغال\s+ما)|I-[1234]\s+إشغال|دار\s+رعاية\s+(?:المسنين\s+)?(?:تصنيف|إشغال|مجموعة)|القدرة\s+على\s+الإخلاء\s+الذاتي)/i, ["308"]],
+    // Mixed occupancy — Section 508
+    [/\b(?:mixed\s+occupancy|multiple\s+occupancy|accessory\s+occupancy|nonseparated\s+occupancy|separated\s+occupancy|occupancy\s+(?:separation|barrier|mixing)|10\s*(?:percent|%)\s+(?:floor\s+area|accessory)|most\s+restrictive\s+occupancy|fire\s+barrier\s+between\s+occupanc|table\s+508\.4|section\s+508|mixed.use\s+(?:building|tower|classif))\b/i, ["508"]],
+    [/(?:(?:ال)?إشغال\s+(?:ال)?مختلط|(?:ال)?مبنى\s+متعدد\s+(?:الاستخدامات|الإشغالات)|(?:ال)?إشغال\s+(?:ال)?إضافي|فصل\s+(?:ال)?(?:الإشغال|الاستخدامات|إشغال|استخدامات)|الاشتراطات\s+الأكثر\s+تقييداً|حاجز\s+(?:بين\s+)?(?:ال)?إشغالات|10\s*(?:بالمئة|%)\s+(?:مساحة|إشغال)|(?:ال)?إشغال\s+غير\s+(?:ال)?مفصول|(?:ال)?إشغال\s+(?:ال)?مفصول|غير\s+(?:ال)?مفصول\s+(?:مسموح|مبنى|إشغال))/i, ["508"]],
+    // Mixed occupancy sub-sections (508.3/508.4/508.5)
+    [/\b(?:nonseparated\s+(?:occupanc\w*|use\w*)|non.separated\s+(?:occupanc\w*|use\w*)|section\s+508\.3|most\s+restrictive\s+(?:construction|type)\s+mixed|508\.3)\b/i, ["508.3"]],
+    [/\b(?:separated\s+(?:occupancy\s+fire\s+barrier|occupancy\s+table|occupancy\s+requirement)|fire\s+barrier\b.{0,30}separated\s+occupancy|table\s+508\.4|fire\s+barrier\s+(?:between|separating)\s+occupanc|section\s+508\.4|508\.4)\b/i, ["508.4"]],
+    [/\b(?:section\s+508\.5|508\.5|separated\s+occupancy\s+fire\s+protection|fire\s+protection\s+separated\s+occupancy)\b/i, ["508.5"]],
+    [/(?:إشغال\s+غير\s+مفصول|508\.3|الأكثر\s+تقييداً\s+(?:إنشاء|نوع)|فصل\s+الإشغال\s+جدار\s+حريق|508\.4|جدول\s+508\.4)/i, ["508.3", "508.4"]],
+    // Single exit access doorway — Section 1006.2.1
+    [/\b(?:one\s+exit\s+(?:access\s+)?(?:door(?:way)?|opening)|single\s+exit\s+(?:access\s+)?(?:door(?:way)?|opening)|space\s+with\s+(?:one|single|1)\s+exit\s+(?:access\s+)?door|1006\.2\.1|section\s+1006\.2)\b/i, ["1006.2.1"]],
+    [/(?:باب\s+(?:مخرج|هروب)\s+واحد|مخرج\s+واحد\s+من\s+(?:غرفة|مساحة)|1006\.2\.1|فتحة\s+وصول\s+مخرج\s+واحدة)/i, ["1006.2.1"]],
+    // Sprinkler system type — Section 903.3.1
+    [/\b(?:nfpa\s+13[rd]?\s+(?:sprinkler|system)|sprinkler\s+(?:system\s+)?(?:type|nfpa\s+13)|which\s+nfpa\s+13|nfpa\s+13\s+(?:vs|or)\s+(?:nfpa\s+)?13[rd]|nfpa\s+13\s+(?:r\s+vs\s+d|type)|13r\s+(?:vs|or)\s+13d|use\s+nfpa\s+13[rd]?|residential\s+sprinkler\s+(?:nfpa|13r|13d)|light\s+hazard\s+(?:sprinkler|nfpa)|ordinary\s+hazard\s+(?:sprinkler|nfpa)|extra\s+hazard\s+sprinkler|903\.3\.1|section\s+903\.3\.1)\b/i, ["903.3.1"]],
+    [/(?:نفبا\s+13\s+(?:نوع|نظام)|نوع\s+(?:نظام\s+)?الرشاشات|903\.3\.1|نفبا\s+13[rd]|أي\s+نفبا\s+13|متطلبات\s+نفبا\s+13)/i, ["903.3.1"]],
+    // Quick-response / residential sprinkler heads — Section 903.3.2
+    [/\b(?:quick.response\s+(?:sprinkler|head)|fast.response\s+sprinkler|residential\s+sprinkler\s+(?:head|pendent)|QR\s+sprinkler\s+head|903\.3\.2|section\s+903\.3\.2)\b/i, ["903.3.2"]],
+    [/(?:رشاش\s+(?:سريع\s+الاستجابة|سكني\s+معلق)|903\.3\.2|رأس\s+رشاش\s+سريع)/i, ["903.3.2"]],
+    // Sprinkler system supervision — Section 903.4
+    [/\b(?:sprinkler\s+(?:system\s+)?supervis\w+|supervis\w+\s+sprinkler\s+(?:system|valve)|monitoring\s+sprinkler\s+(?:valve|system)|sprinkler\s+(?:valve\s+)?tamper\s+(?:switch|alarm)|903\.4\b|section\s+903\.4\b|supervisory\s+signal\s+sprinkler)\b/i, ["903.4"]],
+    [/(?:مراقبة\s+(?:نظام\s+)?الرشاشات|إشارة\s+إشرافية\s+رشاشات|تلاعب\s+صمام\s+الرشاشات|903\.4\b)/i, ["903.4"]],
+    // Floor control valves — Section 903.4.3
+    [/\b(?:floor\s+control\s+valves?|per.floor\s+(?:sprinkler\s+)?valves?|sprinkler\s+floor\s+valves?|high.rise\s+sprinkler\s+valves?|903\.4\.3|section\s+903\.4\.3)\b/i, ["903.4.3"]],
+    [/(?:صمام\s+تحكم\s+(?:الطابق|بالطابق)|صمام\s+رشاشات\s+(?:الطابق|المبنى\s+الشاهق)|903\.4\.3)/i, ["903.4.3"]],
+    // Standpipe systems where required — Section 905.3.1
+    [/\b(?:standpipe\s+(?:system\s+)?(?:required|where\s+required|requirement)|where\s+(?:is\s+)?standpipe\s+required|when\s+(?:is\s+)?standpipe\s+required|standpipe\s+(?:in\s+)?(?:high.rise|building\s+over|exceeds?)|905\.3\.1|section\s+905\.3|standpipe\s+threshold|class\s+(?:i|ii|iii)\s+standpipe\s+required)\b/i, ["905.3.1"]],
+    [/(?:متى.*خط\s+(?:الإطفاء\s+)?الجاف|خط\s+(?:الإطفاء\s+)?الجاف.*(?:إلزامي|مطلوب)|خراطيم\s+الإطفاء.*(?:إلزامية|مطلوبة)|905\.3\.1|اشتراطات\s+خط\s+الإطفاء\s+الجاف)/i, ["905.3.1"]],
+    // Fire alarm where required by occupancy — Section 907.2
+    [/\b(?:fire\s+alarm\s+(?:system\s+)?(?:required|where\s+required|requirement|by\s+occupancy)|when\s+(?:is\s+)?(?:fire\s+)?alarm\s+(?:system\s+)?required|where\s+(?:is\s+)?(?:fire\s+)?alarm\s+(?:system\s+)?required|which\s+(?:occupanc|building)\w*\s+(?:need|require)s?\s+(?:a\s+)?(?:fire\s+)?alarm|(?:need|require)s?\s+(?:a\s+)?fire\s+alarm|fire\s+alarm\s+(?:need|needed|needed\s+for)|907\.2|section\s+907\.2|alarm\s+threshold\s+(?:by\s+)?occupanc\w*)\b/i, ["907.2"]],
+    [/(?:متى.*(?:إنذار|نظام\s+إنذار)\s+(?:ال)?حريق.*(?:إلزامي|مطلوب)|(?:إنذار|نظام\s+إنذار)\s+(?:ال)?حريق.*(?:إلزامي|مطلوب)|(?:هل|متى).*(?:نظام\s+)?(?:إنذار|إنذار\s+الحريق).*(?:إلزامي|مطلوب|مطلوباً)|ما\s+متطلبات\s+(?:نظام\s+)?(?:إنذار|إنذار\s+الحريق)\s+(?:حسب|للإشغال)|907\.2|اشتراطات\s+إنذار\s+(?:ال)?حريق\s+حسب\s+(?:ال)?إشغال)/i, ["907.2"]],
+    // Fire alarm initiating devices — Section 907.3
+    [/\b(?:fire\s+alarm\s+initiating\s+devices?|automatic\s+(?:fire\s+detector|sprinkler\s+waterflow)\s+(?:initiating|device|signal)|heat\s+detector\s+(?:fire\s+alarm|initiating)|smoke\s+detector\s+(?:fire\s+alarm\s+system|initiating)|907\.3|section\s+907\.3)\b/i, ["907.3"]],
+    [/(?:أجهزة\s+(?:بدء|تشغيل)\s+(?:نظام\s+)?(?:إنذار|alarm)\s+الحريق|كاشف\s+(?:دخان|حرارة)\s+(?:إنذار|alarm)|907\.3)/i, ["907.3"]],
+    // Manual fire alarm boxes (pull stations) — Section 907.4.2
+    [/\b(?:manual\s+(?:fire\s+alarm\s+)?(?:pull\s+stations?|box|station)|pull\s+stations?\s+(?:required|locat|spacing|floor|stair)|fire\s+alarm\s+pull\s+(?:stations?|box)|manual\s+call\s+point|907\.4\.2|section\s+907\.4\.2|manual\s+alarm\s+(?:box|station)\s+(?:locat|spacing|required))\b/i, ["907.4.2"]],
+    [/(?:زر\s+(?:الإنذار\s+اليدوي|إنذار\s+الحريق\s+اليدوي)|محطة\s+(?:الإنذار\s+)?اليدوي\s+(?:الحريق|للحريق)|907\.4\.2|نقاط\s+الاستدعاء\s+اليدوي)/i, ["907.4.2"]],
+    // Occupant notification systems — Section 907.5
+    [/\b(?:occupant\s+notification\s+(?:system|devices?|require|type)|audible\s+(?:alarm|notification)\s+(?:devices?|signal|system)|visible\s+(?:alarm|notification)\s+(?:devices?|strobe)\s+(?:require|where)|audible.visible\s+(?:alarm|notification)|voice\s+evacuation\s+(?:system|signal)|emergency\s+voice\s+alarm\s+communication|EVAC\s+(?:system|signal)|notification\s+appliance\s+circuit|907\.5|section\s+907\.5)\b/i, ["907.5"]],
+    [/(?:نظام\s+(?:إخطار|إشعار)\s+(?:شاغلي|المبنى)|إنذار\s+(?:مسموع|مرئي)\s+(?:شاغل|مبنى)|جهاز\s+(?:إنذار\s+(?:مسموع|مرئي)|إخطار)|صافرة\s+إنذار\s+الحريق\s+(?:مطلوبة|إلزامية)|907\.5)/i, ["907.5"]],
+    // Fire alarm monitoring / supervising station — Section 907.6
+    [/\b(?:fire\s+alarm\s+(?:monitor(?:ing|ed)|supervis\w+)\s+(?:station|service)?|fire\s+alarm\s+(?:system\s+)?(?:need\s+to\s+be\s+)?monitor(?:ing|ed)\b|fire\s+alarm\s+monitoring\b|supervising\s+station\s+(?:fire\s+alarm|monitoring|required)|central\s+(?:station\s+)?(?:fire\s+alarm\s+)?monitoring|UL\s+listed\s+central\s+station|907\.6|section\s+907\.6|remote\s+(?:supervising\s+station|monitoring)\s+fire\s+alarm)\b/i, ["907.6"]],
+    [/(?:مراقبة\s+(?:نظام\s+)?إنذار\s+الحريق|محطة\s+(?:مراقبة|إشراف)\s+(?:الإنذار|الحريق)|مركز\s+المراقبة\s+(?:الحريق|إنذار)|907\.6)/i, ["907.6"]],
+    // Commercial cooking hood suppression — Section 911 (SBC 801 / NFPA 96)
+    [/\b(?:commercial\s+cooking\s+(?:hood\s+)?suppress\w*|kitchen\s+(?:hood\s+)?suppress\w*|restaurant\s+(?:hood\s+)?suppress\w*|type\s+[i1]\s+hood\s+(?:suppress\w*|fire\s+system|required)|cooking\s+hood\s+(?:fire|suppress\w*|system|required)|where\s+(?:is\s+)?(?:a\s+)?(?:kitchen|cooking|hood)\s+suppress\w*\s+required|when\s+(?:is\s+)?(?:a\s+)?(?:kitchen|cooking)\s+suppress\w*\s+required|grease.laden\s+(?:vapors?\s+)?(?:hood|suppress\w*)|fryer\s+(?:hood\s+)?suppress\w*|broiler\s+(?:hood\s+)?suppress\w*|griddle\s+(?:hood\s+)?suppress\w*|wet\s+chemical\s+system\b|wet\s+chemical\s+(?:system\s+)?(?:kitchen|cooking|hood|commercial)|(?:commercial\s+kitchen|cooking\s+equipment)\s+wet\s+chemical|wet\s+chemical\s+(?:for\s+(?:a\s+)?)?(?:commercial\s+kitchen|cooking)|UL\s*300\s+(?:wet|chemical|kitchen|cooking)|NFPA\s*96\s+(?:suppress\w*|hood|cooking|kitchen)|Ansul\s+(?:R.102|hood|cooking|kitchen)|cooking\s+hood\s+fusible\s+link|hood\s+suppress\w*\s+(?:6.month|semi.annual|inspect\w*)|sprinkler\s+(?:does\s+not|not|no)\s+(?:replace|substitute)\s+(?:hood|cooking|kitchen)\s+suppress\w*|hood\s+suppress\w*\s+vs\s+sprinkler|911\b|section\s+911)\b/i, ["911"]],
+    [/(?:نظام\s+(?:ال)?إخماد\s+(?:(?:ال)?مطبخ|شفاط\s+(?:ال)?مطبخ)|إخماد\s+(?:شفاط|مطبخ)\s+(?:تجاري|(?:ال)?مطاعم|(?:ال)?مطبخ)|شفاط\s+(?:نوع\s+)?(?:I|1|الأول)\s+(?:إخماد|نظام)|متى\s+يلزم\s+(?:نظام\s+)?إخماد\s+(?:ال)?مطبخ|(?:قلاية|شواية)\s+(?:(?:ال)?زيت\s+)?(?:(?:ال)?تجارية?\s+)?(?:إلى\s+)?(?:نظام\s+)?إخماد|إخماد\s+(?:قلاية|شواية|شبكة)\s+(?:(?:ال)?زيت|(?:ال)?مطبخ|(?:ال)?تجارية)?|(?:قلاية|شواية)\s+(?:(?:ال)?زيت)?\s*(?:(?:ال)?تجارية)?\s+(?:يلزمها|تحتاج)\s+(?:نظام\s+)?(?:ال)?إخماد|نظام\s+(?:ال)?كيميائي\s+(?:ال)?رطب\s+(?:(?:ال)?مطبخ|(?:ال)?إطفاء)|NFPA\s*96|صيانة\s+(?:نظام\s+)?إخماد\s+(?:ال)?مطبخ|تفتيش\s+(?:نظام\s+)?(?:إخماد\s+)?(?:ال)?مطبخ\s+(?:6\s+أشهر|كل\s+6)|تنظيف\s+(?:ال)?شفاط|إغلاق\s+الغاز\s+عند\s+(?:تشغيل|تفعيل)\s+(?:ال)?إخماد|911\b)/i, ["911"]],
+    // Smoke and heat removal / roof vents — Section 910 (SBC 801)
+    [/\b(?:smoke\s+and\s+heat\s+(?:vents?|removal|exhaust)|smoke\s+vents?\s+(?:required|where\s+required|design|area|ratio|spacing|fusible|not\s+required|sprinkler\s+exception|exception)|smoke\s+vents?\s+(?:in|for)\s+(?:an?\s+)?(?:F.1|S.1|warehouse|storage|factory)|draft\s+curtains?\s+(?:depth|required|smoke|with)|curtain\s+boards?\s+(?:required|depth|smoke)|fusible\s+link\s+165|heat\s+vents?\s+(?:required|roof)|roof\s+smoke\s+vents?|high.piled\s+(?:storage\s+)?(?:smoke\s+)?vents?|vent\s+area\s+ratio\s+(?:smoke|1.100|1:100)|smoke\s+removal\s+(?:warehouse|factory|storage)|(?:F.1|S.1)\s+(?:warehouse\s+|storage\s+|factory\s+)?smoke\s+vents?|910\b|section\s+910)\b/i, ["910"]],
+    [/(?:فتحات\s+(?:الدخان\s+(?:والحرارة|والتهوية)|الحريق\s+السقفية?|(?:ال)?تهوية\s+(?:ال)?حريق)|(?:ال)?تهوية\s+(?:ال)?دخان\s+(?:والحرارة|(?:ال)?سقفية?)|ستائر\s+(?:ال)?دخان|حواجز\s+(?:ال)?دخان\s+(?:السقفية|(?:ال)?سقف)|نظام\s+(?:طرد|إزالة)\s+(?:ال)?دخان\s+(?:والحرارة|(?:ال)?سقفي)|متى\s+(?:تُلزم|تلزم|تجب)\s+فتحات\s+(?:ال)?دخان|فتحات\s+دخان\s+(?:(?:ال)?مستودعات|(?:ال)?مصانع|(?:ال)?تخزين)|910\b)/i, ["910"]],
+    // Gas detection systems — Section 916 (SBC 801)
+    [/\b(?:gas\s+detection\s+(?:system|required|where\s+required|HPM|H.5|semiconductor|requirement)|combustible\s+gas\s+(?:detectors?|detection|alarm)|toxic\s+gas\s+detection\s+(?:required|system|HPM)|gas\s+detectors?\s+(?:required|(?:be\s+)?located|location|ceiling|floor|placement|lighter|heavier|for\s+natural)|where\s+(?:should\s+)?gas\s+detectors?\s+(?:be\s+)?(?:placed|located|installed)|LEL\s+(?:25|alarm|threshold)|25\s*(?:percent|%)\s*(?:of\s+)?LEL|lower\s+explosive\s+limit\s+(?:alarm|25|gas)|automatic\s+gas\s+shutoff|gas\s+shutoff\s+(?:valve|automatic|fail.safe)|gas\s+detection\s+(?:repair\s+garage|refrigerating|HPM|H.5)|UL\s*2075|916\b|section\s+916)\b/i, ["916"]],
+    [/(?:نظام\s+(?:ال)?كشف\s+(?:ال)?(?:غاز|تسرب\s+الغاز)|كاشف\s+(?:ال)?(?:غاز|غاز\s+(?:الخطر|السام|القابل\s+للاشتعال))|متى\s+(?:يلزم|يجب)\s+(?:نظام\s+)?كشف\s+(?:ال)?غاز|إغلاق\s+(?:تلقائي\s+)?(?:ال)?غاز|صمام\s+إغلاق\s+(?:ال)?غاز|حد\s+(?:ال)?إنذار\s+(?:ال)?غاز|(?:25\s*(?:بالمئة|%))\s+(?:من\s+)?(?:حد\s+)?الاشتعال|تهوية\s+طارئة\s+(?:عند\s+)?(?:كشف\s+)?(?:ال)?غاز|موقع\s+كاشف\s+(?:ال)?غاز|916\b)/i, ["916"]],
+    // Fire pumps — Section 913 (SBC 801)
+    [/\b(?:fire\s+pump\s+(?:required|where\s+required|requirement|churn\s+test|pressure|flow|weekly\s+test|annual\s+test|room|driver|controller|diesel|electric)|where\s+(?:is\s+)?(?:a\s+)?fire\s+pump\s+required|fire\s+pump\s+(?:testing|certification|commissioning|room\s+requirement|ventilation)|system\s+demand\s+exceeds?\s+(?:available|supply)\s+pressure|913\b|section\s+913|pump\s+room\s+fire\s+(?:rating|protection|separation))\b/i, ["913"]],
+    [/(?:مضخة\s+(?:الحريق|إطفاء\s+الحرائق)\s*(?:متطلبات|إلزامية|مطلوبة|اختبار|غرفة)?|اختبار\s+مضخة\s+(?:الحريق|الإطفاء)|غرفة\s+مضخة\s+(?:الحريق|الإطفاء)|913\b|متى\s+تجب\s+مضخة\s+الحريق)/i, ["913"]],
+    // Guardrails — Section 1015 (SBC 201)
+    [/\b(?:guard(?:rail)?s?\s+(?:required|where\s+required|height|load|opening\s+limit|baluster|4\s*inch|4.inch|42\s*inch|42.inch\s+guard|200.?lb|open.sided|walking\s+surface)|where\s+(?:are?\s+)?guards?\s+required|open.sided\s+(?:walking\s+surface|floor|balcony|mezzanine)\s+(?:guard|rail|barrier)|baluster\s+spacing\s+(?:4|guard)|guard\s+(?:railing|height|load\s+require|opening|opening\s+4)|1015\b|section\s+1015|30.inch\s+(?:drop|guard\s+required|above\s+floor))\b/i, ["1015"]],
+    [/(?:درابزين\s+(?:واقٍ|واق|حماية|جانبي|سطح|شرفة|الحماية)|متى\s+يلزم\s+(?:ال)?درابزين|حاجز\s+(?:الوقاية\s+من\s+السقوط|الحماية\s+من\s+السقوط)|1015\b|وقاية\s+من\s+السقوط\s+(?:متطلبات|ارتفاع|درابزين)|ارتفاع\s+(?:حاجز|درابزين)\s+(?:ال)?(?:حماية|واقٍ)|مسافة\s+بين\s+سيقان\s+الدرابزين)/i, ["1015"]],
+    // Luminous egress path markings — Section 1024 (SBC 201)
+    [/\b(?:luminous\s+(?:egress\s+)?(?:path\s+)?markings?|photoluminescent\s+(?:egress|stair|marking|path)|self.luminous\s+(?:egress|marking|path)|glow.in.(?:the.)?dark\s+(?:stair|egress)|stair\s+nosing\s+markings?|egress\s+path\s+markings?|egress\s+markings?\s+(?:required|stairway|where)|high.rise\s+(?:egress|stair)\s+markings?|where\s+(?:are?\s+)?(?:luminous|photoluminescent)\s+(?:egress\s+)?markings?\s+required|ASTM\s+E2072|UL\s*1994\s+egress|0\.30\s+mcd|1024\b|section\s+1024)\b/i, ["1024"]],
+    [/(?:علامات\s+(?:مسار\s+)?الإخلاء\s+(?:المضيئة|الفسفورية|اللمعانية)|علامات\s+(?:السلالم|الدرج)\s+(?:المضيئة|اللمعانية)|1024\b|إضاءة\s+مسار\s+الهروب|فسفور\s+(?:مسار|سلالم)\s+الهروب)/i, ["1024"]],
+    // Hazardous materials / control areas / MAQ — Section 414 (SBC 201)
+    [/\b(?:control\s+area\s+(?:hazmat|hazardous|fire\s+barrier|floor|limit|MAQ|required|maximum)|maximum\s+allowable\s+quantit\w+|MAQ\b|MAQ\s+(?:hazmat|per\s+control|floor|percentage|threshold|exceeded?)|hazardous\s+materials?\s+(?:storage\s+limit|quantity\s+limit|control\s+area|MAQ|where\s+required|quantities?\s+exceed)|how\s+many\s+control\s+areas?|control\s+areas?\s+per\s+floor|flammable\s+liquid\s+storage\s+(?:limit|MAQ|quantity)|hazmat\s+(?:ventilation|spill\s+control|containment|drainage|storage)|spill\s+control\s+containment\s+(?:hazmat|flammable)|414\b|section\s+414|Table\s+307\.1|table\s+414)\b/i, ["414"]],
+    [/(?:(?:ال)?مواد\s+(?:ال)?خطرة\s+(?:كميات|تخزين|منطقة\s+تحكم)|(?:كمية|كميات)\s+(?:ال)?مواد\s+(?:ال)?خطرة|(?:ال)?مناطق\s+(?:ال)?تحكم\s+(?:ال)?(?:مسموح|المواد|الخطرة|للمواد)|منطقة\s+(?:ال)?تحكم\s+(?:(?:ال)?مواد\s+(?:ال)?خطرة|(?:ال)?خطرة)|(?:ال)?حد\s+(?:ال)?أقصى\s+للكميات\s+(?:ال)?مسموح|414\b|حد\s+(?:ال)?تخزين\s+(?:(?:ال)?مواد\s+(?:ال)?قابلة\s+للاشتعال|(?:ال)?خطرة))/i, ["414"]],
+    // Spray finishing / dip tanks / application groups — Section 416 (SBC 201)
+    [/\b(?:spray\s+(?:finish\w*|booth|room|area|paint\w*|apply\w*|appli\w*)\s*(?:fire|booth|protect\w*|require\w*|ventilat\w*|code|rule|standard|NFPA)?|paint\s+spray\s+(?:booth|room|fire|protect\w*|require\w*|ventilat\w*)|spray\s+booth\s+(?:size|area|limit|construct\w*|fire|sprinkler|ventilat\w*|required|code|NFPA|electrical|LEL|separation)|spray\s+room\s+(?:fire|protect\w*|code|require\w*)|1[,.]?000\s*sq\s*ft\s*spray|1[,.]?500\s*sq\s*ft\s*spray|spray\s+booth\s+(?:10\s*(?:percent|%)\s*(?:of\s+)?room|floor\s+area\s+limit)|dip\s+tank\s+(?:fire|protect\w*|flammable|combustible|code|NFPA|require\w*|overflow|operat\w*)|dip\s+tank|flow.coat\s+(?:fire|flammable)|NFPA\s*33\s+(?:spray|finish\w*|booth|flammable)|NFPA\s*34\s+(?:dip|tank|flammable)|powder\s+coat\w*\s+(?:booth|fire|dust|protect\w*)|electrostatic\s+(?:spray|coat\w*)\s+(?:fire|require\w*|code)|combustible\s+dust\s+(?:coat\w*|spray|booth)|spray\s+(?:application|finish\w*)\s+(?:Group\s+H|H.occupanc\w*|MAQ\s+exceed\w*|flammable\s+liquid)|when\s+(?:does\s+)?spray\s+(?:booth|finish\w*)\s+(?:become|trigger|require\w*)\s+(?:Group\s+H|H.occupanc\w*)|F.1\s+(?:spray|finish\w*|dip\s+tank)|spray\s+booth\s+(?:H.2|H.3|H\s+occupanc\w*)|NEC\s+(?:Class\s+I|Article\s+516)\s+spray|416\b|section\s+416)\b/i, ["416"]],
+    [/(?:كشك\s+(?:ال)?رش|غرفة\s+(?:ال)?رش|(?:ال)?رش\s+(?:الكيميائي|المواد|(?:ال)?طلاء|(?:ال)?بوية)\s+(?:(?:ال)?حريق|(?:ال)?اشتراطات|(?:ال)?متطلبات)|مساحة\s+كشك\s+(?:ال)?رش|اشتراطات\s+كشك\s+(?:ال)?رش|حماية\s+(?:حريق\s+)?كشك\s+(?:ال)?رش|تهوية\s+كشك\s+(?:ال)?رش|رشاشات\s+كشك\s+(?:ال)?رش|بناء\s+كشك\s+(?:ال)?رش|حوض\s+(?:ال)?غمس|NFPA\s*33|NFPA\s*34|طلاء\s+(?:ال)?بودرة\s+(?:(?:ال)?حريق|(?:ال)?كشك)|غبار\s+(?:ال)?بودرة\s+(?:قابل\s+للاشتعال|(?:ال)?حريق)|رش\s+كهروستاتيكي\s+(?:(?:ال)?حريق|(?:ال)?اشتراطات)|متى\s+(?:يصبح|تصبح)\s+(?:عملية\s+)?(?:ال)?رش\s+إشغال\s+(?:H|خطر)|إشغال\s+F-1\s+(?:(?:ال)?رش|(?:ال)?طلاء)|416\b)/i, ["416"]],
+    // High-hazard Group H occupancies — Section 415 (SBC 201)
+    [/\b(?:H.(?:1|2|3|4|5)\s+occupanc\w+|group\s+H.(?:1|2|3|4|5)|high.hazard\s+(?:occupanc\w+|group)|H\s+occupanc\w+\s+(?:classified|required|classification|trigger)|when\s+(?:is\s+)?(?:H\s+|high.hazard\s+)occupanc\w+\s+required|detonation\s+(?:hazard|occupanc\w+)\s+(?:H-1|group\s+H)|deflagration\s+(?:hazard|H-2|group)|HPM\s+(?:fabrication|semiconductor|H-5)|hazardous\s+production\s+material|H-5\s+(?:fab|semiconductor)|semiconductor\s+(?:fab|fabrication)\s+(?:fire\s+code|H-5|hazardous)|explosive\s+(?:storage|occupanc\w+)\s+(?:H-1|group\s+H|detached)|H.occupanc\w+\s+sprinkler|415\b|section\s+415)\b/i, ["415"]],
+    [/(?:إشغال\s+H\s*-\s*(?:1|2|3|4|5)|المجموعة\s+H\s+(?:الخطرة|إشغال)|إشغال\s+عالي\s+الخطورة|مواد\s+متفجرة\s+(?:إشغال|مبنى\s+منفصل)|415\b)/i, ["415"]],
+    // Interior exit stairways — Section 1023 (SBC 201)
+    [/\b(?:interior\s+exit\s+stair(?:way)?|enclosed\s+exit\s+stair(?:way)?|fire.rated\s+stair\s+(?:shaft|enclosure)|exit\s+stair(?:way)?\s+enclosure|interior\s+exit\s+stair(?:way)?\s+(?:enclosure|rating|openings?|construction|fire|1.hour|2.hour|continuity|discharge|door)|exit\s+stair(?:way)?\s+(?:fire\s+rating|fire.rated|1.hour|2.hour|4\s+stories|shaft|enclosed|opening|penetration|self.closing)|protected\s+exit\s+stair(?:way)?|exit\s+stair\s+shaft|stair(?:way)?\s+(?:to\s+roof|extend\w*\s+to\s+(?:the\s+)?roof|(?:reach|access)\s+(?:the\s+)?roof)\s*(?:require\w*|4\s+stories)?|exit\s+stair(?:way)?\s+(?:extend\w*|reach)\s+to\s+(?:the\s+)?roof|stair(?:way)?\s+serving\s+4\s+stories\s+(?:2.hour|two.hour|enclosure|require\w*)|4.story\s+(?:stair|exit)\s+(?:2.hour|enclosure)|exit\s+discharge\s+(?:through\s+)?lobby\s+(?:exception|50\s*percent|sprinkler)|lobby\s+discharge\s+exception\s+(?:exit|stair)|floor.level\s+(?:identification\s+)?signs?\s+stair(?:way)?|1023\.3|1023\.4|section\s+1023|1023\b)\b/i, ["1023"]],
+    [/(?:درج\s+(?:ال)?مخرج\s+(?:الداخلي|(?:ال)?محمي|(?:ال)?مغلق|(?:ال)?المغلق)|(?:ال)?درج\s+(?:ال)?مغلق\s+(?:(?:ال)?مخرج|بجدار\s+مقاوم|(?:ال)?محمي)|تغليف\s+درج\s+(?:ال)?مخرج|تقييم\s+(?:حريق\s+)?درج\s+(?:ال)?مخرج|فتحات\s+درج\s+(?:ال)?مخرج\s+(?:ال)?داخلي|باب\s+(?:درج\s+)?(?:ال)?مخرج\s+(?:(?:ال)?غلق\s+(?:ال)?ذاتي|ذاتي)|درج\s+(?:ال)?مخرج\s+(?:1|ساعة\s+واحدة)\s+(?:ساعة)?|درج\s+(?:ال)?مخرج\s+(?:2|ساعتين)\s+(?:ساعة)?|استمرارية\s+(?:تغليف\s+)?درج\s+(?:ال)?مخرج|درج\s+(?:ال)?مخرج\s+(?:حتى|إلى)\s+(?:ال)?سطح|لافتات\s+(?:تعريف\s+)?(?:الطابق|رقم)\s+(?:في\s+)?درج\s+(?:ال)?هروب|1023\.3|1023\.4|1023\b)/i, ["1023"]],
+    // Exit access stairways — Section 1019 (SBC 201)
+    [/\b(?:exit\s+access\s+stair(?:way)?|open\s+stair(?:way)?\s+(?:egress|more\s+than\s+2\s+stor|connect\w*|between\s+floor)|unenclosed\s+stair(?:way)?\s+(?:egress|more\s+than|connect\w*)|stair(?:way)?\s+enclosure\s+required|exit\s+access\s+stair\s+(?:enclosure|openings?|penetration|fire\s+rating|travel)|open\s+stair(?:way)?\s+(?:2|two)\s+stor|open\s+stair\s+(?:exception|type\s+i)|travel\s+distance\s+(?:through|across|via)\s+stair|1019\.3|section\s+1019|1019\b)\b/i, ["1019"]],
+    [/(?:درج\s+(?:وصول\s+)?(?:ال)?مخرج\s+(?:المفتوح|تغليف|فتحات|متطلبات)|(?:ال)?درج\s+(?:ال)?مفتوح\s+(?:بين\s+(?:الطوابق|أكثر)|أكثر\s+من\s+طابقين|تغليف)|تغليف\s+(?:ال)?درج\s+(?:(?:وصول\s+)?(?:ال)?مخرج|(?:ال)?هروب)|فتحات\s+(?:ال)?درج\s+(?:(?:ال)?مغلق|(?:ال)?مخرج|(?:ال)?هروب)|مسافة\s+(?:ال)?سفر\s+عبر\s+(?:ال)?درج|1019\.3|1019\b)/i, ["1019"]],
+    // Exit passageways — Section 1022 (SBC 201)
+    [/\b(?:exit\s+passageway|exit\s+passage\b|horizontal\s+exit\s+component|exit\s+passageway\s+(?:width|construction|fire\s+rating|rating|openings?|equipment|dead\s+end|sprinkler|1.?hour|2.?hour|require)|connecting\s+(?:exit\s+stair(?:way)?\s+to\s+exterior|stair\s+discharge)|exit\s+discharge\s+(?:horizontal|passage)|protected\s+exit\s+horizontal|exit\s+passageway\s+vs\s+corridor|corridor\s+vs\s+exit\s+passageway|1022\b|section\s+1022)\b/i, ["1022"]],
+    [/(?:ممر\s+(?:ال)?مخرج(?:\s+(?:المحمي|الأفقي|عرض|فتحات|معدات|تقييم|حريق|نهاية\s+مسدودة|متطلبات))?|(?:ال)?ممر\s+(?:ال)?أفقي\s+(?:(?:ال)?مخرج|محمي|للهروب)|متطلبات\s+ممر\s+(?:ال)?مخرج|فتحات\s+ممر\s+(?:ال)?مخرج|عرض\s+ممر\s+(?:ال)?مخرج|تقييم\s+حريق\s+ممر\s+(?:ال)?مخرج|معدات\s+ممر\s+(?:ال)?مخرج|1022\b)/i, ["1022"]],
   ];
   for (const [pattern, tableIds] of SEMANTIC_ALIASES) {
     if (pattern.test(query)) {
@@ -2114,123 +2396,29 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
 }
 
 function getVisionPlanningPrompt(language: string): string {
-  return language === "en"
-    ? `You are a fire safety document intelligence agent. Your task is to extract ALL readable information from the uploaded engineering drawing or image with maximum precision.
+  return language === "en" 
+    ? `You are a fire safety planning agent. Analyze the uploaded engineering drawing/image and classify:
+1. Building Type (residential, commercial, industrial, mixed-use, etc.)
+2. Occupancy Group per SBC 201 Chapter 3 (A-1, A-2, B, E, F-1, F-2, H, I, M, R-1, R-2, R-3, S-1, S-2, U)
+3. Hazard Level (Low, Ordinary Group 1, Ordinary Group 2, Extra Hazard Group 1, Extra Hazard Group 2)
+4. Number of stories (if visible)
+5. Estimated floor area (if determinable)
+6. Visible fire protection systems (sprinklers, alarms, standpipes, etc.)
+7. Key observations about exits, corridors, stairs
 
-CRITICAL RULE: Only report what is EXPLICITLY visible or readable. Never fabricate room labels, measurements, system names, or symbols. If something is unclear or illegible, say so explicitly.
+Respond in JSON format:
+{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`
+    : `أنت عميل تخطيط للسلامة من الحرائق. حلل المخطط الهندسي المرفوع وصنّف:
+1. نوع المبنى
+2. مجموعة الإشغال حسب SBC 201 الفصل 3
+3. مستوى الخطورة
+4. عدد الطوابق (إذا ظاهر)
+5. المساحة التقريبية
+6. أنظمة الحماية المرئية
+7. ملاحظات على المخارج والممرات والسلالم
 
-Extract the following in order:
-
-1. DOCUMENT TYPE — select the best match:
-   floor_plan | reflected_ceiling_plan | fire_suppression_plan | fire_alarm_plan | mechanical_plan | site_plan | section_elevation | schedule_table | specification | mixed | unclear
-
-2. SHEET CONTEXT (only if explicitly labeled):
-   - Sheet title (exact text if visible)
-   - Sheet number (exact if visible, e.g. "FP-101")
-   - Scale (e.g. "1:100", "NTS")
-   - Date or revision (if shown)
-
-3. BUILDING CLASSIFICATION:
-   - Building type (based on visible labels/use)
-   - Occupancy Group per SBC 201 Chapter 3 (A-1 through U) — only if determinable
-   - Hazard Level (Low / Ordinary G1 / Ordinary G2 / Extra Hazard G1 / Extra Hazard G2) — only if determinable
-   - Number of stories (if visible or labeled)
-   - Floor area (only if dimensioned or labeled)
-
-4. VISIBLE ELEMENTS (list only what is explicitly readable):
-   - Room labels and functions (exact text as shown)
-   - Dimension annotations (e.g. "6000mm", "20'")
-   - Fire protection system labels (sprinkler heads, detectors, alarm devices, standpipes, hydrants, suppression nozzles)
-   - Legend/symbol key (describe each symbol and its associated label exactly as shown)
-   - Fire-rated elements (fire doors labeled, fire walls, smoke partitions — exact labels)
-   - Exit routes, stairwells, corridors (as labeled)
-   - Equipment schedules visible in the drawing
-
-5. IMAGE QUALITY:
-   - Overall quality: clear | partial | low | illegible
-   - Readable areas: (list clearly legible zones or content)
-   - Unreadable areas: (list illegible, cut-off, or too-small-to-read content)
-   - Classification confidence: high | medium | low
-
-Respond ONLY in valid JSON (no markdown, no explanation outside JSON):
-{
-  "documentType": "...",
-  "sheetContext": {"title":"...","number":"...","scale":"...","date":"..."},
-  "buildingType": "...",
-  "occupancyGroup": "...",
-  "hazardLevel": "...",
-  "stories": "...",
-  "floorArea": "...",
-  "roomLabels": ["..."],
-  "dimensions": ["..."],
-  "visibleSystems": ["..."],
-  "legendSymbols": ["..."],
-  "fireRatedElements": ["..."],
-  "exitElements": ["..."],
-  "observations": ["..."],
-  "readableAreas": ["..."],
-  "unreadableAreas": ["..."],
-  "imageQuality": "clear|partial|low|illegible",
-  "classificationConfidence": "high|medium|low"
-}`
-    : `أنت عميل ذكاء وثائقي للسلامة من الحرائق. مهمتك استخراج جميع المعلومات المقروءة من المخطط الهندسي أو الصورة المرفوعة بأقصى دقة ممكنة.
-
-قاعدة حرجة: لا تُبلّغ إلا عمّا هو مرئي وصريح. لا تخترع أسماء غرف أو قياسات أو أنظمة أو رموزاً. إذا كان شيء غير واضح أو غير مقروء، صرّح بذلك.
-
-استخرج ما يلي بالترتيب:
-
-1. نوع الوثيقة — اختر الأنسب:
-   مخطط_طابق | مخطط_سقف_معكوس | مخطط_إطفاء | مخطط_إنذار | مخطط_ميكانيكي | مخطط_موقع | قطاع_واجهة | جدول_بيانات | مواصفات | مختلط | غير_محدد
-
-2. سياق الورقة (فقط إذا كان مسمى صراحةً):
-   - عنوان الورقة (النص الحرفي إن ظهر)
-   - رقم الورقة (مثل FP-101)
-   - المقياس (مثل 1:100)
-   - التاريخ أو رقم المراجعة
-
-3. التصنيف:
-   - نوع المبنى
-   - مجموعة الإشغال حسب SBC 201 الفصل 3
-   - مستوى الخطورة
-   - عدد الطوابق (إذا مذكور)
-   - المساحة (فقط إذا مُقاسة أو مُسماة)
-
-4. العناصر المرئية (ما يُقرأ صراحةً فقط):
-   - تسميات الغرف ووظائفها (النص الحرفي)
-   - الأبعاد المُدرجة
-   - رموز وتسميات أنظمة الحماية
-   - مفتاح الرموز (وصف كل رمز وتسميته)
-   - العناصر المقاومة للحريق
-   - المخارج والسلالم والممرات
-   - جداول المعدات
-
-5. جودة الصورة:
-   - الجودة العامة: واضحة | جزئية | منخفضة | غير مقروءة
-   - المناطق المقروءة
-   - المناطق غير المقروءة
-   - ثقة التصنيف: عالية | متوسطة | منخفضة
-
-أجب فقط بـ JSON صالح (بدون شرح خارج JSON):
-{
-  "documentType": "...",
-  "sheetContext": {"title":"...","number":"...","scale":"...","date":"..."},
-  "buildingType": "...",
-  "occupancyGroup": "...",
-  "hazardLevel": "...",
-  "stories": "...",
-  "floorArea": "...",
-  "roomLabels": ["..."],
-  "dimensions": ["..."],
-  "visibleSystems": ["..."],
-  "legendSymbols": ["..."],
-  "fireRatedElements": ["..."],
-  "exitElements": ["..."],
-  "observations": ["..."],
-  "readableAreas": ["..."],
-  "unreadableAreas": ["..."],
-  "imageQuality": "clear|partial|low|illegible",
-  "classificationConfidence": "high|medium|low"
-}`;
+أجب بصيغة JSON:
+{"buildingType":"...","occupancyGroup":"...","hazardLevel":"...","stories":"...","floorArea":"...","visibleSystems":["..."],"observations":["..."]}`;
 }
 
 function getVisionCoTPrompt(planningResult: string, language: string): string {
@@ -2320,117 +2508,50 @@ RESPOND IN: ${lang}`;
 
 function getVisionFinalPrompt(language: string): string {
   const lang = language === "en" ? "ENGLISH" : "ARABIC";
-  return `[SYSTEM — ConsultX | VISION ANALYSIS — COMPLIANCE AUDIT — SENIOR REVIEWER GRADE]
+  return `[SYSTEM — ConsultX | VISION ANALYSIS - MISSION JOURNEY FINAL RESPONSE]
 
 ${CORE_RULES}
 
-You are generating the final compliance audit for an engineering drawing that has been processed through a multi-stage pipeline.
+You are generating the final analysis for an engineering drawing that has been processed through a multi-stage pipeline.
 You will receive:
-1. The original image(s)
-2. Document Intelligence Summary (Stage 1 extraction — includes image quality, document type, extracted elements)
-3. Chain of Thought checklist (Stage 2)
-4. SBC reference documents retrieved (Stage 3)
+1. The original image
+2. Planning Agent classification results
+3. Chain of Thought checklist
+4. SBC reference documents retrieved based on the analysis
 
-CRITICAL FRAMING:
-- The Document Intelligence Summary tells you what was ACTUALLY readable from the drawing.
-- Only use extraction data that is explicitly marked as read/confirmed — never fabricate labels, dimensions, or symbols.
-- If extraction quality is LOW or ILLEGIBLE, you MUST downgrade your confidence accordingly and request missing information.
-- Apply the FULL analytical protocol below — do not skip sections.
+YOUR RESPONSE MUST follow this EXACT structure:
 
-═══════════════════════════════════════
-EPISTEMIC STATE RULES (apply throughout):
-═══════════════════════════════════════
-- [CONFIRMED]: explicitly visible/readable in the drawing or from provided text
-- [INFERRED]: reasonable derivation — must be labeled as inference, not fact
-- [REQUIRES CONFIRMATION]: possible but not established — must be flagged
-- [CANNOT CONCLUDE]: impossible to judge — prohibited from compliance verdict
+## 🔍 ملخص الفروقات / Differences Summary
 
-═══════════════════════════════════════
-YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
-═══════════════════════════════════════
+For each requirement checked, use one of these status markers:
+- ✅ **مطابق / Compliant**: [item description] — [SBC reference]
+- ❌ **غير مطابق / Non-Compliant**: [item description] — [SBC reference]  
+- ⚠️ **مشروط / Conditional**: [item description] — [SBC reference]
 
-## I. تصنيف المشروع / Project Classification
-
-- **نوع الوثيقة / Document Type:** [from extraction] — [CONFIRMED / INFERRED]
-- **نوع المبنى / Building Type:** [value] — [CONFIRMED / INFERRED]
-- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED / INFERRED]
-- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED / INFERRED]
-- **الطوابق / Stories:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
-- **المساحة / Floor Area:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
-- **الرشاشات / Sprinklers:** [present / absent / not determinable]
-- **ثقة التصنيف / Classification Confidence:** [High / Medium / Low] — based on extraction quality
-
-## II. ملخص الاستخراج / Extraction Summary
-
-- **جودة الصورة / Image Quality:** [clear / partial / low / illegible]
-- **المناطق المقروءة / Readable:** [list from Stage 1]
-- **المناطق غير المقروءة / Unreadable:** [list from Stage 1 — these create uncertainty zones]
-- **تحذير استخراج / Extraction Warning:** [if quality is low/illegible — state that conclusions in affected areas are unreliable]
-
-## III. مسار الكود الحاكم / Governing Code Path
-
-- SBC 201: [Chapter/Section] — السبب: [why this path]
-- SBC 801: [Chapter/Section] — السبب: [why this path]
-- تعارضات / Conflicts: [any conflicting code paths or interpretations]
-
-## IV. الاشتراطات الرئيسية / Key Requirements
-
-| الاشتراط | المرجع (Document + Section) | القيمة / المعامل | التوفر |
-|---|---|---|---|
-| ... | ... | ... | مؤكد / يحتاج تحقق |
-
-## V. جدول الامتثال / Compliance Table
-
-| العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | الأساس |
-|---|---|---|---|---|
-| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | [CONFIRMED / INFERRED] |
-
-**قواعد الجدول الصارمة:**
-- ✅ متوافق: فقط بنص مرجعي صريح + بيانات مستخرجة مؤكدة
-- ❌ غير متوافق: فقط بنص مرجعي صريح + دليل مستخرج مؤكد
-- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر، أو استنتاج غير مؤكد
-
-## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
-
-- **[العنصر]** — [وصف الخطر] — المرجع: [Document + Section]
-- إذا كانت المناطق غير مقروءة: اذكرها صراحة كمناطق خطر غير محققة
-
-## VII. المعلومات الحرجة الناقصة / Missing Critical Information
-
-- [ ] [المعلومة الناقصة] — [تأثيرها على الحكم]
-- [ ] [عناصر غير مقروءة من الاستخراج] — [تأثيرها]
-
-## VIII. السند التقني / Technical References
+## 📜 السند القانوني / Legal Basis
 
 <details>
-<summary><strong>SBC 801 References</strong></summary>
+<summary><strong>SBC 801-2024 References</strong></summary>
 
-For each section cited above:
+For each cited section, provide:
 - **Section:** [exact number]
-- **Verbatim Quote:** > [exact English text]
-- **Applicability to this drawing:** [how it applies]
+- **Verbatim Quote:** > [exact English text from code]
+- **Applicability:** [how it applies to this drawing]
 
 </details>
 
 <details>
 <summary><strong>SBC 201 References</strong></summary>
 
-[Same format as SBC 801 section above]
+[Same format as above]
 
 </details>
 
-## IX. حكم الامتثال / Compliance Verdict
+## ✅ الإجراءات المطلوبة / Required Actions
 
-⚠️ يُصدر هذا الحكم فقط إذا كانت المعطيات الحرجة مؤكدة وجودة الاستخراج كافية:
-
-- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — بيانات غير كافية]
-- **الأساس:** "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
-- **تحفظات الاستخراج:** [إذا كانت جودة الصورة تُقيّد الحكم — اذكر ذلك صراحة]
-- **ختام إلزامي:** "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
-
-## X. الإجراءات المطلوبة / Required Actions
-
-- [ ] [الإجراء] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
+- [ ] Action 1
+- [ ] Action 2
+- [ ] ...
 
 RESPOND IN: ${lang}`;
 }
@@ -2495,68 +2616,14 @@ async function runVisionPipeline(
 
   // Stage 4 & 5 combined
   console.log("🔀 Stage 4-5: Merge + Final Response (will be streamed)...");
-
-  // ── Build Document Intelligence Summary from Stage 1 results ─────────────
-  // Parse the planning JSON to extract quality/confidence metadata so the
-  // final analytical prompt knows what was actually readable from the drawing.
-  let docIntelSummary = "";
-  try {
-    const planParsed = JSON.parse(planningResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
-    const quality = planParsed.imageQuality || "unknown";
-    const confidence = planParsed.classificationConfidence || "unknown";
-    const docType = planParsed.documentType || "unknown";
-    const readableAreas: string[] = planParsed.readableAreas || [];
-    const unreadableAreas: string[] = planParsed.unreadableAreas || [];
-    const roomLabels: string[] = planParsed.roomLabels || [];
-    const visibleSystems: string[] = planParsed.visibleSystems || [];
-    const legendSymbols: string[] = planParsed.legendSymbols || [];
-    const dimensions: string[] = planParsed.dimensions || [];
-    const sheetCtx = planParsed.sheetContext || {};
-
-    const qualityWarning = (quality === "low" || quality === "illegible")
-      ? `\n⚠️ EXTRACTION WARNING: Image quality is "${quality}". Conclusions in unreadable areas are UNRELIABLE. Do NOT fabricate elements not confirmed by extraction. Downgrade compliance confidence accordingly.`
-      : "";
-
-    docIntelSummary = `
-=== DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
-Input Type: ${docType}
-Sheet: ${sheetCtx.title || "unknown"} | Number: ${sheetCtx.number || "N/A"} | Scale: ${sheetCtx.scale || "N/A"}
-Image Quality: ${quality}
-Classification Confidence: ${confidence}
-Readable Areas: ${readableAreas.length > 0 ? readableAreas.join("; ") : "not specified"}
-Unreadable Areas: ${unreadableAreas.length > 0 ? unreadableAreas.join("; ") : "none reported"}
-Room Labels Extracted: ${roomLabels.length > 0 ? roomLabels.join(", ") : "none"}
-Fire Systems Visible: ${visibleSystems.length > 0 ? visibleSystems.join(", ") : "none"}
-Legend Symbols: ${legendSymbols.length > 0 ? legendSymbols.join(", ") : "none"}
-Dimensions: ${dimensions.length > 0 ? dimensions.join(", ") : "none"}
-Building Type (extracted): ${planParsed.buildingType || "unknown"}
-Occupancy (extracted): ${planParsed.occupancyGroup || "unknown"}
-Hazard Level (extracted): ${planParsed.hazardLevel || "unknown"}
-Stories (extracted): ${planParsed.stories || "unknown"}
-Floor Area (extracted): ${planParsed.floorArea || "unknown"}${qualityWarning}
-=== END DOCUMENT INTELLIGENCE SUMMARY ===
-`;
-    console.log(`[DocIntel] Quality: ${quality} | Confidence: ${confidence} | DocType: ${docType} | Rooms: ${roomLabels.length} | Systems: ${visibleSystems.length}`);
-  } catch {
-    docIntelSummary = `
-=== DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
-Extraction: Stage 1 JSON parse failed — raw classification data follows in Stage 1 block below.
-Image Quality: unknown
-Classification Confidence: low
-⚠️ EXTRACTION WARNING: Classification metadata unavailable. Use only visually confirmed elements. Do not fabricate details.
-=== END DOCUMENT INTELLIGENCE SUMMARY ===
-`;
-    console.warn("[DocIntel] Failed to parse Stage 1 JSON for summary");
-  }
-
+  
   // Advisory mode (standard) → design guidance framing; Analytical (analysis) or Primary → compliance audit framing
   const finalSystemPrompt = mode === "standard"
     ? getVisionAdvisoryFinalPrompt(language)
     : getVisionFinalPrompt(language);
 
   const extraContext = `
-${docIntelSummary}
-=== PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION (raw) ===
+=== PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION ===
 ${planningResult}
 
 === PIPELINE STAGE 2: CHAIN OF THOUGHT CHECKLIST ===
@@ -2566,7 +2633,7 @@ ${sbcContext}
 `;
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
-
+  
   return { systemPrompt: finalSystemPrompt, extraContext, usedFiles };
 }
 
@@ -2607,10 +2674,8 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
-    // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
-    const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
@@ -2988,25 +3053,6 @@ serve(async (req) => {
       fullSystemPrompt += finalBindingReminder;
     }
     
-    // ── Inject document texts (CSV/TXT files) into system prompt ─────────────
-    // These are structured text documents uploaded by the user (schedules, tables,
-    // specifications). Injected AFTER the SBC context so they appear as user-provided
-    // project data, clearly distinct from code references.
-    if (resolvedDocTexts.length > 0) {
-      let docTextBlock = language === "en"
-        ? `\n\n=== USER-PROVIDED DOCUMENTS (Text/CSV/Schedule Files) ===\n`
-        : `\n\n=== وثائق المستخدم المرفوعة (ملفات نصية / CSV / جداول) ===\n`;
-      for (const doc of resolvedDocTexts) {
-        const truncated = doc.content.length > 8000 ? doc.content.slice(0, 8000) + "\n...[truncated]" : doc.content;
-        docTextBlock += `\n--- File: ${doc.name} ---\n${truncated}\n--- End of ${doc.name} ---\n`;
-      }
-      docTextBlock += language === "en"
-        ? `\n=== END USER-PROVIDED DOCUMENTS ===\nNOTE: The above documents are user-supplied project data (schedules, specifications, material lists). Treat them as CONFIRMED project inputs. Reference them explicitly when analyzing compliance. Do not confuse them with code references.\n`
-        : `\n=== نهاية وثائق المستخدم ===\nملاحظة: الوثائق أعلاه بيانات مشروع مرفوعة من المستخدم (جداول، مواصفات، قوائم مواد). اعتبرها مدخلات مشروع مؤكدة. أشر إليها صراحة عند تحليل الامتثال. لا تخلطها مع مراجع الكود.\n`;
-      fullSystemPrompt += docTextBlock;
-      console.log(`[DocText] Injected ${resolvedDocTexts.length} document(s) into prompt`);
-    }
-
     // ── Apply user preferences to system prompt ────────────────────────────
     // output_format and preferred_standards come from the user's saved settings
     // (profiles table). They are forwarded by the frontend with every request.
