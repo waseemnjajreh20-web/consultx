@@ -233,6 +233,13 @@ function escapeHtml(str: string): string {
 // Apply inline markdown (bold, code, badges) to an already-escaped string
 function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
   return escaped
+    // SBC document inline references — rendered as clickable dotted-underline spans.
+    // data-src is picked up by the click-delegation handler in ChatInterface.tsx.
+    // Runs FIRST so it matches raw text before bold/badge wrapping.
+    .replace(/\bSBC[\u00A0 \u2011\-]*201\b/g,
+      '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
+    .replace(/\bSBC[\u00A0 \u2011\-]*801\b/g,
+      '<span class="cx-src" data-src="sbc801" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
     // Compliance badges
     .replace(/✅\s*(مطابق|Compliant)/gi,
       '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')

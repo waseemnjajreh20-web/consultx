@@ -216,6 +216,31 @@ function UtilityBar({ content, mode, messageId, userName }: {
       '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">',
       styleLinks,
       "<style>",
+      /* Override dark-theme CSS vars so all Tailwind utility classes (text-foreground,
+         bg-card, text-muted-foreground, etc.) resolve to print-safe light values.
+         The <style> tag is declared AFTER the linked Tailwind sheet so equal-specificity
+         :root rules here win the cascade. */
+      ":root {",
+      "  --background: 0 0% 100%;",
+      "  --foreground: 220 40% 6%;",
+      "  --card: 0 0% 100%;",
+      "  --card-foreground: 220 40% 6%;",
+      "  --popover: 0 0% 100%;",
+      "  --popover-foreground: 220 40% 6%;",
+      "  --primary: 195 70% 28%;",
+      "  --primary-foreground: 0 0% 100%;",
+      "  --secondary: 220 14% 96%;",
+      "  --secondary-foreground: 220 40% 6%;",
+      "  --muted: 220 14% 96%;",
+      "  --muted-foreground: 215 16% 35%;",
+      "  --accent: 195 70% 28%;",
+      "  --accent-foreground: 0 0% 100%;",
+      "  --destructive: 0 72% 45%;",
+      "  --destructive-foreground: 0 0% 100%;",
+      "  --border: 220 13% 88%;",
+      "  --input: 220 13% 88%;",
+      "  --ring: 195 70% 28%;",
+      "}",
       "*, *::before, *::after { box-sizing: border-box; }",
       "html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }",
       "body { font-family: 'Cairo', system-ui, sans-serif; line-height: 1.85; color: #111827; background: #ffffff; margin: 0; padding: 0 0 60px; direction: rtl; orphans: 3; widows: 3; }",
@@ -293,6 +318,26 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "      if (bg.indexOf(key) !== -1) el.style.background = 'transparent';",
       "    }",
       "    if (c === 'rgb(255, 255, 255)' || c === '#fff' || c === '#ffffff') el.style.color = '#000000';",
+      "    /* Remap SVG fill attributes with neon colours */",
+      "    var fill = (el.getAttribute && el.getAttribute('fill') || '').toLowerCase();",
+      "    if (fill) {",
+      "      for (var fk in COLOR_MAP) { if (fill.indexOf(fk) !== -1) { el.setAttribute('fill', COLOR_MAP[fk]); break; } }",
+      "      if (fill === 'rgba(0, 212, 255, 0.85)' || fill.indexOf('0,212,255') !== -1) el.setAttribute('fill', '#005B70');",
+      "      if (fill === 'rgba(255, 140, 0, 0.80)' || fill.indexOf('255,140,0') !== -1) el.setAttribute('fill', '#8B4500');",
+      "      if (fill === 'rgba(220, 38, 38, 0.80)' || fill.indexOf('220,38,38') !== -1) el.setAttribute('fill', '#800000');",
+      "    }",
+      "    /* Force dark text on any element whose computed colour is very light */",
+      "    try {",
+      "      var comp = window.getComputedStyle(el).color;",
+      "      if (comp) {",
+      "        var nums = comp.match(/\\d+/g);",
+      "        if (nums && nums.length >= 3) {",
+      "          var r = +nums[0], g = +nums[1], b = +nums[2];",
+      "          var brightness = (r * 299 + g * 587 + b * 114) / 1000;",
+      "          if (brightness > 180 && !el.style.color) el.style.color = '#111827';",
+      "        }",
+      "      }",
+      "    } catch(e) {}",
       "  }",
       "  document.querySelectorAll('*').forEach(remapEl);",
       "  document.body.style.background = '#ffffff';",
@@ -551,12 +596,10 @@ function trimMessageHistory(
 
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
-  documentTexts,
   output_format, preferred_standards,
   onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
-  documentTexts?: Array<{ name: string; content: string }>;
   output_format?: string;
   preferred_standards?: string[];
   onDelta: (deltaText: string) => void;
@@ -575,7 +618,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, output_format, preferred_standards }),
+    body: JSON.stringify({ messages, retry, mode, language, images, output_format, preferred_standards }),
     signal,
   });
   if (!resp.ok) {
@@ -733,7 +776,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [showHistory, setShowHistory] = useState(false);
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages, allDocumentTexts } = usePendingFiles();
+  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
   const { preferences } = usePreferences();
 
@@ -940,7 +983,6 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     chatMessages: ChatMessage[], assistantId: string, isRetry: boolean = false,
     currentRetryCount: number = 0, currentMode: ChatMode = "standard",
     convId: string | null = null, currentLanguage: string = "ar", imageBase64s?: string[],
-    docTexts?: Array<{ name: string; content: string }>,
   ) => {
     // Abort any previous request
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -985,7 +1027,6 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     try {
       await streamChat({
         messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
-        documentTexts: docTexts,
         output_format: preferences.output_format,
         preferred_standards: preferences.preferred_standards,
         signal: controller.signal,
@@ -1125,7 +1166,6 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     // Snapshot pending files before clearing
     const filesToSend = [...pendingFiles];
     const pagesToSend = [...allBase64Pages];
-    const docTextsToSend = [...allDocumentTexts];
     setIsVisionRequest(filesToSend.length > 0);
     clearAll();
 
@@ -1178,8 +1218,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     const allRealMessages = [...messages, userMessage];
     const chatMessages = trimMessageHistory(allRealMessages, chatMode, preferences.ai_memory_level);
     handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language,
-      pagesToSend.length > 0 ? pagesToSend : undefined,
-      docTextsToSend.length > 0 ? docTextsToSend : undefined);
+      pagesToSend.length > 0 ? pagesToSend : undefined);
   };
 
 
@@ -1581,7 +1620,27 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                         {isVisionAnalysisResponse(displayContent) || (msgMode === "analysis" && isComplianceTextResponse(displayContent)) ? (
                           <AnalysisResultCard content={displayContent} />
                         ) : (
-                          <div id={`cmr-${message.id}`}>
+                          <div
+                            id={`cmr-${message.id}`}
+                            onClick={(e) => {
+                              const srcEl = (e.target as HTMLElement).closest('[data-src]') as HTMLElement | null;
+                              if (!srcEl) return;
+                              const srcKey = srcEl.dataset.src;
+                              if (!message.sources?.length) return;
+                              const resolved = message.sourceMeta
+                                ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
+                                : resolveAllSources(message.sources);
+                              const match = resolved.find(m =>
+                                (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
+                                (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
+                              ) ?? resolved[0] ?? null;
+                              if (match) {
+                                setSourcePanel({ open: true, sources: message.sources, activeMeta: match.pdfUrl ? match : null });
+                              } else if (resolved.length > 0) {
+                                setSourcePanel({ open: true, sources: message.sources, activeMeta: null });
+                              }
+                            }}
+                          >
                             <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
                           </div>
                         )}
@@ -1709,7 +1768,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             )}
             style={{ borderColor: getModeAccentColor(chatMode).replace("0.6", "0.4") }}
           >
-            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf,text/csv,text/plain,.csv,.txt" multiple onChange={handleFileSelect} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple onChange={handleFileSelect} className="hidden" />
             {/* Folder upload input — desktop only */}
             {!isMobile && (
               // @ts-expect-error webkitdirectory is non-standard
