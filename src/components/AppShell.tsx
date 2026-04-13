@@ -11,7 +11,7 @@
  * Mobile: sidebar nav hidden; source panel stays as slide-over.
  */
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, UserCircle, CreditCard, Settings, Sliders,
@@ -87,40 +87,51 @@ export default function AppShell({
 
   // ── Resizable source pane (desktop) ─────────────────────────────────────────
   const [sourcePaneWidth, setSourcePaneWidth] = useState(480);
-  const isDragging = useRef(false);
+  const [handleState, setHandleState] = useState<"idle" | "hover" | "active">("idle");
+  const sourcePaneRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  // Direct DOM manipulation during drag → zero React re-renders → zero jitter.
+  // We only commit the final width to React state on mouseup.
+  const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
-    isDragging.current = true;
     dragStartX.current = e.clientX;
     dragStartWidth.current = sourcePaneWidth;
-
-    const onMove = (ev: MouseEvent) => {
-      if (!isDragging.current) return;
-      // Panel is on the right: dragging handle leftward widens the pane
-      const delta = dragStartX.current - ev.clientX;
-      const clamped = Math.max(320, Math.min(860, dragStartWidth.current + delta));
-      setSourcePaneWidth(clamped);
-    };
-    const onUp = () => {
-      isDragging.current = false;
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-
+    setHandleState("active");
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
+
+    const onMove = (ev: MouseEvent) => {
+      // Panel is on the right: leftward drag widens it
+      const delta = dragStartX.current - ev.clientX;
+      const w = Math.max(320, Math.min(860, dragStartWidth.current + delta));
+      if (sourcePaneRef.current) sourcePaneRef.current.style.width = `${w}px`;
+    };
+
+    const onUp = () => {
+      // Commit final width to React state so it survives re-renders
+      const finalW = sourcePaneRef.current
+        ? parseInt(sourcePaneRef.current.style.width || "480", 10)
+        : sourcePaneWidth;
+      setSourcePaneWidth(finalW);
+      setHandleState("idle");
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
-  }, [sourcePaneWidth]);
+  };
 
-  // Reset width when panel closes so next open starts fresh
+  // Reset width when panel closes so next open starts at default
   useEffect(() => {
-    if (!sourcePanel.open) setSourcePaneWidth(480);
+    if (!sourcePanel.open) {
+      setSourcePaneWidth(480);
+      if (sourcePaneRef.current) sourcePaneRef.current.style.width = "480px";
+    }
   }, [sourcePanel.open]);
 
   const handleNavClick = (id: string) => {
@@ -235,24 +246,38 @@ export default function AppShell({
       {/* ── RIGHT SOURCE PANE — desktop 3rd pane (resizable) ────────────────── */}
       {sourcePanel.open && (
         <>
-          {/* Drag handle — only visible on md+ */}
+          {/* Drag handle — desktop only; 12px touch target, 3px visual grip */}
           <div
-            className="hidden md:flex flex-col items-center justify-center w-2 flex-shrink-0 cursor-col-resize group select-none"
-            style={{ borderLeft: `1px solid ${BORDER}` }}
+            className="hidden md:flex flex-col items-center justify-center w-3 flex-shrink-0 cursor-col-resize select-none"
+            style={{
+              borderLeft: `1px solid ${handleState !== "idle" ? "rgba(0,212,255,0.35)" : BORDER}`,
+              transition: "border-color 0.15s",
+            }}
+            onMouseEnter={() => setHandleState(s => s === "idle" ? "hover" : s)}
+            onMouseLeave={() => setHandleState(s => s === "hover" ? "idle" : s)}
             onMouseDown={handleResizeStart}
-            title="Drag to resize"
+            title={lang === "ar" ? "اسحب لتغيير الحجم" : "Drag to resize"}
           >
             <div
-              className="w-0.5 h-10 rounded-full transition-all duration-150"
-              style={{ background: "rgba(0,212,255,0.15)" }}
-              // Brightens on hover via parent group
+              style={{
+                width: "3px",
+                height: handleState !== "idle" ? "56px" : "40px",
+                borderRadius: "999px",
+                background:
+                  handleState === "active"
+                    ? ACCENT
+                    : handleState === "hover"
+                    ? "rgba(0,212,255,0.55)"
+                    : "rgba(0,212,255,0.18)",
+                transition: "background 0.15s, height 0.2s ease",
+              }}
             />
-            <style>{`.group:hover .resize-grip{background:rgba(0,212,255,0.5)!important}`}</style>
           </div>
-          {/* Pane */}
+          {/* Pane — width set via ref during drag, synced to state on release */}
           <div
+            ref={sourcePaneRef}
             className="hidden md:flex flex-shrink-0 overflow-hidden"
-            style={{ width: sourcePaneWidth, transition: isDragging.current ? "none" : "width 0.05s" }}
+            style={{ width: sourcePaneWidth }}
           >
             <SourcePanel
               state={sourcePanel}

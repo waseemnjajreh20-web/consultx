@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
 
@@ -117,24 +117,28 @@ function PanelHeader({
     setTimeout(() => injected.forEach(el => el.remove()), 500);
   };
 
+  // Shared button style — rounded, subtle hover, clean focus ring
+  const iconBtn =
+    "flex-shrink-0 p-1.5 rounded-lg transition-all duration-150 " +
+    "text-white/40 hover:text-white hover:bg-white/10 " +
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[rgba(0,212,255,0.5)] " +
+    "active:bg-white/15 active:scale-95";
+
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+      className="flex items-center gap-2 px-3 py-3 flex-shrink-0"
       style={{ borderBottom: `1px solid ${BORDER_COLOR}` }}
     >
       {/* Back — only in PDF view */}
       {!isListView && (
-        <button
-          onClick={onBack}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
-          aria-label={isRtl ? "رجوع" : "Back"}
-        >
+        <button onClick={onBack} className={iconBtn} aria-label={isRtl ? "رجوع" : "Back"}>
           <ArrowLeft className="w-4 h-4" />
         </button>
       )}
 
-      <BookOpen className="w-4 h-4 flex-shrink-0" style={{ color: ACCENT }} />
-      <span className="flex-1 text-sm font-medium text-white truncate min-w-0">
+      <BookOpen className="w-3.5 h-3.5 flex-shrink-0 opacity-70" style={{ color: ACCENT }} />
+
+      <span className="flex-1 text-[13px] font-medium text-white/90 truncate min-w-0 leading-tight">
         {isListView
           ? (isRtl ? "المصادر المرجعية" : "Source References")
           : activeMeta
@@ -142,29 +146,33 @@ function PanelHeader({
           : ""}
       </span>
 
-      {/* Source prev/next navigation — only in PDF view when multiple sources exist */}
+      {/* Source prev/next — only in PDF view when multiple sources exist */}
       {!isListView && sourceTotal > 1 && (
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div
+          className="flex items-center gap-0.5 flex-shrink-0 rounded-lg px-1 py-0.5"
+          style={{ background: "rgba(0,212,255,0.07)", border: "1px solid rgba(0,212,255,0.15)" }}
+        >
           <button
             onClick={onPrevSource}
             disabled={sourceIndex <= 0}
-            className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-white/10"
+            className="p-1 rounded-md transition-all duration-150 disabled:opacity-25 hover:bg-white/10 active:scale-90"
             aria-label={isRtl ? "المصدر السابق" : "Previous source"}
-            title={isRtl ? "المصدر السابق" : "Previous source"}
           >
-            {isRtl ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+            {isRtl ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
           </button>
-          <span className="text-xs text-muted-foreground tabular-nums" style={{ color: "rgba(0,212,255,0.7)" }}>
-            {sourceIndex + 1}/{sourceTotal}
+          <span
+            className="text-[11px] tabular-nums font-medium px-1 select-none"
+            style={{ color: "rgba(0,212,255,0.85)" }}
+          >
+            {sourceIndex >= 0 ? sourceIndex + 1 : "·"}/{sourceTotal}
           </span>
           <button
             onClick={onNextSource}
             disabled={sourceIndex >= sourceTotal - 1}
-            className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-white/10"
+            className="p-1 rounded-md transition-all duration-150 disabled:opacity-25 hover:bg-white/10 active:scale-90"
             aria-label={isRtl ? "المصدر التالي" : "Next source"}
-            title={isRtl ? "المصدر التالي" : "Next source"}
           >
-            {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            {isRtl ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
           </button>
         </div>
       )}
@@ -175,31 +183,23 @@ function PanelHeader({
           href={activeMeta.pdfUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-1.5 rounded-md text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
+          className={iconBtn}
           aria-label={isRtl ? "فتح في نافذة جديدة" : "Open in new tab"}
         >
-          <ExternalLink className="w-4 h-4" />
+          <ExternalLink className="w-3.5 h-3.5" />
         </a>
       )}
 
       {/* Print — only in PDF view */}
       {!isListView && activeMeta?.pdfUrl && (
-        <button
-          onClick={handlePrint}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
-          aria-label={isRtl ? "طباعة" : "Print"}
-        >
-          <Printer className="w-4 h-4" />
+        <button onClick={handlePrint} className={iconBtn} aria-label={isRtl ? "طباعة" : "Print"}>
+          <Printer className="w-3.5 h-3.5" />
         </button>
       )}
 
       {/* Close */}
-      <button
-        onClick={onClose}
-        className="p-1.5 rounded-md text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
-        aria-label={isRtl ? "إغلاق" : "Close"}
-      >
-        <X className="w-4 h-4" />
+      <button onClick={onClose} className={iconBtn} aria-label={isRtl ? "إغلاق" : "Close"}>
+        <X className="w-3.5 h-3.5" />
       </button>
     </div>
   );
@@ -232,44 +232,55 @@ function PanelBody({
             <button
               key={meta.pdfPath ?? meta.sourceFile}
               onClick={() => (meta.pdfUrl ? onSelectSource(meta) : undefined)}
-              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+              className={[
+                "w-full flex items-start gap-3 px-4 py-3.5 text-left transition-all duration-150",
+                "border-b border-white/5 last:border-0",
+                meta.pdfUrl
+                  ? "hover:bg-white/[0.06] active:bg-white/10 cursor-pointer"
+                  : "cursor-default opacity-50",
+              ].join(" ")}
               disabled={!meta.pdfUrl}
             >
+              {/* Left accent bar for available sources */}
+              {meta.pdfUrl && (
+                <div
+                  className="absolute left-0 top-[3px] bottom-[3px] w-0.5 rounded-r opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: ACCENT }}
+                />
+              )}
               <BookOpen
                 className="w-4 h-4 mt-0.5 flex-shrink-0"
-                style={{ color: meta.pdfUrl ? ACCENT : "rgba(255,255,255,0.3)" }}
+                style={{ color: meta.pdfUrl ? ACCENT : "rgba(255,255,255,0.2)" }}
               />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-white leading-snug">
+                <p className="text-sm font-medium text-white/90 leading-snug">
                   {formatSourceLabel(meta, language)}
                 </p>
                 {meta.documentCode !== "UNKNOWN" && (
-                  <p className="text-xs text-muted-foreground/70 mt-0.5 font-mono">
+                  <p className="text-[11px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
                     {meta.documentCode}
                   </p>
                 )}
                 {meta.pageStart !== null && meta.pageEnd !== null && (
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <p className="text-[11px] mt-0.5 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                     <span>
                       {isRtl
                         ? `صفحات ${meta.pageStart}–${meta.pageEnd}`
-                        : `Pages ${meta.pageStart}–${meta.pageEnd}`}
+                        : `pp. ${meta.pageStart}–${meta.pageEnd}`}
                     </span>
                     {meta.precision === "page_range" && (
-                      <span className="text-[10px] px-1 rounded" style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}>
-                        {isRtl ? "نطاق دقيق" : "precise"}
+                      <span
+                        className="text-[10px] px-1 py-px rounded"
+                        style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
+                      >
+                        {isRtl ? "دقيق" : "exact"}
                       </span>
                     )}
                   </p>
                 )}
-                {!meta.pdfUrl && (
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    {isRtl ? "المصدر غير متوفر" : "Source not available"}
-                  </p>
-                )}
               </div>
               {meta.pdfUrl && (
-                <ExternalLink className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                <ExternalLink className="w-3 h-3 mt-1 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }} />
               )}
             </button>
           ))
@@ -302,33 +313,48 @@ function PanelBody({
 function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
 
-  // Reset on URL change
-  useEffect(() => { setStatus("loading"); }, [meta.pdfUrl]);
-
+  // Reset on src change — use full src (including page anchor) so page jumps also reset
   const src = `${meta.pdfUrl}#page=${meta.pageStart ?? 1}`;
+  const prevSrcRef = useRef(src);
+  useEffect(() => {
+    if (prevSrcRef.current !== src) {
+      prevSrcRef.current = src;
+      setStatus("loading");
+    }
+  }, [src]);
 
   return (
-    <div className="relative w-full h-full">
-      {/* Loading overlay */}
-      {status === "loading" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10" style={{ background: "rgba(10,14,20,0.85)" }}>
-          <Loader2 className="w-6 h-6 animate-spin" style={{ color: ACCENT }} />
-          <span className="text-xs text-muted-foreground">{isRtl ? "جاري تحميل PDF…" : "Loading PDF…"}</span>
-        </div>
-      )}
+    <div className="relative w-full h-full overflow-hidden">
+      {/* Loading overlay — fades in after a brief delay so instant renders don't flash */}
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10 pointer-events-none"
+        style={{
+          background: "rgba(10,14,20,0.88)",
+          opacity: status === "loading" ? 1 : 0,
+          transition: "opacity 0.25s ease",
+        }}
+      >
+        <Loader2 className="w-5 h-5 animate-spin" style={{ color: ACCENT }} />
+        <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+          {isRtl ? "جاري تحميل…" : "Loading…"}
+        </span>
+      </div>
 
       {/* Error overlay */}
       {status === "error" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 z-10" style={{ background: "rgba(10,14,20,0.95)" }}>
-          <AlertTriangle className="w-8 h-8" style={{ color: "#f97316" }} />
-          <p className="text-sm text-muted-foreground text-center">
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 z-20"
+          style={{ background: "rgba(10,14,20,0.97)" }}
+        >
+          <AlertTriangle className="w-7 h-7" style={{ color: "#f97316" }} />
+          <p className="text-sm text-center" style={{ color: "rgba(255,255,255,0.55)" }}>
             {isRtl ? "تعذّر تحميل PDF داخل اللوحة." : "Could not load PDF in panel."}
           </p>
           <a
             href={meta.pdfUrl!}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors hover:opacity-80"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-90 active:scale-95"
             style={{ background: "rgba(0,212,255,0.15)", color: ACCENT, border: `1px solid rgba(0,212,255,0.3)` }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -345,7 +371,10 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
         allow="fullscreen"
         onLoad={() => setStatus("loaded")}
         onError={() => setStatus("error")}
-        style={{ opacity: status === "loading" ? 0 : 1, transition: "opacity 0.2s" }}
+        style={{
+          opacity: status === "loaded" ? 1 : 0.08,
+          transition: "opacity 0.3s ease",
+        }}
       />
     </div>
   );
