@@ -230,29 +230,104 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Inline reference deep-linking helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Infer source document from leading section digits (heuristic). */
+function getSrc(sec: string): "sbc201" | "sbc801" {
+  const n = parseInt(sec, 10);
+  return (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
+}
+
+/** Build a clickable cx-src span with full reference metadata. */
+function refSpan(
+  src: string,
+  sec: string,
+  reftype: "section" | "clause" | "table" | "figure",
+  match: string,
+  titleAr: string,
+): string {
+  return (
+    `<span class="cx-src"` +
+    ` data-src="${src}"` +
+    ` data-section="${sec}"` +
+    ` data-reftype="${reftype}"` +
+    ` style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600"` +
+    ` title="${titleAr}${sec}">${match}</span>`
+  );
+}
+
+/**
+ * Apply a regex replacement ONLY to text nodes in an HTML string —
+ * i.e. skip content inside angle-bracket tags and HTML attribute values.
+ * This prevents double-wrapping of already-linked spans.
+ */
+function replaceInTextNodes(
+  html: string,
+  pattern: RegExp,
+  replacer: (match: string, ...groups: string[]) => string,
+): string {
+  // Split on HTML tags: odd chunks are tags, even chunks are raw text.
+  return html.replace(/(<[^>]+>)|([^<]+)/g, (_full, tag: string, text: string) => {
+    if (tag) return tag;
+    if (text) return text.replace(pattern, replacer);
+    return _full;
+  });
+}
+
 // Apply inline markdown (bold, code, badges) to an already-escaped string
 function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
-  return escaped
-    // SBC document inline references — rendered as clickable dotted-underline spans.
-    // data-src is picked up by the click-delegation handler in ChatInterface.tsx.
-    // Runs FIRST so it matches raw text before bold/badge wrapping.
+  // ── Step 1: All named reference patterns (keyword + number) ──────────────
+  // These run first on the escaped string so no text is yet wrapped in spans.
+  let s = escaped
+    // SBC document-level refs (no section) — clickable, open document view
     .replace(/\bSBC[\u00A0 \u2011\-]*201\b/g,
-      '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
+      '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 201">$&</span>')
     .replace(/\bSBC[\u00A0 \u2011\-]*801\b/g,
-      '<span class="cx-src" data-src="sbc801" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
-    // Arabic section references: "القسم 1012" / "القسم 9.3.1" → clickable deep-link
-    // Runs before bold so the Arabic word isn't wrapped in bold first.
-    .replace(/القسم\s+(\d{3,4}(?:\.\d+)*)/g, (match, sec) => {
-      const n = parseInt(sec, 10);
-      const src = (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
-      return `<span class="cx-src" data-src="${src}" data-section="${sec}" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح القسم ${sec}">${match}</span>`;
-    })
-    // English section references: "Section 1014" / "§1014" / "§ 1014"
-    .replace(/(?:Section|§)\s*(\d{3,4}(?:\.\d+)*)/g, (match, sec) => {
-      const n = parseInt(sec, 10);
-      const src = (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
-      return `<span class="cx-src" data-src="${src}" data-section="${sec}" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="Click to open Section ${sec}">${match}</span>`;
-    })
+      '<span class="cx-src" data-src="sbc801" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 801">$&</span>')
+    // Arabic: الفقرة (clause / paragraph)
+    .replace(/الفقرة\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "clause", m, "انقر لفتح الفقرة "))
+    // Arabic: القسم (section)
+    .replace(/القسم\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "section", m, "انقر لفتح القسم "))
+    // Arabic: جدول (table)
+    .replace(/جدول\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "table", m, "انقر لفتح الجدول "))
+    // Arabic: شكل (figure)
+    .replace(/شكل\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "figure", m, "انقر لفتح الشكل "))
+    // Arabic: البند (item / clause)
+    .replace(/البند\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "clause", m, "انقر لفتح البند "))
+    // Arabic: المادة (article)
+    .replace(/المادة\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "clause", m, "انقر لفتح المادة "))
+    // English: Section / §
+    .replace(/(?:Section|§)\s*(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "section", m, "Click to open Section "))
+    // English: Table
+    .replace(/\bTable\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "table", m, "Click to open Table "))
+    // English: Clause / Art. / Article
+    .replace(/\b(?:Clause|Art\.|Article)\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "clause", m, "Click to open "))
+    // English: Figure / Fig.
+    .replace(/\b(?:Figure|Fig\.)\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
+      (m, sec) => refSpan(getSrc(sec), sec, "figure", m, "Click to open Figure "));
+
+  // ── Step 2: Bare dotted section numbers (e.g. "1014.6", "1006.3.3") ──────
+  // Runs ONLY on text nodes to prevent double-wrapping already-linked spans.
+  // Pattern: 3-4 leading digits, dot, 1-3 sub-digits, optional further levels.
+  s = replaceInTextNodes(
+    s,
+    /\b(\d{3,4}\.\d{1,3}(?:\.\d{1,3})*)\b/g,
+    (match, sec) => refSpan(getSrc(sec), sec, "section", match, "انقر لفتح القسم "),
+  );
+
+  // ── Step 3: Badges, markers, bold, inline code ────────────────────────────
+  return s
     // Compliance badges
     .replace(/✅\s*(مطابق|Compliant)/gi,
       '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
