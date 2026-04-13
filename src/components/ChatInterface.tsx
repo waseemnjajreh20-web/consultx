@@ -28,7 +28,7 @@ import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
-import { resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta } from "@/utils/sourceMetadata";
+import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta } from "@/utils/sourceMetadata";
 import { usePreferences } from "@/hooks/usePreferences";
 
 interface Message {
@@ -1667,20 +1667,22 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               // Fallback: do NOT override pageStart — let sourceMeta from the edge
                               //   function answer (which retrieved contextually relevant chunks)
                               //   determine the open page.
-                              if (sectionNum && docMatch.pdfUrl) {
+                              if (sectionNum) {
                                 const codeType = srcKey === 'sbc201' ? 'SBC201' : 'SBC801';
                                 const MAX_SPAN = 25; // pages — tighter = more accurate
                                 try {
-                                  // Pass 1: exact section, fetch all rows, pick tightest
+                                  // Pass 1: exact section, fetch all rows, pick tightest.
+                                  // CRITICAL: also fetch file_name — the chunk's source file may differ
+                                  // from the file in message.sources, and page numbers are file-relative.
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                   const { data: exactRows } = await (supabase as any)
                                     .from('sbc_documents')
-                                    .select('page_start, page_end')
+                                    .select('page_start, page_end, file_name')
                                     .eq('section_number', sectionNum)
                                     .eq('code_type', codeType)
                                     .limit(15);
 
-                                  type PageRow = { page_start: number; page_end: number };
+                                  type PageRow = { page_start: number; page_end: number; file_name: string };
                                   const tightest = ((exactRows ?? []) as PageRow[]).reduce(
                                     (best: PageRow | null, row) => {
                                       const span = row.page_end - row.page_start;
@@ -1688,12 +1690,14 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     }, null);
 
                                   if (tightest && (tightest.page_end - tightest.page_start) <= MAX_SPAN) {
-                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta: {
-                                      ...docMatch,
-                                      pageStart: tightest.page_start,
-                                      pageEnd:   tightest.page_end,
-                                      precision: 'page_range' as const,
-                                    }});
+                                    // Resolve the PDF URL from the ROW's own file_name.
+                                    // Using docMatch.pdfUrl here is wrong when message.sources contains
+                                    // a different chunk file — page numbers would reference the wrong PDF.
+                                    const rowMeta = resolveSourceMeta(tightest.file_name);
+                                    const activeMeta = rowMeta.pdfUrl
+                                      ? { ...rowMeta,    pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
+                                      : { ...docMatch,   pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const };
+                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta });
                                     return;
                                   }
 
@@ -1703,7 +1707,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const { data: sibRows } = await (supabase as any)
                                       .from('sbc_documents')
-                                      .select('page_start, page_end')
+                                      .select('page_start, page_end, file_name')
                                       .like('section_number', `${parentNum}.%`)
                                       .eq('code_type', codeType)
                                       .order('page_start', { ascending: false }) // highest first
@@ -1715,14 +1719,13 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     );
 
                                     if (tightSib) {
-                                      // Land just after the confirmed sibling block
+                                      // Land just after the confirmed sibling block, using the sibling's file
                                       const anchor = tightSib.page_end + 1;
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: {
-                                        ...docMatch,
-                                        pageStart: anchor,
-                                        pageEnd:   anchor + 4,
-                                        precision: 'chunk_range_only' as const,
-                                      }});
+                                      const sibMeta = resolveSourceMeta(tightSib.file_name);
+                                      const activeMeta = sibMeta.pdfUrl
+                                        ? { ...sibMeta,  pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
+                                        : { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const };
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta });
                                       return;
                                     }
                                   }
