@@ -14,6 +14,22 @@
 const SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co";
 const PDF_BUCKET = "source-pdfs";
 
+/** How precise the page number we can offer is */
+export type SourcePrecision = "page_range" | "chunk_range_only" | "unavailable";
+
+/**
+ * Per-file chunk page metadata as emitted by the edge function in X-SBC-Source-Meta.
+ * page_range   → chunk had page_start/page_end from DB or JSON; min/max across selected chunks
+ * chunk_range_only → only the filename's overall page range is known
+ * unavailable  → no page data at all
+ */
+export interface ChunkPageMeta {
+  file: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  precision: SourcePrecision;
+}
+
 export interface SourceMeta {
   /** Original source filename as returned by the edge function */
   sourceFile: string;
@@ -21,14 +37,16 @@ export interface SourceMeta {
   title: string;
   /** "SBC-201" | "SBC-801" | "UNKNOWN" */
   documentCode: string;
-  /** First page of this volume (from filename) */
+  /** First page to show (chunk-level when available, otherwise from filename) */
   pageStart: number | null;
-  /** Last page of this volume (from filename) */
+  /** Last page of displayed range */
   pageEnd: number | null;
   /** Public PDF URL (null if source cannot be mapped) */
   pdfUrl: string | null;
   /** Storage path within source-pdfs bucket */
   pdfPath: string | null;
+  /** Quality of the page data */
+  precision: SourcePrecision;
 }
 
 /**
@@ -57,6 +75,7 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
       pageEnd: null,
       pdfUrl: null,
       pdfPath: null,
+      precision: "unavailable",
     };
   }
 
@@ -86,7 +105,16 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
     .join("/");
   const pdfUrl = `${SUPABASE_URL}/storage/v1/object/public/${PDF_BUCKET}/${encodedPath}`;
 
-  return { sourceFile, title, documentCode, pageStart, pageEnd, pdfUrl, pdfPath };
+  return {
+    sourceFile,
+    title,
+    documentCode,
+    pageStart,
+    pageEnd,
+    pdfUrl,
+    pdfPath,
+    precision: pageStart != null ? "chunk_range_only" : "unavailable",
+  };
 }
 
 /**
@@ -103,6 +131,41 @@ export function resolveAllSources(sourceFiles: string[]): SourceMeta[] {
     if (!seen.has(key)) {
       seen.add(key);
       results.push(meta);
+    }
+  }
+  return results;
+}
+
+/**
+ * Resolve sources with chunk-level page precision from X-SBC-Source-Meta header.
+ * When chunk metadata is available it overrides the filename-derived page range,
+ * giving a tighter window within the volume (precision = "page_range").
+ */
+export function resolveSourcesWithMeta(
+  sourceFiles: string[],
+  chunkMeta: ChunkPageMeta[],
+): SourceMeta[] {
+  const chunkMap = new Map<string, ChunkPageMeta>();
+  for (const cm of chunkMeta) chunkMap.set(cm.file, cm);
+
+  const seen = new Set<string>();
+  const results: SourceMeta[] = [];
+  for (const sf of sourceFiles) {
+    const base = resolveSourceMeta(sf);
+    const key = base.pdfPath ?? base.sourceFile;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const cm = chunkMap.get(sf);
+    if (cm && (cm.pageStart != null || cm.pageEnd != null)) {
+      results.push({
+        ...base,
+        pageStart: cm.pageStart,
+        pageEnd: cm.pageEnd,
+        precision: cm.precision,
+      });
+    } else {
+      results.push(base);
     }
   }
   return results;
