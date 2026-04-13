@@ -255,7 +255,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
       ".cx-hdr-brand p { margin: 0; font-size: 0.72rem; color: #475569; }",
       ".cx-hdr-meta { text-align: left; font-size: 0.72rem; color: #475569; line-height: 1.9; white-space: nowrap; }",
       ".cx-hdr-meta strong { color: #1e3a5f; font-weight: 600; }",
-      ".cx-content { padding: 20px 28px 0; }",
+      ".cx-content { padding: 20px 28px 0; max-width: 680px; margin: 0 auto; }",
       ".consultx-bold-primary  { color: #005B70 !important; background: rgba(0,91,112,0.08) !important; border-bottom-color: #005B70 !important; }",
       ".consultx-bold-standard { color: #8B4500 !important; background: transparent !important; }",
       ".consultx-bold-analysis { color: #800000 !important; background: transparent !important; }",
@@ -273,7 +273,14 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "[class*='red-']    { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }",
       "[class*='amber-']  { background: #fef3c7 !important; color: #92400e !important; border-color: #fcd34d !important; }",
       "[class*='emerald'], [class*='red-'], [class*='amber-'], [class*='compliance'], [class*='alert'], [class*='warning'], [class*='border-'] { break-inside: avoid; }",
-      "p, li { orphans: 3; widows: 3; }",
+      "p { margin: 4px 0 10px; orphans: 3; widows: 3; }",
+      "li { margin-bottom: 6px; orphans: 3; widows: 3; }",
+      "ul, ol { padding-right: 20px; margin: 6px 0 12px; }",
+      "h2 { margin: 22px 0 10px; font-size: 1rem; }",
+      "h3 { margin: 16px 0 8px; font-size: 0.9rem; }",
+      "code { background: #f1f5f9 !important; color: #1e293b !important; padding: 2px 5px; border-radius: 3px; font-size: 0.82em; }",
+      "pre { background: #f1f5f9 !important; color: #1e293b !important; padding: 10px 14px; border-radius: 6px; overflow-x: auto; }",
+      "* { box-shadow: none !important; backdrop-filter: none !important; }",
       ".cx-footer { position: fixed; bottom: 0; left: 0; right: 0; height: 36px; border-top: 1px solid #d1d5db; background: #ffffff; display: flex; justify-content: space-between; align-items: center; padding: 0 28px; font-size: 0.68rem; color: #6b7280; z-index: 9999; }",
       ".cx-footer .cx-page-num::after { content: counter(page); }",
       "@media print { @page { size: A4; margin: 1.5cm 1.5cm 2.5cm 1.5cm; } body { color: #000000 !important; background: #ffffff !important; } .cx-footer { display: none; } }",
@@ -302,6 +309,10 @@ function UtilityBar({ content, mode, messageId, userName }: {
       "</div>",
       "<script>",
       "  document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });",
+      "  document.querySelectorAll('*').forEach(function(el) {",
+      "    var cs = window.getComputedStyle(el);",
+      "    if (cs.maxHeight === '0px' || cs.maxHeight === '0') { el.style.maxHeight = 'none'; el.style.opacity = '1'; el.style.overflow = 'visible'; }",
+      "  });",
       "  var COLOR_MAP = {",
       "    '#00d4ff': '#005B70', 'rgb(0, 212, 255)': '#005B70', 'rgba(0, 212, 255': '#005B70',",
       "    '#ff8c00': '#8B4500', 'rgb(255, 140, 0)': '#8B4500', 'rgba(255, 140, 0': '#8B4500',",
@@ -1625,15 +1636,22 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                             onClick={(e) => {
                               const srcEl = (e.target as HTMLElement).closest('[data-src]') as HTMLElement | null;
                               if (!srcEl) return;
-                              const srcKey = srcEl.dataset.src;
+                              const srcKey = srcEl.dataset.src;   // "sbc201" | "sbc801"
+                              // section deep-link (may be undefined for document-level spans)
+                              // const _sectionNum = srcEl.dataset.section;
                               if (!message.sources?.length) return;
                               const resolved = message.sourceMeta
                                 ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
                                 : resolveAllSources(message.sources);
-                              const match = resolved.find(m =>
+                              // Exact document match → first source with a PDF → first source
+                              const exactMatch = resolved.find(m =>
                                 (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
                                 (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
-                              ) ?? resolved[0] ?? null;
+                              );
+                              const match = exactMatch
+                                ?? resolved.find(m => m.pdfUrl)
+                                ?? resolved[0]
+                                ?? null;
                               if (match) {
                                 setSourcePanel({ open: true, sources: message.sources, activeMeta: match.pdfUrl ? match : null });
                               } else if (resolved.length > 0) {
