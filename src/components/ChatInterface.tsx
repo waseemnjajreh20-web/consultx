@@ -1655,57 +1655,79 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                 return;
                               }
 
-                              // ── Exact section page lookup ──────────────────────────────────────────
-                              // When a section/clause/table number is known, query sbc_documents for
-                              // the precise page so the viewer opens directly at that reference.
+                              // ── Section page lookup — two-pass, span-guarded ──────────────────────
+                              // page_start in sbc_documents is a physical chunk-PDF page index.
+                              // Wide chunks (span > MAX_SPAN) start at the chunk boundary, NOT at
+                              // the section — using them produces wildly wrong targets.
+                              // Only tight chunks (span ≤ MAX_SPAN) reliably point to a section.
+                              // Pass 1: exact tight chunk for the clicked section.
+                              // Pass 2: tightest tight sibling in the same parent (e.g. 1014.x for
+                              //   1014.6) — use its page_end+1 as an anchor just after the last
+                              //   confirmed sub-section boundary.
+                              // Fallback: do NOT override pageStart — let sourceMeta from the edge
+                              //   function answer (which retrieved contextually relevant chunks)
+                              //   determine the open page.
                               if (sectionNum && docMatch.pdfUrl) {
                                 const codeType = srcKey === 'sbc201' ? 'SBC201' : 'SBC801';
+                                const MAX_SPAN = 25; // pages — tighter = more accurate
                                 try {
+                                  // Pass 1: exact section, fetch all rows, pick tightest
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  const { data } = await (supabase as any)
+                                  const { data: exactRows } = await (supabase as any)
                                     .from('sbc_documents')
                                     .select('page_start, page_end')
                                     .eq('section_number', sectionNum)
                                     .eq('code_type', codeType)
-                                    .order('page_start', { ascending: true })
-                                    .limit(1);
+                                    .limit(15);
 
-                                  if (data && data.length > 0) {
-                                    const exactMeta = {
+                                  type PageRow = { page_start: number; page_end: number };
+                                  const tightest = ((exactRows ?? []) as PageRow[]).reduce(
+                                    (best: PageRow | null, row) => {
+                                      const span = row.page_end - row.page_start;
+                                      return (!best || span < (best.page_end - best.page_start)) ? row : best;
+                                    }, null);
+
+                                  if (tightest && (tightest.page_end - tightest.page_start) <= MAX_SPAN) {
+                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta: {
                                       ...docMatch,
-                                      pageStart: (data[0] as { page_start: number }).page_start,
-                                      pageEnd:   (data[0] as { page_end: number }).page_end,
+                                      pageStart: tightest.page_start,
+                                      pageEnd:   tightest.page_end,
                                       precision: 'page_range' as const,
-                                    };
-                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta: exactMeta });
+                                    }});
                                     return;
                                   }
 
-                                  // No exact match — try parent section (e.g. "1014" for "1014.6")
-                                  if (sectionNum.includes('.')) {
-                                    const parent = sectionNum.split('.').slice(0, -1).join('.');
+                                  // Pass 2: tightest sibling in same parent (e.g. "1014" for "1014.6")
+                                  const parentNum = sectionNum.match(/^(\d{3,4})\./)?.[1];
+                                  if (parentNum) {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const { data: parentData } = await (supabase as any)
+                                    const { data: sibRows } = await (supabase as any)
                                       .from('sbc_documents')
                                       .select('page_start, page_end')
-                                      .eq('section_number', parent)
+                                      .like('section_number', `${parentNum}.%`)
                                       .eq('code_type', codeType)
-                                      .order('page_start', { ascending: true })
-                                      .limit(1);
+                                      .order('page_start', { ascending: false }) // highest first
+                                      .limit(30);
 
-                                    if (parentData && parentData.length > 0) {
-                                      const parentMeta = {
+                                    // First tight sibling with highest page (closest anchor before target)
+                                    const tightSib = ((sibRows ?? []) as PageRow[]).find(
+                                      r => (r.page_end - r.page_start) <= MAX_SPAN
+                                    );
+
+                                    if (tightSib) {
+                                      // Land just after the confirmed sibling block
+                                      const anchor = tightSib.page_end + 1;
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: {
                                         ...docMatch,
-                                        pageStart: (parentData[0] as { page_start: number }).page_start,
-                                        pageEnd:   (parentData[0] as { page_end: number }).page_end,
-                                        precision: 'page_range' as const,
-                                      };
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: parentMeta });
+                                        pageStart: anchor,
+                                        pageEnd:   anchor + 4,
+                                        precision: 'chunk_range_only' as const,
+                                      }});
                                       return;
                                     }
                                   }
                                 } catch {
-                                  // DB lookup failed — fall through to document-level open
+                                  // DB lookup failed — fall through to sourceMeta
                                 }
                               }
 
