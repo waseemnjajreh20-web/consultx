@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle } from "lucide-react";
+import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
 
 // ── Visual constants matching ConsultX dark identity ─────────────────────────
@@ -45,6 +45,11 @@ function PanelHeader({
   language,
   onBack,
   onClose,
+  // Source navigation (shown in PDF view when there are multiple sources)
+  sourceIndex,
+  sourceTotal,
+  onPrevSource,
+  onNextSource,
 }: {
   isListView: boolean;
   activeMeta: SourceMeta | null;
@@ -52,6 +57,10 @@ function PanelHeader({
   language: "ar" | "en";
   onBack: () => void;
   onClose: () => void;
+  sourceIndex: number;
+  sourceTotal: number;
+  onPrevSource: () => void;
+  onNextSource: () => void;
 }) {
   const handlePrint = () => {
     const printLogo   = localStorage.getItem("cx_print_logo")   !== "false";
@@ -125,13 +134,40 @@ function PanelHeader({
       )}
 
       <BookOpen className="w-4 h-4 flex-shrink-0" style={{ color: ACCENT }} />
-      <span className="flex-1 text-sm font-medium text-white truncate">
+      <span className="flex-1 text-sm font-medium text-white truncate min-w-0">
         {isListView
           ? (isRtl ? "المصادر المرجعية" : "Source References")
           : activeMeta
           ? (activeMeta.documentCode === "UNKNOWN" ? activeMeta.title : formatSourceLabel(activeMeta, language))
           : ""}
       </span>
+
+      {/* Source prev/next navigation — only in PDF view when multiple sources exist */}
+      {!isListView && sourceTotal > 1 && (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={onPrevSource}
+            disabled={sourceIndex <= 0}
+            className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-white/10"
+            aria-label={isRtl ? "المصدر السابق" : "Previous source"}
+            title={isRtl ? "المصدر السابق" : "Previous source"}
+          >
+            {isRtl ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+          <span className="text-xs text-muted-foreground tabular-nums" style={{ color: "rgba(0,212,255,0.7)" }}>
+            {sourceIndex + 1}/{sourceTotal}
+          </span>
+          <button
+            onClick={onNextSource}
+            disabled={sourceIndex >= sourceTotal - 1}
+            className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-white/10"
+            aria-label={isRtl ? "المصدر التالي" : "Next source"}
+            title={isRtl ? "المصدر التالي" : "Next source"}
+          >
+            {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      )}
 
       {/* External link — only in PDF view */}
       {!isListView && activeMeta?.pdfUrl && (
@@ -332,6 +368,18 @@ export default function SourcePanel({
   const { activeMeta } = state;
   const isListView = activeMeta === null;
 
+  // ── Within-panel source navigation ──────────────────────────────────────────
+  const pdfSources = resolvedSources.filter(m => !!m.pdfUrl);
+  const sourceIndex = activeMeta
+    ? pdfSources.findIndex(m => m.pdfUrl === activeMeta.pdfUrl)
+    : -1;
+  const navigatePrev = () => {
+    if (sourceIndex > 0) onSelectSource(pdfSources[sourceIndex - 1]);
+  };
+  const navigateNext = () => {
+    if (sourceIndex < pdfSources.length - 1) onSelectSource(pdfSources[sourceIndex + 1]);
+  };
+
   // Close on Escape
   useEffect(() => {
     if (!state.open) return;
@@ -359,6 +407,10 @@ export default function SourcePanel({
           language={language}
           onBack={onBack}
           onClose={onClose}
+          sourceIndex={sourceIndex}
+          sourceTotal={pdfSources.length}
+          onPrevSource={navigatePrev}
+          onNextSource={navigateNext}
         />
         <div className="flex-1 overflow-hidden">
           <PanelBody
@@ -403,6 +455,10 @@ export default function SourcePanel({
           language={language}
           onBack={onBack}
           onClose={onClose}
+          sourceIndex={sourceIndex}
+          sourceTotal={pdfSources.length}
+          onPrevSource={navigatePrev}
+          onNextSource={navigateNext}
         />
         <div className="flex-1 overflow-hidden">
           <PanelBody

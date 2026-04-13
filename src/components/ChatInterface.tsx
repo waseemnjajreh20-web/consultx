@@ -1638,11 +1638,19 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               if (!srcEl) return;
                               const srcKey = srcEl.dataset.src;       // "sbc201" | "sbc801"
                               const sectionNum = srcEl.dataset.section; // e.g. "1014.6" (may be absent)
-                              if (!message.sources?.length) return;
 
-                              const resolved = message.sourceMeta
-                                ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
-                                : resolveAllSources(message.sources);
+                              // Use the panel's current sources as fallback when this message has none.
+                              // This allows clicking a reference in any message — even pure reasoning
+                              // replies — to navigate within an already-open viewer.
+                              const effectiveSources = message.sources?.length
+                                ? message.sources
+                                : sourcePanel.sources;
+                              if (!effectiveSources?.length) return;
+
+                              const effectiveMeta = message.sources?.length ? message.sourceMeta : undefined;
+                              const resolved = effectiveMeta
+                                ? resolveSourcesWithMeta(effectiveSources, effectiveMeta)
+                                : resolveAllSources(effectiveSources);
 
                               // Find the correct document-level source
                               const docMatch = resolved.find(m =>
@@ -1651,7 +1659,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               ) ?? resolved.find(m => m.pdfUrl) ?? resolved[0] ?? null;
 
                               if (!docMatch) {
-                                if (resolved.length > 0) setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
+                                if (resolved.length > 0) setSourcePanel({ open: true, sources: effectiveSources, activeMeta: null });
                                 return;
                               }
 
@@ -1697,7 +1705,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     const activeMeta = rowMeta.pdfUrl
                                       ? { ...rowMeta,    pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
                                       : { ...docMatch,   pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const };
-                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta });
+                                    setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
                                     return;
                                   }
 
@@ -1725,7 +1733,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                       const activeMeta = sibMeta.pdfUrl
                                         ? { ...sibMeta,  pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
                                         : { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const };
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta });
+                                      setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
                                       return;
                                     }
                                   }
@@ -1735,7 +1743,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               }
 
                               // ── Fallback: document-level open at chunk page range ──────────────────
-                              setSourcePanel({ open: true, sources: message.sources!, activeMeta: docMatch.pdfUrl ? docMatch : null });
+                              setSourcePanel({ open: true, sources: effectiveSources, activeMeta: docMatch.pdfUrl ? docMatch : null });
                             }}
                           >
                             <ChatMarkdownRenderer content={displayContent} mode={msgMode} />

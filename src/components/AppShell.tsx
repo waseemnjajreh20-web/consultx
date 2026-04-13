@@ -11,7 +11,7 @@
  * Mobile: sidebar nav hidden; source panel stays as slide-over.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, UserCircle, CreditCard, Settings, Sliders,
@@ -84,6 +84,44 @@ export default function AppShell({
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SidebarSection>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ── Resizable source pane (desktop) ─────────────────────────────────────────
+  const [sourcePaneWidth, setSourcePaneWidth] = useState(480);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(0);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = sourcePaneWidth;
+
+    const onMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      // Panel is on the right: dragging handle leftward widens the pane
+      const delta = dragStartX.current - ev.clientX;
+      const clamped = Math.max(320, Math.min(860, dragStartWidth.current + delta));
+      setSourcePaneWidth(clamped);
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, [sourcePaneWidth]);
+
+  // Reset width when panel closes so next open starts fresh
+  useEffect(() => {
+    if (!sourcePanel.open) setSourcePaneWidth(480);
+  }, [sourcePanel.open]);
 
   const handleNavClick = (id: string) => {
     if (id === "conversations") {
@@ -194,21 +232,38 @@ export default function AppShell({
         {children}
       </div>
 
-      {/* ── RIGHT SOURCE PANE — desktop 3rd pane ─────────────────────────────── */}
+      {/* ── RIGHT SOURCE PANE — desktop 3rd pane (resizable) ────────────────── */}
       {sourcePanel.open && (
-        <div
-          className="hidden md:flex w-[480px] lg:w-[520px] flex-shrink-0"
-          style={{ borderLeft: `1px solid ${BORDER}` }}
-        >
-          <SourcePanel
-            state={sourcePanel}
-            language={lang}
-            onClose={onSourceClose}
-            onSelectSource={onSourceSelectSource}
-            onBack={onSourceBack}
-            mode="pane"
-          />
-        </div>
+        <>
+          {/* Drag handle — only visible on md+ */}
+          <div
+            className="hidden md:flex flex-col items-center justify-center w-2 flex-shrink-0 cursor-col-resize group select-none"
+            style={{ borderLeft: `1px solid ${BORDER}` }}
+            onMouseDown={handleResizeStart}
+            title="Drag to resize"
+          >
+            <div
+              className="w-0.5 h-10 rounded-full transition-all duration-150"
+              style={{ background: "rgba(0,212,255,0.15)" }}
+              // Brightens on hover via parent group
+            />
+            <style>{`.group:hover .resize-grip{background:rgba(0,212,255,0.5)!important}`}</style>
+          </div>
+          {/* Pane */}
+          <div
+            className="hidden md:flex flex-shrink-0 overflow-hidden"
+            style={{ width: sourcePaneWidth, transition: isDragging.current ? "none" : "width 0.05s" }}
+          >
+            <SourcePanel
+              state={sourcePanel}
+              language={lang}
+              onClose={onSourceClose}
+              onSelectSource={onSourceSelectSource}
+              onBack={onSourceBack}
+              mode="pane"
+            />
+          </div>
+        </>
       )}
 
       {/* ── MOBILE SOURCE PANEL — slide-over ─────────────────────────────────── */}
