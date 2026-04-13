@@ -240,6 +240,19 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
       '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
     .replace(/\bSBC[\u00A0 \u2011\-]*801\b/g,
       '<span class="cx-src" data-src="sbc801" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح المرجع">$&</span>')
+    // Arabic section references: "القسم 1012" / "القسم 9.3.1" → clickable deep-link
+    // Runs before bold so the Arabic word isn't wrapped in bold first.
+    .replace(/القسم\s+(\d{3,4}(?:\.\d+)*)/g, (match, sec) => {
+      const n = parseInt(sec, 10);
+      const src = (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
+      return `<span class="cx-src" data-src="${src}" data-section="${sec}" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح القسم ${sec}">${match}</span>`;
+    })
+    // English section references: "Section 1014" / "§1014" / "§ 1014"
+    .replace(/(?:Section|§)\s*(\d{3,4}(?:\.\d+)*)/g, (match, sec) => {
+      const n = parseInt(sec, 10);
+      const src = (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
+      return `<span class="cx-src" data-src="${src}" data-section="${sec}" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="Click to open Section ${sec}">${match}</span>`;
+    })
     // Compliance badges
     .replace(/✅\s*(مطابق|Compliant)/gi,
       '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
