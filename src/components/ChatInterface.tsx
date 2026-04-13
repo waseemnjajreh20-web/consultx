@@ -1633,30 +1633,84 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                         ) : (
                           <div
                             id={`cmr-${message.id}`}
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               const srcEl = (e.target as HTMLElement).closest('[data-src]') as HTMLElement | null;
                               if (!srcEl) return;
-                              const srcKey = srcEl.dataset.src;   // "sbc201" | "sbc801"
-                              // section deep-link (may be undefined for document-level spans)
-                              // const _sectionNum = srcEl.dataset.section;
+                              const srcKey = srcEl.dataset.src;       // "sbc201" | "sbc801"
+                              const sectionNum = srcEl.dataset.section; // e.g. "1014.6" (may be absent)
                               if (!message.sources?.length) return;
+
                               const resolved = message.sourceMeta
                                 ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
                                 : resolveAllSources(message.sources);
-                              // Exact document match → first source with a PDF → first source
-                              const exactMatch = resolved.find(m =>
+
+                              // Find the correct document-level source
+                              const docMatch = resolved.find(m =>
                                 (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
                                 (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
-                              );
-                              const match = exactMatch
-                                ?? resolved.find(m => m.pdfUrl)
-                                ?? resolved[0]
-                                ?? null;
-                              if (match) {
-                                setSourcePanel({ open: true, sources: message.sources, activeMeta: match.pdfUrl ? match : null });
-                              } else if (resolved.length > 0) {
-                                setSourcePanel({ open: true, sources: message.sources, activeMeta: null });
+                              ) ?? resolved.find(m => m.pdfUrl) ?? resolved[0] ?? null;
+
+                              if (!docMatch) {
+                                if (resolved.length > 0) setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
+                                return;
                               }
+
+                              // ── Exact section page lookup ──────────────────────────────────────────
+                              // When a section/clause/table number is known, query sbc_documents for
+                              // the precise page so the viewer opens directly at that reference.
+                              if (sectionNum && docMatch.pdfUrl) {
+                                const codeType = srcKey === 'sbc201' ? 'SBC201' : 'SBC801';
+                                try {
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  const { data } = await (supabase as any)
+                                    .from('sbc_documents')
+                                    .select('page_start, page_end')
+                                    .eq('section_number', sectionNum)
+                                    .eq('code_type', codeType)
+                                    .order('page_start', { ascending: true })
+                                    .limit(1);
+
+                                  if (data && data.length > 0) {
+                                    const exactMeta = {
+                                      ...docMatch,
+                                      pageStart: (data[0] as { page_start: number }).page_start,
+                                      pageEnd:   (data[0] as { page_end: number }).page_end,
+                                      precision: 'page_range' as const,
+                                    };
+                                    setSourcePanel({ open: true, sources: message.sources!, activeMeta: exactMeta });
+                                    return;
+                                  }
+
+                                  // No exact match — try parent section (e.g. "1014" for "1014.6")
+                                  if (sectionNum.includes('.')) {
+                                    const parent = sectionNum.split('.').slice(0, -1).join('.');
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const { data: parentData } = await (supabase as any)
+                                      .from('sbc_documents')
+                                      .select('page_start, page_end')
+                                      .eq('section_number', parent)
+                                      .eq('code_type', codeType)
+                                      .order('page_start', { ascending: true })
+                                      .limit(1);
+
+                                    if (parentData && parentData.length > 0) {
+                                      const parentMeta = {
+                                        ...docMatch,
+                                        pageStart: (parentData[0] as { page_start: number }).page_start,
+                                        pageEnd:   (parentData[0] as { page_end: number }).page_end,
+                                        precision: 'page_range' as const,
+                                      };
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: parentMeta });
+                                      return;
+                                    }
+                                  }
+                                } catch {
+                                  // DB lookup failed — fall through to document-level open
+                                }
+                              }
+
+                              // ── Fallback: document-level open at chunk page range ──────────────────
+                              setSourcePanel({ open: true, sources: message.sources!, activeMeta: docMatch.pdfUrl ? docMatch : null });
                             }}
                           >
                             <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
