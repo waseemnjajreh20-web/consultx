@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { X, ExternalLink, ArrowLeft, BookOpen, Printer } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
 
 // ── Visual constants matching ConsultX dark identity ─────────────────────────
@@ -213,10 +213,17 @@ function PanelBody({
                   </p>
                 )}
                 {meta.pageStart !== null && meta.pageEnd !== null && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {isRtl
-                      ? `صفحات ${meta.pageStart}–${meta.pageEnd}`
-                      : `Pages ${meta.pageStart}–${meta.pageEnd}`}
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <span>
+                      {isRtl
+                        ? `صفحات ${meta.pageStart}–${meta.pageEnd}`
+                        : `Pages ${meta.pageStart}–${meta.pageEnd}`}
+                    </span>
+                    {meta.precision === "page_range" && (
+                      <span className="text-[10px] px-1 rounded" style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}>
+                        {isRtl ? "نطاق دقيق" : "precise"}
+                      </span>
+                    )}
                   </p>
                 )}
                 {!meta.pdfUrl && (
@@ -236,14 +243,7 @@ function PanelBody({
   }
 
   if (activeMeta?.pdfUrl) {
-    return (
-      <iframe
-        src={`${activeMeta.pdfUrl}#page=${activeMeta.pageStart ?? 1}`}
-        className="w-full h-full border-0"
-        title={activeMeta.title}
-        allow="fullscreen"
-      />
-    );
+    return <PdfFrame meta={activeMeta} isRtl={isRtl} />;
   }
 
   // Fallback: no PDF URL
@@ -258,6 +258,59 @@ function PanelBody({
       <p className="text-xs text-muted-foreground/60 text-center font-mono break-all">
         {activeMeta?.sourceFile}
       </p>
+    </div>
+  );
+}
+
+// ── PDF iframe with load / error handling ─────────────────────────────────────
+function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+
+  // Reset on URL change
+  useEffect(() => { setStatus("loading"); }, [meta.pdfUrl]);
+
+  const src = `${meta.pdfUrl}#page=${meta.pageStart ?? 1}`;
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Loading overlay */}
+      {status === "loading" && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10" style={{ background: "rgba(10,14,20,0.85)" }}>
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: ACCENT }} />
+          <span className="text-xs text-muted-foreground">{isRtl ? "جاري تحميل PDF…" : "Loading PDF…"}</span>
+        </div>
+      )}
+
+      {/* Error overlay */}
+      {status === "error" && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 z-10" style={{ background: "rgba(10,14,20,0.95)" }}>
+          <AlertTriangle className="w-8 h-8" style={{ color: "#f97316" }} />
+          <p className="text-sm text-muted-foreground text-center">
+            {isRtl ? "تعذّر تحميل PDF داخل اللوحة." : "Could not load PDF in panel."}
+          </p>
+          <a
+            href={meta.pdfUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors hover:opacity-80"
+            style={{ background: "rgba(0,212,255,0.15)", color: ACCENT, border: `1px solid rgba(0,212,255,0.3)` }}
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {isRtl ? "فتح في نافذة جديدة" : "Open in new tab"}
+          </a>
+        </div>
+      )}
+
+      <iframe
+        key={src}
+        src={src}
+        className="w-full h-full border-0"
+        title={meta.title}
+        allow="fullscreen"
+        onLoad={() => setStatus("loaded")}
+        onError={() => setStatus("error")}
+        style={{ opacity: status === "loading" ? 0 : 1, transition: "opacity 0.2s" }}
+      />
     </div>
   );
 }

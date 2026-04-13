@@ -28,7 +28,7 @@ import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
-import { resolveAllSources, formatSourceLabel } from "@/utils/sourceMetadata";
+import { resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta } from "@/utils/sourceMetadata";
 import { usePreferences } from "@/hooks/usePreferences";
 
 interface Message {
@@ -38,6 +38,7 @@ interface Message {
   timestamp: Date;
   isValid?: boolean;
   sources?: string[];
+  sourceMeta?: ChunkPageMeta[];
   dbId?: string;
   imageUrl?: string;
   imageUrls?: string[];
@@ -552,7 +553,7 @@ async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
   documentTexts,
   output_format, preferred_standards,
-  onDelta, onFirstChunk, onDone, onError, onSources, signal
+  onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
   documentTexts?: Array<{ name: string; content: string }>;
@@ -563,6 +564,7 @@ async function streamChat({
   onDone: (fullContent: string) => void;
   onError: (error: string) => void;
   onSources?: (sources: string[]) => void;
+  onSourceMeta?: (meta: ChunkPageMeta[]) => void;
   signal?: AbortSignal;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -589,6 +591,13 @@ async function streamChat({
   if (sourcesHeader && onSources) {
     const sources = sourcesHeader.split(",").filter(Boolean);
     if (sources.length > 0) onSources(sources);
+  }
+  const sourceMetaHeader = resp.headers.get("X-SBC-Source-Meta");
+  if (sourceMetaHeader && onSourceMeta) {
+    try {
+      const parsed: ChunkPageMeta[] = JSON.parse(sourceMetaHeader);
+      if (Array.isArray(parsed) && parsed.length > 0) onSourceMeta(parsed);
+    } catch { /* ignore malformed header */ }
   }
   if (!resp.body) { onError(language === "en" ? "No response received" : "لا يوجد استجابة"); return; }
   const reader = resp.body.getReader();
@@ -991,6 +1000,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         onSources: sources => {
           currentSources = sources;
           setChatItems(prev => prev.map(item => ("type" in item) ? item : (item.id === assistantId ? { ...item, sources } : item)));
+        },
+        onSourceMeta: meta => {
+          setChatItems(prev => prev.map(item => ("type" in item) ? item : (item.id === assistantId ? { ...item, sourceMeta: meta } : item)));
         },
         onDone: async fullContent => {
           waitingTimersRef.current.forEach(clearTimeout);
@@ -1582,7 +1594,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                           />
                         )}
                         {message.sources && message.sources.length > 0 && (() => {
-                          const resolved = resolveAllSources(message.sources);
+                          const resolved = message.sourceMeta
+                            ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
+                            : resolveAllSources(message.sources);
                           return (
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
                               <span className="text-xs text-muted-foreground flex-shrink-0">{t("sourcesLabel")}</span>
@@ -1591,7 +1605,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                   key={meta.pdfPath ?? meta.sourceFile}
                                   onClick={() => {
                                     if (meta.pdfUrl) {
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: resolved.length === 1 ? meta : null });
+                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: meta });
                                     } else {
                                       setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
                                     }

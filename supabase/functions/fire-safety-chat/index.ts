@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Expose-Headers": "X-SBC-Sources",
+  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta",
 };
 
 // ==================== CORE RULES (Non-negotiable) ====================
@@ -806,7 +806,8 @@ const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 const CACHE_MAX_SIZE = 30; // Increased from 20
 
 // Query-level cache for scored results
-const queryCache: Map<string, { result: { context: string; files: string[] }; timestamp: number }> = new Map();
+type SourcePageMeta = { file: string; pageStart: number | null; pageEnd: number | null; precision: 'page_range' | 'chunk_range_only' | 'unavailable' };
+const queryCache: Map<string, { result: { context: string; files: string[]; sourceMeta: SourcePageMeta[] }; timestamp: number }> = new Map();
 const QUERY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const QUERY_CACHE_MAX = 20;
 
@@ -979,6 +980,8 @@ interface ScoredChunk {
   text: string;
   score: number;
   source: string;
+  pageStart?: number | null;
+  pageEnd?: number | null;
 }
 
 function buildQueryKeywords(query: string): string[] {
@@ -1247,7 +1250,9 @@ function extractAndScoreChunks(rawJson: string, fileName: string, keywords: stri
       const s = scoreChunk(text, keywords, queryMeta);
       // Only include chunks with score > 0 (skip irrelevant chunks)
       if (s > 0) {
-        scored.push({ text, score: s, source: fileName });
+        const pageStart = typeof chunk !== "string" ? (chunk.page_start ?? null) : null;
+        const pageEnd = typeof chunk !== "string" ? (chunk.page_end ?? null) : null;
+        scored.push({ text, score: s, source: fileName, pageStart, pageEnd });
       }
     }
   } catch {
@@ -1355,7 +1360,7 @@ function selectTargetPageRanges(
   return matched.size > 0 ? [...matched] : index.slice(0, 2).map(i => i.pageRange);
 }
 
-async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[] }> {
+async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   const startTime = Date.now();
   const usedFiles: string[] = [];
   
@@ -1374,7 +1379,7 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   
   if (!supabaseUrl || !serviceRoleKey) {
     console.error("❌ Missing environment variables");
-    return { context: "", files: [] };
+    return { context: "", files: [], sourceMeta: [] };
   }
   
   try {
@@ -1386,7 +1391,7 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     
     if (listError || !files?.length) {
       console.error("❌ Error listing files:", listError?.message);
-      return { context: "", files: [] };
+      return { context: "", files: [], sourceMeta: [] };
     }
     
     console.log(`📁 Found ${files.length} total files`);
@@ -1612,35 +1617,54 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       
       if (validFallback.length > 0) {
         const context = `\n\n📚 SBC REFERENCE DOCUMENTS (USE THESE AS PRIMARY SOURCE):\n${validFallback.join("\n")}`;
-        const result = { context, files: usedFiles };
+        const result = { context, files: usedFiles, sourceMeta: [] as SourcePageMeta[] };
         queryCache.set(cacheKey, { result, timestamp: Date.now() });
         cleanupQueryCache();
         return result;
       }
     }
-    
+
     if (selectedChunks.length > 0) {
       const bySource = new Map<string, string[]>();
       for (const c of selectedChunks) {
         if (!bySource.has(c.source)) bySource.set(c.source, []);
         bySource.get(c.source)!.push(c.text);
       }
-      
+
       let contextStr = "\n\n📚 SBC REFERENCE DOCUMENTS (MOST RELEVANT SECTIONS SELECTED):\n";
       for (const [source, texts] of bySource) {
         contextStr += `\n=== ${source} (${texts.length} relevant sections) ===\n${texts.join("\n---\n")}`;
       }
-      
-      const result = { context: contextStr, files: [...sourcesUsed] };
+
+      // Build per-file page metadata from selected chunks
+      const sourceMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
+      for (const c of selectedChunks) {
+        const m = sourceMetaMap.get(c.source) ?? { minPage: null, maxPage: null };
+        if (c.pageStart != null) m.minPage = m.minPage == null ? c.pageStart : Math.min(m.minPage, c.pageStart);
+        if (c.pageEnd != null) m.maxPage = m.maxPage == null ? c.pageEnd : Math.max(m.maxPage, c.pageEnd);
+        sourceMetaMap.set(c.source, m);
+      }
+      const sourceMeta: SourcePageMeta[] = [...sourcesUsed].map(file => {
+        const m = sourceMetaMap.get(file);
+        const hasPages = m && (m.minPage != null || m.maxPage != null);
+        return {
+          file,
+          pageStart: m?.minPage ?? null,
+          pageEnd: m?.maxPage ?? null,
+          precision: hasPages ? 'page_range' : 'chunk_range_only',
+        };
+      });
+
+      const result = { context: contextStr, files: [...sourcesUsed], sourceMeta };
       queryCache.set(cacheKey, { result, timestamp: Date.now() });
       cleanupQueryCache();
       return result;
     }
-    
-    return { context: "", files: [] };
+
+    return { context: "", files: [], sourceMeta: [] };
   } catch (error) {
     console.error("❌ Critical error in fetchSBCContext:", error);
-    return { context: "", files: [] };
+    return { context: "", files: [], sourceMeta: [] };
   }
 }
 
@@ -1957,7 +1981,7 @@ async function fetchSBCContextVector(
   query: string,
   mode: string,
   extraKeywords?: string[]
-): Promise<{ context: string; files: string[] }> {
+): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -2023,13 +2047,30 @@ async function fetchSBCContextVector(
     let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
     const contextLimit = 120000;
 
+    // Build per-file page range from vector match page data
+    const vectorMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
     for (const match of matches) {
       const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
       if (context.length + entry.length > contextLimit) break;
       context += entry;
+      const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null };
+      if (match.page_start != null) m.minPage = m.minPage == null ? match.page_start : Math.min(m.minPage, match.page_start);
+      if (match.page_end != null) m.maxPage = m.maxPage == null ? match.page_end : Math.max(m.maxPage, match.page_end);
+      vectorMetaMap.set(match.file_name, m);
     }
 
-    return { context, files: usedFiles };
+    const sourceMeta: SourcePageMeta[] = usedFiles.map(file => {
+      const m = vectorMetaMap.get(file);
+      const hasPages = m && (m.minPage != null || m.maxPage != null);
+      return {
+        file,
+        pageStart: m?.minPage ?? null,
+        pageEnd: m?.maxPage ?? null,
+        precision: hasPages ? 'page_range' : 'chunk_range_only',
+      };
+    });
+
+    return { context, files: usedFiles, sourceMeta };
   } catch (err) {
     console.error("[Vector RAG] Fatal error:", err);
     return fetchSBCContext(query, extraKeywords);
@@ -2441,7 +2482,7 @@ async function runVisionPipeline(
   userQuery: string,
   language: string,
   mode: string = "analysis",
-): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[] }> {
+): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
   console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)");
   const pipelineStart = Date.now();
 
@@ -2490,7 +2531,7 @@ async function runVisionPipeline(
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
   const enhancedQuery = `${userQuery} ${planningResult}`;
-  const { context: sbcContext, files: usedFiles } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
+  const { context: sbcContext, files: usedFiles, sourceMeta } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
   console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
   // Stage 4 & 5 combined
@@ -2567,7 +2608,7 @@ ${sbcContext}
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
 
-  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles };
+  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta };
 }
 
 // ==================== MAIN HANDLER ====================
@@ -2864,6 +2905,7 @@ serve(async (req) => {
 
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
+    let usedSourceMeta: SourcePageMeta[] = [];
     let finalMessages = [...messages];
 
     if (resolvedImages.length > 0) {
@@ -2873,7 +2915,7 @@ serve(async (req) => {
 
       // Primary mode with images: use Advisory framing (design guidance) — more appropriate than compliance audit for quick queries
       const visionMode = mode === "primary" ? "standard" : mode;
-      const { systemPrompt, extraContext, usedFiles: visionFiles } = await runVisionPipeline(
+      const { systemPrompt, extraContext, usedFiles: visionFiles, sourceMeta: visionMeta } = await runVisionPipeline(
         GEMINI_API_KEY,
         resolvedImages,
         userQuery,
@@ -2883,6 +2925,7 @@ serve(async (req) => {
 
       fullSystemPrompt = systemPrompt + extraContext;
       usedFiles = visionFiles;
+      usedSourceMeta = visionMeta;
 
       const lastUserIdx = finalMessages.map((m: any, i: number) => m.role === "user" ? i : -1).filter((i: number) => i >= 0).pop();
       if (lastUserIdx !== undefined && lastUserIdx >= 0) {
@@ -2942,8 +2985,9 @@ serve(async (req) => {
 
       // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
       // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
-      const { context: sbcContext, files } = await fetchSBCContext(userQuery);
+      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery);
       usedFiles = files;
+      usedSourceMeta = keywordMeta;
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
@@ -3151,6 +3195,7 @@ serve(async (req) => {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
+        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
       },
     });
   } catch (error) {
