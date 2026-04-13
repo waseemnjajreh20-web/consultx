@@ -1679,6 +1679,22 @@ function extractTableIds(query: string): string[] {
     found.add(m[1]);
   }
 
+  // Match clause/section/article references in Arabic and English:
+  // "الفقرة 1014.6", "القسم 903.2", "Section 1014.6", "Clause 1014.6", "Article 1014"
+  // Uses original query (not lowercased) to preserve Arabic Unicode.
+  const clauseRegex = /(?:الفقرة|القسم|section|clause|article|art\.)\s*(\d{3,4}(?:\.\d{1,3}){0,3})/gi;
+  while ((m = clauseRegex.exec(query)) !== null) {
+    found.add(m[1]);
+  }
+
+  // Match bare dotted section numbers with 2+ parts (e.g. "1014.6", "903.2.1")
+  // that appear standalone — not already caught by the keyword regexes above.
+  // Word-boundary anchored to avoid matching partial numbers inside other text.
+  const bareClauseRegex = /\b(\d{3,4}\.\d{1,3}(?:\.\d{1,3})*)\b/g;
+  while ((m = bareClauseRegex.exec(lower)) !== null) {
+    found.add(m[1]);
+  }
+
   // Also match bare section numbers when they look like table IDs that we know about
   // Keep this list in sync with the sbc_code_tables rows in the DB (currently 68 records).
   const KNOWN_TABLE_IDS = [
@@ -1694,7 +1710,9 @@ function extractTableIds(query: string): string[] {
     "705.8",
     // Chapter 10 — Means of Egress
     "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4",
-    "1008", "1009", "1010", "1011.2", "1012", "1013", "1015",
+    "1008", "1009", "1010", "1011.2", "1012", "1013",
+    "1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6",
+    "1015",
     "1017.2", "1018.1", "1020.1", "1021.2", "1024", "1029.6.3", "1030",
     // SBC 801 Chapter 9 — Fire Protection Systems
     "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3",
@@ -1741,6 +1759,7 @@ function extractTableIds(query: string): string[] {
     "1005":   ["1005.1"],
     "1006":   ["1006.2.1", "1006.3.3", "1006.3.4"],
     "1011":   ["1011.2"],
+    "1014":   ["1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6"],
     "1017":   ["1017.2"],
     "1018":   ["1018.1"],
     "1020":   ["1020.1"],
@@ -2995,8 +3014,22 @@ serve(async (req) => {
       if (sbcContext) {
         fullSystemPrompt += sbcContext;
         const warningMsg = language === "en"
-          ? `\n\n⚠️ CRITICAL: Cite exact clause numbers from above. If not found, say: "The required information is not available in the current files."`
-          : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
+          ? `\n\n⚠️ EXACT-REFERENCE CITATION RULES (binding — three tiers):
+1. If the EXACT clause text is present in the documents above — quote it verbatim with Document + Section number. This is the required response.
+2. If the exact clause is NOT present verbatim but the same document/chapter IS loaded above — state: "The verbatim text of [clause X] is not in the current structured index. The nearest available content from this section is:" then provide the adjacent content that is present. Do NOT say the document is unavailable.
+3. If NO content from the relevant document is present at all — state: "Clause [X] is not currently indexed. You can navigate to it directly using the Sources panel." Do NOT ask the user to provide the text.
+ABSOLUTELY FORBIDDEN:
+- Asking the user to supply the code text
+- Saying "the document is unavailable" when sources are loaded below the answer
+- Answering exact-reference questions from general model memory when internal retrieval has not succeeded`
+          : `\n\n⚠️ قواعد الاستشهاد بالمراجع الدقيقة (ملزمة — ثلاثة مستويات):
+1. إذا كان النص الحرفي للفقرة موجوداً في المستندات أعلاه — اقتبسه حرفياً مع ذكر الوثيقة ورقم القسم. هذه هي الإجابة المطلوبة.
+2. إذا لم يكن النص الحرفي للفقرة موجوداً ولكن الوثيقة أو الفصل ذاته محمّل أعلاه — صرّح: "النص الحرفي للفقرة [X] غير مفهرس في قاعدة البيانات المهيكلة حالياً. أقرب محتوى متاح من هذا القسم:" ثم قدّم المحتوى المجاور الموجود. لا تقل إن الوثيقة غير متوفرة.
+3. إذا لم يُحمَّل أي محتوى من الوثيقة ذات الصلة — صرّح: "الفقرة [X] غير مفهرسة حالياً. يمكنك الوصول إليها مباشرة من خلال لوحة المصادر." لا تطلب من المستخدم تزويد النص.
+ممنوع منعاً باتاً:
+- مطالبة المستخدم بتزويد نص الكود
+- القول إن الوثيقة غير متوفرة في حين أن المصادر محمّلة أسفل الإجابة
+- الإجابة على أسئلة المراجع الدقيقة من الذاكرة العامة عندما لا ينجح الاسترجاع الداخلي`;
         fullSystemPrompt += warningMsg;
       } else if (!structuredTableContext) {
         // No SBC content loaded at all (neither structured tables nor storage chunks).
