@@ -16,19 +16,19 @@ const PaymentCallback = () => {
   const [status, setStatus] = useState<CallbackStatus>("loading");
 
   useEffect(() => {
-    const tapId = searchParams.get("tap_id");
-    // Tap may include a ?status= param in the redirect URL (e.g. CAPTURED, FAILED, CANCELLED).
+    const moyasarId = searchParams.get("id");
+    // Moyasar includes a ?status= param in the redirect URL (e.g. paid, failed).
     // Only use it for fast-fail — never to confirm success, which must always be
     // verified against our own DB via check-subscription.
-    const tapRedirectStatus = searchParams.get("status")?.toUpperCase();
+    const moyasarRedirectStatus = searchParams.get("status")?.toLowerCase();
 
-    if (!tapId) {
+    if (!moyasarId) {
       setStatus("failed");
       return;
     }
 
-    // Fast-fail on definitive Tap-reported failures — skip polling entirely.
-    if (tapRedirectStatus === "CANCELLED" || tapRedirectStatus === "FAILED") {
+    // Fast-fail on definitive Moyasar-reported failures — skip polling entirely.
+    if (moyasarRedirectStatus === "failed") {
       setStatus("failed");
       return;
     }

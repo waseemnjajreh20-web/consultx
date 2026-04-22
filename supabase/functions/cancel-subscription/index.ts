@@ -21,7 +21,6 @@ const corsHeaders = {
 //   status = "cancelled"         (trialing only — immediate)
 //
 // Side effects:
-//   - Attempts Tap payment agreement DELETE (fire-and-forget, non-fatal)
 //   - Syncs profiles.plan_type = "free" on immediate cancel (trialing)
 // ============================================================
 
@@ -42,7 +41,6 @@ serve(async (req) => {
     const supabaseUrl     = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const tapSecretKey    = Deno.env.get("TAP_SECRET_KEY");
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -62,7 +60,7 @@ serve(async (req) => {
     // past_due is included: the user may want to cancel before a retry succeeds.
     const { data: sub, error: subError } = await adminClient
       .from("user_subscriptions")
-      .select("id, status, current_period_end, tap_payment_agreement_id, cancel_at_period_end")
+      .select("id, status, current_period_end, cancel_at_period_end")
       .eq("user_id", user.id)
       .in("status", ["active", "trialing", "past_due"])
       .order("created_at", { ascending: false })
@@ -143,37 +141,6 @@ serve(async (req) => {
         ? `Sub ${sub.id}: cancelled immediately (was trialing)`
         : `Sub ${sub.id}: cancellation scheduled at period end (${sub.current_period_end})`,
     );
-
-    // ── Attempt Tap payment agreement cancellation (fire-and-forget) ──────────
-    // Tells Tap to terminate the stored recurring agreement so its system
-    // also considers the relationship closed. Non-fatal — a failed API call
-    // here must never block the user-facing cancel response.
-    if (sub.tap_payment_agreement_id && tapSecretKey) {
-      try {
-        const tapRes = await fetch(
-          `https://api.tap.company/v2/payment_agreements/${sub.tap_payment_agreement_id}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${tapSecretKey}` },
-          },
-        );
-        if (tapRes.ok) {
-          console.log(
-            `Tap payment agreement ${sub.tap_payment_agreement_id} cancelled for sub ${sub.id}`,
-          );
-        } else {
-          const tapErr = await tapRes.json().catch(() => ({}));
-          console.warn(
-            `Tap agreement DELETE returned ${tapRes.status} for ${sub.tap_payment_agreement_id}:`,
-            tapErr,
-          );
-        }
-      } catch (tapErr) {
-        console.warn("Tap agreement cancellation network error (non-fatal):", tapErr);
-      }
-    } else if (!sub.tap_payment_agreement_id) {
-      console.log(`Sub ${sub.id}: no tap_payment_agreement_id — skipping Tap agreement DELETE`);
-    }
 
     // ── Immediate cancel: sync profiles.plan_type to "free" ──────────────────
     // For period-end cancels, check-subscription handles the sync when the

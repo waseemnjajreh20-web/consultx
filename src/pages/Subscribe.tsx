@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CreditCard, Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
+import { Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,17 +12,17 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 
-const TAP_PUBLISHABLE_KEY = import.meta.env.VITE_TAP_PUBLISHABLE_KEY || "pk_test_4QqUxKJotDilhnfGZ98ALrp3";
+const MOYASAR_PUBLISHABLE_KEY = import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string;
+
+declare global {
+  interface Window {
+    Moyasar: any;
+  }
+}
 
 /** Display name: use the DB plan name directly (matches PricingLanding). */
 function getPlanDisplayName(slug: string, nameAr: string, nameEn: string, isAr: boolean): string {
   return isAr ? nameAr : nameEn;
-}
-
-declare global {
-  interface Window {
-    CardSDK: any;
-  }
 }
 
 interface Plan {
@@ -53,18 +53,11 @@ const Subscribe = () => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [cardReady, setCardReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Cleanup resetCardSDK timer on unmount
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    };
-  }, []);
+  const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
+  const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -98,113 +91,88 @@ const Subscribe = () => {
     fetchPlans();
   }, [searchParams]);
 
-  // Load Tap Card SDK
+  // Load Moyasar CSS + JS on mount
   useEffect(() => {
-    if (sdkLoaded || window.CardSDK) {
+    if (window.Moyasar) {
       setSdkLoaded(true);
       return;
     }
-    const existingScript = document.querySelector('script[src*="tap-sdks"]');
+    const existingScript = document.querySelector('script[src*="moyasar"]');
     if (existingScript) {
       setSdkLoaded(true);
       return;
     }
+    if (!document.querySelector('link[href*="moyasar"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://cdn.moyasar.com/moyasar/1.14.0/moyasar.css";
+      document.head.appendChild(link);
+    }
     const script = document.createElement("script");
-    script.src = "https://tap-sdks.b-cdn.net/card/1.0.0/index.js";
+    script.src = "https://cdn.moyasar.com/moyasar/1.14.0/moyasar.js";
     script.async = true;
-    script.onload = () => {
-      setSdkLoaded(true);
-    };
+    script.onload = () => setSdkLoaded(true);
     document.body.appendChild(script);
   }, []);
 
+  // Init Moyasar form once modal is open and we have the pending IDs
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
-    if (paymentModalOpen && sdkLoaded) {
-      // Small delay to ensure the modal DOM node (#card-element) is fully mounted
-      timer = setTimeout(() => initTapCard(), 300);
+    if (paymentModalOpen && sdkLoaded && pendingGivenId && pendingSubscriptionId) {
+      timer = setTimeout(() => initMoyasarForm(pendingGivenId, pendingSubscriptionId), 300);
     }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [paymentModalOpen, sdkLoaded]);
+    return () => { if (timer) clearTimeout(timer); };
+  }, [paymentModalOpen, sdkLoaded, pendingGivenId, pendingSubscriptionId]);
 
-  const initTapCard = () => {
-    if (!window.CardSDK) return;
-    try {
-      const { renderTapCard } = window.CardSDK;
-      renderTapCard("card-element", {
-        publicKey: TAP_PUBLISHABLE_KEY,
-        transaction: { amount: "1", currency: "SAR" },
-        customer: { editable: true },
-        acceptance: { supportedBrands: ["VISA", "MASTERCARD", "MADA", "AMERICAN_EXPRESS"], supportedCards: "ALL" },
-        fields: { cardHolder: true },
-        addons: { displayPaymentBrands: true, loader: true },
-        interface: { locale: language === "ar" ? "ar" : "en", theme: "dark", edges: "curved", direction: dir },
-        onReady: () => setCardReady(true),
-        onError: (err: any) => console.error("Card SDK error:", err),
-      });
-    } catch (err) {
-      console.error("Failed to init Tap Card SDK:", err);
-    }
+  const initMoyasarForm = (givenId: string, subscriptionId: string) => {
+    if (!window.Moyasar) return;
+    const plan = plans.find((p) => p.id === selectedPlan);
+    window.Moyasar.init({
+      element: "#mysr-form",
+      amount: 100, // 1 SAR in halalas — card verification charge
+      currency: "SAR",
+      description: plan ? `Card verification for ${plan.name_en}` : "Card verification",
+      publishable_api_key: MOYASAR_PUBLISHABLE_KEY,
+      callback_url: `${window.location.origin}/payment-callback`,
+      metadata: {
+        subscription_id: subscriptionId,
+        given_id: givenId,
+      },
+      methods: ["creditcard"],
+    });
   };
 
-  const resetCardSDK = () => {
-    setCardReady(false);
-    const cardEl = document.getElementById("card-element");
-    if (cardEl) cardEl.innerHTML = "";
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    resetTimerRef.current = setTimeout(() => initTapCard(), 400);
-  };
-
-  const handleSubscribe = async () => {
-    if (!selectedPlan || !cardReady || !session || processing) return;
+  // Call backend to create subscription record, then open payment modal
+  const openPaymentModal = async () => {
+    if (!selectedPlan || !session || processing) return;
     setProcessing(true);
     try {
-      const { tokenize } = window.CardSDK;
-      const tokenResult = await tokenize();
-      if (!tokenResult?.id) {
-        toast({
-          title: t("errorTitle"),
-          description: language === "ar"
-            ? "فشل التحقق من بيانات البطاقة، يرجى إعادة إدخال بيانات البطاقة"
-            : "Card verification failed. Please re-enter your card details.",
-          variant: "destructive",
-        });
-        resetCardSDK();
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("tap-create-subscription", {
-        body: { token_id: tokenResult.id, plan_id: selectedPlan },
+      const { data, error } = await supabase.functions.invoke("moyasar-create-subscription", {
+        body: { plan_id: selectedPlan },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      if (error) {
-        toast({
-          title: t("errorTitle"),
-          description: language === "ar"
-            ? "حدث خطأ في معالجة الدفع، يرجى إدخال بيانات البطاقة مرة أخرى"
-            : "Payment processing error. Please re-enter your card details.",
-          variant: "destructive",
-        });
-        resetCardSDK();
+      if (error || !data?.given_id || !data?.subscription_id) {
+        const desc =
+          data?.error === "Active paid subscription already exists"
+            ? language === "ar"
+              ? "لديك اشتراك نشط بالفعل"
+              : "You already have an active subscription."
+            : language === "ar"
+            ? "حدث خطأ في التحضير للدفع، يرجى المحاولة مرة أخرى"
+            : "Failed to prepare payment. Please try again.";
+        toast({ title: t("errorTitle"), description: desc, variant: "destructive" });
         return;
       }
-      if (data?.redirect_url) {
-        window.location.href = data.redirect_url;
-      } else {
-        toast({ title: t("subscriptionActivated"), description: t("trialStarted") });
-        navigate("/");
-      }
+      setPendingGivenId(data.given_id);
+      setPendingSubscriptionId(data.subscription_id);
+      setPaymentModalOpen(true);
     } catch (err: any) {
-      console.error("Subscribe error:", err);
+      console.error("openPaymentModal error:", err);
       toast({
         title: t("errorTitle"),
-        description: language === "ar"
-          ? "حدث خطأ غير متوقع، يرجى إدخال بيانات البطاقة مرة أخرى"
-          : "An unexpected error occurred. Please re-enter your card details.",
+        description: language === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred.",
         variant: "destructive",
       });
-      resetCardSDK();
     } finally {
       setProcessing(false);
     }
@@ -293,7 +261,7 @@ const Subscribe = () => {
                   <CardContent className="text-center pb-4">
                     <div className="text-3xl font-bold text-primary">
                       {plan.price_amount === 0
-                        ? (language === "ar" ? "مجاني" : "Free")
+                        ? language === "ar" ? "مجاني" : "Free"
                         : (plan.price_amount / 100).toFixed(0)}
                       {plan.price_amount > 0 && (
                         <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
@@ -302,29 +270,29 @@ const Subscribe = () => {
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
                       <li>
                         {plan.features.graphrag
-                          ? (language === "ar" ? "✓ GraphRAG متاح" : "✓ GraphRAG enabled")
-                          : (language === "ar" ? "✗ GraphRAG غير متاح" : "✗ No GraphRAG")}
+                          ? language === "ar" ? "✓ GraphRAG متاح" : "✓ GraphRAG enabled"
+                          : language === "ar" ? "✗ GraphRAG غير متاح" : "✗ No GraphRAG"}
                       </li>
                       {Array.isArray(plan.features.modes) && plan.features.modes.length > 0 && (
                         <>
                           <li>
                             {language === "ar" ? "✓ الوضع السريع: غير محدود" : "✓ Quick mode: Unlimited"}
                           </li>
-                          {plan.features.advisory_limit !== undefined && plan.features.advisory_limit !== null && (
+                          {plan.features.advisory_limit != null && (
                             <li>
                               {language === "ar"
                                 ? `✓ الاستشاري: ${plan.features.advisory_limit} رسالة/يوم`
                                 : `✓ Advisory: ${plan.features.advisory_limit} msgs/day`}
                             </li>
                           )}
-                          {plan.features.analysis_limit !== undefined && plan.features.analysis_limit !== null && (
+                          {plan.features.analysis_limit != null && (
                             <li>
                               {language === "ar"
                                 ? `✓ التحليلي: ${plan.features.analysis_limit} رسالة/يوم`
                                 : `✓ Analysis: ${plan.features.analysis_limit} msgs/day`}
                             </li>
                           )}
-                          {(plan.features.advisory_limit === undefined || plan.features.advisory_limit === null) && (plan.features.analysis_limit === undefined || plan.features.analysis_limit === null) && (
+                          {plan.features.advisory_limit == null && plan.features.analysis_limit == null && (
                             <li>
                               {language === "ar" ? "✓ جميع الأوضاع غير محدودة" : "✓ All modes unlimited"}
                             </li>
@@ -356,56 +324,51 @@ const Subscribe = () => {
                 <span>{t("fullAccess")}</span>
               </div>
 
-              {/* Continue Button */}
               <Button
                 variant="hero"
                 size="lg"
                 className="w-full"
-                onClick={() => setPaymentModalOpen(true)}
-                disabled={!selectedPlan || !sdkLoaded}
+                onClick={openPaymentModal}
+                disabled={!selectedPlan || !sdkLoaded || processing}
               >
                 {isReturningUser ? t("startSubscription") : isTrialActive ? t("addCardContinue") : t("startFreeTrial")}
-                {dir === "rtl" ? <ArrowLeft className="w-5 h-5 me-2" /> : <ArrowRight className="w-5 h-5 ms-2" />}
+                {processing
+                  ? <Loader2 className="w-5 h-5 ms-2 animate-spin" />
+                  : dir === "rtl"
+                    ? <ArrowLeft className="w-5 h-5 me-2" />
+                    : <ArrowRight className="w-5 h-5 ms-2" />}
               </Button>
             </div>
           )}
 
-          {/* Payment Modal */}
-          <Dialog open={paymentModalOpen} onOpenChange={(open) => {
-            if (processing) return; // Prevent closing while payment is processing
-            setPaymentModalOpen(open);
-            if (!open) setCardReady(false); // Reset on close
-          }}>
-            <DialogContent className="sm:max-w-[450px]">
+          {/* Payment Modal — Moyasar form renders inside #mysr-form */}
+          <Dialog
+            open={paymentModalOpen}
+            onOpenChange={(open) => {
+              if (processing) return;
+              setPaymentModalOpen(open);
+              if (!open) {
+                setPendingGivenId(null);
+                setPendingSubscriptionId(null);
+              }
+            }}
+          >
+            <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
                 <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
                 <DialogDescription>
                   {isReturningUser ? t("verificationChargeReturning") : t("verificationCharge")}
                 </DialogDescription>
               </DialogHeader>
-
-              {/* Card Element */}
-              <div className="bg-card/80 border border-border/50 rounded-xl p-4 my-2" dir="ltr">
-                <div id="card-element" className="min-h-[120px] flex items-center justify-center">
-                  {!sdkLoaded && <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />}
+              <div className="my-2" dir="ltr">
+                <div id="mysr-form" className="min-h-[180px]">
+                  {!sdkLoaded && (
+                    <div className="flex items-center justify-center h-[180px]">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
               </div>
-
-              <DialogFooter>
-                <Button
-                  variant="hero"
-                  className="w-full"
-                  onClick={handleSubscribe}
-                  disabled={!cardReady || processing}
-                >
-                  {processing ? (
-                    <Loader2 className="w-5 h-5 animate-spin ms-2" />
-                  ) : (
-                    <CreditCard className="w-5 h-5 ms-2" />
-                  )}
-                  {language === "ar" ? "تأكيد الدفع" : "Confirm Payment"}
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>

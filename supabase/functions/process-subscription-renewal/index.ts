@@ -1,25 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Must match GRACE_DAYS in check-subscription, fire-safety-chat,
-// tap-webhook, Workspace.tsx, and Account.tsx.
+// Must match GRACE_DAYS in check-subscription, moyasar-webhook,
+// Workspace.tsx, and Account.tsx.
 const GRACE_DAYS = 7;
 
 // ============================================================
 // process-subscription-renewal
 //
 // Mission: find active subscriptions whose next_billing_date
-// has arrived, charge the stored card via Tap, and update the
-// subscription period on success.
+// has arrived, charge the stored card via Moyasar MIT, and
+// update the subscription period on success.
 //
 // Triggered by pg_cron via HTTP (hourly). Not user-callable.
 // ============================================================
 
 serve(async (req) => {
   // ── Auth: validate CRON_SECRET if configured ─────────────────────────────
-  // Set CRON_SECRET in Edge Function secrets (Supabase dashboard) AND in
-  // Postgres: ALTER DATABASE postgres SET app.cron_secret = 'same-value';
-  // If CRON_SECRET is not set, the function is open (internal-network only).
   const cronSecret = Deno.env.get("CRON_SECRET");
   if (cronSecret) {
     const provided = req.headers.get("x-cron-secret");
@@ -34,11 +31,11 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const tapSecretKey = Deno.env.get("TAP_SECRET_KEY");
+  const moyasarSecretKey = Deno.env.get("MOYASAR_SECRET_KEY");
 
-  if (!tapSecretKey) {
-    console.error("TAP_SECRET_KEY not configured — cannot attempt renewal charges");
-    return new Response(JSON.stringify({ error: "TAP_SECRET_KEY not configured" }), {
+  if (!moyasarSecretKey) {
+    console.error("MOYASAR_SECRET_KEY not configured — cannot attempt renewal charges");
+    return new Response(JSON.stringify({ error: "MOYASAR_SECRET_KEY not configured" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -47,18 +44,9 @@ serve(async (req) => {
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
   // ── 1. Query renewal-eligible subscriptions ───────────────────────────────
-  //
-  // Eligibility rules (all must be true):
-  //   • status = 'active'         — only charge subscriptions currently active
-  //   • cancel_at_period_end = false — user has NOT requested cancellation
-  //   • next_billing_date IS NOT NULL — column must be set (safety guard)
-  //   • next_billing_date <= NOW() + 1 hour (safety window against clock skew)
-  //   • tap_card_id IS NOT NULL AND tap_customer_id IS NOT NULL — card on file
-  //   • plan_id IS NOT NULL — required to look up the charge amount
-  //
   // Safety window: pick up subscriptions due within the next 60 minutes so a
   // cron job that fires slightly late never silently skips a due subscription.
-  const safetyWindowMs = 60 * 60 * 1000; // 1 hour
+  const safetyWindowMs = 60 * 60 * 1000;
   const cutoff = new Date(Date.now() + safetyWindowMs).toISOString();
 
   const { data: dueSubscriptions, error: queryError } = await adminClient
@@ -67,9 +55,7 @@ serve(async (req) => {
       id,
       user_id,
       plan_id,
-      tap_customer_id,
-      tap_card_id,
-      tap_payment_agreement_id,
+      moyasar_card_token,
       next_billing_date,
       current_period_end,
       past_due_since,
@@ -85,8 +71,7 @@ serve(async (req) => {
     .eq("cancel_at_period_end", false)
     .not("next_billing_date", "is", null)
     .lte("next_billing_date", cutoff)
-    .not("tap_card_id", "is", null)
-    .not("tap_customer_id", "is", null);
+    .not("moyasar_card_token", "is", null);
 
   if (queryError) {
     console.error("Failed to query due subscriptions:", queryError);
@@ -97,15 +82,6 @@ serve(async (req) => {
   }
 
   // ── 1b. Past-due retry: subscriptions that failed renewal within grace window ─
-  //
-  // Eligibility rules (all must be true):
-  //   • status = 'past_due'
-  //   • cancel_at_period_end = false  — user has NOT requested cancellation
-  //   • past_due_since >= NOW() - GRACE_DAYS  — within the 7-day retry window
-  //   • tap_card_id + tap_customer_id present — card on file
-  //
-  // GRACE_DAYS must match the constant in check-subscription so access and
-  // retry windows are coherent. Both currently use 7 days.
   const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: pastDueSubs, error: pastDueError } = await adminClient
@@ -114,9 +90,7 @@ serve(async (req) => {
       id,
       user_id,
       plan_id,
-      tap_customer_id,
-      tap_card_id,
-      tap_payment_agreement_id,
+      moyasar_card_token,
       next_billing_date,
       current_period_end,
       past_due_since,
@@ -130,8 +104,7 @@ serve(async (req) => {
     `)
     .eq("status", "past_due")
     .eq("cancel_at_period_end", false)
-    .not("tap_card_id", "is", null)
-    .not("tap_customer_id", "is", null)
+    .not("moyasar_card_token", "is", null)
     .not("past_due_since", "is", null)
     .gte("past_due_since", graceCutoff);
 
@@ -186,10 +159,6 @@ serve(async (req) => {
     }
 
     // ── 2. Idempotency: skip if a live renewal tx already exists this period ─
-    //
-    // "Current period" starts at (current_period_end - duration_days). Any
-    // 'initiated' or 'captured' renewal tx created after that date means a
-    // charge is already in flight or succeeded — do not double-charge.
     const durationDays = plan.duration_days || 30;
     const periodWindowStart = sub.current_period_end
       ? new Date(new Date(sub.current_period_end).getTime() - durationDays * 24 * 60 * 60 * 1000).toISOString()
@@ -212,7 +181,7 @@ serve(async (req) => {
       continue;
     }
 
-    // ── 3. Determine retry_count (count prior failed attempts this period) ──
+    // ── 3. Determine retry_count ──────────────────────────────────────────────
     const { count: failedCount } = await adminClient
       .from("payment_transactions")
       .select("id", { count: "exact", head: true })
@@ -222,16 +191,15 @@ serve(async (req) => {
       .gte("created_at", periodWindowStart);
 
     const retryCount = failedCount ?? 0;
+    const givenId = crypto.randomUUID();
 
-    // ── 4. Insert renewal transaction BEFORE calling Tap ────────────────────
-    // tap_charge_id is null initially; updated after Tap responds.
-    // This ensures the webhook can always find a matching row by charge ID.
+    // ── 4. Insert renewal transaction BEFORE calling Moyasar ─────────────────
     const { data: txRecord, error: txInsertError } = await adminClient
       .from("payment_transactions")
       .insert({
         user_id: sub.user_id,
         subscription_id: sub.id,
-        tap_charge_id: null,
+        moyasar_payment_id: null,
         amount: plan.price_amount,
         currency: plan.currency || "SAR",
         status: "initiated",
@@ -249,88 +217,32 @@ serve(async (req) => {
 
     const txId = txRecord.id;
 
-    // ── 5. Create Tap token from stored card ──────────────────────────────────
-    // Tap requires a fresh single-use token each time, created from the
-    // stored card + customer IDs. This is the MIT (Merchant Initiated
-    // Transaction) token path used throughout this project.
-    let tokenData: any;
-    try {
-      const tokenResponse = await fetch("https://api.tap.company/v2/tokens", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${tapSecretKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          saved_card: {
-            card_id: sub.tap_card_id,
-            customer_id: sub.tap_customer_id,
-          },
-        }),
-      });
-      tokenData = await tokenResponse.json();
-      if (!tokenResponse.ok || !tokenData.id) {
-        const errMsg = tokenData?.message || tokenData?.errors?.[0]?.description || "Token creation failed";
-        throw new Error(errMsg);
-      }
-    } catch (tokenErr) {
-      const errMsg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
-      console.error(`Sub ${sub.id}: Tap token creation failed:`, errMsg);
-      await Promise.all([
-        adminClient.from("payment_transactions").update({
-          status: "failed",
-          failure_code: "TOKEN_ERROR",
-          failure_message: errMsg,
-        }).eq("id", txId),
-        markPastDue(adminClient, sub),
-      ]);
-      failed++;
-      continue;
-    }
-
-    // ── 6. Create Tap charge (MIT — Merchant Initiated Transaction) ───────────
-    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? "";
-    const webhookUrl = projectRef
-      ? `https://${projectRef}.supabase.co/functions/v1/tap-webhook`
-      : `${supabaseUrl}/functions/v1/tap-webhook`;
-
-    const chargeAmount = plan.price_amount / 100; // halalas → SAR
-    const chargePayload: Record<string, any> = {
-      amount: chargeAmount,
+    // ── 5. Charge via Moyasar MIT (stored card token — no separate tokenize step) ─
+    const chargePayload = {
+      amount: plan.price_amount, // already in halalas
       currency: plan.currency || "SAR",
-      save_card: false,
-      threeDSecure: false, // MIT — 3DS not required for merchant-initiated renewals
       description: `Subscription renewal — ${plan.name_en}`,
-      statement_descriptor: "ConsultX Sub",
-      reference: {
-        transaction: `renewal_${sub.id}_${Date.now()}`,
-        order: `order_${sub.user_id}`,
+      given_id: givenId,
+      source: {
+        type: "token",
+        token: sub.moyasar_card_token,
       },
-      receipt: { email: true, sms: false },
-      customer: { id: sub.tap_customer_id },
-      source: { id: tokenData.id },
-      post: { url: webhookUrl },
+      metadata: {
+        subscription_id: sub.id,
+        payment_type: "renewal",
+        tx_id: txId,
+      },
     };
 
-    // Include payment agreement if available — improves MIT approval rates
-    if (sub.tap_payment_agreement_id) {
-      chargePayload.payment_agreement = {
-        id: sub.tap_payment_agreement_id,
-        type: "UNSCHEDULED",
-        contract: {
-          id: `contract_${sub.user_id}`,
-          type: "PAY_AS_YOU_GO",
-        },
-      };
-    }
+    const moyasarAuth = "Basic " + btoa(moyasarSecretKey + ":");
 
     let chargeData: any;
     let chargeResponseOk = false;
     try {
-      const chargeResponse = await fetch("https://api.tap.company/v2/charges", {
+      const chargeResponse = await fetch("https://api.moyasar.com/v1/payments", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${tapSecretKey}`,
+          Authorization: moyasarAuth,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(chargePayload),
@@ -339,7 +251,7 @@ serve(async (req) => {
       chargeResponseOk = chargeResponse.ok;
     } catch (chargeErr) {
       const errMsg = chargeErr instanceof Error ? chargeErr.message : String(chargeErr);
-      console.error(`Sub ${sub.id}: Tap charge request network error:`, errMsg);
+      console.error(`Sub ${sub.id}: Moyasar charge network error:`, errMsg);
       await Promise.all([
         adminClient.from("payment_transactions").update({
           status: "failed",
@@ -353,14 +265,9 @@ serve(async (req) => {
     }
 
     if (!chargeResponseOk) {
-      // Tap returned a 4xx/5xx — charge was rejected before processing
-      const errCode =
-        chargeData?.errors?.[0]?.code ?? chargeData?.code ?? "CHARGE_REJECTED";
-      const errMsg =
-        chargeData?.errors?.[0]?.description ??
-        chargeData?.message ??
-        JSON.stringify(chargeData);
-      console.error(`Sub ${sub.id}: Tap rejected charge (${errCode}):`, errMsg);
+      const errCode = chargeData?.type ?? "CHARGE_REJECTED";
+      const errMsg = chargeData?.message ?? JSON.stringify(chargeData);
+      console.error(`Sub ${sub.id}: Moyasar rejected charge (${errCode}):`, errMsg);
       await Promise.all([
         adminClient.from("payment_transactions").update({
           status: "failed",
@@ -373,25 +280,25 @@ serve(async (req) => {
       continue;
     }
 
-    // ── 7. Charge accepted by Tap — stamp charge ID and handle outcome ────────
+    // ── 6. Map Moyasar status and update records ──────────────────────────────
     const mappedStatus =
-      chargeData.status === "CAPTURED" ? "captured"
-      : chargeData.status === "FAILED"  ? "failed"
-      : "initiated"; // INITIATED / PENDING — webhook will deliver final outcome
+      chargeData.status === "paid"     ? "captured"
+      : chargeData.status === "failed" ? "failed"
+      : "initiated"; // async path — moyasar-webhook will deliver final outcome
 
     const txUpdate: Record<string, any> = {
-      tap_charge_id: chargeData.id,
+      moyasar_payment_id: chargeData.id,
       status: mappedStatus,
     };
-    if (chargeData.status === "FAILED") {
-      txUpdate.failure_code    = chargeData.response?.code    ?? null;
-      txUpdate.failure_message = chargeData.response?.message ?? null;
+    if (chargeData.status === "failed") {
+      txUpdate.failure_code    = chargeData.source?.message ?? null;
+      txUpdate.failure_message = chargeData.source?.message ?? null;
     }
     await adminClient.from("payment_transactions").update(txUpdate).eq("id", txId);
 
-    if (chargeData.status === "CAPTURED") {
+    if (chargeData.status === "paid") {
       // Immediate capture — update subscription period directly.
-      // The webhook will also fire but the idempotent update is harmless.
+      // The webhook may also fire but the idempotent update is harmless.
       const now = new Date();
       const newPeriodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
       await adminClient.from("user_subscriptions").update({
@@ -400,33 +307,26 @@ serve(async (req) => {
         current_period_end: newPeriodEnd.toISOString(),
         next_billing_date: newPeriodEnd.toISOString(),
         past_due_since: null,
-        dunning_notified_at: null, // re-arms dunning for any future independent failure
+        dunning_notified_at: null,
       }).eq("id", sub.id);
       console.log(
-        `Sub ${sub.id}: renewed immediately (CAPTURED) — ` +
-        `next billing ${newPeriodEnd.toISOString()}`,
+        `Sub ${sub.id}: renewed (paid) — next billing ${newPeriodEnd.toISOString()}`,
       );
       processed++;
-    } else if (chargeData.status === "FAILED") {
+    } else if (chargeData.status === "failed") {
       await markPastDue(adminClient, sub);
-      console.error(`Sub ${sub.id}: charge returned FAILED immediately — marked past_due`);
+      console.error(`Sub ${sub.id}: Moyasar returned failed — marked past_due`);
       failed++;
     } else {
-      // Async path (INITIATED/PENDING): tap-webhook will deliver CAPTURED or FAILED
+      // Async path (initiated): moyasar-webhook will deliver final outcome
       console.log(
-        `Sub ${sub.id}: charge ${chargeData.id} initiated ` +
-        `(${chargeData.status}) — awaiting webhook`,
+        `Sub ${sub.id}: payment ${chargeData.id} ${chargeData.status} — awaiting webhook`,
       );
       processed++;
     }
   }
 
-  const summary = {
-    processed,
-    skipped,
-    failed,
-    total: allDue.length,
-  };
+  const summary = { processed, skipped, failed, total: allDue.length };
   console.log("Renewal job complete:", JSON.stringify(summary));
   return new Response(JSON.stringify(summary), {
     status: 200,
@@ -434,39 +334,25 @@ serve(async (req) => {
   });
 });
 
-// ── Helper: mark subscription past_due; stamp past_due_since on first failure ─
-// Idempotent: only writes past_due_since if it is currently NULL so the
-// grace-period clock always reflects the first missed payment, not the
-// most recent retry.
-//
-// After the DB update, attempts an atomic claim on dunning_notified_at to send
-// exactly one dunning email per past_due episode. The atomic WHERE IS NULL
-// check prevents double-send when tap-webhook races this function.
+// ── Helper: mark subscription past_due; atomic dunning email claim ────────────
 async function markPastDue(
   adminClient: ReturnType<typeof createClient>,
   sub: { id: string; user_id: string; past_due_since: string | null },
 ): Promise<void> {
-  // Capture the effective past_due_since timestamp now so the grace-end date
-  // in the email is consistent whether this is the first miss or a retry call.
   const pastDueSince = sub.past_due_since ?? new Date().toISOString();
-
   const updates: Record<string, any> = { status: "past_due" };
-  if (!sub.past_due_since) {
-    updates.past_due_since = pastDueSince;
-  }
+  if (!sub.past_due_since) updates.past_due_since = pastDueSince;
+
   const { error } = await adminClient
     .from("user_subscriptions")
     .update(updates)
     .eq("id", sub.id);
+
   if (error) {
     console.error(`markPastDue: failed on sub ${sub.id}:`, error);
-    return; // Do not attempt email if the status write failed.
+    return;
   }
 
-  // ── Dunning email — one send per past_due episode ──────────────────────────
-  // Atomic claim on dunning_notified_at (WHERE IS NULL) ensures exactly one
-  // email fires even when process-subscription-renewal and tap-webhook race
-  // on the very first failure event.
   try {
     const { data: claimed } = await adminClient
       .from("user_subscriptions")
@@ -476,7 +362,6 @@ async function markPastDue(
       .select("id");
 
     if (claimed && claimed.length > 0) {
-      // Row claimed — we won the race; send the email.
       const { data: userData } = await adminClient.auth.admin.getUserById(sub.user_id);
       const userEmail = userData?.user?.email;
       if (!userEmail) {
@@ -485,31 +370,20 @@ async function markPastDue(
         await sendDunningEmail({ userEmail, pastDueSince });
       }
     } else {
-      // dunning_notified_at was already set by tap-webhook.
       console.log("Dunning already claimed for sub:", sub.id, "— email skipped");
     }
   } catch (dunningErr) {
-    // Email failure must never surface to callers or break the renewal loop.
     console.error(
       "Dunning email error (non-fatal):",
       dunningErr instanceof Error ? dunningErr.message : String(dunningErr),
     );
   }
-  // ── End dunning email ───────────────────────────────────────────────────────
 }
 
 // ── Dunning email helper ──────────────────────────────────────────────────────
-// Sends a single bilingual (Arabic primary / English secondary) payment-failure
-// notification to the subscriber via Resend.
-//
-// Requires:
-//   RESEND_API_KEY  — Resend API key (Edge Function secret)
-//   FROM_EMAIL      — Sender address (optional; falls back to noreply@consultx.sa)
-//
-// All errors are caught and logged; this function never throws.
 async function sendDunningEmail(params: {
   userEmail: string;
-  pastDueSince: string; // ISO timestamp of the first missed payment
+  pastDueSince: string;
 }): Promise<void> {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) {
@@ -517,8 +391,8 @@ async function sendDunningEmail(params: {
     return;
   }
 
-  const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.sa>";
-  const accountUrl = "https://consultx.sa/account";
+  const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
+  const accountUrl = "https://consultx.app/account";
 
   const graceEnd = new Date(
     new Date(params.pastDueSince).getTime() + GRACE_DAYS * 24 * 60 * 60 * 1000,
@@ -578,7 +452,7 @@ async function sendDunningEmail(params: {
 
   <hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb">
   <p style="color:#9ca3af;font-size:12px;margin:0;direction:ltr;text-align:left">
-    ConsultX &middot; support@consultx.sa &middot;
+    ConsultX &middot; info@consultx.app &middot;
     You are receiving this because you have an active or recent subscription.
   </p>
 

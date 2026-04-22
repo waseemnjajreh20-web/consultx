@@ -3,13 +3,13 @@ project_id = "hrnltxmwoaphgejckutk"
 [functions.fire-safety-chat]
 verify_jwt = false
 
-[functions.tap-create-subscription]
+[functions.fire-safety-chat-v2]
 verify_jwt = false
 
-[functions.tap-webhook]
+[functions.moyasar-create-subscription]
 verify_jwt = false
 
-[functions.tap-charge-subscription]
+[functions.moyasar-webhook]
 verify_jwt = false
 
 [functions.check-subscription]
@@ -21,9 +21,6 @@ verify_jwt = false
 [functions.sbc-graph-indexer]
 verify_jwt = false
 
-[functions.fire-safety-chat-v2]
-verify_jwt = false
-
 [functions.cancel-subscription]
 verify_jwt = false
 
@@ -31,15 +28,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.corporate-trial]
-verify_jwt = false
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.payment-webhook]
-verify_jwt = false
-
-[functions.verify-payment]
 verify_jwt = false
 
 [functions.process-subscription-renewal]
