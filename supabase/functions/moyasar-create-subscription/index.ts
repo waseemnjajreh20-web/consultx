@@ -154,7 +154,6 @@ serve(async (req) => {
         .from("user_subscriptions")
         .update({
           plan_id,
-          moyasar_given_id: givenId,
         })
         .eq("id", trialingSub.id)
         .select()
@@ -171,7 +170,6 @@ serve(async (req) => {
           status: "pending_activation",
           trial_start: null,
           trial_end: null,
-          moyasar_given_id: givenId,
         })
         .select()
         .single();
@@ -187,7 +185,6 @@ serve(async (req) => {
           status: "trialing",
           trial_start: now.toISOString(),
           trial_end: trialEnd7Days.toISOString(),
-          moyasar_given_id: givenId,
         })
         .select()
         .single();
