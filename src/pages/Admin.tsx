@@ -211,12 +211,22 @@ export default function Admin() {
 
         if (remaining === 0) {
           log("🎉 اكتملت فهرسة جميع الملفات! جارٍ بناء المجتمعات...");
-          const { data: commData, error: commError } = await supabase.functions.invoke("sbc-graph-indexer", {
-            body: { action: "communities" },
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          });
-          if (commError) log(`⚠️ خطأ في بناء المجتمعات: ${commError.message}`);
-          else log("✅ تم بناء المجتمعات المعرفية بنجاح!");
+          let commOffset = 0;
+          let commDone = false;
+          let commRound = 0;
+          while (!commDone && commRound < 30 && !stopAutoRef.current) {
+            commRound++;
+            const { data: commData, error: commError } = await supabase.functions.invoke("sbc-graph-indexer", {
+              body: { action: "communities", offset: commOffset, limit: 5 },
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            if (commError) { log(`⚠️ خطأ في بناء المجتمعات: ${commError.message}`); break; }
+            commOffset = commData?.next_offset ?? commOffset + 5;
+            commDone = commData?.done ?? true;
+            log(`✅ مجتمعات: ${commData?.communities_built ?? 0} تم بناؤها (${commOffset}/${commData?.total_groups ?? "?"})`);
+            if (!commDone) await new Promise(r => setTimeout(r, 2000));
+          }
+          if (commDone) log("🎉 تم بناء جميع المجتمعات المعرفية بنجاح!");
           break;
         }
 
@@ -226,7 +236,7 @@ export default function Admin() {
       } catch (err: any) {
         log(`❌ خطأ: ${err.message}`);
         await new Promise(r => setTimeout(r, 5000)); // longer wait on error
-        if (round > 50) { log("⛔ توقف تلقائي بعد 50 جولة"); break; }
+        if (round > 200) { log("⛔ توقف تلقائي بعد 200 جولة"); break; }
       }
     }
 
