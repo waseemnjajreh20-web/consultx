@@ -80,12 +80,30 @@ serve(async (req) => {
     // ── Block double-active subscriptions ────────────────────────────────────
     const { data: activeSub } = await adminClient
       .from("user_subscriptions")
-      .select("id, status")
+      .select("id, status, moyasar_card_token")
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
 
     if (activeSub) {
+      // Card-update path: active subscription with no payment method on file.
+      // Return the existing subscription ID so the Moyasar form can collect a
+      // card token without creating a new subscription row.
+      if (!activeSub.moyasar_card_token) {
+        const givenId = crypto.randomUUID();
+        return new Response(
+          JSON.stringify({
+            success: true,
+            subscription_id: activeSub.id,
+            given_id: givenId,
+            is_card_update: true,
+            amount: 100,
+            currency: "SAR",
+            description: "Card verification",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       return new Response(
         JSON.stringify({ error: "Active paid subscription already exists" }),
         { status: 409, headers: corsHeaders },

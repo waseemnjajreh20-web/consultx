@@ -63,10 +63,12 @@ const Subscribe = () => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
-  // Redirect users who already have a paid active subscription away from subscribe page
+  // Redirect paid active users only if they already have a card on file.
+  // Users who are active but have no stored payment method must be allowed through
+  // to complete the card-on-file recovery flow.
   useEffect(() => {
-    if (!subLoading && isPaidActive) navigate("/");
-  }, [isPaidActive, subLoading, navigate]);
+    if (!subLoading && isPaidActive && (subscription as any)?.card_on_file) navigate("/");
+  }, [isPaidActive, subLoading, subscription, navigate]);
 
   // Fetch plans
   useEffect(() => {

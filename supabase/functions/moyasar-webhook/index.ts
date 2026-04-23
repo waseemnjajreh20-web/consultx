@@ -215,23 +215,35 @@ serve(async (req) => {
       }
       updateData.moyasar_payment_id = paymentId;
 
-      const now = new Date();
-      const trialEndDate = sub.trial_end ? new Date(sub.trial_end) : null;
-      const isTrialExpiredOrImmediate = !trialEndDate || trialEndDate <= now;
-      const durationDays = (sub as any)?.subscription_plans?.duration_days || 30;
-      const periodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
-
-      if (isTrialExpiredOrImmediate) {
-        // Returning user or no-trial case — activate immediately
-        updateData.status = "active";
-        updateData.current_period_start = now.toISOString();
-        updateData.current_period_end = periodEnd.toISOString();
-        updateData.next_billing_date = periodEnd.toISOString();
-        console.log("Payment paid — activating subscription immediately:", sub.id);
+      // Token-update path: subscription is already active with no card on file.
+      // Store the payment method for future renewals; preserve all existing period
+      // dates to avoid clobbering admin-set or extended billing periods.
+      if (sub.status === "active" && !sub.moyasar_card_token) {
+        // If next_billing_date was never set, align it to the existing period end
+        // so the renewal job can find this subscription when the time comes.
+        if (!sub.next_billing_date && sub.current_period_end) {
+          updateData.next_billing_date = sub.current_period_end;
+        }
+        console.log("Payment paid — token-update on active subscription, period preserved:", sub.id);
       } else {
-        // New user within trial window — keep trialing, card token saved
-        updateData.status = "trialing";
-        console.log("Payment paid — keeping trialing, card token saved:", sub.id);
+        const now = new Date();
+        const trialEndDate = sub.trial_end ? new Date(sub.trial_end) : null;
+        const isTrialExpiredOrImmediate = !trialEndDate || trialEndDate <= now;
+        const durationDays = (sub as any)?.subscription_plans?.duration_days || 30;
+        const periodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+        if (isTrialExpiredOrImmediate) {
+          // Returning user or no-trial case — activate immediately
+          updateData.status = "active";
+          updateData.current_period_start = now.toISOString();
+          updateData.current_period_end = periodEnd.toISOString();
+          updateData.next_billing_date = periodEnd.toISOString();
+          console.log("Payment paid — activating subscription immediately:", sub.id);
+        } else {
+          // New user within trial window — keep trialing, card token saved
+          updateData.status = "trialing";
+          console.log("Payment paid — keeping trialing, card token saved:", sub.id);
+        }
       }
 
       const { error: subUpdateError } = await adminClient
@@ -242,7 +254,7 @@ serve(async (req) => {
       if (subUpdateError) {
         console.error("Failed to update subscription on paid event:", subUpdateError);
       } else {
-        // Sync profiles.plan_type when subscription becomes active
+        // Sync profiles.plan_type when subscription becomes active (fresh activation only)
         if (updateData.status === "active") {
           const { data: planInfo } = await adminClient
             .from("subscription_plans")

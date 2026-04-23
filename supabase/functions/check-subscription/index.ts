@@ -67,6 +67,7 @@ serve(async (req) => {
           show_welcome_banner: false,
           upgrade_context: null,
           recommended_plan: "pro",
+          card_on_file: true,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -319,6 +320,7 @@ serve(async (req) => {
         advisory_used:               advisoryUsed,
         analysis_limit:              analysisLimit,
         analysis_used:               analysisUsed,
+        card_on_file:                !!(subscription?.moyasar_card_token),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
