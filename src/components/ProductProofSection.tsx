@@ -104,7 +104,7 @@ const ProductProofSection = () => {
                     color: "#67e8f9",
                   }}
                 >
-                  SBC 201 § 1017.2
+                  SBC 201 Section 1017.2
                 </span>
                 <span
                   className="text-xs px-2 py-1 rounded-md"
@@ -114,7 +114,7 @@ const ProductProofSection = () => {
                     color: "#67e8f9",
                   }}
                 >
-                  NFPA 101 § 7.6
+                  NFPA 101 Section 7.6
                 </span>
               </div>
             </div>
