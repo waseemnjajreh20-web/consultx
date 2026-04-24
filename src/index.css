@@ -740,7 +740,7 @@
   position: relative;
 }
 .sbc-legal-citation::before {
-  content: "§ SBC";
+  content: "SBC";
   position: absolute;
   top: -1px;
   right: -1px;
