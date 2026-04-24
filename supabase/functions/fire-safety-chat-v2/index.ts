@@ -24,9 +24,16 @@ const CORE_RULES = `
 - Quote code text EXACTLY as written in English from the source documents
 - Include: Document, Chapter, Section/Clause, Page (if available)
 - NO paraphrasing, NO summarizing, NO merging clauses
+- CITATION FORMAT: Always write "Section X.X.X" in full — NEVER use the § symbol in any output
 
 4️⃣ MISSING INFORMATION
 If clause not found, respond: "The required code text is not available in the provided files."
+
+4️⃣-B CERTAINTY LABELING (MANDATORY)
+- Exact clause quoted verbatim → cite normally: "Document: X | Section: Y"
+- Adjacent or contextually related text used (not the literal clause) → prefix: [INDIRECT — Section Y context]
+- No matching text in provided files → respond with [NO SOURCE] and state exactly what is missing
+- NEVER imply certainty when the exact clause is absent — fabricating confidence is a critical violation
 
 5️⃣ CROSS-REFERENCING (MANDATORY)
 - For sprinkler/fire protection questions: ALWAYS check SBC 801 (Section 903.2.x) AND SBC 201 (Table 1006.3.x for single exits, Section 101.2 for scope)
@@ -513,7 +520,7 @@ async function naiveRAG(query: string, supabase: any): Promise<{ context: string
   const selected: ScoredChunk[] = [];
 
   for (const chunk of allChunks) {
-    if (totalChars + chunk.text.length > MAX_CHARS) break;
+    if (totalChars + chunk.text.length > MAX_CHARS) continue;
     selected.push(chunk);
     totalChars += chunk.text.length;
     if (!usedFiles.includes(chunk.source)) usedFiles.push(chunk.source);
