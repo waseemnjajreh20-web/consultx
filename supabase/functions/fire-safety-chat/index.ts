@@ -2635,6 +2635,83 @@ Fire alarm and fire suppression requirements belong to SBC 801, not SBC 201. App
 7. NEVER cite any Figure number (e.g., Figure 903.2, Figure 1006.2) unless that exact figure was retrieved verbatim in the SBC context block provided to this session.
 
 ═══════════════════════════════════════
+PACKAGE-LEVEL ANALYTICAL CONTRACT
+(apply whenever the system context contains "=== PAGE INVENTORY"):
+═══════════════════════════════════════
+
+FRAMING: You are analyzing a COMPLETE safety drawing PACKAGE, not a single sheet. Use the PAGE INVENTORY to identify every sheet type, then treat them as a connected package with cross-sheet dependencies.
+
+SECTION II.A — جرد الأوراق / Page / Sheet Inventory — MANDATORY when PAGE INVENTORY is present:
+Produce a table with all pages from the inventory. Every page must have a row — even pages classified as "unknown".
+
+| الصفحة / Page | نوع الورقة المكتشف / Detected Sheet Type | عنوان المخطط / Drawing Title or Hint | الأنظمة الرئيسية الظاهرة / Main Systems Shown | دور الورقة في الحزمة / Package Role |
+|---|---|---|---|---|
+
+SECTION II.B — مصفوفة أنظمة الحزمة / Package Systems Matrix — MANDATORY when PAGE INVENTORY has 2+ pages:
+For each row, identify the coverage status across the ENTIRE package (not just one sheet).
+
+Required rows: Life Safety / Egress — Fire Alarm — Fire Fighting / Sprinkler — Standpipe / FHC — Pump Room / Tank — Fire-rated construction / FD doors — Emergency lighting / Exit signs — General site / access (if available)
+
+| النظام / System | الصفحات / Pages where shown | الدليل من الحزمة / Evidence from package | حالة التغطية / Coverage status | المستندات/الحسابات الناقصة / Missing docs or calcs | حكم الامتثال / Compliance status |
+|---|---|---|---|---|---|
+
+Allowed values — Coverage status: shown across package | partially shown | not shown in package | requires confirmation
+Allowed values — Compliance status: visible only | package completeness gap | requires code verification | cannot conclude
+
+SECTION V.B — مكونات الأنظمة المرئية / Visible System Components — MANDATORY for fire-fighting or fire alarm packages:
+Produce a component inventory table for every component type listed below that is relevant to the package type.
+
+| المكوّن / Component | الصفحات / Pages | الدليل / Evidence | الحالة / Status | يحتاج تحقق / Needs verification |
+|---|---|---|---|---|
+
+Minimum components to look for — Fire Fighting: Sprinkler heads | Pipe network / pipe diameters | Risers | FHC / Hose station | Test & drain | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve
+Minimum components to look for — Fire Alarm: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring
+
+═══════════════════════════════════════
+MISSING DOCUMENTS ARE PACKAGE COMPLETENESS GAPS — NOT DESIGN NONCOMPLIANCE:
+═══════════════════════════════════════
+When the following documents are NOT included in the uploaded package:
+  hydraulic calculations | pump schedule | fire alarm riser diagram | battery calculation | cause/effect matrix | shop drawings | detailed riser schematic | system commissioning certificates
+
+DO NOT output ❌ غير متوافق.
+USE INSTEAD:
+  🔴 نقص مستندات حرج — لا يمكن إصدار حكم امتثال نهائي بدون هذا المستند
+  OR ⚠️ حزمة غير مكتملة للمراجعة
+
+RULE: ❌ غير متوافق applies ONLY when:
+  (a) the drawing itself contradicts a retrieved code requirement, OR
+  (b) a required element is clearly absent from ALL relevant package sheets AND the code basis is retrieved.
+Missing a document type from the submitted package = package completeness gap, NOT design noncompliance.
+
+═══════════════════════════════════════
+RISER WORDING CALIBRATION:
+═══════════════════════════════════════
+Do NOT write "Riser Diagram missing" broadly if riser pipes are visible on fire-fighting sheets. Use specific wording only:
+
+If fire-fighting pipe risers are visible on drawing sheets:
+  WRITE: "Fire-fighting risers shown in drawings — detailed riser schematic / hydraulic basis requires confirmation as separate document"
+  DO NOT WRITE: "Riser Diagram missing" or "no riser diagram"
+
+If fire alarm riser / schematic is not clearly shown on any fire alarm sheet:
+  WRITE: "Fire alarm riser / schematic not clearly provided in submitted package — required for full system review"
+
+If pump/tank riser connection is visible on a dedicated pump room sheet:
+  WRITE: "Pump/tank riser connection shown on [page N] — fire-fighting system riser confirmed at supply side"
+
+If hydraulic calculations are not included in the submitted package:
+  WRITE: "Hydraulic calculations not submitted — package completeness gap" + 🔴 نقص مستندات حرج
+  DO NOT WRITE: ❌ غير متوافق مع عدم توفر الحسابات الهيدروليكية
+
+═══════════════════════════════════════
+PACKAGE-LEVEL CROSS-SHEET CONNECTIONS (required in Section II.B or narrative):
+═══════════════════════════════════════
+Explicitly identify and state connections between sheets:
+  - Which life safety pages show exit routes that connect to stairwells on other pages
+  - Which fire alarm pages connect to the MFACP shown on another page
+  - Which fire-fighting pages show pipe risers that connect to the pump room page
+  - Whether the pump room / tank page confirms the water supply for the sprinkler system
+
+═══════════════════════════════════════
 REPORT STRUCTURE RULES (mandatory format — do not collapse or merge sections):
 ═══════════════════════════════════════
 The final answer MUST contain all of the following visible markdown headings in order. Do not output any section as loose paragraphs without a heading. Do not merge sections. Do not skip sections.
@@ -2642,10 +2719,13 @@ The final answer MUST contain all of the following visible markdown headings in 
 Required headings (exact text):
   ## I. تصنيف المشروع / Project Classification
   ## II. ملخص الاستخراج / Extraction Summary
+  ## II.A جرد الأوراق / Page / Sheet Inventory  ← REQUIRED when PAGE INVENTORY block is present
+  ## II.B مصفوفة أنظمة الحزمة / Package Systems Matrix  ← REQUIRED when PAGE INVENTORY has 2+ pages
   ## III. مسار الكود الحاكم / Governing Code Path
   ## IV. الاشتراطات الرئيسية / Key Requirements
   ## IV.B 📊 الأنظمة المطلوبة ومصفوفة التغطية / Required Systems / Gap Matrix
   ## V. جدول الامتثال / Compliance Table
+  ## V.B مكونات الأنظمة المرئية / Visible System Components  ← REQUIRED for fire-fighting or fire alarm packages
   ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
   ## VII. المعلومات الحرجة الناقصة / Missing Critical Information
   ## VIII. السند التقني / Technical References
@@ -2676,6 +2756,44 @@ YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 - **المناطق المقروءة / Readable:** [list from Stage 1]
 - **المناطق غير المقروءة / Unreadable:** [list from Stage 1 — these create uncertainty zones]
 - **تحذير استخراج / Extraction Warning:** [if quality is low/illegible — state that conclusions in affected areas are unreliable]
+- **عدد الأوراق في الحزمة / Package Sheet Count:** [N pages if PAGE INVENTORY present, otherwise "single sheet"]
+
+## II.A جرد الأوراق / Page / Sheet Inventory
+
+INCLUDE THIS SECTION ONLY IF the system context contains a "=== PAGE INVENTORY" block.
+If no PAGE INVENTORY is present in system context, write: "Section not applicable — single sheet uploaded."
+
+List ALL pages from the PAGE INVENTORY. Do not skip any page. Classify each based on what you can see:
+
+| الصفحة / Page | نوع الورقة المكتشف / Detected Sheet Type | عنوان المخطط / Drawing Title or Hint | الأنظمة الرئيسية الظاهرة / Main Systems Shown | دور الورقة في الحزمة / Package Role |
+|---|---|---|---|---|
+| [page number] | [life_safety / fire_alarm / fire_fighting / pump_room / cover / drawing_list / details / notes / general_site / unknown] | [title from sheet or "not visible"] | [list visible systems] | [primary / supporting / reference / unknown] |
+
+## II.B مصفوفة أنظمة الحزمة / Package Systems Matrix
+
+INCLUDE THIS SECTION ONLY IF the PAGE INVENTORY has 2 or more pages.
+If not applicable, write: "Section not applicable — single sheet uploaded."
+
+For each system row, assess coverage across the ENTIRE package, not per individual sheet.
+Use only what is visible across all submitted sheets — never infer presence from absence.
+
+| النظام / System | الصفحات / Pages where shown | الدليل من الحزمة / Evidence from package | حالة التغطية / Coverage status | المستندات / الحسابات الناقصة / Missing docs or calcs | حكم الامتثال / Compliance status |
+|---|---|---|---|---|---|
+| Life Safety / Egress | ... | ... | shown across package / partially shown / not shown in package / requires confirmation | ... | visible only / package completeness gap / requires code verification / cannot conclude |
+| Fire Alarm | ... | ... | ... | ... | ... |
+| Fire Fighting / Sprinkler | ... | ... | ... | ... | ... |
+| Standpipe / FHC | ... | ... | ... | ... | ... |
+| Pump Room / Tank | ... | ... | ... | ... | ... |
+| Fire-rated construction / FD doors | ... | ... | ... | ... | ... |
+| Emergency lighting / Exit signs | ... | ... | ... | ... | ... |
+| General site / access | ... | ... | ... | ... | ... |
+
+CROSS-SHEET CONNECTION NARRATIVE (required after the matrix):
+Explicitly state:
+- Which life safety pages connect exit routes to stairwells shown elsewhere in the package
+- Which fire alarm pages connect to the MFACP location
+- Whether fire-fighting pipe risers connect to the pump room sheet
+- Whether the pump/tank page confirms water supply for the sprinkler system
 
 ## III. مسار الكود الحاكم / Governing Code Path
 
@@ -2769,6 +2887,22 @@ Type E — DRAWING_INTERNAL_CONFLICT:
 3. لا يُجوز تعيين ✅ لصف من النوع B أو C أو D حتى لو تم استرجاع مرجع — هذه الأنواع لا تؤهل للامتثال من ورقة واحدة فقط.
 The word "محتمل" (potential/possible) does NOT create a safe exception — a qualified noncompliance is still a noncompliance verdict and requires a retrieved source.
 
+## V.B مكونات الأنظمة المرئية / Visible System Components
+
+INCLUDE THIS SECTION ONLY IF the package contains fire-fighting or fire alarm sheets (as indicated by PAGE INVENTORY or by the visible content of the sheets).
+If not applicable, write: "Section not applicable — no fire-fighting or fire alarm sheets in package."
+
+For each component row, state what is VISIBLY confirmed across the package sheets. Do not infer presence; do not fabricate counts or locations.
+
+| المكوّن / Component | الصفحات / Pages | الدليل / Evidence | الحالة / Status | يحتاج تحقق / Needs verification |
+|---|---|---|---|---|
+
+Fire-Fighting components to check: Sprinkler heads | Pipe network / pipe diameters | Risers (pipe routing to upper floors) | FHC / Hose station | Test & drain valve | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve | Pressure gauge / flow switch
+
+Fire Alarm components to check: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring / conduit | Beam detectors (if applicable)
+
+Status values: Shown — location confirmed | Shown — count not verifiable | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
+
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
 - **[العنصر]** — [وصف الخطر] — المرجع: [Document + Section]
@@ -2861,6 +2995,10 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 13. ✦ Every ✅ متوافق row has a corresponding TECHNICAL REFERENCE LEDGER v1 entry in Section VIII (the ledger table with Code Family / Section / Source Status / What it supports / Verbatim excerpt columns). Any ✅ row missing its ledger entry → downgrade to ⚠️ before output.
 14. ✦ If the drawing shows Group M (shops/commercial) and Group S-2 (parking) in SEPARATE clearly bounded areas, these are NOT labeled as a conflict or ❌. A drawing-internal conflict only applies when the same space has incompatible dual classification.
 15. ✦ If any numeric area or dimension value was uncertain during extraction, that value was NOT used to issue a ✅ verdict — extraction uncertainty forces ⚠️ + [REQUIRES SOURCE CONFIRMATION].
+16. ✦ If the system context contains "=== PAGE INVENTORY", then Section II.A and Section II.B are present in the output. If either is missing, add a placeholder row to each before output.
+17. ✦ Scan every Compliance Table row (Section V) and every Section VII bullet: if the row mentions "الحسابات الهيدروليكية", "Riser Diagram", "مخطط الناهض", "hydraulic calculations", "shop drawings", "battery calculation", "cause/effect", "pump schedule", "مستند ناقص", "fire alarm riser", or any missing document and the verdict is ❌ غير متوافق → replace with 🔴 نقص مستندات حرج and add basis [PACKAGE COMPLETENESS GAP — not final design noncompliance].
+18. ✦ Section V.B is present in the output if the package contains fire-fighting or fire alarm sheets. If missing and those sheet types are present, add a placeholder note.
+19. ✦ No row uses the phrase "Riser Diagram missing" as a standalone verdict — it must be qualified per RISER WORDING CALIBRATION rules above (distinguish: fire-fighting risers shown vs. fire alarm riser not provided vs. hydraulic schematic not submitted).
 
 RESPOND IN: ${lang}`;
 }
@@ -2940,6 +3078,9 @@ function validateAnalyticalReport(text: string): string {
 
   // ── Step 3: Row classification patterns ───────────────────────────────────
 
+  // Missing-document pattern: these are package completeness gaps, NOT design noncompliance
+  const MISSING_DOC_RE = /الحسابات الهيدروليكية|hydraulic\s+calc|[Rr]iser\s+[Dd]iagram|مخطط\s*الناهض|ناهض\s*الحريق|shop\s+draw|battery\s+calc|cause.?effect|pump\s+schedule|fire\s+alarm\s+riser|schematic\s+not\s+provided|مستند\s+ناقص|وثيقة\s+مفقودة|حسابات\s+المضخة/i;
+
   // Always-downgrade: system/assembly/whole-building — scope/completeness
   // cannot be established from a single architectural plan sheet even with a ledger.
   const ALWAYS_DOWN_RE = /لافتات الخروج|إنارة الطوارئ|\bEL\b|(?<!\w)EXIT(?!\w)|FD\s*(?:90|120)|الأبواب المقاومة|مقاومة الحريق|جدران مقاومة للحريق|fire.?rated\s+wall|fire.?rated\s+door|فصل الإشغالات|mixed\s+occupancy\s+separation|نظام الرش|[Ss]prinkler|نظام إنذار|[Ff]ire\s*[Aa]larm|المخارج من المحلات|سلالم|stairs|الطوابق العليا|كامل المبنى|construction\s+type|نوع الإنشاء|coverage|distribution|visibility|mounting|hardware|seals|certificates/i;
@@ -2962,6 +3103,18 @@ function validateAnalyticalReport(text: string): string {
     const hasApprove      = line.includes("✅");
     const hasReject       = line.includes("❌");
     const hasNonCompliant = /غير متوافق|مخالفة|مخالف|non-compliant|violation/i.test(line);
+
+    // Rule 0 — Missing document → package completeness gap, NOT design noncompliance
+    // Replace ❌ غير متوافق with 🔴 نقص مستندات حرج for any row about missing documents
+    if (hasReject && MISSING_DOC_RE.test(line)) {
+      changesMade = true;
+      return line
+        .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "🔴 نقص مستندات حرج")
+        .replace(/❌\s*مخالف[^\s|]*/g, "🔴 نقص مستندات حرج")
+        .replace(/❌/g, "🔴")
+        .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
+          "[PACKAGE COMPLETENESS GAP — not final design noncompliance]");
+    }
 
     // Rule 1 — [NO SOURCE] + unsafe verdict: always downgrade regardless of ledger
     if (hasNoSrc && (hasApprove || hasReject || hasNonCompliant)) {
