@@ -3367,6 +3367,436 @@ function validateAnalyticalReport(text: string): string {
   return result;
 }
 
+// ── analytical_plan_evidence_v1 — module-level page manifest type ───────────
+// Shared between the main handler and runVisionPipeline so the structured
+// manifest data can flow from the frontend into the evidence builder.
+type PipelinePageManifestEntry = {
+  pageNumber: number;
+  fileName: string;
+  renderStatus: string;
+  textPreview: string;
+  drawingTypeHint: string;
+};
+
+// ── analytical_plan_evidence_v1 — schema interface ──────────────────────────
+// Machine-readable evidence backbone for Analytical Mode package analysis.
+// Built from page manifests, Stage 1 classification, and anchor detection.
+// Injected into the final prompt as a structured text block that the model
+// MUST treat as authoritative — report must not contradict schema verdicts.
+interface AnalyticalPlanEvidenceV1 {
+  metadata: {
+    artifact_type: "analytical_plan_evidence_v1";
+    artifact_version: "1.0";
+    mode: string;
+    package_mode: boolean;
+    total_pages: number;
+  };
+  page_inventory: Array<{
+    page: number;
+    sheet_type: string;
+    title_hint: string;
+    systems_shown: string[];
+    package_role: string;
+    confidence: "confirmed" | "inferred" | "requires_confirmation";
+  }>;
+  project_classification: {
+    visible_uses: string[];
+    occupancy_groups: string[];
+    whole_building_classification: string;
+    confidence: "confirmed" | "inferred" | "requires_confirmation" | "cannot_conclude";
+    unknowns: string[];
+  };
+  package_systems: Array<{
+    system: string;
+    pages: number[];
+    evidence: string[];
+    coverage_status: "shown" | "partial" | "not_shown" | "unknown";
+    missing_docs: string[];
+    compliance_status: "visible_only" | "source_backed_compliant" | "package_completeness_gap" | "requires_confirmation" | "cannot_conclude";
+    confidence: "confirmed_visible" | "inferred" | "requires_confirmation" | "cannot_conclude";
+  }>;
+  visible_components: Array<{
+    component: string;
+    system: string;
+    pages: number[];
+    evidence: string;
+    status: "shown_location_confirmed" | "shown_count_not_verifiable" | "shown_details_notes" | "not_shown" | "package_completeness_gap" | "requires_dedicated_drawing";
+    needs_verification: string;
+  }>;
+  code_grounding: {
+    retrieved_references: Array<{ anchor_id: string; section: string; status: "retrieved" }>;
+    missing_references: Array<{ anchor_id: string; section: string; status: "not_retrieved" }>;
+    source_status: "full" | "partial" | "none";
+  };
+  compliance_rows: Array<{
+    item: string;
+    drawing_observation: string;
+    code_requirement: string;
+    source_status: "retrieved" | "not_retrieved" | "no_source";
+    verdict: "compliant" | "noncompliant" | "needs_verification" | "cannot_conclude" | "package_completeness_gap";
+    basis: string;
+    confidence: string;
+  }>;
+  package_gaps: Array<{
+    gap: string;
+    severity: "critical" | "high" | "medium" | "low";
+    affected_system: string;
+    why_it_matters: string;
+    required_action: string;
+  }>;
+  final_verdict_inputs: {
+    can_issue_final_compliance: false; // Always false — missing performance docs prevent final compliance
+    reason: string;
+    blockers: string[];
+  };
+}
+
+// ── buildAnalyticalPlanEvidenceV1 ───────────────────────────────────────────
+// Constructs the evidence object from available pipeline signals.
+// Rules: no fabrication — unknown fields use requires_confirmation or cannot_conclude.
+function buildAnalyticalPlanEvidenceV1(
+  manifests: PipelinePageManifestEntry[],
+  planningJSON: string,
+  analyticalAnchorIds: string[],
+  retrievedAnchorIds: string[],
+  detectedAnchorEvidence: string[],
+  mode: string,
+): AnalyticalPlanEvidenceV1 {
+  let planParsed: any = {};
+  try {
+    planParsed = JSON.parse(planningJSON.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
+  } catch { /* leave planParsed empty */ }
+
+  const totalPages = manifests.length;
+  const packageMode = totalPages >= 2;
+
+  // ── page_inventory ─────────────────────────────────────────────────────────
+  const PACKAGE_ROLE: Record<string, string> = {
+    cover: "title/metadata",
+    drawing_list: "package index",
+    general_site: "site context",
+    life_safety: "egress compliance",
+    fire_alarm: "fire alarm system layout",
+    fire_fighting: "fire fighting system layout",
+    details: "installation details",
+    notes: "general notes/legend",
+    unknown: "unclassified",
+  };
+  const pageInventory: AnalyticalPlanEvidenceV1["page_inventory"] = manifests.map(m => {
+    const systemsShown: string[] = [];
+    if (m.drawingTypeHint === "fire_fighting") systemsShown.push("fire_fighting");
+    if (m.drawingTypeHint === "fire_alarm")    systemsShown.push("fire_alarm");
+    if (m.drawingTypeHint === "life_safety")   systemsShown.push("life_safety_egress");
+    if (m.drawingTypeHint === "general_site")  systemsShown.push("site");
+    return {
+      page: m.pageNumber,
+      sheet_type: m.drawingTypeHint,
+      title_hint: m.textPreview.slice(0, 80).replace(/\n/g, " ") || "no text extracted",
+      systems_shown: systemsShown,
+      package_role: PACKAGE_ROLE[m.drawingTypeHint] ?? "unknown",
+      confidence: (m.drawingTypeHint !== "unknown" ? "inferred" : "requires_confirmation") as "inferred" | "requires_confirmation",
+    };
+  });
+
+  // ── project_classification ─────────────────────────────────────────────────
+  const visibleUses: string[] = (planParsed.roomLabels ?? []).slice(0, 10);
+  const occupancyGroups: string[] = planParsed.occupancyGroup
+    ? [String(planParsed.occupancyGroup)]
+    : [];
+  const unknowns: string[] = [];
+  if (!planParsed.buildingType  || planParsed.buildingType  === "unknown") unknowns.push("building_type");
+  if (!planParsed.occupancyGroup || planParsed.occupancyGroup === "unknown") unknowns.push("occupancy_group");
+  if (!planParsed.stories        || planParsed.stories        === "unknown") unknowns.push("stories");
+  if (!planParsed.floorArea      || planParsed.floorArea      === "unknown") unknowns.push("floor_area");
+  const projectClassification: AnalyticalPlanEvidenceV1["project_classification"] = {
+    visible_uses: visibleUses,
+    occupancy_groups: occupancyGroups,
+    whole_building_classification:
+      "requires_confirmation — single package cannot confirm whole-building classification without project specifications",
+    confidence: (unknowns.length > 2
+      ? "cannot_conclude"
+      : unknowns.length > 0 ? "requires_confirmation" : "inferred") as "confirmed" | "inferred" | "requires_confirmation" | "cannot_conclude",
+    unknowns,
+  };
+
+  // ── package_systems ────────────────────────────────────────────────────────
+  const stage1Systems = String((planParsed.visibleSystems ?? []).concat(planParsed.legendSymbols ?? []).join(" ")).toLowerCase();
+  const ffPages    = manifests.filter(m => m.drawingTypeHint === "fire_fighting").map(m => m.pageNumber);
+  const faPages    = manifests.filter(m => m.drawingTypeHint === "fire_alarm").map(m => m.pageNumber);
+  const lsPages    = manifests.filter(m => m.drawingTypeHint === "life_safety").map(m => m.pageNumber);
+  const detailPages = manifests.filter(m => m.drawingTypeHint === "details" || m.drawingTypeHint === "notes").map(m => m.pageNumber);
+
+  const hasFireFighting = ffPages.length > 0 || /sprinkler|rash|إطفاء|standpipe|pump|hose/.test(stage1Systems);
+  const hasFireAlarm    = faPages.length > 0 || /alarm|إنذار|detector|smoke|heat|\bmcp\b/.test(stage1Systems);
+  const hasLifeSafety   = lsPages.length > 0 || /egress|life.safe|إخلاء/.test(stage1Systems);
+
+  const packageSystems: AnalyticalPlanEvidenceV1["package_systems"] = [];
+
+  if (hasFireFighting) {
+    packageSystems.push({
+      system: "fire_fighting",
+      pages: ffPages,
+      evidence: ffPages.length > 0
+        ? [`Fire fighting drawings on pages: ${ffPages.join(", ")}`]
+        : ["Inferred from Stage 1 visible systems"],
+      coverage_status: ffPages.length > 0 ? "shown" : "partial",
+      missing_docs: [
+        "Hydraulic calculations",
+        "Riser diagram (fire fighting)",
+        "Pipe sizing schedule",
+        "Shop drawings (sprinkler heads, hangers, support details)",
+      ],
+      compliance_status: "visible_only",
+      confidence: ffPages.length > 0 ? "confirmed_visible" : "inferred",
+    });
+  }
+  if (hasFireAlarm) {
+    packageSystems.push({
+      system: "fire_alarm",
+      pages: faPages,
+      evidence: faPages.length > 0
+        ? [`Fire alarm drawings on pages: ${faPages.join(", ")}`]
+        : ["Inferred from Stage 1 visible systems"],
+      coverage_status: faPages.length > 0 ? "shown" : "partial",
+      missing_docs: [
+        "Fire alarm riser diagram",
+        "Device schedule (detector types, zones, quantities)",
+        "Battery backup calculations",
+        "Cause-and-effect matrix",
+      ],
+      compliance_status: "visible_only",
+      confidence: faPages.length > 0 ? "confirmed_visible" : "inferred",
+    });
+  }
+  if (hasLifeSafety) {
+    packageSystems.push({
+      system: "life_safety_egress",
+      pages: lsPages,
+      evidence: lsPages.length > 0
+        ? [`Life safety drawings on pages: ${lsPages.join(", ")}`]
+        : ["Inferred from Stage 1 or package type"],
+      coverage_status: lsPages.length > 0 ? "shown" : "unknown",
+      missing_docs: [
+        "Occupant load calculations (SBC 201 Table 1004.5)",
+        "Travel distance measurements (SBC 201 Table 1017.2)",
+        "Exit capacity verification",
+      ],
+      compliance_status: "visible_only",
+      confidence: lsPages.length > 0 ? "confirmed_visible" : "requires_confirmation",
+    });
+  }
+
+  // ── visible_components ─────────────────────────────────────────────────────
+  const visibleComponents: AnalyticalPlanEvidenceV1["visible_components"] = [];
+  if (detailPages.length > 0) {
+    visibleComponents.push({
+      component: "installation_details_notes",
+      system: "fire_fighting/fire_alarm",
+      pages: detailPages,
+      evidence: `Details/notes pages present in package (pages: ${detailPages.join(", ")})`,
+      status: "shown_details_notes",
+      needs_verification:
+        "Dedicated shop drawings and specifications required — shown in details/notes pages is not final compliance",
+    });
+  }
+
+  // ── code_grounding ─────────────────────────────────────────────────────────
+  const codeGrounding: AnalyticalPlanEvidenceV1["code_grounding"] = {
+    retrieved_references: retrievedAnchorIds.map(id => ({
+      anchor_id: id,
+      section: `SBC Table/Section ${id}`,
+      status: "retrieved" as const,
+    })),
+    missing_references: analyticalAnchorIds
+      .filter(id => !retrievedAnchorIds.includes(id))
+      .map(id => ({
+        anchor_id: id,
+        section: `SBC Table/Section ${id}`,
+        status: "not_retrieved" as const,
+      })),
+    source_status: (
+      retrievedAnchorIds.length === 0                              ? "none"    :
+      retrievedAnchorIds.length < analyticalAnchorIds.length       ? "partial" :
+                                                                     "full"
+    ) as "full" | "partial" | "none",
+  };
+
+  // ── compliance_rows (seed from anchor evidence) ────────────────────────────
+  const complianceRows: AnalyticalPlanEvidenceV1["compliance_rows"] =
+    detectedAnchorEvidence.slice(0, 8).map(ev => ({
+      item: ev,
+      drawing_observation: "Detected from Stage 1 drawing evidence",
+      code_requirement: "See retrieved SBC context block",
+      source_status: "retrieved" as const,
+      verdict: "needs_verification" as const,
+      basis: "[REQUIRES SOURCE CONFIRMATION]",
+      confidence: "inferred",
+    }));
+
+  // ── package_gaps (missing performance docs are completeness gaps) ──────────
+  // Rule: missing documents are package completeness gaps, NOT design noncompliance.
+  const packageGaps: AnalyticalPlanEvidenceV1["package_gaps"] = [];
+  for (const sys of packageSystems) {
+    for (const doc of sys.missing_docs) {
+      packageGaps.push({
+        gap: doc,
+        severity: "critical",
+        affected_system: sys.system,
+        why_it_matters: "Missing performance documents are package completeness gaps — cannot verify system adequacy without this document",
+        required_action: `Submit ${doc} for complete design review`,
+      });
+    }
+  }
+
+  // ── final_verdict_inputs ───────────────────────────────────────────────────
+  const blockers: string[] = [];
+  if (packageSystems.some(s => s.system === "fire_fighting")) {
+    blockers.push("Hydraulic calculations not submitted — fire fighting system performance cannot be verified from drawings alone");
+    blockers.push("Fire fighting riser diagram not submitted — pipe routing and zone coverage unverified");
+  }
+  if (packageSystems.some(s => s.system === "fire_alarm")) {
+    blockers.push("Fire alarm riser diagram not submitted — zone coverage and wiring unverified");
+    blockers.push("Battery backup calculations not submitted — system endurance unverified");
+    blockers.push("Cause-and-effect matrix not submitted — system logic and response unverified");
+  }
+  if (packageMode) {
+    blockers.push("Multi-sheet package shows design intent only — installation shop drawings required for final compliance determination");
+  }
+
+  return {
+    metadata: {
+      artifact_type: "analytical_plan_evidence_v1",
+      artifact_version: "1.0",
+      mode,
+      package_mode: packageMode,
+      total_pages: totalPages,
+    },
+    page_inventory: pageInventory,
+    project_classification: projectClassification,
+    package_systems: packageSystems,
+    visible_components: visibleComponents,
+    code_grounding: codeGrounding,
+    compliance_rows: complianceRows,
+    package_gaps: packageGaps,
+    final_verdict_inputs: {
+      can_issue_final_compliance: false,
+      reason: "Drawing package shows design coverage only. Performance verification documents are required for final compliance determination. Missing documents are package completeness gaps, not design noncompliance.",
+      blockers,
+    },
+  };
+}
+
+// ── normalizeAnalyticalPlanEvidence ─────────────────────────────────────────
+// Applies normalization rules post-build. Always returns a safe, valid schema.
+function normalizeAnalyticalPlanEvidence(ev: AnalyticalPlanEvidenceV1): AnalyticalPlanEvidenceV1 {
+  const result: AnalyticalPlanEvidenceV1 = {
+    ...ev,
+    package_systems: ev.package_systems.map(s => ({ ...s })),
+    visible_components: [...ev.visible_components],
+    final_verdict_inputs: { ...ev.final_verdict_inputs, blockers: [...ev.final_verdict_inputs.blockers] },
+  };
+
+  // Rule 1: No final compliance if hydraulic calculations missing for fire fighting
+  if (result.package_systems.some(s => s.system === "fire_fighting")) {
+    if (!result.final_verdict_inputs.blockers.some(b => /hydraulic/i.test(b))) {
+      result.final_verdict_inputs.blockers.push("Hydraulic calculations not submitted");
+    }
+  }
+  // Rule 2: No final compliance if fire alarm riser / battery / cause-effect missing
+  if (result.package_systems.some(s => s.system === "fire_alarm")) {
+    if (!result.final_verdict_inputs.blockers.some(b => /riser.*alarm|alarm.*riser/i.test(b))) {
+      result.final_verdict_inputs.blockers.push("Fire alarm riser diagram not submitted");
+    }
+    if (!result.final_verdict_inputs.blockers.some(b => /battery/i.test(b))) {
+      result.final_verdict_inputs.blockers.push("Battery backup calculations not submitted");
+    }
+  }
+  // Rule 3: No source-backed compliance for visible-only system components
+  result.package_systems = result.package_systems.map(s => ({
+    ...s,
+    compliance_status: s.compliance_status === "source_backed_compliant"
+      ? "visible_only"
+      : s.compliance_status,
+  }));
+  // Rule 4: M+S-2 cross-zone must not become confirmed conflict
+  // (Handled in prompt + validator; schema never sets confirmed conflict)
+  // Rule 5: Missing docs → package completeness gaps (enforced by compliance_status: visible_only)
+  // Rule 6: Details/notes pages must be represented if present
+  const detailsInInventory = ev.page_inventory.filter(p => p.sheet_type === "details" || p.sheet_type === "notes");
+  const hasDetailsInComponents = result.visible_components.some(c => c.status === "shown_details_notes");
+  if (detailsInInventory.length > 0 && !hasDetailsInComponents) {
+    result.visible_components.push({
+      component: "installation_details_notes",
+      system: "fire_fighting/fire_alarm",
+      pages: detailsInInventory.map(p => p.page),
+      evidence: "Details/notes pages present in package — content extraction required",
+      status: "shown_details_notes",
+      needs_verification: "Manual inspection of details pages required — shop drawings needed for compliance",
+    });
+  }
+  // Rule 7: Every page in manifest appears in page_inventory (guaranteed by build — 1:1 mapping)
+  // Final: can_issue_final_compliance is always false (literal type enforcement)
+  result.final_verdict_inputs.can_issue_final_compliance = false;
+  return result;
+}
+
+// ── formatEvidenceForPrompt ──────────────────────────────────────────────────
+// Compact text serialization for system prompt injection.
+// Keeps token footprint small while preserving all normalization verdicts.
+function formatEvidenceForPrompt(ev: AnalyticalPlanEvidenceV1): string {
+  if (ev.metadata.total_pages === 0 && ev.package_systems.length === 0) return "";
+
+  const lines: string[] = [
+    "=== ANALYTICAL PLAN EVIDENCE v1 (structural backbone — authoritative for this report) ===",
+    `Artifact: ${ev.metadata.artifact_type} | Mode: ${ev.metadata.mode} | Package: ${ev.metadata.package_mode} | Pages: ${ev.metadata.total_pages}`,
+    "",
+    "─── PAGE INVENTORY SUMMARY ───",
+    ...ev.page_inventory.map(p =>
+      `  p${p.page}: [${p.sheet_type}] role=${p.package_role}${p.title_hint !== "no text extracted" ? ` | hint="${p.title_hint.slice(0, 60)}"` : ""}`
+    ),
+    "",
+    "─── PROJECT CLASSIFICATION ───",
+    `  whole_building: ${ev.project_classification.whole_building_classification}`,
+    `  confidence: ${ev.project_classification.confidence}`,
+    ...(ev.project_classification.unknowns.length > 0
+      ? [`  unknowns: ${ev.project_classification.unknowns.join(", ")}`]
+      : []),
+    "",
+    "─── PACKAGE SYSTEMS ───",
+    ...ev.package_systems.flatMap(s => [
+      `  ${s.system}: coverage=${s.coverage_status} | compliance_status=${s.compliance_status} | confidence=${s.confidence}`,
+      `    pages: [${s.pages.join(", ") || "none identified from hints"}]`,
+      `    missing_docs (package completeness gaps): ${s.missing_docs.join(" | ")}`,
+    ]),
+    "",
+    "─── VISIBLE COMPONENTS ───",
+    ...(ev.visible_components.length > 0
+      ? ev.visible_components.map(c => `  ${c.component} [${c.system}] pages=[${c.pages.join(", ")}] status=${c.status}`)
+      : ["  none identified from page manifest hints"]),
+    "",
+    "─── CODE GROUNDING ───",
+    `  source_status: ${ev.code_grounding.source_status}`,
+    `  retrieved: ${ev.code_grounding.retrieved_references.map(r => r.anchor_id).join(", ") || "none"}`,
+    `  missing (use [REQUIRES SOURCE CONFIRMATION]): ${ev.code_grounding.missing_references.map(r => r.anchor_id).join(", ") || "none"}`,
+    "",
+    "─── FINAL VERDICT INPUTS ───",
+    `  can_issue_final_compliance: ${ev.final_verdict_inputs.can_issue_final_compliance}`,
+    `  reason: ${ev.final_verdict_inputs.reason}`,
+    "  blockers:",
+    ...ev.final_verdict_inputs.blockers.map(b => `    - ${b}`),
+    "",
+    "INSTRUCTIONS TO MODEL (derive report from this schema — do not contradict):",
+    "  1. compliance_status=visible_only → use [CONFIRMED — VISIBLE ONLY], NOT [CONFIRMED — SOURCE-BACKED COMPLIANCE]",
+    "  2. missing_docs → list in Section VII as 🔴 نقص مستندات حرج (package completeness gaps, not design noncompliance)",
+    "  3. can_issue_final_compliance=false → Section IX MUST use conditional/preliminary verdict only",
+    "  4. details/notes pages in page_inventory → Section V.B MUST include Special Suppression & Installation Details rows",
+    "  5. unknowns in project_classification → Section I MUST mark those fields [REQUIRES CONFIRMATION]",
+    "  6. code_grounding.missing → those compliance rows MUST use ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION]",
+    "=== END ANALYTICAL PLAN EVIDENCE v1 ===",
+  ];
+  return lines.join("\n");
+}
+
 async function runVisionPipeline(
   apiKey: string,
   imageBase64s: string[],
@@ -3375,6 +3805,7 @@ async function runVisionPipeline(
   mode: string = "analysis",
   drawingTextLayer: string = "",
   pageInventory: string = "",
+  pageManifestEntries: PipelinePageManifestEntry[] = [],
 ): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
   console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)", "| Drawing text layer chars:", drawingTextLayer.length, "| Page inventory chars:", pageInventory.length);
   const pipelineStart = Date.now();
@@ -3616,6 +4047,34 @@ Classification Confidence: low
     console.warn("[DocIntel] Failed to parse Stage 1 JSON for summary");
   }
 
+  // ── Build analytical_plan_evidence_v1 (Analytical mode with manifests or anchors) ──
+  // Constructed after all three pipeline stages complete so it has access to:
+  // Stage 1 planning JSON, detected anchors, retrieved anchor IDs, and page manifests.
+  let analyticalPlanEvidenceBlock = "";
+  if (mode !== "standard" && (pageManifestEntries.length > 0 || analyticalAnchorIds.length > 0)) {
+    try {
+      const rawEvidence = buildAnalyticalPlanEvidenceV1(
+        pageManifestEntries,
+        planningResult,
+        analyticalAnchorIds,
+        retrievedAnchorIds,
+        detectedAnchorEvidence,
+        mode,
+      );
+      const normalizedEvidence = normalizeAnalyticalPlanEvidence(rawEvidence);
+      analyticalPlanEvidenceBlock = formatEvidenceForPrompt(normalizedEvidence);
+      console.log(
+        "[Evidence] analytical_plan_evidence_v1 built |",
+        "pages=", normalizedEvidence.metadata.total_pages,
+        "| systems=", normalizedEvidence.package_systems.length,
+        "| gaps=", normalizedEvidence.package_gaps.length,
+        "| can_issue_final_compliance=", normalizedEvidence.final_verdict_inputs.can_issue_final_compliance,
+      );
+    } catch (evidenceErr) {
+      console.warn("[Evidence] Build error:", evidenceErr);
+    }
+  }
+
   // Advisory mode (standard) → design guidance framing; Analytical (analysis) or Primary → compliance audit framing
   const finalSystemPrompt = mode === "standard"
     ? getVisionAdvisoryFinalPrompt(language)
@@ -3624,6 +4083,7 @@ Classification Confidence: low
   const extraContext = `
 ${sourceBackedRequirementsPack}
 ${analyticalTableContext}
+${analyticalPlanEvidenceBlock}
 ${docIntelSummary}
 === PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION (raw) ===
 ${planningResult}
@@ -3730,10 +4190,10 @@ serve(async (req) => {
     // Build page inventory block from the page manifest sent by the frontend.
     // Used in Analytical Mode to give the model a structural overview of the package
     // before it processes individual sheet images.
-    type PageManifestEntry = { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string };
-    const resolvedPageManifests: PageManifestEntry[] = Array.isArray(pageManifests)
+    // Type is PipelinePageManifestEntry (module-level — shared with runVisionPipeline).
+    const resolvedPageManifests: PipelinePageManifestEntry[] = Array.isArray(pageManifests)
       ? (pageManifests as any[]).filter(
-          (e): e is PageManifestEntry =>
+          (e): e is PipelinePageManifestEntry =>
             e && typeof e === "object" && typeof e.pageNumber === "number",
         )
       : [];
@@ -4029,6 +4489,7 @@ serve(async (req) => {
         visionMode,
         drawingTextLayerBlock,
         pageInventoryBlock,
+        resolvedPageManifests,
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
