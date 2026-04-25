@@ -2478,6 +2478,35 @@ Exception — Pure drawing-internal contradiction (no code source needed):
   This exception does NOT apply to occupant load calculations that simply look high — those require a retrieved code table to establish the threshold.
 
 ═══════════════════════════════════════
+SOURCE-BACKED VERDICT ELIGIBILITY MATRIX:
+═══════════════════════════════════════
+Even when a source IS retrieved, ✅ متوافق is only valid if ALL 5 conditions below are met.
+This is DIRECT_NUMERIC_COMPARISON — the only path to ✅.
+
+DIRECT_NUMERIC_COMPARISON — 5 eligibility conditions (all required):
+1. SOURCE: The governing code limit is retrieved VERBATIM from the SBC context block.
+2. LIMIT: The exact numeric or categorical limit is clearly stated in the retrieved text.
+3. VALUE: A comparable drawing value is explicitly visible AND reliably extracted from this sheet (not estimated, not computed from uncertain area readings, not inferred from symbol counts).
+4. COMPARISON: The comparison is DIRECT and UNCONDITIONAL — no unknown modifiers remain (no "depending on construction type", no "if sprinklered", no "based on whole-building classification not yet confirmed").
+5. CONTEXT: All contextual conditions that could change the code limit are CONFIRMED from the drawing (occupancy group, building height, sprinkler presence, construction type) — not [INFERRED] or [REQUIRES CONFIRMATION].
+
+If ANY condition is NOT met: the row is NOT eligible for ✅ → use ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION].
+CRITICAL: retrieved source is not automatic compliance — a retrieved code section alone does not make a ✅ verdict valid. All 5 conditions must hold.
+
+PERMANENTLY INELIGIBLE for ✅ from a single life-safety / ground-floor sheet:
+The following items can NEVER receive ✅ متوافق from analysis of a single architectural plan sheet:
+- Emergency lighting lux level / battery duration / coverage adequacy
+- Exit sign visibility distance / mounting height / illumination level
+- Fire-rated wall / door hardware / assembly / seal details
+- Mixed-occupancy separation across the whole building
+- Automatic sprinkler system compliance (needs system drawings + hydraulic calcs)
+- Fire alarm system compliance (needs system drawings + device schedule)
+- Stairs serving upper floors (needs multi-floor verification)
+- Any requirement depending on construction type not confirmed on this sheet
+- Any requirement depending on total building height not confirmed on this sheet
+- Any item where the numeric value was uncertain during extraction (flagged as unreadable or estimated)
+
+═══════════════════════════════════════
 SBC 201-2024 REFERENCE NORMALIZATION:
 ═══════════════════════════════════════
 - If you encounter "Table 1004.1.2" or "Table 1004.1" in ANY source (retrieved chunks, prior knowledge, or drawing text layer) — write "SBC 201 Table 1004.5" in all user-facing output. The old reference belongs to a superseded edition.
@@ -2527,6 +2556,23 @@ When analyzing a single uploaded drawing page:
    - "partially readable" — significant unclear areas exist
    - "unreadable areas exist" — list the specific zones from Stage 1
    - NEVER write "all areas readable" unless Stage 1 extraction explicitly lists no unreadable areas.
+
+═══════════════════════════════════════
+MIXED-USE AND OCCUPANT-LOAD CALIBRATION:
+═══════════════════════════════════════
+RULE: parking S-2 + commercial shops M is not automatically a conflict — this is normal mixed use when the areas are separately bounded.
+
+When the ground-floor plan shows both parking (Group S-2) and commercial shops (Group M) in different labeled areas:
+1. This is NORMAL MIXED USE — do NOT label it a "major confirmed conflict", "critical violation", or ❌ غير متوافق.
+2. Use: "Mixed visible occupancies: Group M (commercial/shops) and Group S-2 (parking) observed on ground floor — mixed-use separation requirements apply and must be verified; no automatic conflict."
+3. A drawing-internal conflict ONLY exists if: the SAME space or area is simultaneously labeled with two incompatible groups, OR drawing dimensions / numbers directly contradict each other within the same element.
+4. For M + S-2 in separate, clearly bounded areas: apply [INFERRED] mixed-use classification, NOT a conflict flag.
+
+OCCUPANT LOAD CALCULATION UNCERTAINTY:
+5. If the area value used in an occupant load calculation is uncertain (unreadable, OCR-estimated, or flagged as partially legible in Stage 1 extraction), do NOT use that calculation for a source-backed compliance verdict.
+6. When extraction quality makes the exact area ambiguous (e.g., "358.1 vs 338.1 m²"), write: "Occupant load calculation uncertain — area extraction ambiguous (extracted value: [X] m²); requires designer confirmation before compliance determination."
+7. Do NOT classify an occupant load discrepancy as a "major violation" or ❌ without: (a) a confirmed, clearly extracted area value AND (b) a retrieved code table row (SBC 201 Table 1004.5) showing the applicable occupant load factor.
+8. If the occupant load factor is NOT retrieved from SBC 201 Table 1004.5: the occupant load verdict must be ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION], not ❌.
 
 ═══════════════════════════════════════
 FIRE-SYSTEM CODE-FAMILY RULES (fire alarm / sprinkler / suppression):
@@ -2638,36 +2684,41 @@ Column definitions (fill each column independently — do NOT let a missing sour
 **مثال صحيح لصف [NO SOURCE] — Example of a correct [NO SOURCE] row:**
 | إنارة طوارئ — رموز EL مُبيَّنة على المخطط | مستوى الإضاءة + مدة البطارية + نطاق التغطية وفق SBC 801 | [NO SOURCE] — نص SBC 801 غير موجود في السياق المسترجع | ⚠️ يحتاج تحقق | [CONFIRMED — الرموز مرئية على المخطط] |
 
-**قواعد الجدول الصارمة — Verdict Mapping (use exactly one scenario per row):**
+**قواعد الجدول الصارمة — Compliance Table Row Types (assign exactly one type per row):**
 
-Scenario A — Source missing, visible evidence:
-- المرجع: [NO SOURCE]
+Type A — DIRECT_NUMERIC_COMPARISON:
+- Use when: a retrievable code limit exists AND all 5 SOURCE-BACKED VERDICT ELIGIBILITY conditions are met
+- الحالة: ✅ متوافق (requirement met) or ❌ غير متوافق (confirmed deficiency with retrieved source)
+- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
+- Note: ✅ is ONLY valid when all 5 DIRECT_NUMERIC_COMPARISON conditions are satisfied
+
+Type B — VISUAL_PRESENCE_ONLY:
+- Use when: element is confirmed visible on drawing but no code limit comparison is possible from this sheet alone
 - الحالة: ⚠️ يحتاج تحقق
-- الأساس: [CONFIRMED — VISIBLE ONLY] + [REQUIRES SOURCE CONFIRMATION]
+- الأساس: [CONFIRMED — VISIBLE ONLY]
+- Note: EL symbols, EXIT signs, FD 90/120 labels, sprinkler heads, fire alarm devices → always Type B from a single architectural plan
 
-Scenario B — Source retrieved, comparison completed, requirement met:
-- المرجع: Document: X | Section: Y (retrieved)
-- الحالة: ✅ متوافق
-- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
+Type C — SYSTEM_NOT_SHOWN_ON_THIS_DRAWING:
+- Use when: an applicable system or requirement is not shown on this particular sheet (may exist in other project documents)
+- الحالة: ⚠️ يحتاج تحقق or 🔲 غير محدد — يتطلب تحقق مرجعي
+- الأساس: [REQUIRES CONFIRMATION]
+- Note: "not shown on this drawing" ≠ "absent from project"
 
-Scenario C — Source retrieved, comparison completed, deficiency found:
-- المرجع: Document: X | Section: Y (retrieved)
-- الحالة: ❌ غير متوافق
-- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
-
-Scenario D — Pure drawing-internal contradiction (no code comparison needed):
-- المرجع: [CONFIRMED DRAWING CONFLICT] — describe the visual contradiction
-- الحالة: ⚠️ تعارض داخلي مؤكد بالمخطط
-- الأساس: [CONFIRMED DRAWING CONFLICT]
-
-Scenario E — Insufficient evidence:
-- المرجع: N/A
+Type D — WHOLE_BUILDING_DEPENDENT:
+- Use when: compliance depends on whole-building classification, total height, construction type, or multi-floor data this single sheet cannot confirm
 - الحالة: 🔲 غير محدد — يتطلب تحقق مرجعي
 - الأساس: [CANNOT CONCLUDE]
 
-حظر مطلق (Two absolute prohibitions — both apply):
+Type E — DRAWING_INTERNAL_CONFLICT:
+- Use when: the drawing shows a direct contradiction within itself (e.g., same space labeled with two incompatible occupancy groups, inconsistent dimensions that cannot both be correct)
+- الحالة: ⚠️ تعارض داخلي مؤكد بالمخطط
+- الأساس: [CONFIRMED DRAWING CONFLICT]
+- Note: occupant load that simply looks high is NOT Type E — it requires code retrieval to establish the threshold
+
+حظر مطلق (Three absolute prohibitions — all apply):
 1. لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع.
 2. لا يُجوز أبداً تعيين أي صيغة من صيغ ❌ (بما فيها "غير متوافق (محتمل)") لصف يحتوي على [NO SOURCE] في عمود المرجع.
+3. لا يُجوز تعيين ✅ لصف من النوع B أو C أو D حتى لو تم استرجاع مرجع — هذه الأنواع لا تؤهل للامتثال من ورقة واحدة فقط.
 The word "محتمل" (potential/possible) does NOT create a safe exception — a qualified noncompliance is still a noncompliance verdict and requires a retrieved source.
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
@@ -2690,6 +2741,14 @@ SECTION VIII RULES (MANDATORY — violations produce an invalid report):
 5. Use the SOURCE-BACKED ANALYTICAL REQUIREMENTS PACK (if present above) as a guide: anchors marked ✅ RETRIEVED have their text in the STRUCTURED CODE TABLES block and MUST be quoted here. Anchors marked ❌ NOT RETRIEVED must produce a [NO SOURCE] entry.
 6. If no code citations were made at all in this report: write exactly "No code sections were cited in this report."
 7. If all cited sections have no retrieved text: write exactly "No source-backed quote was retrieved for the claimed code items; all related verdicts are downgraded to [REQUIRES SOURCE CONFIRMATION]."
+
+TECHNICAL REFERENCE LEDGER v1 (mandatory for every ✅ row):
+8. For EVERY row in the Compliance Table that carries ✅ متوافق or [CONFIRMED — SOURCE-BACKED COMPLIANCE], a corresponding ledger entry MUST appear in Section VIII using this exact format:
+   | Code Family | Section / Table | Source Status | What it supports | Verbatim excerpt |
+   |---|---|---|---|---|
+   | SBC 201 / SBC 801 | [exact section] | ✅ RETRIEVED | [which Compliance Table row] | "[exact English quote from retrieved context]" |
+9. If Section VIII lacks a ledger entry for a ✅ row: the verdict for that row is retroactively DOWNGRADED to ⚠️ يحتاج تحقق before the report is finalized. A missing ledger entry invalidates the ✅ verdict.
+10. Section VIII must NOT consist solely of the subheadings "SBC 201 References" / "SBC 801 References" with no content — this is an invalid report structure and triggers Rule 9 above for all ✅ rows.
 
 <details>
 <summary><strong>SBC 801 References</strong></summary>
@@ -2750,6 +2809,10 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 9. ✦ The strings "SBC 201 Section 903", "SBC 201 Section 907", "SBC 201 Section 905", "SBC 201 Figure 903" do not appear anywhere → replace with SBC 801 reference or [REQUIRES SOURCE CONFIRMATION]
 10. ✦ No Figure reference (e.g., Figure 903.2, Figure 1006.2) appears unless that figure was retrieved verbatim in the SBC context block
 11. ✦ All 11 required section headings (I through X plus IV.B) are present as ## headings in the output — no section was collapsed into a prior section or output as a bare paragraph
+12. ✦ Every ✅ متوافق row in the Compliance Table is classified as Type A DIRECT_NUMERIC_COMPARISON with all 5 eligibility conditions met. Any ✅ row that fails this check → downgrade to ⚠️ يحتاج تحقق before output.
+13. ✦ Every ✅ متوافق row has a corresponding TECHNICAL REFERENCE LEDGER v1 entry in Section VIII (the ledger table with Code Family / Section / Source Status / What it supports / Verbatim excerpt columns). Any ✅ row missing its ledger entry → downgrade to ⚠️ before output.
+14. ✦ If the drawing shows Group M (shops/commercial) and Group S-2 (parking) in SEPARATE clearly bounded areas, these are NOT labeled as a conflict or ❌. A drawing-internal conflict only applies when the same space has incompatible dual classification.
+15. ✦ If any numeric area or dimension value was uncertain during extraction, that value was NOT used to issue a ✅ verdict — extraction uncertainty forces ⚠️ + [REQUIRES SOURCE CONFIRMATION].
 
 RESPOND IN: ${lang}`;
 }
