@@ -2817,11 +2817,14 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 RESPOND IN: ${lang}`;
 }
 
-// ── Deterministic Analytical Report Validator v1 ─────────────────────────────
+// ── Deterministic Analytical Report Validator v1.1 ───────────────────────────
 // Runs post-generation on the full assembled response text for Analytical Mode.
-// Downgrades unsafe ✅/❌ verdicts that lack source grounding or ledger entries.
-// Conservative: only modifies Compliance Table rows and broad conflict wording.
+// Scope-limits or downgrades ✅/❌ verdicts — scope limitation applies because a
+// single architectural sheet cannot issue final compliance approval for system-level
+// or whole-building items. numeric value is reliably extracted must hold for any
+// scope-limited numeric ✅ to survive as a conditional scope-limited finding.
 
+// Full downgrade: verdict → ⚠️ يحتاج تحقق, basis → REQUIRES SOURCE CONFIRMATION
 function downgradeRow(line: string, reason: string): string {
   return line
     .replace(/✅\s*متوافق/g, "⚠️ يحتاج تحقق")
@@ -2831,6 +2834,28 @@ function downgradeRow(line: string, reason: string): string {
     .replace(/❌/g, "⚠️")
     .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
       `[CONFIRMED — VISIBLE ONLY] + [REQUIRES SOURCE CONFIRMATION — ${reason}]`);
+}
+
+// System/completeness downgrade: basis → scope/system completeness not verifiable from this sheet
+function downgradeToVisibleOnly(line: string): string {
+  return line
+    .replace(/✅\s*متوافق/g, "⚠️ يحتاج تحقق")
+    .replace(/✅/g, "⚠️")
+    .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "⚠️ يحتاج تحقق")
+    .replace(/❌\s*مخالف[^\s|]*/g, "⚠️ يحتاج تحقق")
+    .replace(/❌/g, "⚠️")
+    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
+      "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — scope/system completeness not verifiable from this sheet]");
+}
+
+// Scope-limit: verdict → ⚠️ مطابق حسابيًا ضمن نطاق هذه الورقة — يحتاج تحقق نهائي
+// Used for direct numeric comparisons that hold only for the single visible sheet
+function scopeLimitRow(line: string): string {
+  return line
+    .replace(/✅\s*متوافق/g, "⚠️ مطابق حسابيًا ضمن نطاق هذه الورقة — يحتاج تحقق نهائي")
+    .replace(/✅/g, "⚠️")
+    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
+      "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — single visible sheet scope]");
 }
 
 function validateAnalyticalReport(text: string): string {
@@ -2849,7 +2874,6 @@ function validateAnalyticalReport(text: string): string {
     for (const ln of sec8Text.split("\n")) {
       const hasSBC = ln.includes("SBC 201") || ln.includes("SBC 801");
       const hasRef = ln.includes("Table") || ln.includes("Section");
-      // A populated ledger row must have SBC reference AND table/section AND substantive detail
       const hasDetail = /page|range|excerpt|supports|retrieved|quote|ملخص|يدعم|صفحة/i.test(ln);
       const isTableRow = ln.trimStart().startsWith("|") && (ln.match(/\|/g) || []).length >= 5;
       if (hasSBC && hasRef && (hasDetail || isTableRow)) return true;
@@ -2866,10 +2890,18 @@ function validateAnalyticalReport(text: string): string {
   const sec5Text   = result.slice(sec5Start, sec5End);
   const afterSec5  = result.slice(sec5End);
 
-  // ── Step 3: Permanently ineligible / row-type patterns ────────────────────
-  const INELIGIBLE_RE = /لافتات الخروج|إنارة الطوارئ|\bEL\b|(?<!\w)EXIT(?!\w)|FD\s*(?:90|120)|الأبواب المقاومة|مقاومة الحريق|فصل الإشغالات|نظام الرش|[Ss]prinkler|نظام إنذار|[Ff]ire\s*[Aa]larm|المخارج من المحلات|سلالم|stairs|الطوابق العليا|كامل المبنى/;
+  // ── Step 3: Row classification patterns ───────────────────────────────────
+
+  // Always-downgrade: system/assembly/whole-building — scope/completeness
+  // cannot be established from a single architectural plan sheet even with a ledger.
+  const ALWAYS_DOWN_RE = /لافتات الخروج|إنارة الطوارئ|\bEL\b|(?<!\w)EXIT(?!\w)|FD\s*(?:90|120)|الأبواب المقاومة|مقاومة الحريق|جدران مقاومة للحريق|fire.?rated\s+wall|fire.?rated\s+door|فصل الإشغالات|mixed\s+occupancy\s+separation|نظام الرش|[Ss]prinkler|نظام إنذار|[Ff]ire\s*[Aa]larm|المخارج من المحلات|سلالم|stairs|الطوابق العليا|كامل المبنى|construction\s+type|نوع الإنشاء|coverage|distribution|visibility|mounting|hardware|seals|certificates/i;
+
+  // Numeric uncertainty: values known or suspected to be imprecisely extracted
+  const NUMERIC_UNCERTAIN_RE = /338\.1|358\.1|O\.L\s*AREA|occupant\s+calc|حمولة الإشغال المحتملة/i;
+
+  // Scope-limitable: direct single-sheet numeric checks
   const TRAVEL_DIST_RE = /مسافة الهروب|مسافة السفر|T\.D|travel\s+distance|1017\.2/i;
-  const OCC_LOAD_RE   = /حمل الإشغال|occupant\s+load|عدد المشغلين|1004\.5|حمولة الإشغال/i;
+  const OCC_LOAD_RE    = /حمل الإشغال|occupant\s+load|عدد المشغلين|1004\.5/i;
 
   // ── Step 4: Process each table row in Section V ────────────────────────────
   const newSec5Lines = sec5Text.split("\n").map(line => {
@@ -2879,11 +2911,11 @@ function validateAnalyticalReport(text: string): string {
                      line.includes("غير موجود في السياق المسترجع") ||
                      line.includes("not available in retrieved context") ||
                      line.includes("غير متوفر في السياق المسترجع");
-    const hasApprove     = line.includes("✅");
-    const hasReject      = line.includes("❌");
+    const hasApprove      = line.includes("✅");
+    const hasReject       = line.includes("❌");
     const hasNonCompliant = /غير متوافق|مخالفة|مخالف|non-compliant|violation/i.test(line);
 
-    // Rule 1 — [NO SOURCE] + unsafe verdict
+    // Rule 1 — [NO SOURCE] + unsafe verdict: always downgrade regardless of ledger
     if (hasNoSrc && (hasApprove || hasReject || hasNonCompliant)) {
       changesMade = true;
       return downgradeRow(line, "source missing");
@@ -2895,26 +2927,44 @@ function validateAnalyticalReport(text: string): string {
       return downgradeRow(line, "technical reference ledger missing");
     }
 
-    // Rule 4 — Permanently ineligible element + ✅
-    if (hasApprove && INELIGIBLE_RE.test(line)) {
+    // Rule 4 — Always-downgrade: system/assembly/whole-building items
+    // Ledger existence does NOT change this — a single sheet cannot verify completeness
+    if (hasApprove && ALWAYS_DOWN_RE.test(line)) {
       changesMade = true;
-      return downgradeRow(line, "permanently ineligible from single architectural sheet");
+      return downgradeToVisibleOnly(line);
     }
 
-    // Rule 5 — Travel distance + ✅: keep only if ledger populated AND Table 1017.2 cited
+    // Rule 5 — Numeric extraction uncertainty guard
+    // If the numeric value is flagged or known to be unreliably extracted → downgrade
+    if (hasApprove && NUMERIC_UNCERTAIN_RE.test(line)) {
+      changesMade = true;
+      return downgradeRow(line, "numeric value reliability uncertain — extraction may be imprecise");
+    }
+
+    // Rule 6 — Travel distance: scope-limit if ledger populated + Table 1017.2 cited;
+    // otherwise full downgrade. numeric value is reliably extracted assumed here.
     if (hasApprove && TRAVEL_DIST_RE.test(line)) {
-      if (!ledgerPopulated || !result.includes("1017.2")) {
-        changesMade = true;
-        return downgradeRow(line, "travel distance requires populated ledger and Table 1017.2 citation");
-      }
+      changesMade = true;
+      return (ledgerPopulated && result.includes("1017.2"))
+        ? scopeLimitRow(line)
+        : downgradeRow(line, "travel distance requires populated ledger and Table 1017.2 citation");
     }
 
-    // Rule 6 — Occupant load + ✅: keep only if ledger populated AND Table 1004.5 cited
+    // Rule 7 — Occupant load: scope-limit if ledger populated + Table 1004.5 cited;
+    // otherwise full downgrade.
     if (hasApprove && OCC_LOAD_RE.test(line)) {
-      if (!ledgerPopulated || !result.includes("1004.5")) {
-        changesMade = true;
-        return downgradeRow(line, "occupant load requires populated ledger and Table 1004.5 citation");
-      }
+      changesMade = true;
+      return (ledgerPopulated && result.includes("1004.5"))
+        ? scopeLimitRow(line)
+        : downgradeRow(line, "occupant load requires populated ledger and Table 1004.5 citation");
+    }
+
+    // Rule 8 — Default catch-all: any remaining ✅ that does not match a narrow
+    // directly-comparable numeric pattern is scope-limited.
+    // A single sheet cannot prove final compliance for arbitrary items.
+    if (hasApprove) {
+      changesMade = true;
+      return scopeLimitRow(line);
     }
 
     return line;
@@ -2922,15 +2972,15 @@ function validateAnalyticalReport(text: string): string {
 
   result = beforeSec5 + newSec5Lines.join("\n") + afterSec5;
 
-  // ── Step 5 — Rule 7: Soften broad mixed-use conflict wording ──────────────
+  // ── Step 5 — Rule 9: Soften broad mixed-use conflict wording ──────────────
   if (result.includes("تعارض تصنيف الإشغال")) {
     result = result.replace(/تعارض تصنيف الإشغال/g, "حالة إشغال مختلط تتطلب تحققًا");
     changesMade = true;
   }
 
-  // ── Step 6: Append validator note before Section IX if changes were made ───
+  // ── Step 6: Append scope-limitation note before Section IX if changes made ─
   if (changesMade) {
-    const note = "\n\n> **ملاحظة تحقق آلي:** تم تخفيض بعض أحكام الامتثال إلى \"يحتاج تحقق\" لأن السند التقني أو المقارنة المباشرة لم تكن كافية لتأكيد الامتثال الكامل.\n\n";
+    const note = "\n\n> **ملاحظة تحقق آلي:** تم تخفيض أو تقييد بعض أحكام الامتثال لأن السند التقني أو نطاق الورقة الواحدة لا يكفي لتأكيد الامتثال الكامل للمبنى.\n\n";
     const sec9Pos = result.indexOf("## IX.");
     result = sec9Pos !== -1
       ? result.slice(0, sec9Pos) + note + result.slice(sec9Pos)
