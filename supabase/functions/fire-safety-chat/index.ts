@@ -3045,18 +3045,19 @@ async function runVisionPipeline(
   language: string,
   mode: string = "analysis",
   drawingTextLayer: string = "",
+  pageInventory: string = "",
 ): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
-  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)", "| Drawing text layer chars:", drawingTextLayer.length);
+  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)", "| Drawing text layer chars:", drawingTextLayer.length, "| Page inventory chars:", pageInventory.length);
   const pipelineStart = Date.now();
 
-  // Stage 1: Planning Agent — include drawing text layer (when available) so
-  // Gemini's extraction can read the lossless room labels, sheet titles, and
-  // notes printed on CAD-exported PDFs instead of having to recognise them
-  // visually from a JPEG render.
+  // Stage 1: Planning Agent — include drawing text layer and page inventory (when available)
+  // so Gemini understands the full package structure and can read lossless room labels,
+  // sheet titles, and notes from CAD-exported PDFs.
   console.log("📋 Stage 1: Planning Agent...");
   const planningPrompt = getVisionPlanningPrompt(language);
   const imageContent: any[] = [
     ...imageBase64s.map((url: string) => ({ type: "image_url", image_url: { url } })),
+    ...(pageInventory ? [{ type: "text", text: pageInventory }] : []),
     ...(drawingTextLayer ? [{ type: "text", text: drawingTextLayer }] : []),
     { type: "text", text: userQuery || (language === "en" ? "Analyze this engineering drawing for fire safety compliance." : "حلل هذا المخطط الهندسي من ناحية الامتثال للسلامة من الحرائق.") },
   ];
@@ -3347,7 +3348,7 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, pageManifests, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     // documentTexts may contain two kinds of items:
     //   1. CSV/TXT files extracted by the frontend (treated as user-supplied
@@ -3396,12 +3397,44 @@ serve(async (req) => {
       "| drawing_text_layer_files=", resolvedDrawingTextLayer.length,
       "| drawing_text_layer_chars=", drawingTextLayerBlock.length,
     );
+
+    // Build page inventory block from the page manifest sent by the frontend.
+    // Used in Analytical Mode to give the model a structural overview of the package
+    // before it processes individual sheet images.
+    type PageManifestEntry = { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string };
+    const resolvedPageManifests: PageManifestEntry[] = Array.isArray(pageManifests)
+      ? (pageManifests as any[]).filter(
+          (e): e is PageManifestEntry =>
+            e && typeof e === "object" && typeof e.pageNumber === "number",
+        )
+      : [];
+    const pageInventoryBlock: string = (() => {
+      if (resolvedPageManifests.length === 0) return "";
+      const rows = resolvedPageManifests.map(e =>
+        `  Page ${e.pageNumber}: [${e.drawingTypeHint}] ${e.fileName}${e.textPreview ? ` — "${e.textPreview.slice(0, 120).replace(/\n/g, " ")}"` : ""}`
+      );
+      return `=== PAGE INVENTORY (${resolvedPageManifests.length} pages) ===\n${rows.join("\n")}\n=== END PAGE INVENTORY ===`;
+    })();
+    console.log("[PageManifest] pages=", resolvedPageManifests.length, "| inventory_chars=", pageInventoryBlock.length);
+
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
       throw new Error("GOOGLE_GEMINI_API_KEY is not configured");
     }
 
+    // Budget log: record file intake metrics for every analytical vision request
+    if (resolvedImages.length > 0) {
+      const estimatedImageBytes = resolvedImages.reduce((sum, img) => sum + img.length * 0.75, 0);
+      console.log(
+        "[Budget]",
+        "mode=", mode,
+        "| total_images=", resolvedImages.length,
+        "| estimated_image_bytes=", Math.round(estimatedImageBytes),
+        "| text_layer_chars=", drawingTextLayerBlock.length,
+        "| page_manifest_entries=", resolvedPageManifests.length,
+      );
+    }
     console.log("Chat mode:", mode, "| Language:", language, "| Images:", resolvedImages.length);
 
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
@@ -3666,9 +3699,14 @@ serve(async (req) => {
         language,
         visionMode,
         drawingTextLayerBlock,
+        pageInventoryBlock,
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
+      // Inject page inventory for multi-page packages (analytical mode)
+      if (pageInventoryBlock && mode === "analysis") {
+        fullSystemPrompt += `\n\n${pageInventoryBlock}\n\nINSTRUCTION: The images you are about to receive are pages from a multi-page safety drawing package. The PAGE INVENTORY above lists every sheet in order with its drawing type. Treat them as a CONNECTED PACKAGE — identify cross-sheet system connections (e.g. life safety plan references a stairwell on another sheet, fire-fighting plan references a pump room). Your compliance report must cover the package as a whole, not each page in isolation. When a requirement cannot be verified from any single sheet, state clearly which sheet it was not found on.\n`;
+      }
       usedFiles = visionFiles;
       usedSourceMeta = visionMeta;
 

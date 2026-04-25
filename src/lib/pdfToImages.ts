@@ -41,6 +41,65 @@ export async function pdfToBase64Images(
   return results;
 }
 
+export type DrawingTypeHint =
+  | "cover"
+  | "drawing_list"
+  | "general_site"
+  | "life_safety"
+  | "fire_alarm"
+  | "fire_fighting"
+  | "details"
+  | "notes"
+  | "unknown";
+
+export interface PageManifestEntry {
+  pageNumber: number;
+  fileName: string;
+  renderStatus: "rendered" | "failed";
+  textPreview: string;
+  drawingTypeHint: DrawingTypeHint;
+}
+
+export function inferDrawingTypeHint(text: string, pageNumber: number): DrawingTypeHint {
+  const t = text.toLowerCase();
+  if (
+    pageNumber === 1 &&
+    (t.includes("cover") || t.includes("title sheet") || t.includes("غلاف") ||
+      t.includes("project information") || t.includes("معلومات المشروع"))
+  ) return "cover";
+  if (
+    t.includes("drawing list") || t.includes("sheet index") || t.includes("drawing index") ||
+    t.includes("فهرس") || t.includes("قائمة المخططات")
+  ) return "drawing_list";
+  if (
+    t.includes("life safety") || t.includes("egress plan") || t.includes("إخلاء") ||
+    t.includes("هروب") || (t.includes("exit") && t.includes("stair")) ||
+    t.includes("t.d") || t.includes("travel distance") || t.includes("مسافة الهروب")
+  ) return "life_safety";
+  if (
+    t.includes("fire alarm") || t.includes("fa plan") || t.includes("إنذار حريق") ||
+    t.includes("كاشف") || t.includes("detector") || t.includes("horn") || t.includes("strobe")
+  ) return "fire_alarm";
+  if (
+    t.includes("sprinkler") || t.includes("fire pump") || t.includes("standpipe") ||
+    t.includes("hose cabinet") || t.includes("fdc") || t.includes("hydrant") ||
+    t.includes("رش مائي") || t.includes("طفاية") || t.includes("مضخة")
+  ) return "fire_fighting";
+  if (
+    t.includes("site plan") || t.includes("general plan") || t.includes("location plan") ||
+    t.includes("مخطط موقع") || t.includes("مخطط عام")
+  ) return "general_site";
+  if (
+    t.includes("detail") || t.includes("enlarged") || t.includes("section") ||
+    t.includes("تفصيل") || t.includes("قطاع")
+  ) return "details";
+  if (
+    t.includes("general notes") || t.includes("legend") || t.includes("symbol") ||
+    t.includes("ملاحظات") || t.includes("مفتاح الرموز") || t.includes("مواصفات")
+  ) return "notes";
+  return "unknown";
+}
+
 export type PdfTextExtractionQuality = "empty" | "low" | "medium" | "high";
 
 export interface PdfTextLayer {
