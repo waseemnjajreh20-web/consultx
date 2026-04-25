@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { pdfToBase64Images } from "@/lib/pdfToImages";
+import { pdfToBase64Images, extractPdfTextLayer, type PdfTextLayer } from "@/lib/pdfToImages";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
 const MAX_FILES = 10;
@@ -23,6 +23,7 @@ export interface PendingFile {
   previewUrl: string;    // first page or placeholder for thumbnail
   name: string;
   rowCount?: number;     // for CSV: number of data rows
+  textLayer?: PdfTextLayer; // for PDFs: native text layer extracted via pdfjs getTextContent()
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -140,9 +141,15 @@ export function usePendingFiles() {
             });
           }
         } else {
-          // PDF
+          // PDF — render pages to images AND extract native text layer in parallel.
+          // The text layer (when present) is forwarded to the backend via
+          // documentTexts so the analytical pipeline gets lossless room labels,
+          // sheet titles, dimensions, and notes from CAD-exported PDFs.
           try {
-            const pages = await pdfToBase64Images(file);
+            const [pages, textLayer] = await Promise.all([
+              pdfToBase64Images(file),
+              extractPdfTextLayer(file).catch(() => undefined),
+            ]);
             if (!pages.length) continue;
             candidates.push({
               id,
@@ -151,6 +158,7 @@ export function usePendingFiles() {
               base64Pages: pages,
               previewUrl: pages[0],
               name: file.name,
+              textLayer,
             });
           } catch {
             toast({
@@ -186,10 +194,22 @@ export function usePendingFiles() {
   }, []);
 
   const allBase64Pages = pendingFiles.flatMap(f => f.base64Pages);
-  // Collected text content from CSV/TXT files — passed to backend as structured document context
-  const allDocumentTexts = pendingFiles
-    .filter(f => f.type === "text" && f.textContent)
-    .map(f => ({ name: f.name, content: f.textContent! }));
+  // Collected text content from CSV/TXT files AND native PDF text layers —
+  // passed to backend as structured document context. PDF text layers are
+  // tagged with a [PDF_TEXT_LAYER] prefix so the backend can route them to
+  // the analytical evidence pack rather than treating them as user-supplied
+  // documents.
+  const allDocumentTexts: { name: string; content: string }[] = [];
+  for (const f of pendingFiles) {
+    if (f.type === "text" && f.textContent) {
+      allDocumentTexts.push({ name: f.name, content: f.textContent });
+    } else if (f.type === "pdf" && f.textLayer && f.textLayer.combinedText) {
+      allDocumentTexts.push({
+        name: `[PDF_TEXT_LAYER] ${f.name}`,
+        content: `[extractionQuality=${f.textLayer.extractionQuality}, totalPages=${f.textLayer.totalPages}]\n${f.textLayer.combinedText}`,
+      });
+    }
+  }
 
   return {
     pendingFiles,

@@ -2402,6 +2402,31 @@ EPISTEMIC STATE RULES (apply throughout):
 - [CANNOT CONCLUDE]: impossible to judge — prohibited from compliance verdict
 
 ═══════════════════════════════════════
+DRAWING-TYPE-SPECIFIC GAP LANGUAGE (read documentType from the Document Intelligence Summary):
+═══════════════════════════════════════
+The absence of a fire-safety system on a single uploaded sheet does NOT, by itself, mean the system is missing from the project. Apply the rule that matches documentType:
+- **floor_plan / reflected_ceiling_plan / section_elevation** (architectural family) — Absence of fire alarm or fire-fighting elements on this sheet is EXPECTED. Mark such items "Not shown on this architectural drawing — refer to dedicated fire alarm / fire-fighting plan." Do NOT mark them ❌ Non-Compliant on this basis alone.
+- **fire_alarm_plan** — Stronger gap language is allowed. If a required alarm-related element (control panel, initiating device, notification appliance, zoning, coverage) is absent from a fire alarm plan that should have shown it, write "Not shown on the fire alarm plan where it would be expected."
+- **fire_suppression_plan** — Stronger gap language is allowed. If a required sprinkler / standpipe / FDC / hydrant / pump element is absent from a suppression plan that should have shown it, write "Not shown on the fire-fighting plan where it would be expected."
+- **mechanical_plan** — Treat fire-safety-system absence the same as architectural family above; do NOT infer non-compliance from a mechanical sheet alone.
+- **site_plan** — Focus on access roads, fire department access, hydrants, building footprint. Do NOT draw internal-system conclusions from a site plan.
+- **schedule_table / specification** — Focus on tabular equipment / schedule data. Do NOT infer SPATIAL compliance from a schedule alone (a schedule confirms equipment counts and properties, not placement).
+- **mixed** — Combined findings; for each assessment, label which visible part of the sheet supplied the evidence.
+- **unclear** — Conservative output. Most assessments must be [REQUIRES CONFIRMATION] or [CANNOT CONCLUDE]. Explicitly request a clearer drawing type or additional sheets before issuing compliance verdicts.
+
+CONDITIONAL-OCCUPANCY RULE: If the Document Intelligence Summary lists buildingType or occupancyGroup as "unknown", every required-system row in the Gap Matrix MUST be marked [REQUIRES CONFIRMATION] and the action must request occupancy confirmation. Do not silently pick a single occupancy path.
+
+═══════════════════════════════════════
+ANTI-FABRICATION RULES (apply to the entire response):
+═══════════════════════════════════════
+- Do NOT fabricate device counts, dimensions, travel distances, hose / sprinkler coverage radii, or fire-resistance ratings.
+- Do NOT fabricate code section numbers — only cite sections that appear in the SBC reference block.
+- Do NOT fabricate device locations or label content.
+- Do NOT treat "absent from this sheet" as "absent from the project" unless the drawing-type rules above support that conclusion.
+- Use "Section X" wording for code references — do not use the section symbol.
+- Unknown remains Unknown. If the drawing text layer or extraction does not confirm an element, do not invent it.
+
+═══════════════════════════════════════
 YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 ═══════════════════════════════════════
 
@@ -2434,6 +2459,27 @@ YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 | الاشتراط | المرجع (Document + Section) | القيمة / المعامل | التوفر |
 |---|---|---|---|
 | ... | ... | ... | مؤكد / يحتاج تحقق |
+
+## IV.B 📊 الأنظمة المطلوبة ومصفوفة التغطية / Required Systems / Gap Matrix
+
+Compare what the SBC likely requires against what THIS uploaded drawing actually shows. Apply the DRAWING-TYPE-SPECIFIC GAP LANGUAGE above when filling each row. For every system or requirement plausibly applicable to the building classification in the Document Intelligence Summary, fill one row of this table:
+
+| النظام أو الاشتراط / System or Requirement | لماذا قد يُطلب / Why it may be required | الدليل من المخطط / Evidence from plan | المرجع الكودي إن وُجد / Code basis (if available) | الإجراء المطلوب / Action required | الثقة / Confidence |
+|---|---|---|---|---|---|
+
+Allowed values for "Evidence from plan":
+- **Shown** — element is clearly drawn / labeled / scheduled on this sheet
+- **Not shown** — element is absent from this sheet (apply the documentType rule above before concluding non-compliance)
+- **Partially shown** — some indication exists but coverage / details are incomplete
+- **Unknown / not visible** — cannot be determined from the uploaded evidence
+
+Allowed values for "Confidence" (must reuse the epistemic state vocabulary):
+- **[CONFIRMED]** — Confirmed from drawing evidence
+- **[INFERRED]** — Inferred from partial evidence
+- **[REQUIRES CONFIRMATION]** — Requires confirmation from another sheet or document
+- **[CANNOT CONCLUDE]** — Cannot conclude from the uploaded evidence
+
+The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be filled with "Unknown / not visible" / [CANNOT CONCLUDE] (e.g. unclear documentType, illegible image), say so explicitly and ask for clearer drawings rather than fabricating rows.
 
 ## V. جدول الامتثال / Compliance Table
 
@@ -2497,15 +2543,20 @@ async function runVisionPipeline(
   userQuery: string,
   language: string,
   mode: string = "analysis",
+  drawingTextLayer: string = "",
 ): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
-  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)");
+  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)", "| Drawing text layer chars:", drawingTextLayer.length);
   const pipelineStart = Date.now();
 
-  // Stage 1: Planning Agent
+  // Stage 1: Planning Agent — include drawing text layer (when available) so
+  // Gemini's extraction can read the lossless room labels, sheet titles, and
+  // notes printed on CAD-exported PDFs instead of having to recognise them
+  // visually from a JPEG render.
   console.log("📋 Stage 1: Planning Agent...");
   const planningPrompt = getVisionPlanningPrompt(language);
   const imageContent: any[] = [
     ...imageBase64s.map((url: string) => ({ type: "image_url", image_url: { url } })),
+    ...(drawingTextLayer ? [{ type: "text", text: drawingTextLayer }] : []),
     { type: "text", text: userQuery || (language === "en" ? "Analyze this engineering drawing for fire safety compliance." : "حلل هذا المخطط الهندسي من ناحية الامتثال للسلامة من الحرائق.") },
   ];
   
@@ -2573,12 +2624,17 @@ async function runVisionPipeline(
       ? `\n⚠️ EXTRACTION WARNING: Image quality is "${quality}". Conclusions in unreadable areas are UNRELIABLE. Do NOT fabricate elements not confirmed by extraction. Downgrade compliance confidence accordingly.`
       : "";
 
+    const textLayerStatus = drawingTextLayer
+      ? `Present (${drawingTextLayer.length} chars) — use it as the authoritative source of any room labels, sheet titles, schedules, dimensions, or notes that are printed on the drawing.`
+      : "Not available — the uploaded drawing has no native text layer (likely scanned or image-only). All text evidence must come from visual interpretation of the rendered images.";
+
     docIntelSummary = `
 === DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
 Input Type: ${docType}
 Sheet: ${sheetCtx.title || "unknown"} | Number: ${sheetCtx.number || "N/A"} | Scale: ${sheetCtx.scale || "N/A"}
 Image Quality: ${quality}
 Classification Confidence: ${confidence}
+Drawing Text Layer (PDF native text): ${textLayerStatus}
 Readable Areas: ${readableAreas.length > 0 ? readableAreas.join("; ") : "not specified"}
 Unreadable Areas: ${unreadableAreas.length > 0 ? unreadableAreas.join("; ") : "none reported"}
 Room Labels Extracted: ${roomLabels.length > 0 ? roomLabels.join(", ") : "none"}
@@ -2619,6 +2675,7 @@ ${planningResult}
 ${cotResult}
 
 ${sbcContext}
+${drawingTextLayer ? `\n${drawingTextLayer}\n` : ""}
 `;
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
@@ -2665,8 +2722,53 @@ serve(async (req) => {
     // Parse body first — mode is needed for per-mode trial limit checks
     const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
-    // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
-    const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
+    // documentTexts may contain two kinds of items:
+    //   1. CSV/TXT files extracted by the frontend (treated as user-supplied
+    //      project documents — schedules, specifications, etc.).
+    //   2. Native PDF text layers extracted by pdfjs `getTextContent()` on the
+    //      frontend, tagged with a "[PDF_TEXT_LAYER]" name prefix. These are
+    //      drawing evidence — what is actually printed on the uploaded sheets —
+    //      and must NOT be conflated with user-supplied documents.
+    // We split them here so each can be routed to its appropriate context block.
+    const _rawDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
+    const resolvedDocTexts: Array<{ name: string; content: string }> = [];
+    const resolvedDrawingTextLayer: Array<{ name: string; content: string }> = [];
+    for (const item of _rawDocTexts) {
+      if (!item || typeof item !== "object") continue;
+      const name = typeof item.name === "string" ? item.name : "";
+      const content = typeof item.content === "string" ? item.content : "";
+      if (!content) continue;
+      if (name.startsWith("[PDF_TEXT_LAYER]")) {
+        resolvedDrawingTextLayer.push({
+          name: name.replace(/^\[PDF_TEXT_LAYER\]\s*/, "").slice(0, 200) || "drawing",
+          content,
+        });
+      } else {
+        resolvedDocTexts.push({ name: name.slice(0, 200) || "document", content });
+      }
+    }
+    // Build a safely-capped drawing-text-layer block to feed into the vision
+    // pipeline. Capped at 20,000 chars total; do not log content.
+    const drawingTextLayerBlock: string = (() => {
+      if (resolvedDrawingTextLayer.length === 0) return "";
+      const MAX_CHARS = 20_000;
+      let total = 0;
+      const parts: string[] = [];
+      for (const d of resolvedDrawingTextLayer) {
+        const remaining = MAX_CHARS - total;
+        if (remaining <= 0) break;
+        const chunk = d.content.slice(0, remaining);
+        parts.push(`--- ${d.name} (drawing text layer) ---\n${chunk}`);
+        total += chunk.length;
+      }
+      return `=== DRAWING TEXT LAYER (extracted from uploaded PDFs) ===\nThis text was extracted from the native PDF text layer of the uploaded engineering drawing. Treat it as DRAWING EVIDENCE — what is actually printed on the sheets. It is NOT an authoritative code source.\n\n${parts.join("\n\n")}`;
+    })();
+    console.log(
+      "documentTexts split:",
+      "user_docs=", resolvedDocTexts.length,
+      "| drawing_text_layer_files=", resolvedDrawingTextLayer.length,
+      "| drawing_text_layer_chars=", drawingTextLayerBlock.length,
+    );
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
@@ -2936,6 +3038,7 @@ serve(async (req) => {
         userQuery,
         language,
         visionMode,
+        drawingTextLayerBlock,
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
@@ -3061,6 +3164,16 @@ ABSOLUTELY FORBIDDEN:
       fullSystemPrompt += finalBindingReminder;
     }
     
+    // ── Inject drawing text layer (text-only analysis path) ─────────────────
+    // Only fires when the user uploaded a PDF whose native text layer was
+    // extracted on the frontend but the user is in a non-vision mode (e.g.
+    // analytical mode without images). Treated as drawing evidence, not as a
+    // user-supplied document.
+    if (resolvedImages.length === 0 && drawingTextLayerBlock) {
+      fullSystemPrompt += `\n\n${drawingTextLayerBlock}\n`;
+      console.log(`[DrawingTextLayer] Injected ${drawingTextLayerBlock.length} chars into text-only system prompt`);
+    }
+
     // ── Inject document texts (CSV/TXT files) into system prompt ─────────────
     // These are structured text documents uploaded by the user (schedules, tables,
     // specifications). Injected AFTER the SBC context so they appear as user-provided
