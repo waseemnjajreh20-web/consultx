@@ -32,7 +32,8 @@ If clause not found, respond: "The required code text is not available in the pr
 4️⃣-B CERTAINTY LABELING (MANDATORY)
 - Exact clause quoted verbatim → cite normally: "Document: X | Section: Y"
 - Adjacent or contextually related text used (not the literal clause) → prefix: [INDIRECT — Section Y context]
-- No matching text in provided files → respond with [NO SOURCE] and state exactly what is missing
+- No matching text in provided files → use [REQUIRES SOURCE CONFIRMATION] in the compliance verdict; use [NO SOURCE] only in Section VIII (Technical References) to mark which quote could not be retrieved
+- NEVER write ✅ Compliant or ❌ Non-Compliant when source support is absent — use [REQUIRES SOURCE CONFIRMATION] or "غير محدد — يتطلب تحقق مرجعي" instead
 - NEVER imply certainty when the exact clause is absent — fabricating confidence is a critical violation
 
 5️⃣ CROSS-REFERENCING (MANDATORY)
@@ -2427,6 +2428,49 @@ ANTI-FABRICATION RULES (apply to the entire response):
 - Unknown remains Unknown. If the drawing text layer or extraction does not confirm an element, do not invent it.
 
 ═══════════════════════════════════════
+SBC 201-2024 REFERENCE NORMALIZATION:
+═══════════════════════════════════════
+- If you encounter "Table 1004.1.2" or "Table 1004.1" in ANY source (retrieved chunks, prior knowledge, or drawing text layer) — write "SBC 201 Table 1004.5" in all user-facing output. The old reference belongs to a superseded edition.
+- If Table 1004.5 content is NOT present in the retrieved SBC context block, write: "SBC 201 Table 1004.5 — [REQUIRES SOURCE CONFIRMATION]".
+- Do NOT write specific occupant load factor values (e.g. "18 m²/person") unless the actual Table 1004.5 row for that use is present in the retrieved SBC context block.
+- The same normalization applies to any other SBC 201 table reference that an older edition used — always prefer the 2024 edition designation.
+
+═══════════════════════════════════════
+PRESENCE vs. COMPLIANCE — SYMBOL OBSERVATION RULES:
+═══════════════════════════════════════
+A visible symbol or annotation on a drawing CONFIRMS PRESENCE only — not full code compliance.
+
+| Visible element | What it confirms | Compliance requires |
+|---|---|---|
+| EL / emergency lighting symbol | Emergency lighting fixture shown on plan | Lux level, battery duration, coverage, testing record — code retrieval required |
+| EXIT sign symbol | Exit signage shown on plan | Visibility distance, mounting height, illumination, path continuity — code retrieval required |
+| FD 90 / FD 120 door label | Fire-rated door designation is annotated | Hardware, closer, seals, certification — code retrieval required |
+| T.D = X m annotation | Travel distance value is written on plan | Whether that value satisfies the code limit for this occupancy — code retrieval required |
+| Occupant load calculation shown | Calculation method is visible | Correct occupancy group + load factor applied — code source confirmation required |
+| Fire-rated wall notation | Rating notation is shown | Assembly details, penetrations, junctions — code retrieval required |
+
+RULE: For each of the above, write "shown / presence confirmed" — NOT ✅ Compliant.
+Full compliance requires: (1) governing code limit retrieved, (2) confirmed element compared against limit, (3) all contextual conditions known.
+If SBC context for the element is NOT in the retrieved block: mark compliance as [REQUIRES SOURCE CONFIRMATION], never ✅.
+
+═══════════════════════════════════════
+SINGLE-SHEET CLASSIFICATION CALIBRATION:
+═══════════════════════════════════════
+When analyzing a single uploaded drawing page:
+1. Limit classification certainty to what THIS SHEET visibly proves. Do NOT state whole-building occupancy, total floor count, or total floor area as CONFIRMED unless the title block or plan labels directly confirm them on this sheet.
+2. For a ground floor plan showing shops / retail + parking + pump room / electrical room:
+   - CONFIRMED: ground floor visible uses (commercial/retail, parking, MEP rooms)
+   - NOT CONFIRMED from this sheet: upper-floor uses, residential occupancy, full building height
+   - State: "Ground floor visible uses: [list] — upper floors unknown from this single sheet"
+3. Drawing-internal classification conflict: if shop / retail labels appear alongside a Group S-2 (storage) occupant load calculation — state: "Drawing-internal classification note: shop/retail labels suggest Group M (mercantile); S-2 occupant load basis requires confirmation."
+4. Readability must match Stage 1 extraction evidence:
+   - "clear" — only if Stage 1 reports zero unreadable areas
+   - "mostly readable" — most elements legible, some minor unclear zones
+   - "partially readable" — significant unclear areas exist
+   - "unreadable areas exist" — list the specific zones from Stage 1
+   - NEVER write "all areas readable" unless Stage 1 extraction explicitly lists no unreadable areas.
+
+═══════════════════════════════════════
 YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 ═══════════════════════════════════════
 
@@ -2469,7 +2513,7 @@ Compare what the SBC likely requires against what THIS uploaded drawing actually
 
 Allowed values for "Evidence from plan":
 - **Shown** — element is clearly drawn / labeled / scheduled on this sheet
-- **Not shown** — element is absent from this sheet (apply the documentType rule above before concluding non-compliance)
+- **Not shown on this drawing** — element is absent from this sheet (apply the documentType rule above before concluding non-compliance; this does NOT mean absent from the project)
 - **Partially shown** — some indication exists but coverage / details are incomplete
 - **Unknown / not visible** — cannot be determined from the uploaded evidence
 
@@ -2509,15 +2553,20 @@ The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be fil
 
 For each section cited above:
 - **Section:** [exact number]
-- **Verbatim Quote:** > [exact English text]
+- **Verbatim Quote:** > [exact English text from retrieved context]
 - **Applicability to this drawing:** [how it applies]
+
+If a section was cited but its text was NOT in the retrieved SBC context block, write:
+- **Section:** [number] — [NO SOURCE] Text not available in retrieved context. Compliance verdict for this item must be [REQUIRES SOURCE CONFIRMATION].
+
+Do NOT leave this section empty when compliance findings were made. Either quote the source or explicitly mark it [NO SOURCE].
 
 </details>
 
 <details>
 <summary><strong>SBC 201 References</strong></summary>
 
-[Same format as SBC 801 section above]
+[Same format as SBC 801 section above — quote verbatim from retrieved context or mark [NO SOURCE]]
 
 </details>
 
@@ -2525,10 +2574,16 @@ For each section cited above:
 
 ⚠️ يُصدر هذا الحكم فقط إذا كانت المعطيات الحرجة مؤكدة وجودة الاستخراج كافية:
 
-- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — بيانات غير كافية]
+- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — يتطلب تحقق مرجعي]
 - **الأساس:** "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
 - **تحفظات الاستخراج:** [إذا كانت جودة الصورة تُقيّد الحكم — اذكر ذلك صراحة]
 - **ختام إلزامي:** "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
+
+VERDICT RULES:
+- Use ✅ only when: SBC source text is in the retrieved context block AND drawing element is confirmed AND all conditions are met.
+- Use ❌ only when: SBC source text is in the retrieved context block AND a confirmed drawing deficiency exists AND all conditions are met.
+- Use ⚠️ when: evidence or code source is partially available, or conditions are partially met.
+- Use 🔲 "غير محدد — يتطلب تحقق مرجعي" when: code source was NOT retrieved, classification is uncertain, or a single sheet cannot prove whole-building compliance. This is the DEFAULT when source grounding is incomplete.
 
 ## X. الإجراءات المطلوبة / Required Actions
 
