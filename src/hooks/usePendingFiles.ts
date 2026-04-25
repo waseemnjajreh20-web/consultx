@@ -1,9 +1,16 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { pdfToBase64Images, extractPdfTextLayer, type PdfTextLayer } from "@/lib/pdfToImages";
+import {
+  pdfToBase64Images,
+  extractPdfTextLayer,
+  inferDrawingTypeHint,
+  type PdfTextLayer,
+  type PageManifestEntry,
+} from "@/lib/pdfToImages";
 
-const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;   // 15 MB for images
+const MAX_PDF_SIZE   = 500 * 1024 * 1024;  // 500 MB for PDFs (multi-page drawing packages)
 const MAX_FILES = 10;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ALLOWED_PDF_TYPE = "application/pdf";
@@ -23,7 +30,8 @@ export interface PendingFile {
   previewUrl: string;    // first page or placeholder for thumbnail
   name: string;
   rowCount?: number;     // for CSV: number of data rows
-  textLayer?: PdfTextLayer; // for PDFs: native text layer extracted via pdfjs getTextContent()
+  textLayer?: PdfTextLayer;       // for PDFs: native text layer extracted via pdfjs getTextContent()
+  pageManifest?: PageManifestEntry[]; // for PDFs: per-page metadata (render status, type hint)
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -82,10 +90,15 @@ export function usePendingFiles() {
           continue;
         }
 
-        if (file.size > MAX_FILE_SIZE) {
+        const sizeLimit = isPdf ? MAX_PDF_SIZE : MAX_IMAGE_SIZE;
+        const sizeLimitLabel = isPdf ? "500 MB" : "15 MB";
+        const sizeLimitLabelAr = isPdf ? "500 ميجا" : "15 ميجا";
+        if (file.size > sizeLimit) {
           toast({
             title: language === "en" ? "Error" : "خطأ",
-            description: language === "en" ? "File exceeds 15 MB" : "الملف أكبر من 15 ميجا",
+            description: language === "en"
+              ? `File exceeds ${sizeLimitLabel}`
+              : `الملف أكبر من ${sizeLimitLabelAr}`,
             variant: "destructive",
           });
           continue;
@@ -151,6 +164,18 @@ export function usePendingFiles() {
               extractPdfTextLayer(file).catch(() => undefined),
             ]);
             if (!pages.length) continue;
+            const pageManifest: PageManifestEntry[] = pages.map((_, i) => {
+              const pageNumber = i + 1;
+              const textEntry = textLayer?.pages.find(p => p.pageNumber === pageNumber);
+              const text = textEntry?.text ?? "";
+              return {
+                pageNumber,
+                fileName: file.name,
+                renderStatus: "rendered" as const,
+                textPreview: text.slice(0, 200),
+                drawingTypeHint: inferDrawingTypeHint(text, pageNumber),
+              };
+            });
             candidates.push({
               id,
               file,
@@ -159,6 +184,7 @@ export function usePendingFiles() {
               previewUrl: pages[0],
               name: file.name,
               textLayer,
+              pageManifest,
             });
           } catch {
             toast({
@@ -211,6 +237,8 @@ export function usePendingFiles() {
     }
   }
 
+  const allPageManifests: PageManifestEntry[] = pendingFiles.flatMap(f => f.pageManifest ?? []);
+
   return {
     pendingFiles,
     isProcessing,
@@ -220,5 +248,6 @@ export function usePendingFiles() {
     hasFiles: pendingFiles.length > 0,
     allBase64Pages,
     allDocumentTexts,
+    allPageManifests,
   };
 }

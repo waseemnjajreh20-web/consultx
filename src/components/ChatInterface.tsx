@@ -607,10 +607,13 @@ function trimMessageHistory(
 
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
+  documentTexts, pageManifests,
   output_format, preferred_standards,
   onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
+  documentTexts?: { name: string; content: string }[];
+  pageManifests?: { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string }[];
   output_format?: string;
   preferred_standards?: string[];
   onDelta: (deltaText: string) => void;
@@ -629,7 +632,7 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ messages, retry, mode, language, images, output_format, preferred_standards }),
+    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards }),
     signal,
   });
   if (!resp.ok) {
@@ -787,7 +790,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [showHistory, setShowHistory] = useState(false);
   const [isVisionRequest, setIsVisionRequest] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages } = usePendingFiles();
+  const { pendingFiles, isProcessing, addFiles, removeFile, clearAll, hasFiles, allBase64Pages, allDocumentTexts, allPageManifests } = usePendingFiles();
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
   const { preferences } = usePreferences();
 
@@ -994,6 +997,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     chatMessages: ChatMessage[], assistantId: string, isRetry: boolean = false,
     currentRetryCount: number = 0, currentMode: ChatMode = "standard",
     convId: string | null = null, currentLanguage: string = "ar", imageBase64s?: string[],
+    docTexts?: { name: string; content: string }[], pageManifests?: { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string }[],
   ) => {
     // Abort any previous request
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -1038,6 +1042,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     try {
       await streamChat({
         messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
+        documentTexts: docTexts,
+        pageManifests,
         output_format: preferences.output_format,
         preferred_standards: preferences.preferred_standards,
         signal: controller.signal,
@@ -1064,7 +1070,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             console.log(`Response validation failed (attempt ${currentRetryCount + 1}):`, validation.issues);
             setRetryCount(currentRetryCount + 1);
             setChatItems(prev => prev.filter(item => ("type" in item) || item.id !== assistantId));
-            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s);
+            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
           } else {
             stopLoading();
             if (convId) saveMessage(convId, "assistant", fullContent, currentSources);
@@ -1082,7 +1088,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             if (shouldAutoRetry && currentRetryCount < 1) {
               shouldAutoRetry = false;
               setAutoRetrying(false);
-              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s);
+              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
               return;
             }
             return; // ignore other aborts (mode switch)
@@ -1124,7 +1130,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         if (shouldAutoRetry && currentRetryCount < 1) {
           shouldAutoRetry = false;
           setAutoRetrying(false);
-          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s);
+          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
           return;
         }
         return; // ignore mode-switch aborts
@@ -1177,6 +1183,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     // Snapshot pending files before clearing
     const filesToSend = [...pendingFiles];
     const pagesToSend = [...allBase64Pages];
+    const docTextsToSend = [...allDocumentTexts];
+    const manifestToSend = [...allPageManifests];
     setIsVisionRequest(filesToSend.length > 0);
     clearAll();
 
@@ -1228,8 +1236,12 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     // Build history using smart per-mode trimming
     const allRealMessages = [...messages, userMessage];
     const chatMessages = trimMessageHistory(allRealMessages, chatMode, preferences.ai_memory_level);
-    handleSendWithRetry(chatMessages, assistantId, false, 0, chatMode, currentConvId, language,
-      pagesToSend.length > 0 ? pagesToSend : undefined);
+    handleSendWithRetry(
+      chatMessages, assistantId, false, 0, chatMode, currentConvId, language,
+      pagesToSend.length > 0 ? pagesToSend : undefined,
+      docTextsToSend.length > 0 ? docTextsToSend : undefined,
+      manifestToSend.length > 0 ? manifestToSend : undefined,
+    );
   };
 
 
