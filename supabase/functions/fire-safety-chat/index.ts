@@ -2817,6 +2817,129 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 RESPOND IN: ${lang}`;
 }
 
+// ── Deterministic Analytical Report Validator v1 ─────────────────────────────
+// Runs post-generation on the full assembled response text for Analytical Mode.
+// Downgrades unsafe ✅/❌ verdicts that lack source grounding or ledger entries.
+// Conservative: only modifies Compliance Table rows and broad conflict wording.
+
+function downgradeRow(line: string, reason: string): string {
+  return line
+    .replace(/✅\s*متوافق/g, "⚠️ يحتاج تحقق")
+    .replace(/✅/g, "⚠️")
+    .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "⚠️ يحتاج تحقق")
+    .replace(/❌\s*مخالف[^\s|]*/g, "⚠️ يحتاج تحقق")
+    .replace(/❌/g, "⚠️")
+    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
+      `[CONFIRMED — VISIBLE ONLY] + [REQUIRES SOURCE CONFIRMATION — ${reason}]`);
+}
+
+function validateAnalyticalReport(text: string): string {
+  // Only process reports that contain a Compliance Table (Section V marker)
+  if (!text.includes("V. جدول الامتثال") && !text.includes("Compliance Table")) {
+    return text;
+  }
+
+  let result = text;
+  let changesMade = false;
+
+  // ── Step 1: Determine Section VIII ledger population status ────────────────
+  const sec8Match = result.match(/##\s*VIII\.[\s\S]*?(?=##\s*IX\.|(?=\n##\s*[^I])|$)/);
+  const sec8Text = sec8Match ? sec8Match[0] : "";
+  const ledgerPopulated = (() => {
+    for (const ln of sec8Text.split("\n")) {
+      const hasSBC = ln.includes("SBC 201") || ln.includes("SBC 801");
+      const hasRef = ln.includes("Table") || ln.includes("Section");
+      // A populated ledger row must have SBC reference AND table/section AND substantive detail
+      const hasDetail = /page|range|excerpt|supports|retrieved|quote|ملخص|يدعم|صفحة/i.test(ln);
+      const isTableRow = ln.trimStart().startsWith("|") && (ln.match(/\|/g) || []).length >= 5;
+      if (hasSBC && hasRef && (hasDetail || isTableRow)) return true;
+    }
+    return false;
+  })();
+
+  // ── Step 2: Locate Section V boundaries ───────────────────────────────────
+  const sec5Start = result.search(/##\s*V\.\s*(?:جدول الامتثال|Compliance Table)/);
+  const sec5End   = result.search(/##\s*VI\./);
+  if (sec5Start === -1 || sec5End === -1 || sec5Start >= sec5End) return result;
+
+  const beforeSec5 = result.slice(0, sec5Start);
+  const sec5Text   = result.slice(sec5Start, sec5End);
+  const afterSec5  = result.slice(sec5End);
+
+  // ── Step 3: Permanently ineligible / row-type patterns ────────────────────
+  const INELIGIBLE_RE = /لافتات الخروج|إنارة الطوارئ|\bEL\b|(?<!\w)EXIT(?!\w)|FD\s*(?:90|120)|الأبواب المقاومة|مقاومة الحريق|فصل الإشغالات|نظام الرش|[Ss]prinkler|نظام إنذار|[Ff]ire\s*[Aa]larm|المخارج من المحلات|سلالم|stairs|الطوابق العليا|كامل المبنى/;
+  const TRAVEL_DIST_RE = /مسافة الهروب|مسافة السفر|T\.D|travel\s+distance|1017\.2/i;
+  const OCC_LOAD_RE   = /حمل الإشغال|occupant\s+load|عدد المشغلين|1004\.5|حمولة الإشغال/i;
+
+  // ── Step 4: Process each table row in Section V ────────────────────────────
+  const newSec5Lines = sec5Text.split("\n").map(line => {
+    if (!line.trimStart().startsWith("|")) return line;
+
+    const hasNoSrc = line.includes("[NO SOURCE]") ||
+                     line.includes("غير موجود في السياق المسترجع") ||
+                     line.includes("not available in retrieved context") ||
+                     line.includes("غير متوفر في السياق المسترجع");
+    const hasApprove     = line.includes("✅");
+    const hasReject      = line.includes("❌");
+    const hasNonCompliant = /غير متوافق|مخالفة|مخالف|non-compliant|violation/i.test(line);
+
+    // Rule 1 — [NO SOURCE] + unsafe verdict
+    if (hasNoSrc && (hasApprove || hasReject || hasNonCompliant)) {
+      changesMade = true;
+      return downgradeRow(line, "source missing");
+    }
+
+    // Rule 2+3 — ✅ or SOURCE-BACKED COMPLIANCE with no populated ledger
+    if (!ledgerPopulated && (hasApprove || line.includes("SOURCE-BACKED COMPLIANCE"))) {
+      changesMade = true;
+      return downgradeRow(line, "technical reference ledger missing");
+    }
+
+    // Rule 4 — Permanently ineligible element + ✅
+    if (hasApprove && INELIGIBLE_RE.test(line)) {
+      changesMade = true;
+      return downgradeRow(line, "permanently ineligible from single architectural sheet");
+    }
+
+    // Rule 5 — Travel distance + ✅: keep only if ledger populated AND Table 1017.2 cited
+    if (hasApprove && TRAVEL_DIST_RE.test(line)) {
+      if (!ledgerPopulated || !result.includes("1017.2")) {
+        changesMade = true;
+        return downgradeRow(line, "travel distance requires populated ledger and Table 1017.2 citation");
+      }
+    }
+
+    // Rule 6 — Occupant load + ✅: keep only if ledger populated AND Table 1004.5 cited
+    if (hasApprove && OCC_LOAD_RE.test(line)) {
+      if (!ledgerPopulated || !result.includes("1004.5")) {
+        changesMade = true;
+        return downgradeRow(line, "occupant load requires populated ledger and Table 1004.5 citation");
+      }
+    }
+
+    return line;
+  });
+
+  result = beforeSec5 + newSec5Lines.join("\n") + afterSec5;
+
+  // ── Step 5 — Rule 7: Soften broad mixed-use conflict wording ──────────────
+  if (result.includes("تعارض تصنيف الإشغال")) {
+    result = result.replace(/تعارض تصنيف الإشغال/g, "حالة إشغال مختلط تتطلب تحققًا");
+    changesMade = true;
+  }
+
+  // ── Step 6: Append validator note before Section IX if changes were made ───
+  if (changesMade) {
+    const note = "\n\n> **ملاحظة تحقق آلي:** تم تخفيض بعض أحكام الامتثال إلى \"يحتاج تحقق\" لأن السند التقني أو المقارنة المباشرة لم تكن كافية لتأكيد الامتثال الكامل.\n\n";
+    const sec9Pos = result.indexOf("## IX.");
+    result = sec9Pos !== -1
+      ? result.slice(0, sec9Pos) + note + result.slice(sec9Pos)
+      : result + note;
+  }
+
+  return result;
+}
+
 async function runVisionPipeline(
   apiKey: string,
   imageBase64s: string[],
@@ -3689,6 +3812,70 @@ ABSOLUTELY FORBIDDEN:
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
 
+    // ── ANALYTICAL VISION: buffer full response → validate → re-stream ────────
+    // Only active for mode=analysis with images. All other modes fall through to
+    // the standard token-by-token transform below.
+    if (mode === "analysis" && resolvedImages.length > 0) {
+      let analyticalLineBuffer = "";
+      let fullTextBuffer = "";
+      const sseHeaders = {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "X-SBC-Sources": usedFiles.join(","),
+        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+      };
+
+      const bufferingStream = new TransformStream({
+        transform(chunk, _controller) {
+          analyticalLineBuffer += new TextDecoder().decode(chunk);
+          const lines = analyticalLineBuffer.split("\n");
+          analyticalLineBuffer = lines.pop() ?? "";
+          for (const raw of lines) {
+            const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (!jsonStr || jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (content) fullTextBuffer += content;
+            } catch { /* ignore */ }
+          }
+        },
+        flush(controller) {
+          // Drain any remaining line
+          const remaining = analyticalLineBuffer.endsWith("\r")
+            ? analyticalLineBuffer.slice(0, -1) : analyticalLineBuffer;
+          if (remaining.startsWith("data: ")) {
+            const jsonStr = remaining.slice(6).trim();
+            if (jsonStr && jsonStr !== "[DONE]") {
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (content) fullTextBuffer += content;
+              } catch { /* ignore */ }
+            }
+          }
+
+          // Run deterministic validator on assembled response
+          const validatedText = validateAnalyticalReport(fullTextBuffer);
+          console.log(`[Validator] Analytical report validated | original=${fullTextBuffer.length} validated=${validatedText.length} changed=${validatedText !== fullTextBuffer}`);
+
+          // Re-stream validated text in 500-char chunks to avoid oversized SSE frames
+          const CHUNK = 500;
+          for (let i = 0; i < validatedText.length; i += CHUNK) {
+            controller.enqueue(new TextEncoder().encode(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: validatedText.slice(i, i + CHUNK) } }] })}\n\n`
+            ));
+          }
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        },
+      });
+
+      return new Response(response.body!.pipeThrough(bufferingStream), { headers: sseHeaders });
+    }
+
+    // ── Standard token-by-token transform (non-analytical / non-vision modes) ─
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
     // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
     // a data: {...} line split across two chunks is fully assembled before JSON.parse.
