@@ -2685,10 +2685,11 @@ The word "محتمل" (potential/possible) does NOT create a safe exception — 
 SECTION VIII RULES (MANDATORY — violations produce an invalid report):
 1. This section must NEVER contain only a subheading with no content underneath it.
 2. For every code section, table, or figure cited in Sections III–VII, produce one entry here.
-3. If retrieved verbatim: quote it with full Document + Section + page reference.
+3. If retrieved verbatim: quote it with full Document + Section + page reference. Check STRUCTURED CODE TABLES block above first — those rows are DB-authoritative and should be cited directly.
 4. If NOT retrieved: write an explicit [NO SOURCE] entry — never silently omit it.
-5. If no code citations were made at all in this report: write exactly "No code sections were cited in this report."
-6. If all cited sections have no retrieved text: write exactly "No source-backed quote was retrieved for the claimed code items; all related verdicts are downgraded to [REQUIRES SOURCE CONFIRMATION]."
+5. Use the SOURCE-BACKED ANALYTICAL REQUIREMENTS PACK (if present above) as a guide: anchors marked ✅ RETRIEVED have their text in the STRUCTURED CODE TABLES block and MUST be quoted here. Anchors marked ❌ NOT RETRIEVED must produce a [NO SOURCE] entry.
+6. If no code citations were made at all in this report: write exactly "No code sections were cited in this report."
+7. If all cited sections have no retrieved text: write exactly "No source-backed quote was retrieved for the claimed code items; all related verdicts are downgraded to [REQUIRES SOURCE CONFIRMATION]."
 
 <details>
 <summary><strong>SBC 801 References</strong></summary>
@@ -2810,9 +2811,133 @@ async function runVisionPipeline(
     cotResult = '{"checklist":[],"searchKeywords":[]}';
   }
 
+  // ── ANALYTICAL REQUIREMENT ANCHOR DETECTION (Analytical/Primary mode only) ──
+  // Map Stage 1 drawing evidence to required SBC anchors, then force-retrieve
+  // them via fetchStructuredTables (deterministic DB lookup) before vector search.
+  // This closes the gap where vector recall misses specific section chunks.
+  let analyticalAnchorIds: string[] = [];
+  let detectedAnchorEvidence: string[] = [];
+  let analyticalTableContext = "";
+  let retrievedAnchorIds: string[] = [];
+
+  if (mode !== "standard") {
+    try {
+      const planParsedAnchors = JSON.parse(
+        planningResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+      );
+      const docType = String(planParsedAnchors.documentType || "").toLowerCase();
+      const systems = [...(planParsedAnchors.visibleSystems || []), ...(planParsedAnchors.legendSymbols || [])].join(" ").toLowerCase();
+      const rooms   = (planParsedAnchors.roomLabels || []).join(" ").toLowerCase();
+      const allEv   = [docType, systems, rooms, drawingTextLayer.slice(0, 2000)].join(" ").toLowerCase();
+      const anchorSet = new Set<string>();
+
+      // Floor plan / life safety / egress / architectural → occupant load + exits + travel distance
+      if (/floor.plan|life.safe|egress|architectural|mixed|مسقط|مخطط|طابق|ground.floor/.test(docType) ||
+          /floor.plan|life.safe|egress|مسقط/.test(allEv)) {
+        anchorSet.add("1004.5");
+        anchorSet.add("1006.2.1");
+        anchorSet.add("1006.3.3");
+        anchorSet.add("1017.2");
+        detectedAnchorEvidence.push(`documentType '${docType}' → occupant load (1004.5), exit count (1006.2.1/3.3), travel distance (1017.2)`);
+      }
+
+      // Emergency lighting (EL symbol, إنارة طوارئ)
+      if (/\bel\b|emergency.light|إنارة.طوارئ|إضاءة.طوارئ/.test(allEv)) {
+        anchorSet.add("1008");
+        detectedAnchorEvidence.push("EL / emergency lighting detected → Section 1008");
+      }
+
+      // Exit signs
+      if (/exit.sign|مخرج|إشارة.خروج|لافتة.خروج/.test(allEv)) {
+        anchorSet.add("1013");
+        detectedAnchorEvidence.push("EXIT signs detected → Section 1013");
+      }
+
+      // T.D / travel distance annotation
+      if (/\bt\.?d\b|travel.dist|مسافة.(?:سفر|هروب)/.test(allEv)) {
+        anchorSet.add("1017.2");
+        detectedAnchorEvidence.push("T.D annotation detected → Table 1017.2");
+      }
+
+      // Mixed occupancy: shops + parking combination
+      if (/(shop|retail|محل|تجاري)/.test(allEv) && /(park|وقوف|سيارات)/.test(allEv) ||
+          /mixed.occup|إشغال.مختلط/.test(allEv)) {
+        anchorSet.add("508.4");
+        anchorSet.add("508.5");
+        detectedAnchorEvidence.push("Mixed occupancy (commercial + parking) → Tables 508.4, 508.5");
+      }
+
+      // Sprinklers
+      if (/sprinkler|رشاش|إطفاء/.test(allEv)) {
+        anchorSet.add("903.2");
+        detectedAnchorEvidence.push("Sprinkler reference detected → SBC 801 Section 903.2");
+      }
+
+      // Fire alarm
+      if (/fire.alarm|إنذار.حريق|\bfa\b|\bfacp\b/.test(allEv)) {
+        anchorSet.add("907.2");
+        anchorSet.add("907.3");
+        detectedAnchorEvidence.push("Fire alarm reference detected → SBC 801 Sections 907.2/907.3");
+      }
+
+      analyticalAnchorIds = [...anchorSet];
+      console.log(`[Analytical Anchors] Detected ${analyticalAnchorIds.length} anchors: ${analyticalAnchorIds.join(", ")}`);
+    } catch (anchorErr) {
+      console.warn("[Analytical Anchors] Detection error:", anchorErr);
+    }
+
+    // Fetch structured DB rows for detected anchors
+    if (analyticalAnchorIds.length > 0) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseUrl && serviceRoleKey) {
+          const supabaseAdminAnchors = createClient(supabaseUrl, serviceRoleKey);
+          const anchorFetchQuery = analyticalAnchorIds.map(id => `Table ${id} Section ${id}`).join(" ");
+          const { context: tblCtx, matchedTableIds } = await fetchStructuredTables(anchorFetchQuery, supabaseAdminAnchors);
+          analyticalTableContext = tblCtx;
+          retrievedAnchorIds = matchedTableIds;
+          console.log(`[Analytical Anchors] Retrieved ${matchedTableIds.length}/${analyticalAnchorIds.length}: ${matchedTableIds.join(", ")}`);
+        }
+      } catch (tblErr) {
+        console.error("[Analytical Anchors] Structured table fetch error:", tblErr);
+      }
+    }
+  }
+
+  // Build SOURCE-BACKED REQUIREMENTS PACK — injected into final prompt context
+  let sourceBackedRequirementsPack = "";
+  if (mode !== "standard" && analyticalAnchorIds.length > 0) {
+    const packRows = analyticalAnchorIds.map(id => {
+      const retrieved = retrievedAnchorIds.includes(id);
+      const status = retrieved
+        ? "✅ RETRIEVED — cite verbatim from STRUCTURED CODE TABLES block"
+        : "❌ NOT RETRIEVED — mark compliance row ⚠️ [REQUIRES SOURCE CONFIRMATION]";
+      return `| ${id} | ${status} |`;
+    });
+    sourceBackedRequirementsPack = [
+      "\n=== SOURCE-BACKED ANALYTICAL REQUIREMENTS PACK v1 ===",
+      "Deterministic SBC anchors identified from Stage 1 drawing evidence and fetched from the structured database.",
+      "INSTRUCTION: If anchor is RETRIEVED, cite its text from STRUCTURED CODE TABLES verbatim in compliance rows and Section VIII.",
+      "If NOT RETRIEVED: mark that compliance row as ⚠️ يحتاج تحقق with [REQUIRES SOURCE CONFIRMATION] basis.",
+      "",
+      "| SBC Anchor | Retrieval Status |",
+      "|---|---|",
+      ...packRows,
+      "",
+      "Drawing evidence that triggered these anchors:",
+      ...detectedAnchorEvidence.map(e => `- ${e}`),
+      "=== END REQUIREMENTS PACK ===\n",
+    ].join("\n");
+  }
+
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
-  const enhancedQuery = `${userQuery} ${planningResult}`;
+  // Augment vector query with anchor references for better semantic recall
+  const anchorSuffix = analyticalAnchorIds.length > 0
+    ? " " + analyticalAnchorIds.map(id => `Table ${id} Section ${id}`).join(" ")
+    : "";
+  const enhancedQuery = `${userQuery} ${planningResult}${anchorSuffix}`;
   const { context: sbcContext, files: usedFiles, sourceMeta } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
   console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
@@ -2883,6 +3008,8 @@ Classification Confidence: low
     : getVisionFinalPrompt(language);
 
   const extraContext = `
+${sourceBackedRequirementsPack}
+${analyticalTableContext}
 ${docIntelSummary}
 === PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION (raw) ===
 ${planningResult}
