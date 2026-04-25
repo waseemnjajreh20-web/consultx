@@ -2509,8 +2509,15 @@ For suspicious drawing calculations without a retrieved code table:
 Exception — Pure drawing-internal contradiction (no code source needed):
   A row may use: ⚠️ تعارض داخلي مؤكد بالمخطط
   Basis must be: [CONFIRMED DRAWING CONFLICT]
-  Example: two room labels on the same space with incompatible occupant loads shown side by side
+  Example: two room labels on the SAME space with incompatible occupant loads shown side by side on the same page.
   This exception does NOT apply to occupant load calculations that simply look high — those require a retrieved code table to establish the threshold.
+
+HARD EXCLUSION — [CONFIRMED DRAWING CONFLICT] is FORBIDDEN for the following situations:
+  ❌ FORBIDDEN: M + S-2 occupancy appearing in separate zones / separate floors — this is a mixed-occupancy scenario, NOT a drawing conflict.
+  ❌ FORBIDDEN: M ground floor + S-2 upper floors — area boundaries may be intentional; requires code retrieval + calculation, NOT Type E.
+  ❌ FORBIDDEN: Any situation where the two occupancy labels are in different spatial zones (even if unusual).
+  ✅ ONLY ALLOWED: The EXACT SAME bounded area (same walls, same room) is simultaneously and explicitly labeled with two mutually exclusive occupancy groups on the same drawing.
+  For M + S-2 cross-zone: use ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION] + note "حالة إشغال مختلط تتطلب تحقق حدود وحسابات".
 
 ═══════════════════════════════════════
 SOURCE-BACKED VERDICT ELIGIBILITY MATRIX:
@@ -2858,6 +2865,14 @@ MANDATORY CONFIDENCE RULES for Gap Matrix:
 - EL / EXIT signs / FD 90 / FD 120 / fire-rated walls / T.D annotations: must use [CONFIRMED — VISIBLE ONLY] when only plan visibility is confirmed.
 - If the Code basis column is [NO SOURCE] or blank, the Confidence column may ONLY be [CONFIRMED — VISIBLE ONLY], [REQUIRES CONFIRMATION], or [CANNOT CONCLUDE]. Never [CONFIRMED — SOURCE-BACKED COMPLIANCE] without a retrieved source.
 - Full code compliance requires [CONFIRMED — SOURCE-BACKED COMPLIANCE] — use it only when you have both visible evidence AND retrieved code text AND a successful comparison.
+- PERFORMANCE-DEPENDENT SYSTEMS — [CONFIRMED — SOURCE-BACKED COMPLIANCE] is FORBIDDEN for these systems even when drawings show them and SBC requirement is retrieved:
+    → Automatic sprinkler system — requires hydraulic calculations + shop drawings. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — hydraulic calcs / shop drawings not submitted]
+    → Fire alarm system — requires device schedule + cause-and-effect matrix + riser diagram. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted]
+    → Standpipe system — requires hydraulic calcs + riser diagram. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — riser diagram / hydraulic calcs not submitted]
+    → Fire pump / water tank — requires pump schedule + hydraulic calcs. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — pump schedule / calcs not submitted]
+    → Emergency lighting (EL) — lux level, battery duration, coverage area cannot be confirmed from symbols alone. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — lux / battery duration / coverage not verifiable from plan]
+    → Exit signs — illumination level, mounting height, visibility distance cannot be confirmed from symbols alone. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — mounting / illumination not verifiable from plan]
+  These systems being SHOWN on drawings confirms PRESENCE only. Compliance requires performance documentation that cannot come from plan drawings alone.
 
 The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be filled with "Unknown / not visible" / [CANNOT CONCLUDE] (e.g. unclear documentType, illegible image), say so explicitly and ask for clearer drawings rather than fabricating rows.
 
@@ -2903,10 +2918,12 @@ Type D — WHOLE_BUILDING_DEPENDENT:
 - الأساس: [CANNOT CONCLUDE]
 
 Type E — DRAWING_INTERNAL_CONFLICT:
-- Use when: the drawing shows a direct contradiction within itself (e.g., same space labeled with two incompatible occupancy groups, inconsistent dimensions that cannot both be correct)
+- Use when: the drawing shows a direct contradiction WITHIN THE SAME BOUNDED SPACE (e.g., the exact same room/area is simultaneously labeled with two mutually exclusive occupancy groups on the same sheet, OR two dimensions on the same element cannot both be correct)
 - الحالة: ⚠️ تعارض داخلي مؤكد بالمخطط
 - الأساس: [CONFIRMED DRAWING CONFLICT]
 - Note: occupant load that simply looks high is NOT Type E — it requires code retrieval to establish the threshold
+- CRITICAL: M + S-2 in SEPARATE zones is NOT Type E. Mixed occupancy across zones requires code retrieval + area calculation. Use Type D ([CANNOT CONCLUDE]) or [REQUIRES SOURCE CONFIRMATION] for those cases.
+- CRITICAL: Do NOT use Type E / [CONFIRMED DRAWING CONFLICT] unless you can state the exact same bounding walls that received both conflicting labels simultaneously.
 
 حظر مطلق (Three absolute prohibitions — all apply):
 1. لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع.
@@ -2919,20 +2936,32 @@ The word "محتمل" (potential/possible) does NOT create a safe exception — 
 INCLUDE THIS SECTION ONLY IF the package contains fire-fighting or fire alarm sheets (as indicated by PAGE INVENTORY or by the visible content of the sheets).
 If not applicable, write: "Section not applicable — no fire-fighting or fire alarm sheets in package."
 
+MANDATORY: If the PAGE INVENTORY includes any pages classified as [details] or [notes], you MUST inspect those pages for the "Special Suppression & Installation Details" component group below. Do not skip details/notes pages.
+
 For each component row, state what is VISIBLY confirmed across the package sheets. Do not infer presence; do not fabricate counts or locations.
 
 | المكوّن / Component | الصفحات / Pages | الدليل / Evidence | الحالة / Status | يحتاج تحقق / Needs verification |
 |---|---|---|---|---|
 
-Fire-Fighting components to check: Sprinkler heads | Pipe network / pipe diameters | Risers (pipe routing to upper floors) | FHC / Hose station | Test & drain valve | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve | Pressure gauge / flow switch
+Fire-Fighting components to check (plan sheets): Sprinkler heads | Pipe network / pipe diameters | Risers (pipe routing to upper floors) | FHC / Hose station | Test & drain valve | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve | Pressure gauge / flow switch
 
-Fire Alarm components to check: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring / conduit | Beam detectors (if applicable)
+Fire Alarm components to check (plan sheets): Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring / conduit | Beam detectors (if applicable)
 
-Special Suppression (check details/notes pages): Kitchen hood fire suppression system | Clean agent / gaseous suppression system | Fire blanket | Portable fire extinguisher schedule or note
+Special Suppression & Installation Details (MANDATORY — check details/notes pages from PAGE INVENTORY):
+- Kitchen hood fire suppression system — look for hood exhaust + suppression nozzle detail on any details/notes page
+- Clean agent / gaseous suppression system — server room, archive, or special hazard suppression shown in details
+- Fire blanket locations — noted in schedule or details
+- Portable fire extinguisher locations / types — shown on any plan or schedule
+- Sprinkler installation details — head type, escutcheon, deflector clearance shown in details sheet
+- Pipe hangers / supports — detail or notes showing hanger spacing, rod sizes
+- FHC installation notes — cabinet dimensions, hose reel, nozzle detail
+- Pump / tank assembly details — suction/discharge piping arrangement, valve configuration
+- System schematic / riser notes — system boundary, zones, floor-by-floor coverage summary
 
-Installation Details (check details/notes pages): Sprinkler installation details | Pipe hangers / supports | FHC installation notes | Pump/tank assembly details | System schematic notes
+For details/notes pages, use Status: "Shown in details/notes — requires dedicated shop drawings / specifications — not final compliance"
 
-Status values: Shown — location confirmed | Shown — count not verifiable | Shown in details/notes — requires shop drawings / specifications — not final compliance | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
+Status values (plan pages): Shown — location confirmed | Shown — count not verifiable | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
+Status values (details/notes pages): Shown in details/notes — requires dedicated shop drawings / specifications — not final compliance | Not visible on details pages | Details page not included in package
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
@@ -3002,6 +3031,26 @@ VERDICT RULES:
 - Use ⚠️ when: evidence or code source is partially available, or conditions are partially met.
 - Use 🔲 "غير محدد — يتطلب تحقق مرجعي" when: code source was NOT retrieved, classification is uncertain, or a single sheet cannot prove whole-building compliance. This is the DEFAULT when source grounding is incomplete.
 
+PACKAGE-LEVEL FINAL VERDICT CALIBRATION (applies when PAGE INVENTORY is present):
+When the report covers a multi-page drawing package, the overall verdict description MUST be calibrated:
+
+FORBIDDEN overconfident summary phrases:
+  ❌ "المخططات تظهر توافقاً مع المتطلبات الرئيسية"
+  ❌ "تغطية شاملة لأنظمة الإطفاء"
+  ❌ "نظام كامل ومتكامل"
+  ❌ "الحزمة تلبي متطلبات الكود"
+  ❌ "الأنظمة مستوفاة"
+  ❌ "package complies" or "full compliance"
+  ❌ "comprehensive coverage confirmed"
+
+REQUIRED calibrated summary phrases (choose the most applicable):
+  ✅ "المخططات تظهر تغطية تصميمية أولية للأنظمة الرئيسية"
+  ✅ "الأنظمة ظاهرة عبر الحزمة، لكن كفايتها وأداؤها يتطلبان الحسابات والمستندات الداعمة"
+  ✅ "لا يعد ذلك امتثالاً نهائياً — التحقق الكامل يستلزم الحسابات الهيدروليكية، جداول الأجهزة، ومخططات التركيب التفصيلية"
+  ✅ "The drawings show preliminary design coverage — final compliance requires hydraulic calculations, device schedules, and installation shop drawings not included in this submission."
+
+The الختام إلزامي line must always be present.
+
 ## X. الإجراءات المطلوبة / Required Actions
 
 - [ ] [الإجراء] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
@@ -3033,6 +3082,9 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 20. ✦ Section I does NOT contain "High-rise [CONFIRMED]" or "شاهق [CONFIRMED]" or "Section 403 applies" as a confirmed classification unless both (a) retrieved SBC high-rise height definition is in the context block AND (b) measured building height is clearly established from the drawings. If either condition is absent → replace with "height-related trigger may apply — [REQUIRES CONFIRMATION]".
 21. ✦ Section V (Compliance Table) and Section II.B do NOT contain the words "تعارض جوهري", "تعارض مباشر", or "خطر حرج" applied to a cross-zone M + S-2 situation. If found → replace with "حالة إشغال مختلط تتطلب تحقق حدود وحسابات".
 22. ✦ Section II Extraction Warning is NOT left blank or written as "no warnings" for a multi-page package — always includes the OCR/vision manual verification note.
+23. ✦ No Gap Matrix row for sprinkler, fire alarm, standpipe, fire pump/tank, EL, or exit signs uses [CONFIRMED — SOURCE-BACKED COMPLIANCE] — these systems are presence-confirmed from drawings only; use [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted].
+24. ✦ If PAGE INVENTORY is present (multi-page package), Section IX final verdict does NOT contain overconfident summary phrases: "المخططات تظهر توافقاً مع المتطلبات الرئيسية" / "تغطية شاملة" / "نظام كامل" / "package complies" / "full compliance". If found → replace with "المخططات تظهر تغطية تصميمية أولية — التحقق الكامل يستلزم الحسابات والمستندات الداعمة".
+25. ✦ If PAGE INVENTORY includes any page with drawingTypeHint=[details] or [notes], Section V.B must include a row for "Special Suppression & Installation Details" group — if no details were visible on those pages, write "Not visible on details pages" in the Status column.
 
 RESPOND IN: ${lang}`;
 }
@@ -3225,6 +3277,82 @@ function validateAnalyticalReport(text: string): string {
     result = result.replace(/شاهق\s*\[CONFIRMED\]/g, "height trigger may apply [REQUIRES CONFIRMATION]");
     result = result.replace(/High-rise\s*\[CONFIRMED\]/g, "height-related trigger may apply [REQUIRES CONFIRMATION]");
     changesMade = true;
+  }
+
+  // ── Step 5b — Rule 10: M+S-2 occupancy conflict overconfidence ─────────────
+  // "تعارض جوهري" and "تعارض مباشر" are forbidden for separate-zone M+S-2
+  {
+    const MIXED_OCC_OVERCONFIDENT_RE = /تعارض جوهري|تعارض مباشر|خطر حرج.*إشغال|إشغال.*خطر حرج/g;
+    if (MIXED_OCC_OVERCONFIDENT_RE.test(result)) {
+      result = result
+        .replace(/تعارض جوهري/g, "حالة إشغال مختلط تتطلب تحقق حدود وحسابات")
+        .replace(/تعارض مباشر/g, "حالة إشغال مختلط — يتطلب تحقق");
+      changesMade = true;
+    }
+  }
+
+  // ── Step 5c — Rule 11: High-rise overconfidence ────────────────────────────
+  if (/شاهق\s*\[CONFIRMED\]|High-rise\s*\[CONFIRMED\]/.test(result)) {
+    result = result
+      .replace(/شاهق\s*\[CONFIRMED\]/g, "height trigger may apply [REQUIRES CONFIRMATION]")
+      .replace(/High-rise\s*\[CONFIRMED\]/g, "height-related trigger may apply [REQUIRES CONFIRMATION]");
+    changesMade = true;
+  }
+
+  // ── Step 5d — Rule 12: [CONFIRMED DRAWING CONFLICT] near M+S-2 context ─────
+  // If "[CONFIRMED DRAWING CONFLICT]" appears near M/S-2 mixed-occupancy language
+  // (and NOT within a "same space / same area" explicit statement), downgrade it.
+  {
+    const DRAWING_CONFLICT_RE = /\[CONFIRMED DRAWING CONFLICT\]/g;
+    let m: RegExpExecArray | null;
+    DRAWING_CONFLICT_RE.lastIndex = 0;
+    let tempResult = result;
+    let replaced = false;
+    while ((m = DRAWING_CONFLICT_RE.exec(result)) !== null) {
+      const ctx = result.slice(Math.max(0, m.index - 300), m.index + 100);
+      const hasMixedOcc = /\bM\b.*\bS-2\b|\bS-2\b.*\bM\b|إشغال مختلط|تجاري.*مستودع|مستودع.*تجاري|ground\s*floor.*S-2|M\s*\+\s*S/i.test(ctx);
+      const hasSameArea = /same\s+(space|area|room|zone|bounded)|نفس المساحة|نفس الحجرة|نفس الحدود/i.test(ctx);
+      if (hasMixedOcc && !hasSameArea) {
+        tempResult = tempResult.replace(
+          "[CONFIRMED DRAWING CONFLICT]",
+          "[REQUIRES SOURCE CONFIRMATION — possible classification/calculation inconsistency]"
+        );
+        replaced = true;
+      }
+    }
+    if (replaced) {
+      result = tempResult;
+      changesMade = true;
+    }
+  }
+
+  // ── Step 5e — Rule 13: Gap Matrix SOURCE-BACKED COMPLIANCE for performance-dependent systems ─
+  // These systems can only confirm PRESENCE from drawings — performance docs are always needed.
+  {
+    const PERF_DEPENDENT_SYSTEMS_RE = /نظام الرش|[Ss]prinkler|نظام الإنذار|[Ff]ire\s*[Aa]larm|إنذار الحريق|[Ss]tandpipe|أنابيب الوقوف|[Ff]ire\s*[Pp]ump|مضخة الحريق|[Ff]ire\s*[Ww]ater\s*[Tt]ank|خزان الحريق|إنارة طوارئ|\bEL\b|لافتات الخروج|[Ee]xit\s*[Ss]ign/;
+    // Process the Gap Matrix section (IV.B) separately from the Compliance Table
+    const gapMatStart = result.search(/##\s*IV\.B\s*📊/);
+    const gapMatEnd   = result.search(/##\s*V\.\s*(?:جدول الامتثال|Compliance Table)/);
+    if (gapMatStart !== -1 && gapMatEnd !== -1 && gapMatStart < gapMatEnd) {
+      const beforeGap = result.slice(0, gapMatStart);
+      const gapText   = result.slice(gapMatStart, gapMatEnd);
+      const afterGap  = result.slice(gapMatEnd);
+      const newGapLines = gapText.split("\n").map(line => {
+        if (!line.trimStart().startsWith("|")) return line;
+        if (
+          line.includes("[CONFIRMED — SOURCE-BACKED COMPLIANCE]") &&
+          PERF_DEPENDENT_SYSTEMS_RE.test(line)
+        ) {
+          changesMade = true;
+          return line.replace(
+            /\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
+            "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted]"
+          );
+        }
+        return line;
+      });
+      result = beforeGap + newGapLines.join("\n") + afterGap;
+    }
   }
 
   // ── Step 6: Append scope-limitation note before Section IX if changes made ─
