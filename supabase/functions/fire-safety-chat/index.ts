@@ -2398,10 +2398,13 @@ CRITICAL FRAMING:
 ═══════════════════════════════════════
 EPISTEMIC STATE RULES (apply throughout):
 ═══════════════════════════════════════
-- [CONFIRMED]: explicitly visible/readable in the drawing or from provided text
+- [CONFIRMED — VISIBLE ONLY]: element is explicitly visible / readable on this drawing — confirms PRESENCE only, not code compliance
+- [CONFIRMED — SOURCE-BACKED COMPLIANCE]: presence is visible AND the governing code limit was retrieved AND the comparison is satisfied — confirms both presence and compliance
 - [INFERRED]: reasonable derivation — must be labeled as inference, not fact
 - [REQUIRES CONFIRMATION]: possible but not established — must be flagged
 - [CANNOT CONCLUDE]: impossible to judge — prohibited from compliance verdict
+
+SHORTHAND POLICY: Bare "[CONFIRMED]" is only permitted in Section I for Document Type (نوع الوثيقة) labeling where the drawing type itself is directly visible. In ALL other uses — Building Type, Gap Matrix, Compliance Table, classification — use the full compound label above.
 
 ═══════════════════════════════════════
 DRAWING-TYPE-SPECIFIC GAP LANGUAGE (read documentType from the Document Intelligence Summary):
@@ -2494,17 +2497,32 @@ When analyzing a single uploaded drawing page:
    - NEVER write "all areas readable" unless Stage 1 extraction explicitly lists no unreadable areas.
 
 ═══════════════════════════════════════
+FIRE-SYSTEM CODE-FAMILY RULES (fire alarm / sprinkler / suppression):
+═══════════════════════════════════════
+Fire alarm and fire suppression requirements belong to SBC 801, not SBC 201. Apply these rules to every reference in the report:
+1. Fire alarm system requirements (detectors, notification, control panel, alarm initiating devices) → cite as "SBC 801 Section 907.x". NEVER write "SBC 201 Section 907".
+2. Automatic sprinkler / fire suppression requirements → cite as "SBC 801 Section 903.x". NEVER write "SBC 201 Section 903".
+3. NEVER cite "SBC 201 Figure 903.2" — this reference does not exist. Sprinkler occupancy trigger tables are in SBC 801.
+4. Standpipe requirements → cite as "SBC 801 Section 905.x". NEVER write "SBC 201 Section 905".
+5. If the retrieved SBC context block confirms SBC 801 Section 903 or Section 907 text → cite it as "SBC 801 Section 903.x" or "SBC 801 Section 907.x".
+6. If the source family is ambiguous or the exact section was NOT retrieved → write: "Fire protection system requirement — [REQUIRES SOURCE CONFIRMATION] — source family (SBC 801 Chapter 9) not confirmed from retrieved context. Do not cite a specific section number."
+7. NEVER cite any Figure number (e.g., Figure 903.2, Figure 1006.2) unless that exact figure was retrieved verbatim in the SBC context block provided to this session.
+
+═══════════════════════════════════════
 YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 ═══════════════════════════════════════
 
 ## I. تصنيف المشروع / Project Classification
 
 - **نوع الوثيقة / Document Type:** [from extraction] — [CONFIRMED / INFERRED]
-- **نوع المبنى / Building Type:** [value] — [CONFIRMED / INFERRED]
-- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED / INFERRED]
-- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED / INFERRED]
-- **الطوابق / Stories:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
-- **المساحة / Floor Area:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
+- **الاستخدامات المرئية على الورقة / Visible sheet uses:** [list every confirmed visible use on this sheet — e.g., shops, parking, pump room, egress stairs, offices]
+- **نوع المبنى / Building Type:** [value] — [INFERRED / REQUIRES CONFIRMATION]
+  ⚠️ RULE: Building Type must NEVER be labeled [CONFIRMED] from a single sheet unless the title block or general notes explicitly prove the whole-building use. For any single ground-floor or life-safety plan, always use [INFERRED] or [REQUIRES CONFIRMATION].
+- **تصنيف المبنى الكلي / Whole-building classification:** [REQUIRES CONFIRMATION — single-sheet scope] (or state explicit justification if title block proves it)
+- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED — VISIBLE ONLY / INFERRED / REQUIRES CONFIRMATION]
+- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED]
+- **الطوابق / Stories:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED / CANNOT CONCLUDE]
+- **المساحة / Floor Area:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED / CANNOT CONCLUDE]
 - **الرشاشات / Sprinklers:** [present / absent / not determinable]
 - **ثقة التصنيف / Classification Confidence:** [High / Medium / Low] — based on extraction quality
 
@@ -2540,11 +2558,17 @@ Allowed values for "Evidence from plan":
 - **Partially shown** — some indication exists but coverage / details are incomplete
 - **Unknown / not visible** — cannot be determined from the uploaded evidence
 
-Allowed values for "Confidence" (must reuse the epistemic state vocabulary):
-- **[CONFIRMED]** — Confirmed VISIBLE / PRESENT from drawing evidence. CRITICAL: [CONFIRMED] in this column means the requirement item is confirmed visible on this drawing — it does NOT mean the element is confirmed CODE-COMPLIANT.
+Allowed values for "Confidence" (must use exact compound labels — bare [CONFIRMED] is FORBIDDEN in this column):
+- **[CONFIRMED — VISIBLE ONLY]** — Element is confirmed visible / present on this drawing. Confirms presence only, NOT code compliance.
+- **[CONFIRMED — SOURCE-BACKED COMPLIANCE]** — Element is visible AND the governing code limit was retrieved AND the comparison is satisfied. Both presence and compliance are established.
 - **[INFERRED]** — Inferred from partial evidence
 - **[REQUIRES CONFIRMATION]** — Requires confirmation from another sheet or document
 - **[CANNOT CONCLUDE]** — Cannot conclude from the uploaded evidence
+
+MANDATORY CONFIDENCE RULES for Gap Matrix:
+- EL / EXIT signs / FD 90 / FD 120 / fire-rated walls / T.D annotations: must use [CONFIRMED — VISIBLE ONLY] when only plan visibility is confirmed.
+- If the Code basis column is [NO SOURCE] or blank, the Confidence column may ONLY be [CONFIRMED — VISIBLE ONLY], [REQUIRES CONFIRMATION], or [CANNOT CONCLUDE]. Never [CONFIRMED — SOURCE-BACKED COMPLIANCE] without a retrieved source.
+- Full code compliance requires [CONFIRMED — SOURCE-BACKED COMPLIANCE] — use it only when you have both visible evidence AND retrieved code text AND a successful comparison.
 
 The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be filled with "Unknown / not visible" / [CANNOT CONCLUDE] (e.g. unclear documentType, illegible image), say so explicitly and ask for clearer drawings rather than fabricating rows.
 
@@ -2583,25 +2607,35 @@ Column definitions (fill each column independently — do NOT let a missing sour
 
 ## VIII. السند التقني / Technical References
 
+SECTION VIII RULES (MANDATORY — violations produce an invalid report):
+1. This section must NEVER contain only a subheading with no content underneath it.
+2. For every code section, table, or figure cited in Sections III–VII, produce one entry here.
+3. If retrieved verbatim: quote it with full Document + Section + page reference.
+4. If NOT retrieved: write an explicit [NO SOURCE] entry — never silently omit it.
+5. If no code citations were made at all in this report: write exactly "No code sections were cited in this report."
+6. If all cited sections have no retrieved text: write exactly "No source-backed quote was retrieved for the claimed code items; all related verdicts are downgraded to [REQUIRES SOURCE CONFIRMATION]."
+
 <details>
 <summary><strong>SBC 801 References</strong></summary>
 
-For each section cited above:
-- **Section:** [exact number]
-- **Verbatim Quote:** > [exact English text from retrieved context]
-- **Applicability to this drawing:** [how it applies]
+For each SBC 801 section, table, or figure cited in this report, write one entry using this format:
+- **Section:** [exact number] — **Verbatim Quote:** > [exact English text from retrieved context] — **Applicability:** [how it applies to this drawing]
 
-If a section was cited but its text was NOT in the retrieved SBC context block, write:
-- **Section:** [number] — [NO SOURCE] Text not available in retrieved context. Compliance verdict for this item must be [REQUIRES SOURCE CONFIRMATION].
+If a section was cited but its text was NOT in the retrieved SBC context block:
+- **Section:** [number] — [NO SOURCE] — Text not available in retrieved context. Compliance verdict for this item is downgraded to [REQUIRES SOURCE CONFIRMATION].
 
-Do NOT leave this section empty when compliance findings were made. Either quote the source or explicitly mark it [NO SOURCE].
+If no SBC 801 sections were cited in this report: write "No SBC 801 sections cited."
+If SBC 801 sections were cited but none were retrieved: write "No SBC 801 source text was retrieved; all SBC 801-based verdicts in this report are [REQUIRES SOURCE CONFIRMATION]."
 
 </details>
 
 <details>
 <summary><strong>SBC 201 References</strong></summary>
 
-[Same format as SBC 801 section above — quote verbatim from retrieved context or mark [NO SOURCE]]
+Apply the same format as SBC 801 above — quote verbatim from retrieved context, or produce an explicit [NO SOURCE] row. Do NOT leave this block empty if SBC 201 sections were cited.
+
+If no SBC 201 sections were cited in this report: write "No SBC 201 sections cited."
+If SBC 201 sections were cited but none were retrieved: write "No SBC 201 source text was retrieved; all SBC 201-based verdicts in this report are [REQUIRES SOURCE CONFIRMATION]."
 
 </details>
 
@@ -2623,6 +2657,22 @@ VERDICT RULES:
 ## X. الإجراءات المطلوبة / Required Actions
 
 - [ ] [الإجراء] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
+
+═══════════════════════════════════════
+MANDATORY FINAL SELF-CHECK (perform silently before writing your last word):
+═══════════════════════════════════════
+Before finalizing your response, verify each item below. If a check fails, rewrite the offending row or line conservatively before output:
+
+1. ✦ No [NO SOURCE] row or cell has ✅ or ❌ as its verdict → replace with ⚠️ يحتاج تحقق
+2. ✦ No Gap Matrix row uses bare [CONFIRMED] → must be [CONFIRMED — VISIBLE ONLY] or [CONFIRMED — SOURCE-BACKED COMPLIANCE]
+3. ✦ No EL / EXIT sign / FD 90 / FD 120 / fire-rated wall / T.D annotation is labeled "compliant" or given ✅ without a retrieved code limit and a successful numeric comparison
+4. ✦ Section VIII is not empty — if any code section was cited, at least one entry (quoted or [NO SOURCE]) appears under the relevant subheading; the subheading is never the last line
+5. ✦ Section I "نوع المبنى / Building Type" does NOT carry [CONFIRMED] → change to [INFERRED] or [REQUIRES CONFIRMATION] unless title block explicitly proves whole-building use
+6. ✦ Section I contains the line "Visible sheet uses:" listing ground-floor confirmed uses
+7. ✦ Section I contains the line "Whole-building classification:" with appropriate qualifier
+8. ✦ The string "Table 1004.1.2" does not appear anywhere → replace with "SBC 201 Table 1004.5"
+9. ✦ The strings "SBC 201 Section 903", "SBC 201 Section 907", "SBC 201 Section 905", "SBC 201 Figure 903" do not appear anywhere → replace with SBC 801 reference or [REQUIRES SOURCE CONFIRMATION]
+10. ✦ No Figure reference (e.g., Figure 903.2, Figure 1006.2) appears unless that figure was retrieved verbatim in the SBC context block
 
 RESPOND IN: ${lang}`;
 }
