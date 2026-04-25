@@ -2422,6 +2422,41 @@ The absence of a fire-safety system on a single uploaded sheet does NOT, by itse
 CONDITIONAL-OCCUPANCY RULE: If the Document Intelligence Summary lists buildingType or occupancyGroup as "unknown", every required-system row in the Gap Matrix MUST be marked [REQUIRES CONFIRMATION] and the action must request occupancy confirmation. Do not silently pick a single occupancy path.
 
 ═══════════════════════════════════════
+LIFE SAFETY vs FIRE-FIGHTING DOCUMENT TYPE RULES:
+═══════════════════════════════════════
+When classifying the document type from the drawing title, labels, or visible content:
+
+CLASSIFY AS "Life Safety / Egress Plan" when the sheet shows ANY of:
+- Drawing title includes: life safety, سلامة الحياة, إخلاء, هروب, egress, evacuation, exit plan
+- EL symbols (emergency lighting fixtures), T.D annotations (travel distance), "you are here" symbols
+- Evacuation route arrows, exit stairway indicators, escape route markings
+
+Do NOT classify as "Fire-fighting Plan" based on EL/T.D/exit symbols alone.
+
+CLASSIFY AS "Fire-fighting Plan" ONLY when the sheet explicitly shows at least one of:
+- Sprinkler head symbols with pipe routing or riser diagram
+- Fire hose cabinet / hose reel locations with coverage arcs
+- Hydrant layout with spacing dimensions
+- Fire pump system diagram or explicit fire-fighting drawing title
+- FDC (fire department connection) location
+- Standpipe riser or branch line diagram
+
+If the sheet shows both egress elements (EL, T.D, exits) AND fire-fighting elements (sprinkler heads, hose cabinets), classify as "mixed" and label which evidence supports each conclusion separately.
+
+PUMP ROOM INFERENCE RULE:
+A "PUMP ROOM" label on a floor plan is a mechanical infrastructure indicator.
+- Pump room is an indicator, not confirmation of system type, coverage, or code compliance.
+- Pump room alone is NOT proof of sprinkler system existence, coverage adequacy, or system design.
+ALLOWED wording when pump room is visible but no fire-fighting layout is shown:
+  "Pump room is visible; dedicated fire-fighting drawings are required to confirm system type and coverage."
+FORBIDDEN unless sprinkler heads, pipe routing, or suppression layout are explicitly visible:
+  ❌ "sprinklers likely exist"
+  ❌ "high probability of sprinkler system"
+  ❌ "sprinkler system partially shown"
+  ❌ "fire-fighting unless the sheet shows sprinkler heads, pipe routing, hose cabinets, or hydrant layout"
+  ❌ "fire suppression system suggested by pump room" used as a compliance-affecting claim
+
+═══════════════════════════════════════
 ANTI-FABRICATION RULES (apply to the entire response):
 ═══════════════════════════════════════
 - Do NOT fabricate device counts, dimensions, travel distances, hose / sprinkler coverage radii, or fire-resistance ratings.
@@ -2565,14 +2600,27 @@ RULE: parking S-2 + commercial shops M is not automatically a conflict — this 
 When the ground-floor plan shows both parking (Group S-2) and commercial shops (Group M) in different labeled areas:
 1. This is NORMAL MIXED USE — do NOT label it a "major confirmed conflict", "critical violation", or ❌ غير متوافق.
 2. Use: "Mixed visible occupancies: Group M (commercial/shops) and Group S-2 (parking) observed on ground floor — mixed-use separation requirements apply and must be verified; no automatic conflict."
+   Preferred wording: "mixed visible uses require confirmation of separation boundaries and occupancy calculations."
 3. A drawing-internal conflict ONLY exists if: the SAME space or area is simultaneously labeled with two incompatible groups, OR drawing dimensions / numbers directly contradict each other within the same element.
 4. For M + S-2 in separate, clearly bounded areas: apply [INFERRED] mixed-use classification, NOT a conflict flag.
 
+FORBIDDEN wording for cross-zone M + S-2 (separate areas):
+  ❌ "direct conflict" — reserved only for same-space dual classification
+  ❌ "major conflict" — reserved only when S-2 occupant load factor is applied to a space labeled as Group M
+  ❌ "occupancy conflict confirmed" — use only when the same area carries contradictory labels or calculations
+  ❌ "not automatically a confirmed conflict" must not be reversed without direct drawing evidence
+
+PREFERRED wording when occupant-load or classification inconsistency is suspected:
+  ✅ "possible calculation/classification inconsistency — area labeled as [M/S-2] but calculated with [S-2/M] factor — requires designer confirmation"
+  ✅ "mixed visible uses require confirmation of boundaries and calculations"
+  ✅ "occupancy group for [area] is [INFERRED] — classification requires title-block or designer confirmation"
+
 OCCUPANT LOAD CALCULATION UNCERTAINTY:
 5. If the area value used in an occupant load calculation is uncertain (unreadable, OCR-estimated, or flagged as partially legible in Stage 1 extraction), do NOT use that calculation for a source-backed compliance verdict.
-6. When extraction quality makes the exact area ambiguous (e.g., "358.1 vs 338.1 m²"), write: "Occupant load calculation uncertain — area extraction ambiguous (extracted value: [X] m²); requires designer confirmation before compliance determination."
+6. When extraction quality makes the exact area ambiguous (e.g., "358.1 vs 338.1 m²"), write: "Occupant load calculation uncertain — area extraction ambiguous (extracted value: [X] m²); area value should be confirmed from original CAD/PDF schedule before compliance determination." Do NOT treat the extracted value as definitive.
 7. Do NOT classify an occupant load discrepancy as a "major violation" or ❌ without: (a) a confirmed, clearly extracted area value AND (b) a retrieved code table row (SBC 201 Table 1004.5) showing the applicable occupant load factor.
 8. If the occupant load factor is NOT retrieved from SBC 201 Table 1004.5: the occupant load verdict must be ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION], not ❌.
+9. If the area value is uncertain (vision/OCR extraction), keep the occupant load row scope-limited regardless of ledger population. Write: "area value should be confirmed from original CAD/PDF schedule — calculation treated as indicative only."
 
 ═══════════════════════════════════════
 FIRE-SYSTEM CODE-FAMILY RULES (fire alarm / sprinkler / suppression):
