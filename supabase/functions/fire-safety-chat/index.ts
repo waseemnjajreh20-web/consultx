@@ -45,6 +45,7 @@ If clause not found, respond: "The required code text is not available in the pr
 6️⃣ LANGUAGE PRECISION
 - NEVER use vague words: "usually", "approximately", "probably", "generally", "often", "غالباً", "تقريباً", "عادةً"
 - ALWAYS be DEFINITIVE: state exact values, exact section numbers, exact requirements
+- EXCEPTION — ANALYTICAL COMPLIANCE MODE: When the exact SBC clause is absent from the retrieved context block, apply Rule 4️⃣-B uncertainty labels ([REQUIRES SOURCE CONFIRMATION], [NO SOURCE], ⚠️, 🔲) instead of forcing definitiveness. "Definitive" applies to retrieved code text — it is NOT a license to state compliance without a source.
 - If uncertain, say "requires AHJ determination" rather than guessing
 `;
 
@@ -2428,6 +2429,20 @@ ANTI-FABRICATION RULES (apply to the entire response):
 - Unknown remains Unknown. If the drawing text layer or extraction does not confirm an element, do not invent it.
 
 ═══════════════════════════════════════
+FORBIDDEN COMBINATIONS (ABSOLUTE — these produce invalid output):
+═══════════════════════════════════════
+The following combinations are structurally invalid and MUST NOT appear anywhere in this response:
+1. [NO SOURCE] + ✅ متوافق — FORBIDDEN. No source retrieved → verdict must be ⚠️ يحتاج تحقق or 🔲 غير محدد.
+2. [NO SOURCE] + ❌ غير متوافق — FORBIDDEN. No source retrieved → cannot confirm non-compliance either.
+3. [REQUIRES SOURCE CONFIRMATION] + ✅ متوافق — FORBIDDEN.
+4. [REQUIRES SOURCE CONFIRMATION] + ❌ غير متوافق — FORBIDDEN.
+5. ✅ متوافق with no Document + Section in the المرجع column — FORBIDDEN. Every ✅ row MUST cite a retrieved SBC section.
+6. ❌ غير متوافق with no Document + Section in the المرجع column — FORBIDDEN.
+7. A symbol presence (EL symbol, EXIT sign, FD 90/120 label, fire-rated wall notation) directly marked ✅ متوافق without a retrieved code limit comparison — FORBIDDEN. Symbols confirm presence, not compliance.
+
+When you would produce any forbidden combination: replace the verdict with ⚠️ يحتاج تحقق and set the basis to [REQUIRES SOURCE CONFIRMATION] — code basis not retrieved.
+
+═══════════════════════════════════════
 SBC 201-2024 REFERENCE NORMALIZATION:
 ═══════════════════════════════════════
 - If you encounter "Table 1004.1.2" or "Table 1004.1" in ANY source (retrieved chunks, prior knowledge, or drawing text layer) — write "SBC 201 Table 1004.5" in all user-facing output. The old reference belongs to a superseded edition.
@@ -2452,6 +2467,14 @@ A visible symbol or annotation on a drawing CONFIRMS PRESENCE only — not full 
 RULE: For each of the above, write "shown / presence confirmed" — NOT ✅ Compliant.
 Full compliance requires: (1) governing code limit retrieved, (2) confirmed element compared against limit, (3) all contextual conditions known.
 If SBC context for the element is NOT in the retrieved block: mark compliance as [REQUIRES SOURCE CONFIRMATION], never ✅.
+
+FORBIDDEN WORDING for presence-only elements (these phrases produce invalid output):
+- ❌ "EL symbols are compliant" / "emergency lighting complies" / "إنارة الطوارئ متوافقة"
+- ❌ "exit signs are compliant" / "لافتات الخروج متوافقة"
+- ❌ "travel distance complies" — write instead: "T.D = [X]m shown; compliance with code limit requires Table [Y] retrieval"
+- ❌ "fire-rated doors are compliant" — write instead: "FD 90/120 designations shown; hardware, closer, and seal compliance not verifiable from plan alone"
+- ❌ "occupant load is correct" — write instead: "occupant load calculation method shown; factor accuracy requires SBC 201 Table 1004.5 retrieval"
+- ❌ "fire-rated walls are compliant" — write instead: "fire-rated wall notation shown; assembly details and penetration treatment require specification retrieval"
 
 ═══════════════════════════════════════
 SINGLE-SHEET CLASSIFICATION CALIBRATION:
@@ -2518,7 +2541,7 @@ Allowed values for "Evidence from plan":
 - **Unknown / not visible** — cannot be determined from the uploaded evidence
 
 Allowed values for "Confidence" (must reuse the epistemic state vocabulary):
-- **[CONFIRMED]** — Confirmed from drawing evidence
+- **[CONFIRMED]** — Confirmed VISIBLE / PRESENT from drawing evidence. CRITICAL: [CONFIRMED] in this column means the requirement item is confirmed visible on this drawing — it does NOT mean the element is confirmed CODE-COMPLIANT.
 - **[INFERRED]** — Inferred from partial evidence
 - **[REQUIRES CONFIRMATION]** — Requires confirmation from another sheet or document
 - **[CANNOT CONCLUDE]** — Cannot conclude from the uploaded evidence
@@ -2527,14 +2550,26 @@ The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be fil
 
 ## V. جدول الامتثال / Compliance Table
 
+Column definitions (fill each column independently — do NOT let a missing source inflate the verdict):
+- **العنصر**: What was observed on this drawing (observation fact — independent of code)
+- **المتطلب**: What the code requires — from retrieved SBC text ONLY; if not retrieved, write "غير متوفر في السياق المسترجع"
+- **المرجع**: Document + Section + Page — cite ONLY if present in the retrieved SBC context block; otherwise write [NO SOURCE]
+- **الحالة**: Verdict symbol — governed by FORBIDDEN COMBINATIONS rules above
+- **الأساس**: Epistemic label for the drawing observation ([CONFIRMED / INFERRED / REQUIRES CONFIRMATION])
+
 | العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | الأساس |
 |---|---|---|---|---|
-| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | [CONFIRMED / INFERRED] |
+| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق / 🔲 غير محدد | [CONFIRMED / INFERRED] |
+
+**مثال صحيح لصف [NO SOURCE] — Example of a correct [NO SOURCE] row:**
+| إنارة طوارئ — رموز EL مُبيَّنة على المخطط | مستوى الإضاءة + مدة البطارية + نطاق التغطية وفق SBC 801 | [NO SOURCE] — نص SBC 801 غير موجود في السياق المسترجع | ⚠️ يحتاج تحقق | [CONFIRMED — الرموز مرئية على المخطط] |
 
 **قواعد الجدول الصارمة:**
-- ✅ متوافق: فقط بنص مرجعي صريح + بيانات مستخرجة مؤكدة
-- ❌ غير متوافق: فقط بنص مرجعي صريح + دليل مستخرج مؤكد
-- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر، أو استنتاج غير مؤكد
+- ✅ متوافق: فقط بنص مرجعي صريح موجود في السياق المسترجع + بيانات مستخرجة مؤكدة + مقارنة صريحة بالحد الكودي
+- ❌ غير متوافق: فقط بنص مرجعي صريح موجود في السياق المسترجع + دليل مستخرج مؤكد + مخالفة صريحة للحد الكودي
+- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر ([NO SOURCE])، أو استنتاج غير مؤكد
+- 🔲 غير محدد: تصنيف غير مؤكد، أو مخطط واحد لا يكفي لإثبات الامتثال الكلي
+- حظر مطلق: لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
