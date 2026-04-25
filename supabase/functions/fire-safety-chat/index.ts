@@ -2591,6 +2591,24 @@ When analyzing a single uploaded drawing page:
    - "partially readable" — significant unclear areas exist
    - "unreadable areas exist" — list the specific zones from Stage 1
    - NEVER write "all areas readable" unless Stage 1 extraction explicitly lists no unreadable areas.
+   - NEVER write "all pages readable" or "no extraction warnings" for a multi-page package review — vision/OCR analysis always has per-sheet limitations.
+   - NEVER write "high confidence all data correct" without qualifying which values need manual verification.
+   REQUIRED safer wording for multi-page packages:
+   ✅ "major drawing titles and symbols are readable across submitted sheets"
+   ✅ "some numeric values (dimensions, areas, equipment counts) require confirmation from original CAD/PDF schedules"
+   ✅ "OCR/vision extraction may require manual verification for specific dimensions, areas, and equipment counts"
+
+5. HIGH-RISE CLASSIFICATION GUARD:
+   Do NOT classify the building as "High-rise", "شاهق", or trigger SBC 201 Section 403 high-rise requirements solely from visible level annotations (e.g., "Floor 15 shown", "B2 to 14th floor") without explicit measured height comparison to the code definition.
+   ALLOWED when height is visible from annotations:
+   ✅ "height-related trigger may apply — requires confirmation of measured building height against code definition"
+   ✅ "visible height annotation suggests additional code checks (SBC 201 Section 403) — classification [REQUIRES CONFIRMATION]"
+   ✅ "building appears multi-storey — high-rise threshold requires code-defined height measurement, not floor count alone"
+   FORBIDDEN:
+   ❌ "building is high-rise" — as a confirmed classification from level labels alone
+   ❌ "شاهق" used as a confirmed classification without retrieved code height definition AND confirmed measured height
+   ❌ "Section 403 applies" stated as confirmed without both conditions above met
+   Only confirm high-rise when: (a) the retrieved code definition of high-rise height is present in the SBC context block, AND (b) the measured building height is clearly established from the drawings, AND (c) the comparison is direct and unambiguous.
 
 ═══════════════════════════════════════
 MIXED-USE AND OCCUPANT-LOAD CALIBRATION:
@@ -2609,11 +2627,17 @@ FORBIDDEN wording for cross-zone M + S-2 (separate areas):
   ❌ "major conflict" — reserved only when S-2 occupant load factor is applied to a space labeled as Group M
   ❌ "occupancy conflict confirmed" — use only when the same area carries contradictory labels or calculations
   ❌ "not automatically a confirmed conflict" must not be reversed without direct drawing evidence
+  ❌ "تعارض جوهري" — FORBIDDEN for separate-zone M + S-2; only allowed when same area has contradictory dual classification
+  ❌ "تعارض مباشر" — FORBIDDEN for separate-zone M + S-2
+  ❌ "خطر حرج" applied to mixed M + S-2 occupancy classification — FORBIDDEN without confirmed same-area dual classification evidence
+  ❌ "تعارض في الإشغال" as a confirmed verdict — use only as a possible inconsistency note requiring designer confirmation
 
 PREFERRED wording when occupant-load or classification inconsistency is suspected:
   ✅ "possible calculation/classification inconsistency — area labeled as [M/S-2] but calculated with [S-2/M] factor — requires designer confirmation"
   ✅ "mixed visible uses require confirmation of boundaries and calculations"
   ✅ "occupancy group for [area] is [INFERRED] — classification requires title-block or designer confirmation"
+  ✅ "حالة إشغال مختلط تتطلب تحقق حدود وحسابات" — use this as the standard wording for M + S-2 mixed-use packages
+  ✅ "mixed use across zones — separation and area calculation boundaries require confirmation — not a confirmed conflict"
 
 OCCUPANT LOAD CALCULATION UNCERTAINTY:
 5. If the area value used in an occupant load calculation is uncertain (unreadable, OCR-estimated, or flagged as partially legible in Stage 1 extraction), do NOT use that calculation for a source-backed compliance verdict.
@@ -2666,6 +2690,9 @@ Produce a component inventory table for every component type listed below that i
 
 Minimum components to look for — Fire Fighting: Sprinkler heads | Pipe network / pipe diameters | Risers | FHC / Hose station | Test & drain | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve
 Minimum components to look for — Fire Alarm: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring
+Also check details / notes pages for — Special Suppression: Kitchen hood fire suppression system | Clean agent / gaseous suppression system | Fire blanket | Portable fire extinguisher schedule or note
+Also check details / notes pages for — Installation Details: Sprinkler installation details | Pipe hangers / supports | FHC installation notes | Pump/tank assembly details | System schematic notes
+If found on details/notes pages, use status: "shown in details/notes — requires dedicated shop drawings / specifications — not final compliance"
 
 ═══════════════════════════════════════
 MISSING DOCUMENTS ARE PACKAGE COMPLETENESS GAPS — NOT DESIGN NONCOMPLIANCE:
@@ -2752,10 +2779,10 @@ YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 
 ## II. ملخص الاستخراج / Extraction Summary
 
-- **جودة الصورة / Image Quality:** [clear / partial / low / illegible]
-- **المناطق المقروءة / Readable:** [list from Stage 1]
+- **جودة الصورة / Image Quality:** [clear / partial / low / illegible — per Stage 1; do NOT write "all pages clear" or "no warnings" for a multi-page package]
+- **المناطق المقروءة / Readable:** [list from Stage 1 — use "major drawing titles and symbols are readable" rather than absolute claims]
 - **المناطق غير المقروءة / Unreadable:** [list from Stage 1 — these create uncertainty zones]
-- **تحذير استخراج / Extraction Warning:** [if quality is low/illegible — state that conclusions in affected areas are unreliable]
+- **تحذير استخراج / Extraction Warning:** [ALWAYS present for multi-page packages — state: "some numeric values (dimensions, areas, equipment counts) may require confirmation from original CAD/PDF schedules; OCR/vision extraction may require manual verification"]
 - **عدد الأوراق في الحزمة / Package Sheet Count:** [N pages if PAGE INVENTORY present, otherwise "single sheet"]
 
 ## II.A جرد الأوراق / Page / Sheet Inventory
@@ -2901,7 +2928,11 @@ Fire-Fighting components to check: Sprinkler heads | Pipe network / pipe diamete
 
 Fire Alarm components to check: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring / conduit | Beam detectors (if applicable)
 
-Status values: Shown — location confirmed | Shown — count not verifiable | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
+Special Suppression (check details/notes pages): Kitchen hood fire suppression system | Clean agent / gaseous suppression system | Fire blanket | Portable fire extinguisher schedule or note
+
+Installation Details (check details/notes pages): Sprinkler installation details | Pipe hangers / supports | FHC installation notes | Pump/tank assembly details | System schematic notes
+
+Status values: Shown — location confirmed | Shown — count not verifiable | Shown in details/notes — requires shop drawings / specifications — not final compliance | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
@@ -2999,6 +3030,9 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 17. ✦ Scan every Compliance Table row (Section V) and every Section VII bullet: if the row mentions "الحسابات الهيدروليكية", "Riser Diagram", "مخطط الناهض", "hydraulic calculations", "shop drawings", "battery calculation", "cause/effect", "pump schedule", "مستند ناقص", "fire alarm riser", or any missing document and the verdict is ❌ غير متوافق → replace with 🔴 نقص مستندات حرج and add basis [PACKAGE COMPLETENESS GAP — not final design noncompliance].
 18. ✦ Section V.B is present in the output if the package contains fire-fighting or fire alarm sheets. If missing and those sheet types are present, add a placeholder note.
 19. ✦ No row uses the phrase "Riser Diagram missing" as a standalone verdict — it must be qualified per RISER WORDING CALIBRATION rules above (distinguish: fire-fighting risers shown vs. fire alarm riser not provided vs. hydraulic schematic not submitted).
+20. ✦ Section I does NOT contain "High-rise [CONFIRMED]" or "شاهق [CONFIRMED]" or "Section 403 applies" as a confirmed classification unless both (a) retrieved SBC high-rise height definition is in the context block AND (b) measured building height is clearly established from the drawings. If either condition is absent → replace with "height-related trigger may apply — [REQUIRES CONFIRMATION]".
+21. ✦ Section V (Compliance Table) and Section II.B do NOT contain the words "تعارض جوهري", "تعارض مباشر", or "خطر حرج" applied to a cross-zone M + S-2 situation. If found → replace with "حالة إشغال مختلط تتطلب تحقق حدود وحسابات".
+22. ✦ Section II Extraction Warning is NOT left blank or written as "no warnings" for a multi-page package — always includes the OCR/vision manual verification note.
 
 RESPOND IN: ${lang}`;
 }
@@ -3176,6 +3210,20 @@ function validateAnalyticalReport(text: string): string {
   // ── Step 5 — Rule 9: Soften broad mixed-use conflict wording ──────────────
   if (result.includes("تعارض تصنيف الإشغال")) {
     result = result.replace(/تعارض تصنيف الإشغال/g, "حالة إشغال مختلط تتطلب تحققًا");
+    changesMade = true;
+  }
+  // Rule 10: Replace overconfident occupancy conflict terms with calibrated wording
+  const MIXED_OCC_OVERCONFIDENT_RE = /تعارض جوهري|تعارض مباشر|خطر حرج.*إشغال|إشغال.*خطر حرج/g;
+  if (MIXED_OCC_OVERCONFIDENT_RE.test(result)) {
+    result = result.replace(/تعارض جوهري/g, "حالة إشغال مختلط تتطلب تحقق حدود وحسابات");
+    result = result.replace(/تعارض مباشر/g, "حالة إشغال مختلط — يتطلب تحقق");
+    result = result.replace(/خطر حرج.*?(إشغال[^.،\n]*)/g, "تنبيه — $1 — يتطلب تحقق");
+    changesMade = true;
+  }
+  // Rule 11: Soften overconfident high-rise confirmed classification
+  if (/شاهق\s*\[CONFIRMED\]|High-rise\s*\[CONFIRMED\]|Section 403 applies[^—(]/.test(result)) {
+    result = result.replace(/شاهق\s*\[CONFIRMED\]/g, "height trigger may apply [REQUIRES CONFIRMATION]");
+    result = result.replace(/High-rise\s*\[CONFIRMED\]/g, "height-related trigger may apply [REQUIRES CONFIRMATION]");
     changesMade = true;
   }
 
