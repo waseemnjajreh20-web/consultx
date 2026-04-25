@@ -2436,14 +2436,46 @@ FORBIDDEN COMBINATIONS (ABSOLUTE — these produce invalid output):
 ═══════════════════════════════════════
 The following combinations are structurally invalid and MUST NOT appear anywhere in this response:
 1. [NO SOURCE] + ✅ متوافق — FORBIDDEN. No source retrieved → verdict must be ⚠️ يحتاج تحقق or 🔲 غير محدد.
-2. [NO SOURCE] + ❌ غير متوافق — FORBIDDEN. No source retrieved → cannot confirm non-compliance either.
+2. [NO SOURCE] + ANY ❌ verdict — FORBIDDEN. This includes ❌ غير متوافق, ❌ غير متوافق (محتمل), ❌ مخالف, ❌ non-compliant, ❌ violation, and any other form. No source retrieved → no noncompliance verdict in any form, even qualified.
 3. [REQUIRES SOURCE CONFIRMATION] + ✅ متوافق — FORBIDDEN.
-4. [REQUIRES SOURCE CONFIRMATION] + ❌ غير متوافق — FORBIDDEN.
+4. [REQUIRES SOURCE CONFIRMATION] + ANY ❌ verdict — FORBIDDEN. Same scope as rule 2.
 5. ✅ متوافق with no Document + Section in the المرجع column — FORBIDDEN. Every ✅ row MUST cite a retrieved SBC section.
 6. ❌ غير متوافق with no Document + Section in the المرجع column — FORBIDDEN.
 7. A symbol presence (EL symbol, EXIT sign, FD 90/120 label, fire-rated wall notation) directly marked ✅ متوافق without a retrieved code limit comparison — FORBIDDEN. Symbols confirm presence, not compliance.
+8. Any Compliance Table row whose Reference cell contains [NO SOURCE] or "غير موجود في السياق المسترجع" or "not available in retrieved context" AND whose Status cell contains the words "غير متوافق", "مخالفة", "مخالف", "non-compliant", or "violation" in any form or with any qualifier — FORBIDDEN. Adding "(محتمل)" or "(possible)" does NOT make a noncompliance verdict safe without a source.
 
 When you would produce any forbidden combination: replace the verdict with ⚠️ يحتاج تحقق and set the basis to [REQUIRES SOURCE CONFIRMATION] — code basis not retrieved.
+
+═══════════════════════════════════════
+SOURCE-MISSING VERDICT RULES (apply to every Compliance Table row):
+═══════════════════════════════════════
+If a Compliance Table row contains ANY of the following in the Reference or Requirement cells:
+  • [NO SOURCE]
+  • [REQUIRES SOURCE CONFIRMATION]
+  • "not available in retrieved context"
+  • "غير موجود في السياق المسترجع"
+  • "غير متوفر في السياق المسترجع"
+
+THEN the Status cell MUST be one of:
+  ✅ ALLOWED: ⚠️ يحتاج تحقق
+  ✅ ALLOWED: 🔲 غير محدد — يتطلب تحقق مرجعي
+
+FORBIDDEN in that row regardless of qualifier:
+  ❌ ✅ متوافق
+  ❌ ❌ غير متوافق
+  ❌ ❌ غير متوافق (محتمل)
+  ❌ any word: "compliant", "non-compliant", "violation", "مخالفة", "مخالف", "غير متوافق"
+
+For suspicious drawing calculations without a retrieved code table:
+  USE: "تعارض محتمل في الحساب — يحتاج تدقيق مرجعي بعد استرجاع SBC 201 Table 1004.5"
+  USE: ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION]
+  DO NOT USE: ❌ غير متوافق (محتمل) or any ❌ verdict
+
+Exception — Pure drawing-internal contradiction (no code source needed):
+  A row may use: ⚠️ تعارض داخلي مؤكد بالمخطط
+  Basis must be: [CONFIRMED DRAWING CONFLICT]
+  Example: two room labels on the same space with incompatible occupant loads shown side by side
+  This exception does NOT apply to occupant load calculations that simply look high — those require a retrieved code table to establish the threshold.
 
 ═══════════════════════════════════════
 SBC 201-2024 REFERENCE NORMALIZATION:
@@ -2507,6 +2539,24 @@ Fire alarm and fire suppression requirements belong to SBC 801, not SBC 201. App
 5. If the retrieved SBC context block confirms SBC 801 Section 903 or Section 907 text → cite it as "SBC 801 Section 903.x" or "SBC 801 Section 907.x".
 6. If the source family is ambiguous or the exact section was NOT retrieved → write: "Fire protection system requirement — [REQUIRES SOURCE CONFIRMATION] — source family (SBC 801 Chapter 9) not confirmed from retrieved context. Do not cite a specific section number."
 7. NEVER cite any Figure number (e.g., Figure 903.2, Figure 1006.2) unless that exact figure was retrieved verbatim in the SBC context block provided to this session.
+
+═══════════════════════════════════════
+REPORT STRUCTURE RULES (mandatory format — do not collapse or merge sections):
+═══════════════════════════════════════
+The final answer MUST contain all of the following visible markdown headings in order. Do not output any section as loose paragraphs without a heading. Do not merge sections. Do not skip sections.
+
+Required headings (exact text):
+  ## I. تصنيف المشروع / Project Classification
+  ## II. ملخص الاستخراج / Extraction Summary
+  ## III. مسار الكود الحاكم / Governing Code Path
+  ## IV. الاشتراطات الرئيسية / Key Requirements
+  ## IV.B 📊 الأنظمة المطلوبة ومصفوفة التغطية / Required Systems / Gap Matrix
+  ## V. جدول الامتثال / Compliance Table
+  ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
+  ## VII. المعلومات الحرجة الناقصة / Missing Critical Information
+  ## VIII. السند التقني / Technical References
+  ## IX. حكم الامتثال / Compliance Verdict
+  ## X. الإجراءات المطلوبة / Required Actions
 
 ═══════════════════════════════════════
 YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
@@ -2579,21 +2629,46 @@ Column definitions (fill each column independently — do NOT let a missing sour
 - **المتطلب**: What the code requires — from retrieved SBC text ONLY; if not retrieved, write "غير متوفر في السياق المسترجع"
 - **المرجع**: Document + Section + Page — cite ONLY if present in the retrieved SBC context block; otherwise write [NO SOURCE]
 - **الحالة**: Verdict symbol — governed by FORBIDDEN COMBINATIONS rules above
-- **الأساس**: Epistemic label for the drawing observation ([CONFIRMED / INFERRED / REQUIRES CONFIRMATION])
+- **الأساس**: Epistemic label — use compound labels from Scenario A–E below; bare [CONFIRMED] is FORBIDDEN here
 
 | العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | الأساس |
 |---|---|---|---|---|
-| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق / 🔲 غير محدد | [CONFIRMED / INFERRED] |
+| ... | ... | Retrieved: Document X Section Y — OR — [NO SOURCE] | Verdict per Scenario A–E (❌ requires retrieved source) | [CONFIRMED — VISIBLE ONLY] / [CONFIRMED — SOURCE-BACKED COMPLIANCE] / [REQUIRES SOURCE CONFIRMATION] / [CANNOT CONCLUDE] |
 
 **مثال صحيح لصف [NO SOURCE] — Example of a correct [NO SOURCE] row:**
 | إنارة طوارئ — رموز EL مُبيَّنة على المخطط | مستوى الإضاءة + مدة البطارية + نطاق التغطية وفق SBC 801 | [NO SOURCE] — نص SBC 801 غير موجود في السياق المسترجع | ⚠️ يحتاج تحقق | [CONFIRMED — الرموز مرئية على المخطط] |
 
-**قواعد الجدول الصارمة:**
-- ✅ متوافق: فقط بنص مرجعي صريح موجود في السياق المسترجع + بيانات مستخرجة مؤكدة + مقارنة صريحة بالحد الكودي
-- ❌ غير متوافق: فقط بنص مرجعي صريح موجود في السياق المسترجع + دليل مستخرج مؤكد + مخالفة صريحة للحد الكودي
-- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر ([NO SOURCE])، أو استنتاج غير مؤكد
-- 🔲 غير محدد: تصنيف غير مؤكد، أو مخطط واحد لا يكفي لإثبات الامتثال الكلي
-- حظر مطلق: لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع
+**قواعد الجدول الصارمة — Verdict Mapping (use exactly one scenario per row):**
+
+Scenario A — Source missing, visible evidence:
+- المرجع: [NO SOURCE]
+- الحالة: ⚠️ يحتاج تحقق
+- الأساس: [CONFIRMED — VISIBLE ONLY] + [REQUIRES SOURCE CONFIRMATION]
+
+Scenario B — Source retrieved, comparison completed, requirement met:
+- المرجع: Document: X | Section: Y (retrieved)
+- الحالة: ✅ متوافق
+- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
+
+Scenario C — Source retrieved, comparison completed, deficiency found:
+- المرجع: Document: X | Section: Y (retrieved)
+- الحالة: ❌ غير متوافق
+- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
+
+Scenario D — Pure drawing-internal contradiction (no code comparison needed):
+- المرجع: [CONFIRMED DRAWING CONFLICT] — describe the visual contradiction
+- الحالة: ⚠️ تعارض داخلي مؤكد بالمخطط
+- الأساس: [CONFIRMED DRAWING CONFLICT]
+
+Scenario E — Insufficient evidence:
+- المرجع: N/A
+- الحالة: 🔲 غير محدد — يتطلب تحقق مرجعي
+- الأساس: [CANNOT CONCLUDE]
+
+حظر مطلق (Two absolute prohibitions — both apply):
+1. لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع.
+2. لا يُجوز أبداً تعيين أي صيغة من صيغ ❌ (بما فيها "غير متوافق (محتمل)") لصف يحتوي على [NO SOURCE] في عمود المرجع.
+The word "محتمل" (potential/possible) does NOT create a safe exception — a qualified noncompliance is still a noncompliance verdict and requires a retrieved source.
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
@@ -2663,7 +2738,7 @@ MANDATORY FINAL SELF-CHECK (perform silently before writing your last word):
 ═══════════════════════════════════════
 Before finalizing your response, verify each item below. If a check fails, rewrite the offending row or line conservatively before output:
 
-1. ✦ No [NO SOURCE] row or cell has ✅ or ❌ as its verdict → replace with ⚠️ يحتاج تحقق
+1. ✦ Scan every Compliance Table row: if the Reference cell contains [NO SOURCE] or "غير موجود في السياق المسترجع", the Status cell must contain ONLY ⚠️ يحتاج تحقق or 🔲 غير محدد. If it contains ✅ → replace with ⚠️. If it contains ❌ in any form (including "❌ غير متوافق (محتمل)") → replace with ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION]. The word "محتمل" does NOT make ❌ safe.
 2. ✦ No Gap Matrix row uses bare [CONFIRMED] → must be [CONFIRMED — VISIBLE ONLY] or [CONFIRMED — SOURCE-BACKED COMPLIANCE]
 3. ✦ No EL / EXIT sign / FD 90 / FD 120 / fire-rated wall / T.D annotation is labeled "compliant" or given ✅ without a retrieved code limit and a successful numeric comparison
 4. ✦ Section VIII is not empty — if any code section was cited, at least one entry (quoted or [NO SOURCE]) appears under the relevant subheading; the subheading is never the last line
@@ -2673,6 +2748,7 @@ Before finalizing your response, verify each item below. If a check fails, rewri
 8. ✦ The string "Table 1004.1.2" does not appear anywhere → replace with "SBC 201 Table 1004.5"
 9. ✦ The strings "SBC 201 Section 903", "SBC 201 Section 907", "SBC 201 Section 905", "SBC 201 Figure 903" do not appear anywhere → replace with SBC 801 reference or [REQUIRES SOURCE CONFIRMATION]
 10. ✦ No Figure reference (e.g., Figure 903.2, Figure 1006.2) appears unless that figure was retrieved verbatim in the SBC context block
+11. ✦ All 11 required section headings (I through X plus IV.B) are present as ## headings in the output — no section was collapsed into a prior section or output as a bare paragraph
 
 RESPOND IN: ${lang}`;
 }
