@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEntitlement } from "@/hooks/useEntitlement";
 
 export function useOrganization() {
-  const { orgId, orgRole, isOrgMember, session } = useEntitlement();
+  const { orgId, orgRole, isOrgMember, session, refetch: refetchEntitlement } = useEntitlement();
   const qc = useQueryClient();
 
   const isOwnerOrAdmin = orgRole === "owner" || orgRole === "admin";
@@ -71,6 +71,26 @@ export function useOrganization() {
     staleTime: 60 * 1000,
   });
 
+  // E7.4: bootstrap a fresh organization via the SECURITY DEFINER RPC.
+  // Atomically inserts org + owner membership; returns new org_id.
+  const createOrganization = useMutation({
+    mutationFn: async ({ name }: { name: string }) => {
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Organization name is required");
+      const { data, error } = await supabase.rpc("create_organization_with_owner", {
+        p_name: trimmed,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      // Force the entitlement chain to re-resolve so org_access populates,
+      // then invalidate org-scoped query caches.
+      refetchEntitlement();
+      qc.invalidateQueries();
+    },
+  });
+
   const inviteMember = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
       if (!orgId || !session) throw new Error("Not authenticated");
@@ -109,12 +129,24 @@ export function useOrganization() {
     },
   });
 
+  // E7.4: composite capability flags so UI doesn't have to re-derive.
+  const hasOrganization      = !!orgId;
+  const canManageMembers     = hasOrganization && isOwnerOrAdmin;
+  const canCreateCase        = hasOrganization && !isFinanceOfficer;
+  // Any authenticated user without an existing membership row may bootstrap one.
+  // The RPC enforces auth.uid() and the one-org-per-user invariant.
+  const canCreateOrganization = !hasOrganization && !!session;
+
   return {
     orgId,
     orgRole,
     isOrgMember,
     isOwnerOrAdmin,
     isFinanceOfficer,
+    hasOrganization,
+    canManageMembers,
+    canCreateCase,
+    canCreateOrganization,
     org: orgQuery.data ?? null,
     orgLoading: orgQuery.isLoading,
     members: membersQuery.data ?? [],
@@ -123,6 +155,7 @@ export function useOrganization() {
     invitationsLoading: invitationsQuery.isLoading,
     cases: casesQuery.data ?? [],
     casesLoading: casesQuery.isLoading,
+    createOrganization,
     inviteMember,
     createCase,
     refetchMembers: () => qc.invalidateQueries({ queryKey: ["org_members", orgId] }),

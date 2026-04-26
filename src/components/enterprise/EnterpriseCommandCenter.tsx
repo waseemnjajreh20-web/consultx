@@ -47,6 +47,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 import CaseList from "@/components/enterprise/CaseList";
 import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
+import CreateOrganizationCard from "@/components/enterprise/CreateOrganizationCard";
 import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import MemberList from "@/components/enterprise/MemberList";
 import OrgCard from "@/components/enterprise/OrgCard";
@@ -73,8 +74,10 @@ const PERMISSION_SUMMARY: Array<{ role: string; ar: string; en: string }> = [
                                  en: "Billing only, no technical workspace" },
 ];
 
+// Truly deferred items only — the spec forbids listing capabilities that
+// already work (org creation, invitation creation, case creation).
 const COMING_NEXT: Array<{ ar: string; en: string }> = [
-  { ar: "قبول الدعوات تلقائيًا",          en: "Automatic invitation acceptance" },
+  { ar: "قبول الدعوات تلقائيًا",          en: "Automatic invitation acceptance route" },
   { ar: "إرسال الدعوات بالبريد",           en: "Email-delivered invitations" },
   { ar: "تغيير دور العضو",                  en: "Change member role" },
   { ar: "إيقاف / حذف عضو",                  en: "Suspend / remove member" },
@@ -83,13 +86,35 @@ const COMING_NEXT: Array<{ ar: string; en: string }> = [
   { ar: "تخصيص الشعار والهوية البصرية",    en: "Custom logo & brand identity" },
 ];
 
+// Full enterprise_cases.status enum (E3 schema).
 const STATUS_LABEL: Record<string, { ar: string; en: string }> = {
-  open:      { ar: "مفتوحة",        en: "Open" },
-  in_review: { ar: "قيد المراجعة",   en: "In review" },
-  approved:  { ar: "معتمدة",        en: "Approved" },
-  rejected:  { ar: "مرفوضة",        en: "Rejected" },
-  closed:    { ar: "مغلقة",         en: "Closed" },
+  draft:                    { ar: "مسودة",                en: "Draft" },
+  submitted:                { ar: "مُقدَّمة",              en: "Submitted" },
+  assigned:                 { ar: "موكَلة",               en: "Assigned" },
+  under_engineering_review: { ar: "قيد المراجعة الهندسية", en: "Under engineering review" },
+  ai_review_attached:       { ar: "مراجعة ذكية مرفقة",     en: "AI review attached" },
+  engineer_review_completed:{ ar: "اكتملت المراجعة الهندسية", en: "Engineer review completed" },
+  submitted_to_head:        { ar: "مرفوعة لرئيس القسم",    en: "Submitted to head" },
+  returned_for_revision:    { ar: "مُعادة للتعديل",         en: "Returned for revision" },
+  approved_internal:        { ar: "اعتماد داخلي",          en: "Approved (internal)" },
+  delivered_to_client:      { ar: "مُسلَّمة للعميل",         en: "Delivered to client" },
+  closed:                   { ar: "مغلقة",                en: "Closed" },
+  cancelled:                { ar: "ملغاة",                en: "Cancelled" },
+  // Legacy fallbacks (in case any older rows linger)
+  open:                     { ar: "مفتوحة",               en: "Open" },
+  in_review:                { ar: "قيد المراجعة",           en: "In review" },
+  approved:                 { ar: "معتمدة",               en: "Approved" },
+  rejected:                 { ar: "مرفوضة",               en: "Rejected" },
 };
+
+const ACTIVE_CASE_STATUSES = new Set([
+  "draft", "submitted", "assigned",
+  "under_engineering_review", "ai_review_attached",
+  "engineer_review_completed", "submitted_to_head",
+  "returned_for_revision",
+  // legacy
+  "open", "in_review",
+]);
 
 interface Props {
   /** When true, hide the inner heading (parent Sheet provides it). */
@@ -123,6 +148,11 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
     casesLoading,
     isOwnerOrAdmin,
     isFinanceOfficer,
+    hasOrganization,
+    canManageMembers,
+    canCreateCase,
+    canCreateOrganization,
+    createOrganization,
     inviteMember,
     createCase,
   } = useOrganization();
@@ -133,7 +163,7 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
   // ── Derived stats ─────────────────────────────────────────────────────────
   const memberCount = members.length;
   const pendingInviteCount = invitations.length;
-  const activeCaseCount = cases.filter((c) => c.status === "open" || c.status === "in_review").length;
+  const activeCaseCount = cases.filter((c) => ACTIVE_CASE_STATUSES.has(c.status)).length;
 
   const casesByStatus = cases.reduce<Record<string, number>>((acc, c) => {
     acc[c.status] = (acc[c.status] ?? 0) + 1;
@@ -255,32 +285,40 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
         </div>
       )}
 
-      {/* ── 2. Organization workspace cards ────────────────────────────── */}
+      {/* ── 2. Bootstrap (no org yet) — replaces dead empty state ──────── */}
+      {!orgLoading && !hasOrganization && canCreateOrganization && (
+        <CreateOrganizationCard
+          createOrgMutation={createOrganization}
+          isOwnerOverride={isOverrideActive || isOwnerMode}
+        />
+      )}
+
+      {/* ── 3. Organization workspace cards (real availability) ────────── */}
       <SectionTitle ar={ar} en="Organization workspace" arText="مساحة عمل المؤسسة" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <WorkspaceCard
           icon={<Building2 className="w-4 h-4" />}
           title={ar ? "بيانات المؤسسة" : "Organization profile"}
           desc={ar ? "الاسم، الحالة، تاريخ التجربة" : "Name, status, trial dates"}
-          available
+          available={hasOrganization}
         />
         <WorkspaceCard
           icon={<Users className="w-4 h-4" />}
           title={ar ? "الأعضاء والصلاحيات" : "Members & permissions"}
           desc={ar ? "عرض الأعضاء وأدوارهم" : "View members and roles"}
-          available
+          available={hasOrganization}
         />
         <WorkspaceCard
           icon={<Mail className="w-4 h-4" />}
           title={ar ? "الدعوات" : "Invitations"}
           desc={ar ? "روابط دعوة يدوية للأعضاء" : "Manual invite links"}
-          available={isOwnerOrAdmin}
+          available={canManageMembers}
         />
         <WorkspaceCard
           icon={<Briefcase className="w-4 h-4" />}
           title={ar ? "المعاملات" : "Engineering cases"}
           desc={ar ? "إنشاء وتتبع المعاملات" : "Create & track cases"}
-          available={!isFinanceOfficer}
+          available={canCreateCase}
         />
         <WorkspaceCard
           icon={<CheckCircle2 className="w-4 h-4" />}
@@ -296,29 +334,67 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
         />
       </div>
 
-      {/* ── 3. Org card + Members + Invite ─────────────────────────────── */}
+      {/* ── 4. Org card + Members + Invite ─────────────────────────────── */}
       {orgLoading ? (
         <div className="h-24 bg-muted/30 rounded-xl animate-pulse" />
       ) : org ? (
         <OrgCard org={org} orgRole={orgRole ?? "engineer"} />
-      ) : (
-        <div className="rounded-xl border border-border/40 bg-card/40 p-6 text-center text-sm text-muted-foreground">
-          {ar ? "لا توجد مؤسسة مرتبطة بحسابك بعد" : "No organization linked to your account yet"}
-        </div>
-      )}
+      ) : null}
 
-      <MemberList
-        members={members}
-        loading={membersLoading}
-        isOwnerOrAdmin={isOwnerOrAdmin}
-        onInviteClick={() => setShowInviteForm(true)}
-      />
+      {hasOrganization && (
+        <>
+          <MemberList
+            members={members}
+            loading={membersLoading}
+            isOwnerOrAdmin={canManageMembers}
+            onInviteClick={() => setShowInviteForm(true)}
+          />
 
-      {showInviteForm && isOwnerOrAdmin && (
-        <InviteMemberForm
-          inviteMutation={inviteMember}
-          onClose={() => setShowInviteForm(false)}
-        />
+          {/* Pending invitations summary — visible to owner/admin only */}
+          {canManageMembers && !invitationsLoading && invitations.length > 0 && (
+            <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                <p className="text-sm font-semibold">
+                  {ar ? "الدعوات المعلّقة" : "Pending invitations"}
+                  <span className="ms-2 text-xs text-muted-foreground font-normal">
+                    ({invitations.length})
+                  </span>
+                </p>
+              </div>
+              <div className="space-y-1">
+                {invitations.slice(0, 5).map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-muted/10 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{inv.email}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {ROLE_LABEL[inv.role]?.[ar ? "ar" : "en"] ?? inv.role}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-400 shrink-0">
+                      {ar ? "قيد الانتظار" : "Pending"}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
+                {ar
+                  ? "قبول الدعوة التلقائي قادم؛ حاليًا انسخ الرابط من نموذج الدعوة وأرسله يدويًا."
+                  : "Automatic invitation acceptance is coming; for now copy the link from the invite form and share it manually."}
+              </p>
+            </div>
+          )}
+
+          {showInviteForm && canManageMembers && (
+            <InviteMemberForm
+              inviteMutation={inviteMember}
+              onClose={() => setShowInviteForm(false)}
+            />
+          )}
+        </>
       )}
 
       {/* ── 4. Permission matrix ───────────────────────────────────────── */}
@@ -349,12 +425,12 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
         })}
       </div>
 
-      {/* ── 5. Case tracking ───────────────────────────────────────────── */}
-      {!isFinanceOfficer && (
+      {/* ── 6. Case tracking ───────────────────────────────────────────── */}
+      {hasOrganization && !isFinanceOfficer && (
         <CaseList
           cases={cases}
           loading={casesLoading}
-          isOwnerOrAdmin={isOwnerOrAdmin}
+          isOwnerOrAdmin={canCreateCase}
           onCreateClick={() => setShowCreateCase(true)}
         />
       )}
@@ -364,7 +440,7 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
         createCaseMutation={createCase}
       />
 
-      {/* ── 6. Owner Mode panel ────────────────────────────────────────── */}
+      {/* ── 7. Owner Mode panel ────────────────────────────────────────── */}
       {isOwnerMode && (
         <div
           className="rounded-xl p-4 space-y-3"
@@ -382,6 +458,24 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
               <FlaskConical className="w-3 h-3 me-1" />
               {ar ? "وضع اختبار" : "Test mode"}
             </Badge>
+          </div>
+
+          {/* Real org link state */}
+          <div
+            className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs"
+            style={{
+              background: hasOrganization ? "rgba(0,212,255,0.08)" : "rgba(255,140,0,0.08)",
+              border: `1px solid ${hasOrganization ? "rgba(0,212,255,0.25)" : "rgba(255,140,0,0.30)"}`,
+            }}
+          >
+            <span className="font-medium">
+              {hasOrganization
+                ? (ar ? "مؤسسة مرتبطة" : "Organization linked")
+                : (ar ? "لا توجد مؤسسة" : "No organization")}
+            </span>
+            <span className="text-muted-foreground truncate max-w-[60%]">
+              {hasOrganization && org?.name ? org.name : (ar ? "أنشئ مؤسسة لتفعيل المساحة" : "Create one to activate the workspace")}
+            </span>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
@@ -405,31 +499,75 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
 
           <p className="text-[11px] leading-relaxed text-amber-200/80">
             {ar
-              ? "هذا الوضع للاختبار الداخلي فقط. لا يغيّر الفوترة الحقيقية ولا حالة أي اشتراك."
-              : "Internal test mode only. Does not affect real billing or any active subscription."}
+              ? "وضع الاختبار لا يغيّر الفوترة، لكن إنشاء المؤسسة والمعاملات بيانات حقيقية في قاعدة البيانات."
+              : "Test mode does not change billing, but org and case creation persist as real data in the database."}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {[
-              { to: "/admin",     icon: <ShieldCheck className="w-3.5 h-3.5" />, ar: "لوحة الإدارة",   en: "Admin panel" },
-              { to: "/account",   icon: <Users className="w-3.5 h-3.5" />,       ar: "الحساب والمؤسسة", en: "Account / Org" },
-              { to: "/subscribe", icon: <Wallet className="w-3.5 h-3.5" />,      ar: "اختبار الاشتراك", en: "Test subscribe" },
-            ].map((link) => (
+          {/* CTA grid — adapts to real state */}
+          {hasOrganization ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Button
-                key={link.to}
                 variant="outline"
                 size="sm"
-                onClick={() => navigate(link.to)}
-                className="justify-between gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
+                disabled={!canManageMembers}
+                onClick={() => setShowInviteForm(true)}
+                className="justify-start gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
               >
-                <span className="flex items-center gap-1.5">
-                  {link.icon}
-                  {ar ? link.ar : link.en}
-                </span>
-                <ArrowUpRight className="w-3 h-3 opacity-60" />
+                <UserPlus className="w-3.5 h-3.5" />
+                {ar ? "دعوة عضو" : "Invite member"}
               </Button>
-            ))}
-          </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!canCreateCase}
+                onClick={() => setShowCreateCase(true)}
+                className="justify-start gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {ar ? "إنشاء معاملة" : "New case"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/account")}
+                className="justify-start gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
+              >
+                <Users className="w-3.5 h-3.5" />
+                {ar ? "فتح الحساب" : "Open account"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="justify-start gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {ar ? "لوحة الإدارة" : "Admin panel"}
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { to: "/admin",     icon: <ShieldCheck className="w-3.5 h-3.5" />, ar: "لوحة الإدارة",   en: "Admin panel" },
+                { to: "/account",   icon: <Users className="w-3.5 h-3.5" />,       ar: "الحساب والمؤسسة", en: "Account / Org" },
+                { to: "/subscribe", icon: <Wallet className="w-3.5 h-3.5" />,      ar: "اختبار الاشتراك", en: "Test subscribe" },
+              ].map((link) => (
+                <Button
+                  key={link.to}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(link.to)}
+                  className="justify-between gap-2 border-amber-500/30 text-amber-200 hover:text-amber-100 hover:bg-amber-500/10"
+                >
+                  <span className="flex items-center gap-1.5">
+                    {link.icon}
+                    {ar ? link.ar : link.en}
+                  </span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -446,12 +584,12 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
         </ul>
       </div>
 
-      {/* Visibility note for non-eligible users (no org, not enterprise, not admin) */}
-      {!org && !hasEnterpriseAccess && !isAdmin && !isOwnerMode && (
+      {/* Eligibility note — only when the user truly cannot bootstrap. */}
+      {!hasOrganization && !canCreateOrganization && !hasEnterpriseAccess && !isAdmin && !isOwnerMode && (
         <div className="rounded-xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground leading-relaxed">
           {ar
-            ? "هذا المركز يصبح نشطًا عند الانضمام إلى مؤسسة أو ترقية الباقة إلى مؤسسي."
-            : "This center activates when you join an organization or upgrade to the Enterprise plan."}
+            ? "هذا المركز يصبح نشطًا عند تسجيل الدخول والانضمام إلى مؤسسة أو ترقية الباقة إلى مؤسسي."
+            : "This center activates after sign-in, on joining an organization, or upgrading to Enterprise."}
         </div>
       )}
     </div>
