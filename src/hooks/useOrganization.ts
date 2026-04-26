@@ -203,6 +203,75 @@ export function useOrganization() {
     },
   });
 
+  const messagesQuery = useQuery({
+    queryKey: ["org_messages", orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("org_messages")
+        .select("*")
+        .eq("org_id", orgId!)
+        .eq("is_deleted", false)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!orgId,
+    staleTime: 30 * 1000,
+  });
+
+  const presenceQuery = useQuery({
+    queryKey: ["org_presence", orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("org_member_presence")
+        .select("*")
+        .eq("org_id", orgId!);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!orgId,
+    staleTime: 30 * 1000,
+  });
+
+  const touchPresence = useMutation({
+    mutationFn: async () => {
+      if (!orgId) throw new Error("No org");
+      const { error } = await supabase.rpc("touch_org_presence", { p_org_id: orgId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_presence", orgId] });
+    },
+  });
+
+  const sendMessage = useMutation({
+    mutationFn: async ({ body }: { body: string }) => {
+      if (!orgId) throw new Error("No org");
+      const { data, error } = await supabase.rpc("send_org_message", {
+        p_org_id: orgId,
+        p_body:   body,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_messages", orgId] });
+    },
+  });
+
+  const deleteMessage = useMutation({
+    mutationFn: async ({ messageId }: { messageId: string }) => {
+      const { error } = await supabase.rpc("soft_delete_org_message", {
+        p_message_id: messageId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_messages", orgId] });
+    },
+  });
+
   const brandingQuery = useQuery({
     queryKey: ["org_branding", orgId],
     queryFn: async () => {
@@ -272,6 +341,10 @@ export function useOrganization() {
     casesLoading: casesQuery.isLoading,
     branding: brandingQuery.data ?? null,
     brandingLoading: brandingQuery.isLoading,
+    messages: messagesQuery.data ?? [],
+    messagesLoading: messagesQuery.isLoading,
+    presence: presenceQuery.data ?? [],
+    presenceLoading: presenceQuery.isLoading,
     createOrganization,
     inviteMember,
     createCase,
@@ -279,6 +352,9 @@ export function useOrganization() {
     updateMemberRole,
     updateMemberStatus,
     upsertBranding,
+    touchPresence,
+    sendMessage,
+    deleteMessage,
     refetchMembers: () => qc.invalidateQueries({ queryKey: ["org_members", orgId] }),
     refetchCases: () => qc.invalidateQueries({ queryKey: ["enterprise_cases", orgId] }),
     refetchInvitations: () => qc.invalidateQueries({ queryKey: ["org_invitations", orgId] }),
