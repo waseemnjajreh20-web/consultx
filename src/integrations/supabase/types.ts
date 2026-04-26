@@ -44,6 +44,176 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_report_versions: {
+        Row: {
+          case_id: string
+          citations: Json
+          confidence_note: string | null
+          created_at: string
+          created_by: string
+          decided_at: string | null
+          decided_by: string | null
+          document_id: string | null
+          engineer_decision: string
+          engineer_decision_note: string | null
+          evidence_json: Json
+          id: string
+          model_name: string
+          model_provider: string
+          org_id: string
+          output_language: string
+          prompt_snapshot: string | null
+          report_mode: string
+          response_content: string
+          session_id: string
+          sources: Json
+          title: string
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          case_id: string
+          citations?: Json
+          confidence_note?: string | null
+          created_at?: string
+          created_by: string
+          decided_at?: string | null
+          decided_by?: string | null
+          document_id?: string | null
+          engineer_decision?: string
+          engineer_decision_note?: string | null
+          evidence_json?: Json
+          id?: string
+          model_name: string
+          model_provider?: string
+          org_id: string
+          output_language?: string
+          prompt_snapshot?: string | null
+          report_mode: string
+          response_content: string
+          session_id: string
+          sources?: Json
+          title: string
+          updated_at?: string
+          version_number?: number
+        }
+        Update: {
+          case_id?: string
+          citations?: Json
+          confidence_note?: string | null
+          created_at?: string
+          created_by?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          document_id?: string | null
+          engineer_decision?: string
+          engineer_decision_note?: string | null
+          evidence_json?: Json
+          id?: string
+          model_name?: string
+          model_provider?: string
+          org_id?: string
+          output_language?: string
+          prompt_snapshot?: string | null
+          report_mode?: string
+          response_content?: string
+          session_id?: string
+          sources?: Json
+          title?: string
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_report_versions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_report_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "case_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_report_versions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_report_versions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "case_ai_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_ai_sessions: {
+        Row: {
+          case_id: string
+          completed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          org_id: string
+          session_mode: string
+          started_at: string
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          org_id: string
+          session_mode: string
+          started_at?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          org_id?: string
+          session_mode?: string
+          started_at?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_ai_sessions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_ai_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_approvals: {
         Row: {
           approver_user_id: string
@@ -212,6 +382,55 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_review_ai_reports: {
+        Row: {
+          created_at: string
+          id: string
+          linked_by: string
+          org_id: string
+          report_version_id: string
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linked_by: string
+          org_id: string
+          report_version_id: string
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linked_by?: string
+          org_id?: string
+          report_version_id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_review_ai_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_review_ai_reports_report_version_id_fkey"
+            columns: ["report_version_id"]
+            isOneToOne: false
+            referencedRelation: "ai_report_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_review_ai_reports_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "case_reviews"
             referencedColumns: ["id"]
           },
         ]
@@ -1662,6 +1881,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_ai_report_version: {
+        Args: {
+          p_citations?: Json
+          p_confidence_note?: string
+          p_document_id?: string
+          p_evidence_json?: Json
+          p_model_name: string
+          p_model_provider?: string
+          p_output_language?: string
+          p_prompt_snapshot?: string
+          p_report_mode: string
+          p_response_content: string
+          p_session_id: string
+          p_sources?: Json
+          p_title: string
+        }
+        Returns: string
+      }
+      create_case_ai_session: {
+        Args: {
+          p_case_id: string
+          p_conversation_id?: string
+          p_session_mode: string
+          p_title?: string
+        }
+        Returns: string
+      }
       create_enterprise_case: {
         Args: {
           p_client_name?: string
@@ -1674,6 +1920,14 @@ export type Database = {
       }
       create_organization_with_owner: {
         Args: { p_name: string }
+        Returns: string
+      }
+      decide_ai_report_version: {
+        Args: {
+          p_decision: string
+          p_decision_note?: string
+          p_report_version_id: string
+        }
         Returns: string
       }
       decide_case_approval: {
@@ -1758,6 +2012,10 @@ export type Database = {
       is_org_owner_or_admin: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
+      }
+      link_ai_report_to_review: {
+        Args: { p_report_version_id: string; p_review_id: string }
+        Returns: string
       }
       match_sbc_documents: {
         Args: {
