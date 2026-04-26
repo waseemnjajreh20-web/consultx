@@ -44,6 +44,61 @@ export type Database = {
         }
         Relationships: []
       }
+      case_approvals: {
+        Row: {
+          approver_user_id: string
+          case_id: string
+          created_at: string
+          decision: string
+          decision_note: string | null
+          id: string
+          org_id: string
+          review_id: string
+        }
+        Insert: {
+          approver_user_id: string
+          case_id: string
+          created_at?: string
+          decision: string
+          decision_note?: string | null
+          id?: string
+          org_id: string
+          review_id: string
+        }
+        Update: {
+          approver_user_id?: string
+          case_id?: string
+          created_at?: string
+          decision?: string
+          decision_note?: string | null
+          id?: string
+          org_id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_approvals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_approvals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_approvals_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "case_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_documents: {
         Row: {
           case_id: string
@@ -154,6 +209,72 @@ export type Database = {
           },
           {
             foreignKeyName: "case_notes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_reviews: {
+        Row: {
+          accepted_at: string | null
+          case_id: string
+          created_at: string
+          findings: Json
+          id: string
+          org_id: string
+          recommendation: string | null
+          returned_at: string | null
+          reviewer_user_id: string
+          revision_number: number
+          status: string
+          submitted_at: string | null
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          case_id: string
+          created_at?: string
+          findings?: Json
+          id?: string
+          org_id: string
+          recommendation?: string | null
+          returned_at?: string | null
+          reviewer_user_id: string
+          revision_number?: number
+          status?: string
+          submitted_at?: string | null
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          case_id?: string
+          created_at?: string
+          findings?: Json
+          id?: string
+          org_id?: string
+          recommendation?: string | null
+          returned_at?: string | null
+          reviewer_user_id?: string
+          revision_number?: number
+          status?: string
+          submitted_at?: string | null
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_reviews_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_reviews_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1555,6 +1676,14 @@ export type Database = {
         Args: { p_name: string }
         Returns: string
       }
+      decide_case_approval: {
+        Args: {
+          p_case_id: string
+          p_decision: string
+          p_decision_note?: string
+        }
+        Returns: string
+      }
       decrement_mode_daily_count: {
         Args: { p_mode: string; p_user_id: string }
         Returns: undefined
@@ -1670,6 +1799,15 @@ export type Database = {
           structured_table: string
           type: string
         }[]
+      }
+      submit_case_review: {
+        Args: {
+          p_case_id: string
+          p_findings?: Json
+          p_recommendation?: string
+          p_summary: string
+        }
+        Returns: string
       }
       transition_case_status: {
         Args: { p_case_id: string; p_note?: string; p_to_status: string }
