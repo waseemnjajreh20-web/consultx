@@ -79,6 +79,7 @@ serve(async (req) => {
           access_state: "ineligible",
           launch_trial_status: "ineligible",
           plan_slug: "free", advisory_limit: null, analysis_limit: null,
+          owner_mode: false,
           effective_access: "ineligible", effective_plan_slug: "free",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -92,6 +93,7 @@ serve(async (req) => {
           access_state: "paid_active",
           launch_trial_status: "paid",
           plan_slug: "engineer", advisory_limit: 20, analysis_limit: 10,
+          owner_mode: false,
           effective_access: "paid_active", effective_plan_slug: "engineer",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -105,6 +107,7 @@ serve(async (req) => {
           access_state: "paid_active",
           launch_trial_status: "paid",
           plan_slug: "pro", advisory_limit: 100, analysis_limit: 50,
+          owner_mode: false,
           effective_access: "paid_active", effective_plan_slug: "pro",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -118,6 +121,7 @@ serve(async (req) => {
           access_state: "paid_active",
           launch_trial_status: "paid",
           plan_slug: "enterprise", advisory_limit: null, analysis_limit: null,
+          owner_mode: false,
           effective_access: "enterprise", effective_plan_slug: "enterprise",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }

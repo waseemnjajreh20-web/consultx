@@ -16,8 +16,9 @@ import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, UserCircle, CreditCard, Settings, Sliders,
   LogOut, ExternalLink, Upload, CheckCircle, X, ChevronRight,
-  ShieldCheck, ChevronLeft,
+  ShieldCheck, ChevronLeft, FlaskConical,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { usePreferences } from "@/hooks/usePreferences";
@@ -203,9 +204,34 @@ export default function AppShell({
           </button>
         )}
 
-        {/* Admin entitlement switcher — admin-only, visible only when sidebar expanded */}
+        {/* Admin entitlement switcher — admin-only.
+            Expanded sidebar: full compact card.
+            Collapsed sidebar: small icon button → popover with the same component. */}
         {isAdmin && sidebarOpen && (
-          <AdminEntitlementSwitcher lang={lang} />
+          <div className="mt-1">
+            <AdminEntitlementSwitcher lang={lang} />
+          </div>
+        )}
+        {isAdmin && !sidebarOpen && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                title={isRtl ? "وضع اختبار الأدمن" : "Admin Test Mode"}
+                aria-label={isRtl ? "وضع اختبار الأدمن" : "Admin Test Mode"}
+                className="group flex items-center justify-center mx-2 p-2.5 rounded-xl transition-all duration-150"
+                style={{ color: "#FF8C00", border: "1px solid rgba(255,140,0,0.25)", background: "rgba(255,140,0,0.06)" }}
+              >
+                <FlaskConical className="w-5 h-5 flex-shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side={isRtl ? "left" : "right"}
+              align="start"
+              className="w-72 p-3 bg-[rgba(10,14,20,0.97)] border-white/10"
+            >
+              <AdminEntitlementSwitcher lang={lang} compact />
+            </PopoverContent>
+          </Popover>
         )}
 
         {/* Spacer */}

@@ -5,6 +5,7 @@ import {
   isAllowedAdminEmail,
   getAdminEntitlementOverride,
   ADMIN_OVERRIDE_HEADER,
+  ADMIN_OVERRIDE_EVENT,
 } from "@/lib/adminEntitlementOverride";
 
 export interface SubscriptionStatus {
@@ -105,6 +106,13 @@ export function useSubscription() {
     if (user && session) checkSubscription();
     else { setSubscription(null); setLoading(false); }
   }, [user, session]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // E7.2: refetch when admin override toggles so the new mode propagates immediately.
+  useEffect(() => {
+    const handler = () => { if (user && session) checkSubscription(); };
+    window.addEventListener(ADMIN_OVERRIDE_EVENT, handler);
+    return () => window.removeEventListener(ADMIN_OVERRIDE_EVENT, handler);
+  }, [user, session, checkSubscription]);
 
   return { subscription, loading, error, refetch: checkSubscription };
 }

@@ -16,6 +16,9 @@ import {
   isAllowedAdminEmail,
   getAdminEntitlementOverride,
   ADMIN_OVERRIDE_HEADER,
+  ADMIN_OVERRIDE_EVENT,
+  OVERRIDE_LABELS,
+  type AdminEntitlementOverride,
 } from "@/lib/adminEntitlementOverride";
 import { getSuggestedQuestionKeys } from "@/lib/suggestions";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -780,6 +783,23 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const isMobile = useIsMobile();
   const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
   const { subscription, refetch: refetchSub } = useSubscription();
+
+  // E7.2: Admin test-mode badge — admin-only, reactive to override changes.
+  const [adminOverrideActive, setAdminOverrideActive] = useState<AdminEntitlementOverride | null>(
+    () => (isAllowedAdminEmail(user?.email) ? getAdminEntitlementOverride() : null)
+  );
+  useEffect(() => {
+    const sync = () => {
+      setAdminOverrideActive(isAllowedAdminEmail(user?.email) ? getAdminEntitlementOverride() : null);
+    };
+    sync();
+    window.addEventListener(ADMIN_OVERRIDE_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(ADMIN_OVERRIDE_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [user?.email]);
   const { trialData, dismissWelcomeBanner } = useLaunchTrial();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
   const [showExpiryModal, setShowExpiryModal] = useState(false);
@@ -1338,6 +1358,23 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             <h1 className="text-lg font-bold text-gradient">{t("appName")}</h1>
             <p className="text-xs text-muted-foreground">{t("appTagline")}</p>
           </div>
+          {/* E7.2: Admin test-mode badge — visible only to allowed admins with active override. */}
+          {adminOverrideActive && (
+            <span
+              className="hidden md:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border"
+              style={{
+                background: "rgba(255,140,0,0.10)",
+                color: "#FFB870",
+                borderColor: "rgba(255,140,0,0.35)",
+              }}
+              title={language === "ar" ? "تجاوز الأدمن — لا يغيّر الفوترة" : "Admin override — does not change billing"}
+            >
+              <FlaskConical className="w-3 h-3" />
+              {language === "ar"
+                ? `وضع اختبار الأدمن: ${OVERRIDE_LABELS[adminOverrideActive].ar}`
+                : `Admin Test: ${OVERRIDE_LABELS[adminOverrideActive].en}`}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={handleNewConversation} className="text-muted-foreground hover:text-foreground" title={t("newConversation")}>
