@@ -1128,6 +1128,32 @@ export type Database = {
           },
         ]
       }
+      org_member_presence: {
+        Row: {
+          last_seen_at: string
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_member_presence_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
@@ -1171,6 +1197,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_deleted: boolean
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_messages_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1990,6 +2057,10 @@ export type Database = {
         Args: { p_mode: string; p_user_id: string }
         Returns: undefined
       }
+      edit_org_message: {
+        Args: { p_message_id: string; p_new_body: string }
+        Returns: undefined
+      }
       get_all_mode_daily_counts: {
         Args: { p_user_id: string }
         Returns: {
@@ -2110,6 +2181,14 @@ export type Database = {
           type: string
         }[]
       }
+      send_org_message: {
+        Args: { p_body: string; p_org_id: string }
+        Returns: string
+      }
+      soft_delete_org_message: {
+        Args: { p_message_id: string }
+        Returns: undefined
+      }
       submit_case_review: {
         Args: {
           p_case_id: string
@@ -2119,6 +2198,7 @@ export type Database = {
         }
         Returns: string
       }
+      touch_org_presence: { Args: { p_org_id: string }; Returns: undefined }
       transition_case_status: {
         Args: { p_case_id: string; p_note?: string; p_to_status: string }
         Returns: undefined

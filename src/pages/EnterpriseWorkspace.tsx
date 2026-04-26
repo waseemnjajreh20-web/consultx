@@ -1,6 +1,6 @@
 /**
  * EnterpriseWorkspace — full institutional workspace page (route: /enterprise).
- * E7.6: member management, invite revoke, branding settings all live.
+ * E7.7: functional Reports & Approvals, CaseDetailDrawer, org messages + presence.
  */
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -48,14 +48,17 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 
+import CaseDetailDrawer from "@/components/enterprise/CaseDetailDrawer";
 import CaseList from "@/components/enterprise/CaseList";
 import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
 import CreateOrganizationCard from "@/components/enterprise/CreateOrganizationCard";
 import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import MemberList from "@/components/enterprise/MemberList";
 import OrgCard from "@/components/enterprise/OrgCard";
+import OrgMessagesPanel from "@/components/enterprise/OrgMessagesPanel";
+import TeamPresencePanel from "@/components/enterprise/TeamPresencePanel";
 
-// ── Static copy ─────────────────────���────────────────────────���───────────────
+// ── Static copy ───────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<string, { ar: string; en: string }> = {
   owner:              { ar: "المالك",       en: "Owner" },
   admin:              { ar: "مدير",         en: "Admin" },
@@ -85,17 +88,13 @@ const STATUS_LABEL: Record<string, { ar: string; en: string; cls: string }> = {
   delivered_to_client:      { ar: "مُسلَّمة للعميل",        en: "Delivered to client",  cls: "bg-green-500/10 text-green-400 border-green-500/20" },
   closed:                   { ar: "مغلقة",               en: "Closed",               cls: "bg-muted/40 text-muted-foreground border-border/40" },
   cancelled:                { ar: "ملغاة",               en: "Cancelled",            cls: "bg-red-500/10 text-red-400 border-red-500/20" },
-  open:                     { ar: "مفتوحة",              en: "Open",                 cls: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  in_review:                { ar: "قيد المراجعة",          en: "In review",            cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  approved:                 { ar: "معتمدة",              en: "Approved",             cls: "bg-green-500/10 text-green-400 border-green-500/20" },
-  rejected:                 { ar: "مرفوضة",              en: "Rejected",             cls: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
 
 const ACTIVE_CASE_STATUSES = new Set([
   "draft", "submitted", "assigned",
   "under_engineering_review", "ai_review_attached",
   "engineer_review_completed", "submitted_to_head",
-  "returned_for_revision", "open", "in_review",
+  "returned_for_revision",
 ]);
 
 const REPORT_STYLES = [
@@ -105,9 +104,15 @@ const REPORT_STYLES = [
   { value: "technical",labelEn: "Technical", labelAr: "تقني" },
 ];
 
+// Cases that need review or approval action
+const NEEDS_ACTION_STATUSES = new Set([
+  "submitted", "returned_for_revision",
+  "engineer_review_completed", "submitted_to_head",
+]);
+
 type WorkspaceTab = "dashboard" | "cases" | "members" | "invitations" | "reports" | "settings";
 
-// ════════════���═════════════════════════════════════���═════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // Page
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -128,6 +133,7 @@ export default function EnterpriseWorkspace() {
   } = useEntitlement();
 
   const {
+    orgId,
     org,
     orgRole,
     orgLoading,
@@ -138,6 +144,10 @@ export default function EnterpriseWorkspace() {
     cases,
     casesLoading,
     branding,
+    messages,
+    messagesLoading,
+    presence,
+    presenceLoading,
     isOwnerOrAdmin,
     isFinanceOfficer,
     hasOrganization,
@@ -151,12 +161,17 @@ export default function EnterpriseWorkspace() {
     updateMemberRole,
     updateMemberStatus,
     upsertBranding,
+    touchPresence,
+    sendMessage,
+    deleteMessage,
   } = useOrganization();
 
   const [tab, setTab]                   = useState<WorkspaceTab>("dashboard");
   const [showInviteForm, setShowInvite] = useState(false);
   const [showCreateCase, setShowCase]   = useState(false);
   const [bootstrapSuccess, setBootstrapSuccess] = useState(false);
+  // For opening a case from the Reports tab
+  const [reportSelectedCase, setReportSelectedCase] = useState<typeof cases[number] | null>(null);
 
   const isOverrideActive = effectiveAccessSource === "admin_override";
   const roleLabel        = orgRole ? ROLE_LABEL[orgRole] ?? { ar: orgRole, en: orgRole } : null;
@@ -164,6 +179,15 @@ export default function EnterpriseWorkspace() {
   useEffect(() => {
     if (!hasOrganization) setBootstrapSuccess(false);
   }, [hasOrganization]);
+
+  // Presence heartbeat — touch every 60 s while workspace is open
+  useEffect(() => {
+    if (!hasOrganization || !orgId) return;
+    touchPresence.mutate();
+    const interval = setInterval(() => touchPresence.mutate(), 60_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasOrganization, orgId]);
 
   // Auth guard
   if (!authLoading && !user) {
@@ -189,9 +213,10 @@ export default function EnterpriseWorkspace() {
     acc[c.status] = (acc[c.status] ?? 0) + 1;
     return acc;
   }, {});
-  const latestCases = cases.slice(0, 5);
+  const latestCases      = cases.slice(0, 5);
+  const actionableCases  = cases.filter((c) => NEEDS_ACTION_STATUSES.has(c.status));
 
-  // ── Header ───────────────────────���─────────────────────��─────────────────
+  // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <header
       className="border-b border-white/10 bg-[rgba(10,14,20,0.92)] backdrop-blur-xl sticky top-0 z-20"
@@ -250,7 +275,7 @@ export default function EnterpriseWorkspace() {
     </header>
   );
 
-  // ── Bootstrap state (no org yet) ─────────────────────────────────────────
+  // ── Bootstrap state (no org yet) ──────────────────────────────────────────
   if (!orgLoading && !hasOrganization) {
     return (
       <div className="min-h-dvh bg-background" dir={ar ? "rtl" : "ltr"}>
@@ -295,7 +320,7 @@ export default function EnterpriseWorkspace() {
     );
   }
 
-  // ── Workspace ────────────────────────────────────────────────────��───────
+  // ── Workspace ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-dvh bg-background" dir={ar ? "rtl" : "ltr"}>
       {Header}
@@ -338,15 +363,15 @@ export default function EnterpriseWorkspace() {
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as WorkspaceTab)} dir={ar ? "rtl" : "ltr"}>
           <TabsList className="flex flex-wrap h-auto gap-1 bg-card/40 p-1">
-            <TabsTrigger value="dashboard"    className="text-xs gap-1.5"><Sparkles className="w-3.5 h-3.5" />    {ar ? "لوحة القيادة"        : "Dashboard"}</TabsTrigger>
-            <TabsTrigger value="cases"        className="text-xs gap-1.5"><Briefcase className="w-3.5 h-3.5" />   {ar ? "المعاملات"           : "Cases"}</TabsTrigger>
-            <TabsTrigger value="members"      className="text-xs gap-1.5"><Users className="w-3.5 h-3.5" />       {ar ? "الأعضاء والصلاحيات" : "Members & Roles"}</TabsTrigger>
-            <TabsTrigger value="invitations"  className="text-xs gap-1.5"><Mail className="w-3.5 h-3.5" />        {ar ? "الدعوات"             : "Invitations"}</TabsTrigger>
-            <TabsTrigger value="reports"      className="text-xs gap-1.5"><FileSignature className="w-3.5 h-3.5" />{ar ? "التقارير والاعتمادات" : "Reports"}</TabsTrigger>
-            <TabsTrigger value="settings"     className="text-xs gap-1.5"><Settings className="w-3.5 h-3.5" />    {ar ? "إعدادات المؤسسة"    : "Settings"}</TabsTrigger>
+            <TabsTrigger value="dashboard"   className="text-xs gap-1.5"><Sparkles className="w-3.5 h-3.5" />    {ar ? "لوحة القيادة"        : "Dashboard"}</TabsTrigger>
+            <TabsTrigger value="cases"       className="text-xs gap-1.5"><Briefcase className="w-3.5 h-3.5" />   {ar ? "المعاملات"           : "Cases"}</TabsTrigger>
+            <TabsTrigger value="members"     className="text-xs gap-1.5"><Users className="w-3.5 h-3.5" />       {ar ? "الأعضاء والصلاحيات" : "Members & Roles"}</TabsTrigger>
+            <TabsTrigger value="invitations" className="text-xs gap-1.5"><Mail className="w-3.5 h-3.5" />        {ar ? "الدعوات"             : "Invitations"}</TabsTrigger>
+            <TabsTrigger value="reports"     className="text-xs gap-1.5"><FileSignature className="w-3.5 h-3.5" />{ar ? "التقارير والاعتمادات" : "Reports"}{actionableCases.length > 0 && !isFinanceOfficer && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 ms-0.5" />}</TabsTrigger>
+            <TabsTrigger value="settings"    className="text-xs gap-1.5"><Settings className="w-3.5 h-3.5" />    {ar ? "إعدادات المؤسسة"    : "Settings"}</TabsTrigger>
           </TabsList>
 
-          {/* ── Dashboard ─────────────────────────────────────────────── */}
+          {/* ── Dashboard ─────────────────────────────────────────────────── */}
           <TabsContent value="dashboard" className="space-y-4 mt-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard icon={<Users className="w-4 h-4" />} label={ar ? "الأعضاء" : "Members"} value={memberCount} loading={membersLoading}
@@ -357,6 +382,7 @@ export default function EnterpriseWorkspace() {
               <StatCard icon={<Hourglass className="w-4 h-4" />} label={ar ? "إجمالي المعاملات" : "Total cases"} value={cases.length} loading={casesLoading} muted={isFinanceOfficer} />
             </div>
 
+            {/* Cases by status */}
             {!isFinanceOfficer && Object.keys(casesByStatus).length > 0 && (
               <div className="rounded-xl border border-border/40 bg-card/40 p-3 space-y-2">
                 <p className="text-[11px] font-semibold text-muted-foreground">{ar ? "المعاملات حسب الحالة" : "Cases by status"}</p>
@@ -373,6 +399,7 @@ export default function EnterpriseWorkspace() {
               </div>
             )}
 
+            {/* Latest cases */}
             {!isFinanceOfficer && (
               <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-2">
@@ -419,15 +446,35 @@ export default function EnterpriseWorkspace() {
               </div>
             )}
 
+            {/* Quick actions */}
             <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
               <p className="text-sm font-semibold">{ar ? "إجراءات سريعة" : "Quick actions"}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Button size="sm" variant="outline" disabled={!canCreateCase}    onClick={() => { setTab("cases"); setShowCase(true); }}      className="justify-start gap-2"><Plus className="w-3.5 h-3.5" /> {ar ? "إنشاء معاملة" : "New case"}</Button>
-                <Button size="sm" variant="outline" disabled={!canManageMembers} onClick={() => { setTab("invitations"); setShowInvite(true); }} className="justify-start gap-2"><UserPlus className="w-3.5 h-3.5" /> {ar ? "دعوة عضو" : "Invite"}</Button>
+                <Button size="sm" variant="outline" disabled={!canCreateCase}    onClick={() => { setTab("cases"); setShowCase(true); }}           className="justify-start gap-2"><Plus className="w-3.5 h-3.5" /> {ar ? "إنشاء معاملة" : "New case"}</Button>
+                <Button size="sm" variant="outline" disabled={!canManageMembers} onClick={() => { setTab("invitations"); setShowInvite(true); }}    className="justify-start gap-2"><UserPlus className="w-3.5 h-3.5" /> {ar ? "دعوة عضو" : "Invite"}</Button>
                 <Button size="sm" variant="outline" onClick={() => setTab("settings")} className="justify-start gap-2"><Settings className="w-3.5 h-3.5" /> {ar ? "إعدادات" : "Settings"}</Button>
                 <Button size="sm" variant="outline" onClick={() => setTab("reports")}  className="justify-start gap-2"><FileSignature className="w-3.5 h-3.5" /> {ar ? "التقارير" : "Reports"}</Button>
               </div>
             </div>
+
+            {/* Team presence + messages */}
+            {!isFinanceOfficer && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TeamPresencePanel
+                  members={members}
+                  presence={presence}
+                  loading={membersLoading || presenceLoading}
+                />
+                <OrgMessagesPanel
+                  messages={messages}
+                  loading={messagesLoading}
+                  currentUserId={user?.id}
+                  isOwnerOrAdmin={isOwnerOrAdmin}
+                  sendMessage={sendMessage}
+                  deleteMessage={deleteMessage}
+                />
+              </div>
+            )}
 
             {isOwnerMode && (
               <div className="rounded-xl p-4 space-y-2" style={{ background: "rgba(255,140,0,0.06)", border: "1px solid rgba(255,140,0,0.25)" }}>
@@ -445,16 +492,24 @@ export default function EnterpriseWorkspace() {
             )}
           </TabsContent>
 
-          {/* ── Cases ──────────────────────────────────────────────────── */}
+          {/* ── Cases ──────────────────────────────────────────────────────── */}
           <TabsContent value="cases" className="space-y-3 mt-4">
             {isFinanceOfficer ? (
               <DisabledSection ar={ar} title={ar ? "غير متاح للمالي" : "Not available for finance officers"} desc={ar ? "دور «المسؤول المالي» مخصص للفوترة فقط." : "The finance officer role is billing-only."} />
             ) : (
-              <CaseList cases={cases} loading={casesLoading} isOwnerOrAdmin={canCreateCase} onCreateClick={() => setShowCase(true)} />
+              <CaseList
+                cases={cases}
+                loading={casesLoading}
+                isOwnerOrAdmin={canCreateCase}
+                orgId={orgId ?? ""}
+                currentUserId={user?.id}
+                orgRole={orgRole}
+                onCreateClick={() => setShowCase(true)}
+              />
             )}
           </TabsContent>
 
-          {/* ── Members & Roles ─────────────────────────────────────────── */}
+          {/* ── Members & Roles ───────────────────────────────────────────── */}
           <TabsContent value="members" className="space-y-3 mt-4">
             <MemberList
               members={members}
@@ -489,7 +544,7 @@ export default function EnterpriseWorkspace() {
             )}
           </TabsContent>
 
-          {/* ── Invitations ────────────────��────────────────────────────── */}
+          {/* ── Invitations ────────────────────────────────────────────────── */}
           <TabsContent value="invitations" className="space-y-3 mt-4">
             {!canManageMembers ? (
               <DisabledSection ar={ar} title={ar ? "للمالك / المدير فقط" : "Owner / admin only"} desc={ar ? "لا يمكنك إدارة الدعوات بدورك الحالي." : "Your role cannot manage invitations."} />
@@ -545,27 +600,95 @@ export default function EnterpriseWorkspace() {
             )}
           </TabsContent>
 
-          {/* ── Reports & Approvals ─────────────────────────────────────── */}
-          <TabsContent value="reports" className="space-y-3 mt-4">
-            <div className="rounded-xl border border-border/40 bg-card/40 p-5 space-y-3">
-              <p className="text-sm font-semibold flex items-center gap-2">
-                <FileSignature className="w-4 h-4 text-primary" />
-                {ar ? "التقارير والاعتمادات" : "Reports & Approvals"}
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {ar
-                  ? "سير العمل المخطط: مراجعة المهندس → ربط الأدلة الذكية → اعتماد رئيس القسم → التسليم للعميل. الجداول موجودة في قاعدة البيانات؛ واجهة الاستخدام قيد الربط."
-                  : "Planned flow: engineer review → AI evidence binding → head approval → client delivery. Tables exist in the database; UI binding is in progress."}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <PipelineStep ar={ar} icon={<ClipboardList className="w-3.5 h-3.5" />} label={ar ? "مراجعة المهندس" : "Engineer review"} />
-                <PipelineStep ar={ar} icon={<Sparkles className="w-3.5 h-3.5" />}    label={ar ? "ربط الأدلة الذكية" : "AI evidence"} />
-                <PipelineStep ar={ar} icon={<CheckCircle2 className="w-3.5 h-3.5" />} label={ar ? "اعتماد رئيس القسم" : "Head approval"} />
-              </div>
-            </div>
+          {/* ── Reports & Approvals ───────────────────────────────────────── */}
+          <TabsContent value="reports" className="space-y-4 mt-4">
+            {isFinanceOfficer ? (
+              <DisabledSection ar={ar} title={ar ? "غير متاح للمالي" : "Not available for finance officers"} desc={ar ? "التقارير الفنية مخصصة لأعضاء الفريق الهندسي." : "Technical reports are for engineering team members only."} />
+            ) : (
+              <>
+                {/* Actionable cases */}
+                <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    <FileSignature className="w-4 h-4 text-primary" />
+                    {ar ? "معاملات تحتاج إجراء" : "Cases needing action"}
+                    {actionableCases.length > 0 && (
+                      <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-400 ms-1">
+                        {actionableCases.length}
+                      </Badge>
+                    )}
+                  </p>
+                  {casesLoading ? (
+                    <div className="space-y-1.5">{[1,2].map(i => <div key={i} className="h-12 rounded bg-muted/20 animate-pulse" />)}</div>
+                  ) : actionableCases.length === 0 ? (
+                    <div className="text-center py-6">
+                      <CheckCircle2 className="w-8 h-8 text-green-400/60 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">{ar ? "لا توجد معاملات تحتاج إجراء فورياً" : "No cases require immediate action"}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {actionableCases.map((c) => {
+                        const lbl = STATUS_LABEL[c.status] ?? { ar: c.status, en: c.status, cls: "bg-muted/40 text-muted-foreground border-border/40" };
+                        return (
+                          <button
+                            key={c.id}
+                            onClick={() => setReportSelectedCase(c)}
+                            className="w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors text-start"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate">{c.title}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">{c.case_number}{c.client_name ? ` · ${c.client_name}` : ""}</p>
+                            </div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${lbl.cls}`}>
+                              {ar ? lbl.ar : lbl.en}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pipeline summary */}
+                <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
+                  <p className="text-sm font-semibold">{ar ? "مراحل سير العمل" : "Workflow stages"}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <PipelineStageCard
+                      ar={ar}
+                      titleAr="مراجعة المهندس"
+                      titleEn="Engineer review"
+                      count={cases.filter(c => ["under_engineering_review","ai_review_attached","engineer_review_completed"].includes(c.status)).length}
+                      cls="bg-blue-500/5 border-blue-500/20"
+                      dotCls="bg-blue-400"
+                    />
+                    <PipelineStageCard
+                      ar={ar}
+                      titleAr="اعتماد رئيس القسم"
+                      titleEn="Head approval"
+                      count={cases.filter(c => c.status === "submitted_to_head").length}
+                      cls="bg-amber-500/5 border-amber-500/20"
+                      dotCls="bg-amber-400"
+                    />
+                    <PipelineStageCard
+                      ar={ar}
+                      titleAr="مكتملة / مُسلَّمة"
+                      titleEn="Completed / delivered"
+                      count={cases.filter(c => ["approved_internal","delivered_to_client","closed"].includes(c.status)).length}
+                      cls="bg-green-500/5 border-green-500/20"
+                      dotCls="bg-green-400"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-muted-foreground px-1">
+                  {ar
+                    ? "انقر على أي معاملة لفتح التفاصيل والمراجعات وأدلة الذكاء الاصطناعي."
+                    : "Click any case above to open its details, reviews, and AI evidence."}
+                </p>
+              </>
+            )}
           </TabsContent>
 
-          {/* ── Settings ─────────────────────────────��──────────────────── */}
+          {/* ── Settings ────────────────────────────────────────────────────── */}
           <TabsContent value="settings" className="space-y-3 mt-4">
             {org && <OrgCard org={org} orgRole={orgRole ?? "engineer"} />}
 
@@ -598,11 +721,21 @@ export default function EnterpriseWorkspace() {
       </main>
 
       <CreateCaseModal open={showCreateCase} onClose={() => setShowCase(false)} createCaseMutation={createCase} />
+
+      {/* Case detail drawer triggered from Reports tab */}
+      <CaseDetailDrawer
+        open={!!reportSelectedCase}
+        onClose={() => setReportSelectedCase(null)}
+        case_={reportSelectedCase}
+        orgId={orgId ?? ""}
+        currentUserId={user?.id}
+        orgRole={orgRole}
+      />
     </div>
   );
 }
 
-// ── Small presentational helpers ─────────────────────────────────────────────
+// ── Presentational helpers ────────────────────────────────────────────────────
 
 function Chip({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -636,17 +769,19 @@ function DisabledSection({ ar, title, desc }: { ar: boolean; title: string; desc
   );
 }
 
-function PipelineStep({ ar, icon, label }: { ar: boolean; icon: React.ReactNode; label: string }) {
+function PipelineStageCard({ ar, titleAr, titleEn, count, cls, dotCls }: {
+  ar: boolean; titleAr: string; titleEn: string; count: number; cls: string; dotCls: string;
+}) {
   return (
-    <div className="rounded-lg border border-dashed border-border/40 bg-muted/5 p-3 flex items-center gap-2 opacity-70">
-      <span className="text-primary">{icon}</span>
-      <span className="text-xs">{label}</span>
-      <Badge variant="outline" className="ms-auto text-[9px] border-dashed">{ar ? "قريبًا" : "soon"}</Badge>
+    <div className={`rounded-lg border p-3 flex items-center gap-3 ${cls}`}>
+      <span className={`w-2 h-2 rounded-full shrink-0 ${dotCls}`} />
+      <span className="text-xs flex-1">{ar ? titleAr : titleEn}</span>
+      <span className="text-sm font-semibold tabular-nums">{count}</span>
     </div>
   );
 }
 
-// Invitation row with copy + revoke
+// ── Invitation row ────────────────────────────────────────────────────────────
 type Invitation = { id: string; email: string; role: string; token: string; status: string; created_at: string };
 
 function InvitationRow({
@@ -730,7 +865,7 @@ function InvitationRow({
   );
 }
 
-// Branding settings panel
+// ── Branding settings panel ───────────────────────────────────────────────────
 function BrandingSettingsPanel({
   ar, branding, isOwnerOrAdmin, upsertBranding, toast,
 }: {
@@ -740,15 +875,14 @@ function BrandingSettingsPanel({
   upsertBranding: ReturnType<typeof useOrganization>["upsertBranding"];
   toast: ReturnType<typeof useToast>["toast"];
 }) {
-  const [logoUrl,           setLogoUrl]           = useState(branding?.logo_url ?? "");
-  const [reportHeaderAr,    setReportHeaderAr]    = useState(branding?.report_header_ar ?? "");
-  const [reportHeaderEn,    setReportHeaderEn]    = useState(branding?.report_header_en ?? "");
-  const [primaryColor,      setPrimaryColor]      = useState(branding?.primary_color ?? "");
-  const [secondaryColor,    setSecondaryColor]    = useState(branding?.secondary_color ?? "");
-  const [reportStyle,       setReportStyle]       = useState(branding?.default_report_style ?? "standard");
-  const [saved,             setSaved]             = useState(false);
+  const [logoUrl,        setLogoUrl]        = useState(branding?.logo_url ?? "");
+  const [reportHeaderAr, setReportHeaderAr] = useState(branding?.report_header_ar ?? "");
+  const [reportHeaderEn, setReportHeaderEn] = useState(branding?.report_header_en ?? "");
+  const [primaryColor,   setPrimaryColor]   = useState(branding?.primary_color ?? "");
+  const [secondaryColor, setSecondaryColor] = useState(branding?.secondary_color ?? "");
+  const [reportStyle,    setReportStyle]    = useState(branding?.default_report_style ?? "standard");
+  const [saved,          setSaved]          = useState(false);
 
-  // Sync if branding loads after first render
   useEffect(() => {
     if (!branding) return;
     setLogoUrl(branding.logo_url ?? "");
@@ -762,11 +896,11 @@ function BrandingSettingsPanel({
   const handleSave = async () => {
     try {
       await upsertBranding.mutateAsync({
-        logo_url: logoUrl || null,
-        report_header_ar: reportHeaderAr || null,
-        report_header_en: reportHeaderEn || null,
-        primary_color: primaryColor || null,
-        secondary_color: secondaryColor || null,
+        logo_url:             logoUrl || null,
+        report_header_ar:     reportHeaderAr || null,
+        report_header_en:     reportHeaderEn || null,
+        primary_color:        primaryColor || null,
+        secondary_color:      secondaryColor || null,
         default_report_style: reportStyle,
       });
       setSaved(true);
@@ -796,98 +930,43 @@ function BrandingSettingsPanel({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "رابط الشعار (URL)" : "Logo URL"}</Label>
-          <Input
-            value={logoUrl}
-            onChange={(e) => setLogoUrl(e.target.value)}
-            placeholder="https://…"
-            className="h-9 text-sm"
-            disabled={!isOwnerOrAdmin}
-          />
+          <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…" className="h-9 text-sm" disabled={!isOwnerOrAdmin} />
         </div>
-
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "نمط التقرير الافتراضي" : "Default report style"}</Label>
           <Select value={reportStyle} onValueChange={setReportStyle} disabled={!isOwnerOrAdmin}>
             <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {REPORT_STYLES.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{ar ? s.labelAr : s.labelEn}</SelectItem>
-              ))}
+              {REPORT_STYLES.map((s) => <SelectItem key={s.value} value={s.value}>{ar ? s.labelAr : s.labelEn}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "ترويسة التقارير (عربي)" : "Report header (Arabic)"}</Label>
-          <Input
-            value={reportHeaderAr}
-            onChange={(e) => setReportHeaderAr(e.target.value)}
-            placeholder={ar ? "اسم المؤسسة في رأس التقرير" : "Arabic org name in report header"}
-            className="h-9 text-sm"
-            disabled={!isOwnerOrAdmin}
-            dir="rtl"
-          />
+          <Input value={reportHeaderAr} onChange={(e) => setReportHeaderAr(e.target.value)} placeholder={ar ? "اسم المؤسسة في رأس التقرير" : "Arabic org name"} className="h-9 text-sm" disabled={!isOwnerOrAdmin} dir="rtl" />
         </div>
-
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "ترويسة التقارير (إنجليزي)" : "Report header (English)"}</Label>
-          <Input
-            value={reportHeaderEn}
-            onChange={(e) => setReportHeaderEn(e.target.value)}
-            placeholder="Org name in report header (English)"
-            className="h-9 text-sm"
-            disabled={!isOwnerOrAdmin}
-            dir="ltr"
-          />
+          <Input value={reportHeaderEn} onChange={(e) => setReportHeaderEn(e.target.value)} placeholder="Org name in report header" className="h-9 text-sm" disabled={!isOwnerOrAdmin} dir="ltr" />
         </div>
-
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "اللون الأساسي" : "Primary color"}</Label>
           <div className="flex gap-2">
-            <Input
-              type="color"
-              value={primaryColor || "#000000"}
-              onChange={(e) => setPrimaryColor(e.target.value)}
-              className="h-9 w-12 p-1 cursor-pointer"
-              disabled={!isOwnerOrAdmin}
-            />
-            <Input
-              value={primaryColor}
-              onChange={(e) => setPrimaryColor(e.target.value)}
-              placeholder="#000000"
-              className="h-9 text-sm flex-1"
-              disabled={!isOwnerOrAdmin}
-            />
+            <Input type="color" value={primaryColor || "#000000"} onChange={(e) => setPrimaryColor(e.target.value)} className="h-9 w-12 p-1 cursor-pointer" disabled={!isOwnerOrAdmin} />
+            <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} placeholder="#000000" className="h-9 text-sm flex-1" disabled={!isOwnerOrAdmin} />
           </div>
         </div>
-
         <div className="space-y-1.5">
           <Label className="text-xs">{ar ? "اللون الثانوي" : "Secondary color"}</Label>
           <div className="flex gap-2">
-            <Input
-              type="color"
-              value={secondaryColor || "#000000"}
-              onChange={(e) => setSecondaryColor(e.target.value)}
-              className="h-9 w-12 p-1 cursor-pointer"
-              disabled={!isOwnerOrAdmin}
-            />
-            <Input
-              value={secondaryColor}
-              onChange={(e) => setSecondaryColor(e.target.value)}
-              placeholder="#000000"
-              className="h-9 text-sm flex-1"
-              disabled={!isOwnerOrAdmin}
-            />
+            <Input type="color" value={secondaryColor || "#000000"} onChange={(e) => setSecondaryColor(e.target.value)} className="h-9 w-12 p-1 cursor-pointer" disabled={!isOwnerOrAdmin} />
+            <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} placeholder="#000000" className="h-9 text-sm flex-1" disabled={!isOwnerOrAdmin} />
           </div>
         </div>
       </div>
 
-      {/* Preview */}
       {(logoUrl || reportHeaderAr || reportHeaderEn || primaryColor) && (
-        <div
-          className="rounded-lg border border-border/40 p-3 space-y-1.5"
-          style={{ borderColor: primaryColor || undefined }}
-        >
+        <div className="rounded-lg border border-border/40 p-3 space-y-1.5" style={{ borderColor: primaryColor || undefined }}>
           <div className="flex items-center gap-2">
             {logoUrl && (
               <img src={logoUrl} alt="logo" className="h-6 w-6 rounded object-contain bg-muted/30" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
