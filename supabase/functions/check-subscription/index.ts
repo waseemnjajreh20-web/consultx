@@ -58,6 +58,33 @@ serve(async (req) => {
         ? rawOverride as OverrideKey
         : null;
 
+      // E7.5: even under admin override, surface the admin's real org membership
+      // so the enterprise workspace can hydrate. Read-only; no DB write.
+      const adminOrgClient = createClient(supabaseUrl, serviceRoleKey);
+      const { data: adminOrgMemberRow } = await adminOrgClient
+        .from("org_members")
+        .select("role, status, organizations!inner(id, name, status, trial_end)")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      const ADMIN_AI_ACCESS_ROLES = ["owner", "admin", "head_of_department", "engineer"];
+      const adminOrgData     = adminOrgMemberRow ? (adminOrgMemberRow.organizations as any) : null;
+      const adminOrgStatusOk = adminOrgData && (adminOrgData.status === "active" || adminOrgData.status === "trial");
+      const adminOrgAccess = adminOrgMemberRow && adminOrgData
+        ? {
+            active:            true as const,
+            org_id:            adminOrgData.id            as string,
+            org_name:          adminOrgData.name          as string,
+            org_status:        adminOrgData.status        as string,
+            role:              adminOrgMemberRow.role     as string,
+            membership_status: adminOrgMemberRow.status   as string,
+            trial_end:         (adminOrgData.trial_end    as string | null) ?? null,
+            access_source:     "organization" as const,
+            ai_access:         !!(adminOrgStatusOk && ADMIN_AI_ACCESS_ROLES.includes(adminOrgMemberRow.role)),
+          }
+        : null;
+
       const baseFields = {
         expires_at: null, card_brand: null, card_last_four: null,
         cancel_at_period_end: false, past_due_since: null,
@@ -67,7 +94,7 @@ serve(async (req) => {
         launch_trial_end: null, show_welcome_banner: false,
         upgrade_context: null, recommended_plan: "pro",
         advisory_used: 0, analysis_used: 0,
-        org_access: null,
+        org_access: adminOrgAccess,
         effective_access_source: "admin_override",
       };
 
@@ -158,7 +185,7 @@ serve(async (req) => {
           upgrade_context: null,
           recommended_plan: "pro",
           // E6: Enterprise org access fields
-          org_access: null,
+          org_access: adminOrgAccess,
           effective_access_source: "admin",
           effective_access: "enterprise",
           effective_plan_slug: "enterprise",

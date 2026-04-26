@@ -19,13 +19,11 @@ import {
   ShieldCheck, ChevronLeft, FlaskConical, Building2,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useAuth } from "@/hooks/useAuth";
 import AdminEntitlementSwitcher from "@/components/enterprise/AdminEntitlementSwitcher";
-import EnterpriseCommandCenter from "@/components/enterprise/EnterpriseCommandCenter";
 import SourcePanel from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
 import type { SourceMeta } from "@/utils/sourceMetadata";
@@ -88,10 +86,9 @@ export default function AppShell({
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SidebarSection>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
 
-  // E7.3: gate the Command Center entry — admins, owner-mode override,
-  // active enterprise access, or any org-member role.
+  // E7.3/E7.5: gate the Command Center / Workspace entry — admins, owner-mode
+  // override, active enterprise access, or any org-member role.
   const showCommandCenter = isAdmin || isOwnerMode || hasEnterpriseAccess || isOrgMember;
 
   // ── Resizable source pane (desktop) ─────────────────────────────────────────
@@ -211,12 +208,13 @@ export default function AppShell({
           </button>
         )}
 
-        {/* E7.3: Enterprise Command Center entry — owner / admin / enterprise / org-member */}
+        {/* E7.5: Enterprise Workspace entry — primary action navigates to /enterprise.
+            Visible to admins, owner-mode override, enterprise access, or any org-member role. */}
         {showCommandCenter && (
           <button
-            onClick={() => setCommandCenterOpen(true)}
-            title={!sidebarOpen ? (isRtl ? "مركز المؤسسة" : "Command Center") : undefined}
-            aria-label={isRtl ? "مركز المؤسسة" : "Enterprise Command Center"}
+            onClick={() => navigate("/enterprise")}
+            title={!sidebarOpen ? (isRtl ? "مساحة العمل المؤسسية" : "Enterprise Workspace") : undefined}
+            aria-label={isRtl ? "مساحة العمل المؤسسية" : "Enterprise Workspace"}
             className="group flex items-center mx-2 p-2.5 rounded-xl transition-all duration-150 min-w-0"
             style={{
               background: "rgba(0,212,255,0.06)",
@@ -228,7 +226,7 @@ export default function AppShell({
             {sidebarOpen && (
               <span className="ms-2.5 min-w-0 flex-1 flex flex-col items-start leading-tight">
                 <span className="text-xs font-semibold truncate w-full">
-                  {isRtl ? "مركز المؤسسة" : "Command Center"}
+                  {isRtl ? "مركز المؤسسة" : "Workspace"}
                 </span>
                 {(isOwnerMode || orgRole) && (
                   <span className="text-[10px] truncate w-full" style={{ color: "rgba(0,212,255,0.7)" }}>
@@ -371,25 +369,6 @@ export default function AppShell({
         />
       </div>
 
-      {/* E7.3: Enterprise Command Center sheet */}
-      {showCommandCenter && (
-        <Sheet open={commandCenterOpen} onOpenChange={setCommandCenterOpen}>
-          <SheetContent
-            side={isRtl ? "right" : "left"}
-            className="w-full sm:max-w-2xl overflow-y-auto bg-[rgba(10,14,20,0.98)] border-white/10"
-          >
-            <SheetHeader>
-              <SheetTitle className="text-start flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-primary" />
-                {isRtl ? "مركز المؤسسة" : "Enterprise Command Center"}
-              </SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 pb-8">
-              <EnterpriseCommandCenter embedded />
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
     </div>
   );
 }

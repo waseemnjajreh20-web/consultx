@@ -24,6 +24,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Refund = lazy(() => import("./pages/Refund"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Workspace = lazy(() => import("./pages/Workspace"));
+const EnterpriseWorkspace = lazy(() => import("./pages/EnterpriseWorkspace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ const AnimatedRoutes = () => {
           <Route path="/refund" element={<PageTransition><Refund /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
           <Route path="/workspace" element={<PageTransition><Workspace /></PageTransition>} />
+          <Route path="/enterprise" element={<PageTransition><EnterpriseWorkspace /></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
