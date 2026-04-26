@@ -44,6 +44,171 @@ export type Database = {
         }
         Relationships: []
       }
+      case_documents: {
+        Row: {
+          case_id: string
+          category: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          org_id: string
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string
+          version_number: number
+          visibility: string
+        }
+        Insert: {
+          case_id: string
+          category: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          org_id: string
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          version_number?: number
+          visibility?: string
+        }
+        Update: {
+          case_id?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          org_id?: string
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          version_number?: number
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_notes: {
+        Row: {
+          author_id: string
+          body: string
+          case_id: string
+          created_at: string
+          id: string
+          org_id: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          case_id: string
+          created_at?: string
+          id?: string
+          org_id: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          case_id?: string
+          created_at?: string
+          id?: string
+          org_id?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_notes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_notes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_status_history: {
+        Row: {
+          actor_user_id: string
+          case_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          note: string | null
+          org_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_user_id: string
+          case_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          org_id: string
+          to_status: string
+        }
+        Update: {
+          actor_user_id?: string
+          case_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          org_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_status_history_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_status_history_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_summaries: {
         Row: {
           central_theme: string | null
@@ -252,6 +417,106 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "source_registry"
             referencedColumns: ["source_id"]
+          },
+        ]
+      }
+      enterprise_case_counters: {
+        Row: {
+          last_number: number
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          last_number?: number
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          last_number?: number
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_case_counters_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_cases: {
+        Row: {
+          assigned_at: string | null
+          assigned_engineer_id: string | null
+          cancelled_at: string | null
+          case_number: string
+          client_name: string | null
+          client_ref: string | null
+          closed_at: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          delivered_at: string | null
+          description: string | null
+          head_reviewer_id: string | null
+          id: string
+          org_id: string
+          status: string
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_engineer_id?: string | null
+          cancelled_at?: string | null
+          case_number: string
+          client_name?: string | null
+          client_ref?: string | null
+          closed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          delivered_at?: string | null
+          description?: string | null
+          head_reviewer_id?: string | null
+          id?: string
+          org_id: string
+          status?: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_engineer_id?: string | null
+          cancelled_at?: string | null
+          case_number?: string
+          client_name?: string | null
+          client_ref?: string | null
+          closed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          delivered_at?: string | null
+          description?: string | null
+          head_reviewer_id?: string | null
+          id?: string
+          org_id?: string
+          status?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_cases_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1276,6 +1541,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_enterprise_case: {
+        Args: {
+          p_client_name?: string
+          p_client_ref?: string
+          p_description?: string
+          p_org_id: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_organization_with_owner: {
         Args: { p_name: string }
         Returns: string
@@ -1313,6 +1588,10 @@ export type Database = {
           weight: number
         }[]
       }
+      get_org_member_role: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: string
+      }
       get_unindexed_chunks: {
         Args: { p_batch_size?: number }
         Returns: {
@@ -1331,8 +1610,16 @@ export type Database = {
         Args: { p_mode: string; p_user_id: string }
         Returns: number
       }
+      is_active_case_member: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_active_org_member: {
         Args: { p_org_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_case_assignee: {
+        Args: { p_case_id: string; p_user_id: string }
         Returns: boolean
       }
       is_org_owner: {
@@ -1383,6 +1670,10 @@ export type Database = {
           structured_table: string
           type: string
         }[]
+      }
+      transition_case_status: {
+        Args: { p_case_id: string; p_note?: string; p_to_status: string }
+        Returns: undefined
       }
     }
     Enums: {
