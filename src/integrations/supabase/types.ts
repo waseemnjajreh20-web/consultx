@@ -1178,6 +1178,53 @@ export type Database = {
           },
         ]
       }
+      organization_branding_settings: {
+        Row: {
+          created_at: string
+          default_report_style: string
+          logo_url: string | null
+          org_id: string
+          primary_color: string | null
+          report_header_ar: string | null
+          report_header_en: string | null
+          secondary_color: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_report_style?: string
+          logo_url?: string | null
+          org_id: string
+          primary_color?: string | null
+          report_header_ar?: string | null
+          report_header_en?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_report_style?: string
+          logo_url?: string | null
+          org_id?: string
+          primary_color?: string | null
+          report_header_ar?: string | null
+          report_header_en?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_settings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1881,6 +1928,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_org_invitation: { Args: { p_token: string }; Returns: string }
       attach_ai_report_version: {
         Args: {
           p_citations?: Json
@@ -2036,6 +2084,10 @@ export type Database = {
           similarity: number
         }[]
       }
+      revoke_org_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       search_graph_nodes: {
         Args: {
           p_chapter?: number
@@ -2069,6 +2121,26 @@ export type Database = {
       }
       transition_case_status: {
         Args: { p_case_id: string; p_note?: string; p_to_status: string }
+        Returns: undefined
+      }
+      update_org_member_role: {
+        Args: { p_member_id: string; p_role: string }
+        Returns: undefined
+      }
+      update_org_member_status: {
+        Args: { p_member_id: string; p_status: string }
+        Returns: undefined
+      }
+      upsert_organization_branding: {
+        Args: {
+          p_default_report_style?: string
+          p_logo_url?: string
+          p_org_id: string
+          p_primary_color?: string
+          p_report_header_ar?: string
+          p_report_header_en?: string
+          p_secondary_color?: string
+        }
         Returns: undefined
       }
     }
