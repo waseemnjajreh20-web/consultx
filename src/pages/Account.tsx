@@ -29,6 +29,8 @@ import MemberList from "@/components/enterprise/MemberList";
 import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import CaseList from "@/components/enterprise/CaseList";
 import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
+import EnterpriseCommandCenter from "@/components/enterprise/EnterpriseCommandCenter";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { useEntitlement } from "@/hooks/useEntitlement";
@@ -186,6 +188,7 @@ const Account = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [showCreateCase, setShowCreateCase] = useState(false);
+  const [showCommandCenter, setShowCommandCenter] = useState(false);
 
   const isRtl = dir === "rtl";
 
@@ -1212,6 +1215,23 @@ const Account = () => {
   // Organization
   const renderOrganization = () => (
     <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary" />
+            {language === "ar" ? "مركز المؤسسة" : "Enterprise Command Center"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {language === "ar"
+              ? "نظرة شاملة على الأعضاء والمعاملات والصلاحيات"
+              : "Unified view of members, cases, and permissions"}
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setShowCommandCenter(true)} className="shrink-0">
+          {language === "ar" ? "فتح المركز" : "Open Center"}
+        </Button>
+      </div>
+
       {orgLoading ? (
         <div className="h-24 bg-muted/30 rounded-xl animate-pulse" />
       ) : org ? (
@@ -1246,6 +1266,23 @@ const Account = () => {
         onClose={() => setShowCreateCase(false)}
         createCaseMutation={createCase}
       />
+
+      <Sheet open={showCommandCenter} onOpenChange={setShowCommandCenter}>
+        <SheetContent
+          side={isRtl ? "right" : "left"}
+          className="w-full sm:max-w-2xl overflow-y-auto bg-[rgba(10,14,20,0.98)] border-white/10"
+        >
+          <SheetHeader>
+            <SheetTitle className="text-start flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary" />
+              {language === "ar" ? "مركز المؤسسة" : "Enterprise Command Center"}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 pb-8">
+            <EnterpriseCommandCenter embedded />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 
