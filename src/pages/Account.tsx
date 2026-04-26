@@ -21,7 +21,14 @@ import {
   Mail,
   Phone,
   ExternalLink,
+  Building2,
 } from "lucide-react";
+import { useOrganization } from "@/hooks/useOrganization";
+import OrgCard from "@/components/enterprise/OrgCard";
+import MemberList from "@/components/enterprise/MemberList";
+import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
+import CaseList from "@/components/enterprise/CaseList";
+import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
 import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { useEntitlement } from "@/hooks/useEntitlement";
@@ -134,7 +141,8 @@ type SectionId =
   | "billing"
   | "usage"
   | "settings"
-  | "support";
+  | "support"
+  | "organization";
 
 interface NavItem {
   id: SectionId;
@@ -151,8 +159,22 @@ const Account = () => {
   const {
     user, session, signOut, authLoading, subscription, subLoading, refetch,
     isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess, isFreeLoggedIn,
-    trialDaysRemaining, rawAccessState,
+    trialDaysRemaining, rawAccessState, isOrgMember,
   } = useEntitlement();
+
+  const {
+    isOwnerOrAdmin,
+    isFinanceOfficer,
+    orgRole,
+    org,
+    orgLoading,
+    members,
+    membersLoading,
+    inviteMember,
+    cases,
+    casesLoading,
+    createCase,
+  } = useOrganization();
   const { t, dir, language, setLanguage } = useLanguage();
   const { preferences, updatePreferences } = usePreferences();
   const { toast } = useToast();
@@ -162,6 +184,8 @@ const Account = () => {
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showCreateCase, setShowCreateCase] = useState(false);
 
   const isRtl = dir === "rtl";
 
@@ -230,6 +254,12 @@ const Account = () => {
       labelEn: "Support",
       icon: <HelpCircle size={18} />,
     },
+    ...(isOrgMember ? [{
+      id: "organization" as SectionId,
+      labelAr: "المؤسسة",
+      labelEn: "Organization",
+      icon: <Building2 size={18} />,
+    }] : []),
   ];
 
   const userInitials = user?.email
@@ -1179,6 +1209,46 @@ const Account = () => {
     </div>
   );
 
+  // Organization
+  const renderOrganization = () => (
+    <div className="space-y-4">
+      {orgLoading ? (
+        <div className="h-24 bg-muted/30 rounded-xl animate-pulse" />
+      ) : org ? (
+        <OrgCard org={org} orgRole={orgRole ?? "engineer"} />
+      ) : null}
+
+      <MemberList
+        members={members}
+        loading={membersLoading}
+        isOwnerOrAdmin={isOwnerOrAdmin}
+        onInviteClick={() => setShowInviteForm(true)}
+      />
+
+      {showInviteForm && isOwnerOrAdmin && (
+        <InviteMemberForm
+          inviteMutation={inviteMember}
+          onClose={() => setShowInviteForm(false)}
+        />
+      )}
+
+      {!isFinanceOfficer && (
+        <CaseList
+          cases={cases}
+          loading={casesLoading}
+          isOwnerOrAdmin={isOwnerOrAdmin}
+          onCreateClick={() => setShowCreateCase(true)}
+        />
+      )}
+
+      <CreateCaseModal
+        open={showCreateCase}
+        onClose={() => setShowCreateCase(false)}
+        createCaseMutation={createCase}
+      />
+    </div>
+  );
+
   const sectionTitle = () => {
     const item = navItems.find((n) => n.id === activeSection);
     if (!item) return "";
@@ -1199,6 +1269,8 @@ const Account = () => {
         return renderSettings();
       case "support":
         return renderSupport();
+      case "organization":
+        return renderOrganization();
     }
   };
 
