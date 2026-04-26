@@ -30,6 +30,7 @@ import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import CaseList from "@/components/enterprise/CaseList";
 import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
 import EnterpriseCommandCenter from "@/components/enterprise/EnterpriseCommandCenter";
+import CreateOrganizationCard from "@/components/enterprise/CreateOrganizationCard";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,9 @@ const Account = () => {
     cases,
     casesLoading,
     createCase,
+    hasOrganization,
+    canCreateOrganization,
+    createOrganization,
   } = useOrganization();
   const { t, dir, language, setLanguage } = useLanguage();
   const { preferences, updatePreferences } = usePreferences();
@@ -1234,6 +1238,8 @@ const Account = () => {
 
       {orgLoading ? (
         <div className="h-24 bg-muted/30 rounded-xl animate-pulse" />
+      ) : !hasOrganization && canCreateOrganization ? (
+        <CreateOrganizationCard createOrgMutation={createOrganization} />
       ) : org ? (
         <OrgCard org={org} orgRole={orgRole ?? "engineer"} />
       ) : null}
