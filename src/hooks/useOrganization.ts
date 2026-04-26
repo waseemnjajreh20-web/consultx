@@ -165,6 +165,85 @@ export function useOrganization() {
     },
   });
 
+  const revokeInvitation = useMutation({
+    mutationFn: async ({ invitationId }: { invitationId: string }) => {
+      const { error } = await supabase.rpc("revoke_org_invitation", {
+        p_invitation_id: invitationId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_invitations", orgId] });
+    },
+  });
+
+  const updateMemberRole = useMutation({
+    mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
+      const { error } = await supabase.rpc("update_org_member_role", {
+        p_member_id: memberId,
+        p_role: role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+    },
+  });
+
+  const updateMemberStatus = useMutation({
+    mutationFn: async ({ memberId, status }: { memberId: string; status: string }) => {
+      const { error } = await supabase.rpc("update_org_member_status", {
+        p_member_id: memberId,
+        p_status: status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+    },
+  });
+
+  const brandingQuery = useQuery({
+    queryKey: ["org_branding", orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organization_branding_settings")
+        .select("*")
+        .eq("org_id", orgId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orgId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const upsertBranding = useMutation({
+    mutationFn: async (args: {
+      logo_url?: string | null;
+      report_header_ar?: string | null;
+      report_header_en?: string | null;
+      primary_color?: string | null;
+      secondary_color?: string | null;
+      default_report_style?: string;
+    }) => {
+      if (!orgId) throw new Error("No org");
+      const { error } = await supabase.rpc("upsert_organization_branding", {
+        p_org_id: orgId,
+        p_logo_url: args.logo_url ?? null,
+        p_report_header_ar: args.report_header_ar ?? null,
+        p_report_header_en: args.report_header_en ?? null,
+        p_primary_color: args.primary_color ?? null,
+        p_secondary_color: args.secondary_color ?? null,
+        p_default_report_style: args.default_report_style ?? "standard",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_branding", orgId] });
+    },
+  });
+
   // E7.4: composite capability flags so UI doesn't have to re-derive.
   const hasOrganization      = !!orgId;
   const canManageMembers     = hasOrganization && isOwnerOrAdmin;
@@ -191,9 +270,15 @@ export function useOrganization() {
     invitationsLoading: invitationsQuery.isLoading,
     cases: casesQuery.data ?? [],
     casesLoading: casesQuery.isLoading,
+    branding: brandingQuery.data ?? null,
+    brandingLoading: brandingQuery.isLoading,
     createOrganization,
     inviteMember,
     createCase,
+    revokeInvitation,
+    updateMemberRole,
+    updateMemberStatus,
+    upsertBranding,
     refetchMembers: () => qc.invalidateQueries({ queryKey: ["org_members", orgId] }),
     refetchCases: () => qc.invalidateQueries({ queryKey: ["enterprise_cases", orgId] }),
     refetchInvitations: () => qc.invalidateQueries({ queryKey: ["org_invitations", orgId] }),
