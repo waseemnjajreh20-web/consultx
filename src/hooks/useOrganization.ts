@@ -3,10 +3,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEntitlement } from "@/hooks/useEntitlement";
 
 export function useOrganization() {
-  const { orgId, orgRole, isOrgMember, session, refetch: refetchEntitlement } = useEntitlement();
+  const {
+    orgId: entitlementOrgId,
+    orgRole: entitlementOrgRole,
+    isOrgMember,
+    session,
+    user,
+    refetch: refetchEntitlement,
+  } = useEntitlement();
   const qc = useQueryClient();
 
-  const isOwnerOrAdmin = orgRole === "owner" || orgRole === "admin";
+  // E7.5: defense-in-depth membership fallback.
+  // The check-subscription edge function may not be redeployed yet, or under
+  // admin override may legitimately not surface org_access. Read directly
+  // from org_members (RLS-respected) so the workspace works regardless.
+  const membershipFallbackQuery = useQuery({
+    queryKey: ["org_membership_self", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("org_members")
+        .select("org_id, role, status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    // Only run the fallback when the entitlement chain hasn't told us about an org.
+    enabled: !!user?.id && !entitlementOrgId,
+    staleTime: 60 * 1000,
+  });
+
+  // Effective scoping — entitlement first, fallback second. Either path is
+  // RLS-respected, so spoofing is not possible from the client.
+  const orgId   = entitlementOrgId   ?? membershipFallbackQuery.data?.org_id ?? null;
+  const orgRole = entitlementOrgRole ?? membershipFallbackQuery.data?.role   ?? null;
+
+  const isOwnerOrAdmin   = orgRole === "owner" || orgRole === "admin";
   const isFinanceOfficer = orgRole === "finance_officer";
 
   const orgQuery = useQuery({
@@ -83,11 +117,13 @@ export function useOrganization() {
       if (error) throw error;
       return data as string;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Force the entitlement chain to re-resolve so org_access populates,
-      // then invalidate org-scoped query caches.
+      // and prime the membership fallback so the workspace hydrates even
+      // before the edge function returns a fresh org_access.
       refetchEntitlement();
-      qc.invalidateQueries();
+      await qc.invalidateQueries({ queryKey: ["org_membership_self"] });
+      await qc.invalidateQueries();
     },
   });
 

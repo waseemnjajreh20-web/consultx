@@ -26,12 +26,8 @@ import {
 import { useOrganization } from "@/hooks/useOrganization";
 import OrgCard from "@/components/enterprise/OrgCard";
 import MemberList from "@/components/enterprise/MemberList";
-import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import CaseList from "@/components/enterprise/CaseList";
-import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
-import EnterpriseCommandCenter from "@/components/enterprise/EnterpriseCommandCenter";
 import CreateOrganizationCard from "@/components/enterprise/CreateOrganizationCard";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { useEntitlement } from "@/hooks/useEntitlement";
@@ -173,10 +169,8 @@ const Account = () => {
     orgLoading,
     members,
     membersLoading,
-    inviteMember,
     cases,
     casesLoading,
-    createCase,
     hasOrganization,
     canCreateOrganization,
     createOrganization,
@@ -190,9 +184,6 @@ const Account = () => {
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showInviteForm, setShowInviteForm] = useState(false);
-  const [showCreateCase, setShowCreateCase] = useState(false);
-  const [showCommandCenter, setShowCommandCenter] = useState(false);
 
   const isRtl = dir === "rtl";
 
@@ -1216,23 +1207,23 @@ const Account = () => {
     </div>
   );
 
-  // Organization
+  // Organization (E7.5: links to the dedicated /enterprise workspace).
   const renderOrganization = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold flex items-center gap-2">
             <Building2 className="w-4 h-4 text-primary" />
-            {language === "ar" ? "مركز المؤسسة" : "Enterprise Command Center"}
+            {language === "ar" ? "مساحة العمل المؤسسية" : "Enterprise Workspace"}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {language === "ar"
-              ? "نظرة شاملة على الأعضاء والمعاملات والصلاحيات"
-              : "Unified view of members, cases, and permissions"}
+              ? "نظرة شاملة على الأعضاء والمعاملات والصلاحيات والتقارير"
+              : "Members, cases, permissions, and reports — in one place"}
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCommandCenter(true)} className="shrink-0">
-          {language === "ar" ? "فتح المركز" : "Open Center"}
+        <Button size="sm" onClick={() => navigate("/enterprise")} className="shrink-0">
+          {language === "ar" ? "فتح مساحة العمل" : "Open workspace"}
         </Button>
       </div>
 
@@ -1241,54 +1232,24 @@ const Account = () => {
       ) : !hasOrganization && canCreateOrganization ? (
         <CreateOrganizationCard createOrgMutation={createOrganization} />
       ) : org ? (
-        <OrgCard org={org} orgRole={orgRole ?? "engineer"} />
+        <>
+          <OrgCard org={org} orgRole={orgRole ?? "engineer"} />
+          <MemberList
+            members={members}
+            loading={membersLoading}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            onInviteClick={() => navigate("/enterprise")}
+          />
+          {!isFinanceOfficer && (
+            <CaseList
+              cases={cases}
+              loading={casesLoading}
+              isOwnerOrAdmin={isOwnerOrAdmin}
+              onCreateClick={() => navigate("/enterprise")}
+            />
+          )}
+        </>
       ) : null}
-
-      <MemberList
-        members={members}
-        loading={membersLoading}
-        isOwnerOrAdmin={isOwnerOrAdmin}
-        onInviteClick={() => setShowInviteForm(true)}
-      />
-
-      {showInviteForm && isOwnerOrAdmin && (
-        <InviteMemberForm
-          inviteMutation={inviteMember}
-          onClose={() => setShowInviteForm(false)}
-        />
-      )}
-
-      {!isFinanceOfficer && (
-        <CaseList
-          cases={cases}
-          loading={casesLoading}
-          isOwnerOrAdmin={isOwnerOrAdmin}
-          onCreateClick={() => setShowCreateCase(true)}
-        />
-      )}
-
-      <CreateCaseModal
-        open={showCreateCase}
-        onClose={() => setShowCreateCase(false)}
-        createCaseMutation={createCase}
-      />
-
-      <Sheet open={showCommandCenter} onOpenChange={setShowCommandCenter}>
-        <SheetContent
-          side={isRtl ? "right" : "left"}
-          className="w-full sm:max-w-2xl overflow-y-auto bg-[rgba(10,14,20,0.98)] border-white/10"
-        >
-          <SheetHeader>
-            <SheetTitle className="text-start flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-primary" />
-              {language === "ar" ? "مركز المؤسسة" : "Enterprise Command Center"}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 pb-8">
-            <EnterpriseCommandCenter embedded />
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 
