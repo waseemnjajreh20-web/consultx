@@ -67,6 +67,11 @@ serve(async (req) => {
           show_welcome_banner: false,
           upgrade_context: null,
           recommended_plan: "pro",
+          // E6: Enterprise org access fields
+          org_access: null,
+          effective_access_source: "admin",
+          effective_access: "enterprise",
+          effective_plan_slug: "enterprise",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -77,7 +82,7 @@ serve(async (req) => {
     const now         = new Date();
 
     // ── Parallel fetches ────────────────────────────────────────────────────
-    const [subResult, dailyUsageResult, profileResult, modeUsageResult] = await Promise.all([
+    const [subResult, dailyUsageResult, profileResult, modeUsageResult, orgMemberResult] = await Promise.all([
       adminClient
         .from("user_subscriptions")
         .select("*, subscription_plans(*)")
@@ -92,11 +97,38 @@ serve(async (req) => {
         .eq("user_id", userId)
         .maybeSingle(),
       adminClient.rpc("get_all_mode_daily_counts", { p_user_id: userId }),
+      // E6: org membership lookup — active seat in an active/trial organization
+      adminClient
+        .from("org_members")
+        .select("role, status, organizations!inner(id, name, status, trial_end)")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .maybeSingle(),
     ]);
 
     const subscription = subResult.data;
     const messagesUsed = dailyUsageResult.data ?? 0;
     const profile      = profileResult.data;
+
+    // E6: Extract org membership — compute org_access and enterprise seat flag
+    const AI_ACCESS_ROLES = ["owner", "admin", "head_of_department", "engineer"];
+    const orgMemberRow  = orgMemberResult.data;
+    const orgData       = orgMemberRow ? (orgMemberRow.organizations as any) : null;
+    const orgStatusOk   = orgData && (orgData.status === "active" || orgData.status === "trial");
+    const isOrgAiAccess = !!(orgStatusOk && orgMemberRow && AI_ACCESS_ROLES.includes(orgMemberRow.role));
+    const orgAccess = orgMemberRow && orgData
+      ? {
+          active:            true,
+          org_id:            orgData.id            as string,
+          org_name:          orgData.name          as string,
+          org_status:        orgData.status        as string,
+          role:              orgMemberRow.role     as string,
+          membership_status: orgMemberRow.status   as string,
+          trial_end:         (orgData.trial_end    as string | null) ?? null,
+          access_source:     "organization" as const,
+          ai_access:         isOrgAiAccess,
+        }
+      : null;
 
     // Parse mode usage into a map
     const modeUsage: Record<string, number> = {};
@@ -196,7 +228,7 @@ serve(async (req) => {
     // Compute per-mode limits from plan features
     const planSlug = plan?.slug ?? profile?.plan_type ?? "free";
     const planFeatures = plan?.features ?? {};
-    const isEnterprise = planSlug === "enterprise";
+    const isEnterprise = planSlug === "enterprise" || isOrgAiAccess;
     const isLimitedPaid = planSlug === "engineer" || planSlug === "pro";
 
     const advisoryLimit = isEnterprise ? null : (planFeatures?.advisory_limit ?? (planSlug === "engineer" ? 20 : 100));
@@ -286,6 +318,16 @@ serve(async (req) => {
 
     const upgradeContext = launchTrialStatus === "trial_expired" ? "trial_expired" : null;
 
+    // E6: Effective access — org enterprise seat overrides individual state
+    const effectiveAccessSource: string = (() => {
+      if (isOrgAiAccess)     return "organization";
+      if (isPaidActive)      return "individual_subscription";
+      if (launchTrialActive) return "launch_trial";
+      return "free";
+    })();
+    const effectivePlanSlug: string = isOrgAiAccess ? "enterprise" : planSlug;
+    const effectiveAccess: string   = isOrgAiAccess ? "enterprise" : accessState;
+
     return new Response(
       JSON.stringify({
         // Standard paid subscription fields (unchanged interface)
@@ -319,6 +361,12 @@ serve(async (req) => {
         advisory_used:               advisoryUsed,
         analysis_limit:              analysisLimit,
         analysis_used:               analysisUsed,
+
+        // E6: Enterprise org access fields
+        org_access:              orgAccess,
+        effective_access_source: effectiveAccessSource,
+        effective_access:        effectiveAccess,
+        effective_plan_slug:     effectivePlanSlug,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

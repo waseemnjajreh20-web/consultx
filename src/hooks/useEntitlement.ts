@@ -26,6 +26,7 @@ export type EntitlementState =
   | "loading"
   | "anonymous"
   | "admin"
+  | "enterprise"
   | "subscribed"
   | "trial_active"
   | "trial_pending"
@@ -65,6 +66,16 @@ export interface UseEntitlementResult {
   subscription: SubscriptionStatus | null;
   subLoading: boolean;
   refetch: () => void;
+
+  // E6: Enterprise org access
+  isOrgMember: boolean;          // has active org seat (any role)
+  orgRole: string | null;        // member's role in the org
+  orgId: string | null;
+  orgName: string | null;
+  hasEnterpriseAccess: boolean;  // active seat with AI-access role
+  effectiveAccess: string;       // "enterprise" | access_state values
+  effectiveAccessSource: string; // "organization" | "individual_subscription" | "launch_trial" | "free" | "admin"
+  effectivePlanSlug: string;     // "enterprise" | individual plan slug
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -82,18 +93,24 @@ export function useEntitlement(): UseEntitlementResult {
   const isTrialActive =
     rawAccessState === "trial_active" || subscription?.status === "trialing";
   const isTrialExpired = rawAccessState === "trial_expired";
-  const hasActiveAccess = isPaidActive || isTrialActive;
-  // isFreeLoggedIn: authenticated user with no active paid/trial access.
-  // These users enter the workspace under the free logged-in tier:
-  //   - Main mode available, Advisory/Analytical locked
-  //   - 10 messages / 24h (enforced by backend; client daily-limit check is a UX shortcut)
+
+  // E6: Enterprise org access — derived from check-subscription response
+  const orgAccess           = subscription?.org_access ?? null;
+  const isOrgMember         = !!orgAccess;
+  const orgRole             = orgAccess?.role ?? null;
+  const orgId               = orgAccess?.org_id ?? null;
+  const orgName             = orgAccess?.org_name ?? null;
+  const hasEnterpriseAccess = !!(orgAccess?.ai_access);
+  const effectiveAccess     = subscription?.effective_access ?? rawAccessState;
+  const effectiveAccessSource = subscription?.effective_access_source ?? "free";
+  const effectivePlanSlug   = subscription?.effective_plan_slug ?? (subscription?.plan_slug ?? "free");
+
+  const hasActiveAccess = isPaidActive || isTrialActive || hasEnterpriseAccess;
+  // isFreeLoggedIn: authenticated user with no active paid/trial/enterprise access.
   const isFreeLoggedIn = !isLoading && !!user && !isAdmin && !hasActiveAccess;
   // canAccessChat: any authenticated user may enter the workspace.
-  // Backend (fire-safety-chat) is the authoritative enforcer of mode and rate limits.
   const canAccessChat = hasActiveAccess || isAdmin || isFreeLoggedIn;
-  // isReturningUser: covers paid-subscription lapsers AND launch-trial-expired users
-  // who never had a paid subscription. Both groups should see the re-subscribe CTA,
-  // not the first-time "Start Free Trial" CTA. Used for Subscribe page UI copy only.
+  // isReturningUser: covers paid-subscription lapsers AND launch-trial-expired users.
   const isReturningUser =
     subscription?.status === "expired" ||
     subscription?.status === "cancelled" ||
@@ -106,6 +123,7 @@ export function useEntitlement(): UseEntitlementResult {
     if (isLoading)                                       return "loading";
     if (!user)                                           return "anonymous";
     if (isAdmin)                                         return "admin";
+    if (hasEnterpriseAccess)                             return "enterprise";
     if (isPaidActive)                                    return "subscribed";
     if (isTrialActive)                                   return "trial_active";
     if (isTrialExpired)                                  return "trial_expired";
@@ -135,5 +153,14 @@ export function useEntitlement(): UseEntitlementResult {
     subscription,
     subLoading,
     refetch,
+    // E6: Enterprise org access
+    isOrgMember,
+    orgRole,
+    orgId,
+    orgName,
+    hasEnterpriseAccess,
+    effectiveAccess,
+    effectiveAccessSource,
+    effectivePlanSlug,
   };
 }

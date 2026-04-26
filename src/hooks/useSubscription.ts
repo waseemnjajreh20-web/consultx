@@ -34,6 +34,22 @@ export interface SubscriptionStatus {
   advisory_used?: number;
   analysis_limit?: number | null;
   analysis_used?: number;
+
+  // E6: Enterprise org access fields
+  org_access?: {
+    active: true;
+    org_id: string;
+    org_name: string;
+    org_status: string;
+    role: string;
+    membership_status: string;
+    trial_end: string | null;
+    access_source: "organization";
+    ai_access: boolean;
+  } | null;
+  effective_access_source?: string;
+  effective_access?: string;
+  effective_plan_slug?: string;
 }
 
 export function useSubscription() {

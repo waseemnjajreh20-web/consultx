@@ -4247,9 +4247,27 @@ serve(async (req) => {
         .eq("user_id", userId)
         .maybeSingle();
 
-      const isUnlimitedPlan = profile?.plan_type === "enterprise";
+      // E6: Enterprise org seat check — owner/admin/head_of_department/engineer in active/trial org
+      const FSC_AI_ACCESS_ROLES = ["owner", "admin", "head_of_department", "engineer"];
+      let isOrgEnterpriseSeat = false;
+      if (!isAdmin) {
+        const { data: orgMember } = await adminClient
+          .from("org_members")
+          .select("role, organizations!inner(status)")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .maybeSingle();
+        if (orgMember) {
+          const orgStatus = (orgMember.organizations as any)?.status;
+          if ((orgStatus === "active" || orgStatus === "trial") && FSC_AI_ACCESS_ROLES.includes(orgMember.role)) {
+            isOrgEnterpriseSeat = true;
+          }
+        }
+      }
+
+      const isUnlimitedPlan = profile?.plan_type === "enterprise" || isOrgEnterpriseSeat;
       const isLimitedPaidPlan = profile?.plan_type === "engineer" || profile?.plan_type === "pro";
-      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan, "| isLimitedPaid:", isLimitedPaidPlan);
+      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan, "| isLimitedPaid:", isLimitedPaidPlan, "| isOrgEnterpriseSeat:", isOrgEnterpriseSeat);
 
       if (!isAdmin && !isUnlimitedPlan) {
         // ── Check active paid subscription ────────────────────────────────────
