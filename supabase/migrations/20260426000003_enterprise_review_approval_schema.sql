@@ -22,9 +22,8 @@
 --     See: docs/enterprise/enterprise-operating-model-v1.md, Role Matrix.
 --   * case_approvals rows are IMMUTABLE (append-only). No UPDATE or DELETE
 --     policies. No updated_at column. New decisions create new rows.
---   * decision='rejected' is NOT included in V1. The 12-status lifecycle
---     graph has no terminal rejected state. Use cancelled via
---     transition_case_status for permanent case termination.
+--   * V1 decisions: approved and returned_for_revision only.
+--     Permanent case termination uses cancelled via transition_case_status.
 --   * AI binding (case_ai_sessions, ai_report_versions, engineer_decision)
 --     is DEFERRED to Phase E5. case_reviews.findings is free-form JSONB.
 --   * Client portal access to reviews/approvals is DEFERRED to Phase E9.
@@ -141,8 +140,8 @@ COMMENT ON TABLE public.case_approvals IS
   'audit record. Only decide_case_approval() RPC writes to this table. '
   'decision=returned_for_revision requires a non-empty decision_note '
   '(enforced by CHECK constraint and RPC). '
-  'decision=rejected is NOT included in V1 (no terminal rejected status '
-  'in the 12-status lifecycle graph; use cancelled for case termination). '
+  'V1 decisions: approved and returned_for_revision only. '
+  'Permanent case termination uses cancelled via transition_case_status. '
   'admin role cannot create approval records per the operating model. '
   'finance_officer is excluded from all access via is_active_case_member(). '
   'AI binding is DEFERRED to Phase E5. '
