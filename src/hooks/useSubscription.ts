@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  isAllowedAdminEmail,
+  getAdminEntitlementOverride,
+  ADMIN_OVERRIDE_HEADER,
+} from "@/lib/adminEntitlementOverride";
 
 export interface SubscriptionStatus {
   // Existing paid-subscription fields
@@ -34,6 +39,9 @@ export interface SubscriptionStatus {
   advisory_used?: number;
   analysis_limit?: number | null;
   analysis_used?: number;
+
+  // E7.1: Admin entitlement override fields
+  owner_mode?: boolean;
 
   // E6: Enterprise org access fields
   org_access?: {
@@ -70,8 +78,14 @@ export function useSubscription() {
     try {
       if (!hasLoadedOnce.current) setLoading(true);
 
+      const invokeHeaders: Record<string, string> = {
+        Authorization: `Bearer ${session.access_token}`,
+      };
+      const adminOverride = isAllowedAdminEmail(user.email) ? getAdminEntitlementOverride() : null;
+      if (adminOverride) invokeHeaders[ADMIN_OVERRIDE_HEADER] = adminOverride;
+
       const { data, error: fnError } = await supabase.functions.invoke("check-subscription", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: invokeHeaders,
       });
 
       if (fnError) throw fnError;

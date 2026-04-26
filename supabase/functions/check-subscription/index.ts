@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-consultx-admin-entitlement-override",
 };
 
 const LAUNCH_DATE  = new Date("2026-03-28T00:00:00.000Z");
@@ -49,8 +49,94 @@ serve(async (req) => {
       });
     }
 
-    // Admin bypass
+    // Admin bypass — with optional entitlement override for testing
     if (user.email && ADMIN_EMAILS.includes(user.email)) {
+      const VALID_OVERRIDES = ["free", "engineer", "pro", "enterprise", "owner"] as const;
+      type OverrideKey = typeof VALID_OVERRIDES[number];
+      const rawOverride = req.headers.get("X-ConsultX-Admin-Entitlement-Override");
+      const override: OverrideKey | null = (rawOverride && VALID_OVERRIDES.includes(rawOverride as OverrideKey))
+        ? rawOverride as OverrideKey
+        : null;
+
+      const baseFields = {
+        expires_at: null, card_brand: null, card_last_four: null,
+        cancel_at_period_end: false, past_due_since: null,
+        daily_messages_used: 0,
+        launch_trial_active: false,
+        launch_trial_days_remaining: 0, launch_trial_hours_remaining: 0,
+        launch_trial_end: null, show_welcome_banner: false,
+        upgrade_context: null, recommended_plan: "pro",
+        advisory_used: 0, analysis_used: 0,
+        org_access: null,
+        effective_access_source: "admin_override",
+      };
+
+      if (override === "free") {
+        return new Response(JSON.stringify({
+          ...baseFields,
+          active: false, status: "none", trial_days_remaining: 0, plan: null,
+          daily_messages_limit: 10,
+          access_state: "ineligible",
+          launch_trial_status: "ineligible",
+          plan_slug: "free", advisory_limit: null, analysis_limit: null,
+          effective_access: "ineligible", effective_plan_slug: "free",
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (override === "engineer") {
+        return new Response(JSON.stringify({
+          ...baseFields,
+          active: true, status: "active", trial_days_remaining: 0,
+          plan: { id: "engineer", name_ar: "مهندس", name_en: "Engineer", price_amount: 9900, currency: "SAR" },
+          daily_messages_limit: 9999,
+          access_state: "paid_active",
+          launch_trial_status: "paid",
+          plan_slug: "engineer", advisory_limit: 20, analysis_limit: 10,
+          effective_access: "paid_active", effective_plan_slug: "engineer",
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (override === "pro") {
+        return new Response(JSON.stringify({
+          ...baseFields,
+          active: true, status: "active", trial_days_remaining: 0,
+          plan: { id: "pro", name_ar: "برو", name_en: "Pro", price_amount: 19900, currency: "SAR" },
+          daily_messages_limit: 9999,
+          access_state: "paid_active",
+          launch_trial_status: "paid",
+          plan_slug: "pro", advisory_limit: 100, analysis_limit: 50,
+          effective_access: "paid_active", effective_plan_slug: "pro",
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (override === "enterprise") {
+        return new Response(JSON.stringify({
+          ...baseFields,
+          active: true, status: "active", trial_days_remaining: 0,
+          plan: { id: "enterprise", name_ar: "مؤسسة", name_en: "Enterprise", price_amount: 34900, currency: "SAR" },
+          daily_messages_limit: 9999,
+          access_state: "paid_active",
+          launch_trial_status: "paid",
+          plan_slug: "enterprise", advisory_limit: null, analysis_limit: null,
+          effective_access: "enterprise", effective_plan_slug: "enterprise",
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (override === "owner") {
+        return new Response(JSON.stringify({
+          ...baseFields,
+          active: true, status: "active", trial_days_remaining: 0,
+          plan: { id: "owner", name_ar: "اشتراك المالك", name_en: "Owner Mode", price_amount: 0, currency: "SAR" },
+          daily_messages_limit: 9999,
+          access_state: "paid_active",
+          launch_trial_status: "paid",
+          plan_slug: "owner", advisory_limit: null, analysis_limit: null,
+          owner_mode: true,
+          effective_access: "owner", effective_plan_slug: "owner",
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // No override — return regular admin response
       return new Response(
         JSON.stringify({
           active: true, status: "active", trial_days_remaining: 0,

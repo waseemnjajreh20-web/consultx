@@ -22,6 +22,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useAuth } from "@/hooks/useAuth";
+import AdminEntitlementSwitcher from "@/components/enterprise/AdminEntitlementSwitcher";
 import SourcePanel from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
 import type { SourceMeta } from "@/utils/sourceMetadata";
@@ -200,6 +201,11 @@ export default function AppShell({
               </span>
             )}
           </button>
+        )}
+
+        {/* Admin entitlement switcher — admin-only, visible only when sidebar expanded */}
+        {isAdmin && sidebarOpen && (
+          <AdminEntitlementSwitcher lang={lang} />
         )}
 
         {/* Spacer */}

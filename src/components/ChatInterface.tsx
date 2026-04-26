@@ -12,6 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  isAllowedAdminEmail,
+  getAdminEntitlementOverride,
+  ADMIN_OVERRIDE_HEADER,
+} from "@/lib/adminEntitlementOverride";
 import { getSuggestedQuestionKeys } from "@/lib/suggestions";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -629,9 +634,16 @@ async function streamChat({
     onError(language === "en" ? "Please login to continue" : "يرجى تسجيل الدخول للمتابعة");
     return;
   }
+  const chatHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${session.access_token}`,
+  };
+  const chatOverride = isAllowedAdminEmail(session.user?.email) ? getAdminEntitlementOverride() : null;
+  if (chatOverride) chatHeaders[ADMIN_OVERRIDE_HEADER] = chatOverride;
+
   const resp = await fetch(CHAT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    headers: chatHeaders,
     body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards }),
     signal,
   });

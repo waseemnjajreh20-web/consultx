@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
   "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta",
 };
 
@@ -4237,8 +4237,16 @@ serve(async (req) => {
       const CAMPAIGN_END_TS = new Date("2026-04-28T00:00:00.000Z");
       const TRIAL_DAYS_NUM  = 7;
 
-      const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
-      const isAdmin      = userEmail && ADMIN_EMAILS.includes(userEmail);
+      const ADMIN_EMAILS  = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+      const isAdminEmail  = !!(userEmail && ADMIN_EMAILS.includes(userEmail));
+      // Admin entitlement override — honored only for admin emails, never written to DB
+      const FSC_VALID_OVERRIDES = ["free", "engineer", "pro", "enterprise", "owner"] as const;
+      const rawFscOverride = req.headers.get("X-ConsultX-Admin-Entitlement-Override");
+      const fscOverride = (isAdminEmail && rawFscOverride && FSC_VALID_OVERRIDES.includes(rawFscOverride as any))
+        ? rawFscOverride as typeof FSC_VALID_OVERRIDES[number]
+        : null;
+      // isAdmin: bypass ALL limits — disabled when override active so admins can test gated states
+      const isAdmin = isAdminEmail && !fscOverride;
 
       // Fetch profile (fix: use user_id column, not id)
       const { data: profile } = await adminClient
@@ -4265,11 +4273,14 @@ serve(async (req) => {
         }
       }
 
-      const isUnlimitedPlan = profile?.plan_type === "enterprise" || isOrgEnterpriseSeat;
-      const isLimitedPaidPlan = profile?.plan_type === "engineer" || profile?.plan_type === "pro";
-      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan, "| isLimitedPaid:", isLimitedPaidPlan, "| isOrgEnterpriseSeat:", isOrgEnterpriseSeat);
+      const isUnlimitedPlan   = profile?.plan_type === "enterprise" || isOrgEnterpriseSeat;
+      const isLimitedPaidPlan = profile?.plan_type === "engineer"   || profile?.plan_type === "pro";
+      // Override adjustments — admin test only, never writes to DB
+      const effectiveUnlimited   = isUnlimitedPlan   || fscOverride === "enterprise" || fscOverride === "owner";
+      const effectiveLimitedPaid = isLimitedPaidPlan || fscOverride === "engineer"   || fscOverride === "pro";
+      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isAdminEmail:", isAdminEmail, "| fscOverride:", fscOverride, "| isUnlimited:", effectiveUnlimited, "| isLimitedPaid:", effectiveLimitedPaid, "| isOrgEnterpriseSeat:", isOrgEnterpriseSeat);
 
-      if (!isAdmin && !isUnlimitedPlan) {
+      if (!isAdmin && !effectiveUnlimited) {
         // ── Check active paid subscription ────────────────────────────────────
         const { data: sub } = await adminClient
           .from("user_subscriptions")
@@ -4306,8 +4317,18 @@ serve(async (req) => {
           }
         }
 
+        // Inject mock plan values for admin override testing (engineer/pro only)
+        if (fscOverride === "engineer" || fscOverride === "pro") {
+          hasPaidAccess = true;
+          dailyLimit    = 9999;
+          planSlug      = fscOverride;
+          planFeatures  = fscOverride === "engineer"
+            ? { advisory_limit: 20, analysis_limit: 10 }
+            : { advisory_limit: 100, analysis_limit: 50 };
+        }
+
         // ── Per-mode enforcement for Engineer/Pro paid plans (not Enterprise) ──
-        if (hasPaidAccess && isLimitedPaidPlan && !isTrialing) {
+        if (hasPaidAccess && effectiveLimitedPaid && !isTrialing) {
           // primary mode: unlimited, no counter needed
           if (mode === "primary") {
             // pass through without incrementing any counter

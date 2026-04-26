@@ -25,6 +25,7 @@ const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 export type EntitlementState =
   | "loading"
   | "anonymous"
+  | "owner"         // admin + owner_mode override active
   | "admin"
   | "enterprise"
   | "subscribed"
@@ -76,6 +77,10 @@ export interface UseEntitlementResult {
   effectiveAccess: string;       // "enterprise" | access_state values
   effectiveAccessSource: string; // "organization" | "individual_subscription" | "launch_trial" | "free" | "admin"
   effectivePlanSlug: string;     // "enterprise" | individual plan slug
+
+  // E7.1: Admin override
+  isOwnerMode: boolean;          // admin + owner_mode override active
+  adminOverrideMode: string | null; // current override slug if active, else null
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -105,6 +110,12 @@ export function useEntitlement(): UseEntitlementResult {
   const effectiveAccessSource = subscription?.effective_access_source ?? "free";
   const effectivePlanSlug   = subscription?.effective_plan_slug ?? (subscription?.plan_slug ?? "free");
 
+  // E7.1: Admin override fields
+  const isOwnerMode      = isAdmin && !!(subscription?.owner_mode);
+  const adminOverrideMode = (isAdmin && subscription?.effective_access_source === "admin_override")
+    ? (subscription?.effective_plan_slug ?? null)
+    : null;
+
   const hasActiveAccess = isPaidActive || isTrialActive || hasEnterpriseAccess;
   // isFreeLoggedIn: authenticated user with no active paid/trial/enterprise access.
   const isFreeLoggedIn = !isLoading && !!user && !isAdmin && !hasActiveAccess;
@@ -122,6 +133,7 @@ export function useEntitlement(): UseEntitlementResult {
   const state: EntitlementState = (() => {
     if (isLoading)                                       return "loading";
     if (!user)                                           return "anonymous";
+    if (isAdmin && isOwnerMode)                          return "owner";
     if (isAdmin)                                         return "admin";
     if (hasEnterpriseAccess)                             return "enterprise";
     if (isPaidActive)                                    return "subscribed";
@@ -162,5 +174,8 @@ export function useEntitlement(): UseEntitlementResult {
     effectiveAccess,
     effectiveAccessSource,
     effectivePlanSlug,
+    // E7.1: Admin override
+    isOwnerMode,
+    adminOverrideMode,
   };
 }
