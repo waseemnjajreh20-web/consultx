@@ -117,23 +117,15 @@ const Auth = () => {
           if (newSession) await activateAutoTrial(newSession.access_token);
           toast({ title: t("welcomeBack"), description: t("loginSuccess") });
 
-          // Check for post-auth redirect (e.g. from pricing page)
+          // Post-auth redirect: pricing page may pass ?redirect=subscribe&plan=<id>.
+          // The /subscribe page accepts ?plan=<id> via useSearchParams.
           const params = new URLSearchParams(window.location.search);
           const redirect = params.get("redirect");
           const plan = params.get("plan");
-          const billing = params.get("billing") || "annual";
 
-          if (redirect === "subscribe" && plan && newSession) {
-            try {
-              const { data: checkoutData } = await supabase.functions.invoke("create-checkout", {
-                body: { plan, billing_cycle: billing },
-                headers: { Authorization: `Bearer ${newSession.access_token}` },
-              });
-              if (checkoutData?.checkout_url) {
-                window.location.href = checkoutData.checkout_url;
-                return;
-              }
-            } catch (_e) { /* fall through to default navigate */ }
+          if (redirect === "subscribe" && plan) {
+            navigate(`/subscribe?plan=${encodeURIComponent(plan)}`);
+            return;
           }
           navigate("/");
         }
@@ -154,23 +146,15 @@ const Auth = () => {
             await activateCorporateTrial(newSession.access_token);
             toast({ title: t("accountCreated"), description: t("signupSuccess") });
 
-            // Check for post-auth redirect
+            // Post-auth redirect: pricing page may pass ?redirect=subscribe&plan=<id>.
+            // The /subscribe page accepts ?plan=<id> via useSearchParams.
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get("redirect");
             const plan = params.get("plan");
-            const billing = params.get("billing") || "annual";
 
             if (redirect === "subscribe" && plan) {
-              try {
-                const { data: checkoutData } = await supabase.functions.invoke("create-checkout", {
-                  body: { plan, billing_cycle: billing },
-                  headers: { Authorization: `Bearer ${newSession.access_token}` },
-                });
-                if (checkoutData?.checkout_url) {
-                  window.location.href = checkoutData.checkout_url;
-                  return;
-                }
-              } catch (_e) { /* fall through */ }
+              navigate(`/subscribe?plan=${encodeURIComponent(plan)}`);
+              return;
             }
             navigate("/");
           } else {

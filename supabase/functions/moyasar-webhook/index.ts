@@ -94,7 +94,6 @@ serve(async (req) => {
     //   { id, status, amount, currency, source: { token, card_number, ... }, metadata }
     const paymentId = payload.id;
     const status = payload.status; // "paid" | "failed" | "initiated" | "authorized"
-    const moyasarCardToken = payload.source?.token ?? null;
     const subscriptionId: string | null = payload.metadata?.subscription_id ?? null;
 
     console.log("Moyasar webhook received:", {
@@ -137,7 +136,7 @@ serve(async (req) => {
     // ── Find subscription ─────────────────────────────────────────────────────
     const { data: sub, error: subLookupError } = await adminClient
       .from("user_subscriptions")
-      .select("*, subscription_plans(duration_days, slug)")
+      .select("*, subscription_plans(duration_days, slug, currency, price_amount)")
       .eq("id", subscriptionId)
       .maybeSingle();
 
@@ -185,6 +184,201 @@ serve(async (req) => {
       });
     }
 
+    // ── Independent Moyasar API re-verification ───────────────────────────────
+    // Never trust the webhook payload alone. Re-fetch the canonical payment
+    // from Moyasar and compare critical fields before any DB activation.
+    const moyasarSecretKey = Deno.env.get("MOYASAR_SECRET_KEY");
+    if (!moyasarSecretKey) {
+      console.error("MOYASAR_SECRET_KEY not configured — cannot re-verify payment");
+      return new Response(JSON.stringify({ error: "Verification unavailable" }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+
+    let verifyResponse: Response;
+    try {
+      verifyResponse = await fetch(`https://api.moyasar.com/v1/payments/${paymentId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Basic ${btoa(moyasarSecretKey + ":")}`,
+        },
+      });
+    } catch (verifyNetErr) {
+      console.error(
+        "Moyasar re-verification network error:",
+        verifyNetErr instanceof Error ? verifyNetErr.message : String(verifyNetErr),
+      );
+      return new Response(JSON.stringify({ error: "Verification network error" }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+
+    if (verifyResponse.status >= 400 && verifyResponse.status < 500) {
+      console.error("Moyasar re-verification 4xx:", verifyResponse.status);
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_api_error_4xx",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification failed (4xx)" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    if (verifyResponse.status >= 500) {
+      console.error("Moyasar re-verification 5xx:", verifyResponse.status);
+      return new Response(JSON.stringify({ error: "Verification upstream error" }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+
+    let verifiedPayment: any;
+    try {
+      verifiedPayment = await verifyResponse.json();
+    } catch {
+      console.error("Moyasar re-verification: invalid JSON");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_invalid_json",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification parse error" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    // Compare critical fields between verified payment and event/local sub.
+    const planCurrency = (sub as any)?.subscription_plans?.currency;
+    const expectedCurrency = planCurrency || "SAR";
+
+    if (verifiedPayment?.id !== paymentId) {
+      console.error("Re-verification mismatch: payment id");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_id_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    if (verifiedPayment?.status !== status) {
+      console.error("Re-verification mismatch: status");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_status_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    if (verifiedPayment?.metadata?.subscription_id !== sub.id) {
+      console.error("Re-verification mismatch: subscription_id");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_subscription_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    if (verifiedPayment?.currency !== expectedCurrency) {
+      console.error("Re-verification mismatch: currency");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_currency_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    // Amount validation (renewal vs verification flow).
+    const isRenewalTx = (existingTx as any)?.payment_type === "renewal";
+    if (isRenewalTx) {
+      const expectedAmount = (sub as any)?.subscription_plans?.price_amount;
+      if (
+        typeof expectedAmount !== "undefined" &&
+        expectedAmount !== null &&
+        typeof verifiedPayment?.amount !== "undefined" &&
+        verifiedPayment.amount !== expectedAmount
+      ) {
+        console.error("Re-verification mismatch: renewal amount");
+        await insertDeadLetter(adminClient, {
+          paymentId,
+          moyasarStatus: status,
+          reason: "verification_amount_mismatch",
+          payload,
+        });
+        return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+          status: 200,
+          headers: corsHeaders,
+        });
+      }
+    } else {
+      if (verifiedPayment?.amount !== 100) {
+        console.error("Re-verification mismatch: verification amount");
+        await insertDeadLetter(adminClient, {
+          paymentId,
+          moyasarStatus: status,
+          reason: "verification_amount_mismatch",
+          payload,
+        });
+        return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+          status: 200,
+          headers: corsHeaders,
+        });
+      }
+    }
+
+    // Optional given_id check.
+    const verifiedGivenId = verifiedPayment?.metadata?.given_id;
+    const localGivenId = (sub as any)?.moyasar_given_id;
+    if (verifiedGivenId && localGivenId && verifiedGivenId !== localGivenId) {
+      console.error("Re-verification mismatch: given_id");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_given_id_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    console.log("Webhook re-verification passed");
+
+    // Use the verified payment from here on — never the raw webhook payload.
+    const moyasarCardToken = verifiedPayment?.source?.token ?? null;
+    const moyasarCardBrand = verifiedPayment?.source?.company ?? null;
+    const moyasarCardLastFour = extractLastFour(verifiedPayment?.source?.number) ?? null;
+    const verifiedAmount = verifiedPayment?.amount ?? 100;
+    const verifiedCurrency = verifiedPayment?.currency ?? "SAR";
+    // ── End re-verification ───────────────────────────────────────────────────
+
     const mappedStatus = status === "paid" ? "captured" : "failed";
 
     if (!existingTx) {
@@ -193,8 +387,8 @@ serve(async (req) => {
         user_id: sub.user_id,
         subscription_id: sub.id,
         moyasar_payment_id: paymentId,
-        amount: payload.amount ?? 100,
-        currency: payload.currency ?? "SAR",
+        amount: verifiedAmount,
+        currency: verifiedCurrency,
         status: mappedStatus,
         payment_type: "verification",
       });
@@ -213,6 +407,8 @@ serve(async (req) => {
       if (moyasarCardToken) {
         updateData.moyasar_card_token = moyasarCardToken;
       }
+      if (moyasarCardBrand) updateData.card_brand = moyasarCardBrand;
+      if (moyasarCardLastFour) updateData.card_last_four = moyasarCardLastFour;
       updateData.moyasar_payment_id = paymentId;
 
       const now = new Date();
@@ -439,4 +635,11 @@ async function sendDunningEmail(params: {
   } catch (err) {
     console.error("Dunning email network error:", err instanceof Error ? err.message : String(err));
   }
+}
+
+// ── Last-four helper ──────────────────────────────────────────────────────────
+function extractLastFour(s: unknown): string | null {
+  if (typeof s !== "string") return null;
+  const digits = s.replace(/\D/g, "");
+  return digits.length >= 4 ? digits.slice(-4) : null;
 }
