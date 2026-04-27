@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -1154,6 +1154,66 @@ export type Database = {
           },
         ]
       }
+      org_member_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          display_name_override: string | null
+          member_id: string
+          notes: string | null
+          org_id: string
+          phone_ext: string | null
+          role_title_ar: string | null
+          role_title_en: string | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          display_name_override?: string | null
+          member_id: string
+          notes?: string | null
+          org_id: string
+          phone_ext?: string | null
+          role_title_ar?: string | null
+          role_title_en?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          display_name_override?: string | null
+          member_id?: string
+          notes?: string | null
+          org_id?: string
+          phone_ext?: string | null
+          role_title_ar?: string | null
+          role_title_en?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_member_profiles_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "org_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_member_profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
@@ -1842,6 +1902,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          job_title: string | null
+          phone: string | null
+          preferred_language: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          job_title?: string | null
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          job_title?: string | null
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -2209,6 +2305,29 @@ export type Database = {
       }
       update_org_member_status: {
         Args: { p_member_id: string; p_status: string }
+        Returns: undefined
+      }
+      upsert_my_public_profile: {
+        Args: {
+          p_avatar_url: string
+          p_bio: string
+          p_display_name: string
+          p_job_title: string
+          p_phone: string
+          p_preferred_language: string
+        }
+        Returns: undefined
+      }
+      upsert_org_member_profile: {
+        Args: {
+          p_department: string
+          p_display_name_override: string
+          p_member_id: string
+          p_notes: string
+          p_phone_ext: string
+          p_role_title_ar: string
+          p_role_title_en: string
+        }
         Returns: undefined
       }
       upsert_organization_branding: {

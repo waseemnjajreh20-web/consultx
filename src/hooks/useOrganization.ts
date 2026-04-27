@@ -341,14 +341,7 @@ export function useOrganization() {
   const memberProfilesQuery = useQuery({
     queryKey: ["org_member_profiles", orgId],
     queryFn: async () => {
-      // Cast: types.ts has not yet been regenerated for the new table.
-      const { data, error } = await (supabase as unknown as {
-        from: (t: string) => {
-          select: (s: string) => {
-            eq: (col: string, val: string) => Promise<{ data: OrgMemberProfileRow[] | null; error: { message: string } | null }>;
-          };
-        };
-      })
+      const { data, error } = await supabase
         .from("org_member_profiles")
         .select("*")
         .eq("org_id", orgId!);
@@ -369,13 +362,7 @@ export function useOrganization() {
     queryKey: ["user_public_profiles_for_org", orgId, memberUserIdsKey],
     queryFn: async () => {
       if (memberUserIds.length === 0) return [] as UserPublicProfileRow[];
-      const { data, error } = await (supabase as unknown as {
-        from: (t: string) => {
-          select: (s: string) => {
-            in: (col: string, vals: string[]) => Promise<{ data: UserPublicProfileRow[] | null; error: { message: string } | null }>;
-          };
-        };
-      })
+      const { data, error } = await supabase
         .from("user_public_profiles")
         .select("*")
         .in("user_id", memberUserIds);
@@ -393,15 +380,7 @@ export function useOrganization() {
     queryKey: ["user_public_profile_self", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await (supabase as unknown as {
-        from: (t: string) => {
-          select: (s: string) => {
-            eq: (col: string, val: string) => {
-              maybeSingle: () => Promise<{ data: UserPublicProfileRow | null; error: { message: string } | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await supabase
         .from("user_public_profiles")
         .select("*")
         .eq("user_id", user.id)
@@ -425,9 +404,7 @@ export function useOrganization() {
       bio: string | null;
       preferred_language: "ar" | "en";
     }) => {
-      const { error } = await (supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-      }).rpc("upsert_my_public_profile", {
+      const { error } = await supabase.rpc("upsert_my_public_profile", {
         p_display_name:       args.display_name,
         p_avatar_url:         args.avatar_url,
         p_job_title:          args.job_title,
@@ -455,9 +432,7 @@ export function useOrganization() {
       phone_ext: string | null;
       notes: string | null;
     }) => {
-      const { error } = await (supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-      }).rpc("upsert_org_member_profile", {
+      const { error } = await supabase.rpc("upsert_org_member_profile", {
         p_member_id:             args.member_id,
         p_display_name_override: args.display_name_override,
         p_role_title_ar:         args.role_title_ar,
