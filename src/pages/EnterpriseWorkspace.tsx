@@ -57,6 +57,7 @@ import MemberList from "@/components/enterprise/MemberList";
 import OrgCard from "@/components/enterprise/OrgCard";
 import OrgMessagesPanel from "@/components/enterprise/OrgMessagesPanel";
 import TeamPresencePanel from "@/components/enterprise/TeamPresencePanel";
+import TrackingReadinessCard from "@/components/enterprise/TrackingReadinessCard";
 
 // ── Static copy ───────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<string, { ar: string; en: string }> = {
@@ -401,6 +402,11 @@ export default function EnterpriseWorkspace() {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Tracking readiness (E7.10A) — deterministic, no AI yet */}
+            {!isFinanceOfficer && cases.length > 0 && (
+              <TrackingReadinessCard orgId={orgId} totalCasesCount={cases.length} ar={ar} />
             )}
 
             {/* Latest cases */}

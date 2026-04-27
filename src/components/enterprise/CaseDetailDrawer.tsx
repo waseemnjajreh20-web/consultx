@@ -8,6 +8,7 @@ import {
   Clock,
   FileText,
   MessageSquare,
+  QrCode,
   RotateCcw,
   Send,
   Shield,
@@ -35,6 +36,7 @@ import type { UserPublicProfileRow } from "@/lib/memberDisplay";
 import { initialsFromName } from "@/lib/memberDisplay";
 import MemberAvatar from "@/components/MemberAvatar";
 import CaseDocumentsPanel from "@/components/enterprise/CaseDocumentsPanel";
+import CaseTrackingPanel from "@/components/enterprise/CaseTrackingPanel";
 
 type Case = ReturnType<typeof useOrganization>["cases"][number];
 
@@ -129,6 +131,7 @@ export default function CaseDetailDrawer({
             <TabsTrigger value="reviews"   className="text-[11px] gap-1"><Shield className="w-3 h-3" />{ar ? "المراجعات" : "Reviews"}</TabsTrigger>
             <TabsTrigger value="ai"        className="text-[11px] gap-1"><Bot className="w-3 h-3" />{ar ? "أدلة الذكاء" : "AI Evidence"}</TabsTrigger>
             <TabsTrigger value="documents" className="text-[11px] gap-1"><FileText className="w-3 h-3" />{ar ? "المستندات" : "Documents"}</TabsTrigger>
+            <TabsTrigger value="tracking"  className="text-[11px] gap-1"><QrCode className="w-3 h-3" />{ar ? "تتبع العميل" : "Tracking"}</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -180,6 +183,17 @@ export default function CaseDetailDrawer({
                 orgId={orgId}
                 orgRole={orgRole}
                 currentUserId={currentUserId}
+                ar={ar}
+              />
+            </TabsContent>
+
+            {/* Tracking */}
+            <TabsContent value="tracking" className="mt-0">
+              <CaseTrackingPanel
+                caseId={caseId}
+                caseStatus={case_.status}
+                caseNumber={case_.case_number}
+                orgRole={orgRole}
                 ar={ar}
               />
             </TabsContent>

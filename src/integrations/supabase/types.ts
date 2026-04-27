@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -269,6 +269,63 @@ export type Database = {
           },
         ]
       }
+      case_client_contacts: {
+        Row: {
+          case_id: string
+          client_name: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          org_id: string
+          phone_e164: string | null
+          preferred_channel: string
+          receive_updates: boolean
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          org_id: string
+          phone_e164?: string | null
+          preferred_channel?: string
+          receive_updates?: boolean
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          org_id?: string
+          phone_e164?: string | null
+          preferred_channel?: string
+          receive_updates?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_client_contacts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_client_contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_documents: {
         Row: {
           case_id: string
@@ -379,6 +436,138 @@ export type Database = {
           },
           {
             foreignKeyName: "case_notes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_public_tracking: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          last_published_at: string | null
+          org_id: string
+          public_enabled: boolean
+          public_summary: string | null
+          public_title: string | null
+          public_token: string
+          show_engineer_contact: boolean
+          show_progress_percent: boolean
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          last_published_at?: string | null
+          org_id: string
+          public_enabled?: boolean
+          public_summary?: string | null
+          public_title?: string | null
+          public_token: string
+          show_engineer_contact?: boolean
+          show_progress_percent?: boolean
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          last_published_at?: string | null
+          org_id?: string
+          public_enabled?: boolean
+          public_summary?: string | null
+          public_title?: string | null
+          public_token?: string
+          show_engineer_contact?: boolean
+          show_progress_percent?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_public_tracking_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_public_tracking_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_public_updates: {
+        Row: {
+          body_ar: string | null
+          body_en: string | null
+          case_id: string
+          client_action_required: boolean
+          id: string
+          notification_status: string
+          notify_client: boolean
+          org_id: string
+          progress_percent: number
+          public_status: string
+          published_at: string
+          published_by: string
+          required_action_ar: string | null
+          required_action_en: string | null
+          title_ar: string
+          title_en: string | null
+        }
+        Insert: {
+          body_ar?: string | null
+          body_en?: string | null
+          case_id: string
+          client_action_required?: boolean
+          id?: string
+          notification_status?: string
+          notify_client?: boolean
+          org_id: string
+          progress_percent: number
+          public_status: string
+          published_at?: string
+          published_by: string
+          required_action_ar?: string | null
+          required_action_en?: string | null
+          title_ar: string
+          title_en?: string | null
+        }
+        Update: {
+          body_ar?: string | null
+          body_en?: string | null
+          case_id?: string
+          client_action_required?: boolean
+          id?: string
+          notification_status?: string
+          notify_client?: boolean
+          org_id?: string
+          progress_percent?: number
+          public_status?: string
+          published_at?: string
+          published_by?: string
+          required_action_ar?: string | null
+          required_action_en?: string | null
+          title_ar?: string
+          title_en?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_public_updates_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_public_updates_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -2110,6 +2299,10 @@ export type Database = {
         }
         Returns: string
       }
+      can_access_enterprise_document_object: {
+        Args: { p_object_name: string; p_user_id: string }
+        Returns: boolean
+      }
       create_case_ai_session: {
         Args: {
           p_case_id: string
@@ -2156,6 +2349,10 @@ export type Database = {
       edit_org_message: {
         Args: { p_message_id: string; p_new_body: string }
         Returns: undefined
+      }
+      ensure_case_public_tracking: {
+        Args: { p_case_id: string }
+        Returns: string
       }
       get_all_mode_daily_counts: {
         Args: { p_user_id: string }
@@ -2251,6 +2448,26 @@ export type Database = {
           similarity: number
         }[]
       }
+      publish_case_public_update: {
+        Args: {
+          p_body_ar?: string
+          p_body_en?: string
+          p_case_id: string
+          p_client_action_required?: boolean
+          p_notify_client?: boolean
+          p_progress_percent?: number
+          p_public_status?: string
+          p_required_action_ar?: string
+          p_required_action_en?: string
+          p_title_ar: string
+          p_title_en?: string
+        }
+        Returns: string
+      }
+      regenerate_case_public_token: {
+        Args: { p_case_id: string }
+        Returns: string
+      }
       revoke_org_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined
@@ -2299,6 +2516,17 @@ export type Database = {
         Args: { p_case_id: string; p_note?: string; p_to_status: string }
         Returns: undefined
       }
+      update_case_public_tracking_settings: {
+        Args: {
+          p_case_id: string
+          p_public_enabled?: boolean
+          p_public_summary?: string
+          p_public_title?: string
+          p_show_engineer_contact?: boolean
+          p_show_progress_percent?: boolean
+        }
+        Returns: undefined
+      }
       update_org_member_role: {
         Args: { p_member_id: string; p_role: string }
         Returns: undefined
@@ -2306,6 +2534,17 @@ export type Database = {
       update_org_member_status: {
         Args: { p_member_id: string; p_status: string }
         Returns: undefined
+      }
+      upsert_case_client_contact: {
+        Args: {
+          p_case_id: string
+          p_client_name?: string
+          p_email?: string
+          p_phone_e164?: string
+          p_preferred_channel?: string
+          p_receive_updates?: boolean
+        }
+        Returns: string
       }
       upsert_my_public_profile: {
         Args: {
