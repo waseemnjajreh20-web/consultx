@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.launch-trial-activate]
 verify_jwt = false
+
+[functions.get-public-case-tracking]
+verify_jwt = false

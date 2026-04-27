@@ -13,6 +13,28 @@ import {
 // Local interface for member rows used by the resolver factory.
 type MemberLite = { id: string; user_id: string; role: string };
 
+// E7.10C: shape of a row returned by the my-tasks query (with a join on
+// enterprise_cases for case_number / title).
+export type MyCaseTaskRow = {
+  id: string;
+  case_id: string;
+  org_id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_at: string | null;
+  completed_at: string | null;
+  assigned_to: string | null;
+  created_by: string;
+  created_at: string;
+  enterprise_cases: {
+    case_number: string;
+    title: string;
+    status: string;
+  } | null;
+};
+
 export function useOrganization() {
   const {
     orgId: entitlementOrgId,
@@ -449,6 +471,129 @@ export function useOrganization() {
   });
 
   // ────────────────────────────────────────────────────────────────────────
+  // E7.10C: case_tasks — user's open task list (for the dashboard widget)
+  // ────────────────────────────────────────────────────────────────────────
+  const myTasksQuery = useQuery({
+    queryKey: ["my_case_tasks", orgId, user?.id],
+    queryFn: async () => {
+      if (!orgId || !user?.id) return [] as MyCaseTaskRow[];
+      const { data, error } = await supabase
+        .from("case_tasks")
+        .select(
+          "id, case_id, org_id, title, description, status, priority, due_at, completed_at, " +
+          "assigned_to, created_by, created_at, " +
+          "enterprise_cases!inner(case_number, title, status)",
+        )
+        .eq("org_id", orgId)
+        .eq("assigned_to", user.id)
+        .not("status", "in", "(completed,cancelled)")
+        .order("priority", { ascending: false })
+        .order("due_at", { ascending: true, nullsFirst: false });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as MyCaseTaskRow[];
+    },
+    enabled: !!orgId && !!user?.id && !isFinanceOfficer,
+    staleTime: 60 * 1000,
+  });
+
+  // E7.10C: assign engineer / head reviewer
+  const assignEnterpriseCase = useMutation({
+    mutationFn: async (args: {
+      case_id: string;
+      assigned_engineer_id?: string | null;
+      head_reviewer_id?: string | null;
+      note?: string | null;
+    }) => {
+      const { error } = await supabase.rpc("assign_enterprise_case", {
+        p_case_id: args.case_id,
+        p_assigned_engineer_id: args.assigned_engineer_id ?? null,
+        p_head_reviewer_id: args.head_reviewer_id ?? null,
+        p_note: args.note ?? null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["enterprise_cases", orgId] });
+    },
+  });
+
+  // E7.10C: task CRUD via RPCs
+  const createCaseTask = useMutation({
+    mutationFn: async (args: {
+      case_id: string;
+      title: string;
+      description?: string | null;
+      assigned_to?: string | null;
+      priority?: string | null;
+      due_at?: string | null;
+    }) => {
+      const { data, error } = await supabase.rpc("create_case_task", {
+        p_case_id: args.case_id,
+        p_title: args.title,
+        p_description: args.description ?? null,
+        p_assigned_to: args.assigned_to ?? null,
+        p_priority: args.priority ?? "normal",
+        p_due_at: args.due_at ?? null,
+      });
+      if (error) throw new Error(error.message);
+      return data as string;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["case_tasks", vars.case_id] });
+      qc.invalidateQueries({ queryKey: ["my_case_tasks", orgId, user?.id] });
+    },
+  });
+
+  const updateCaseTask = useMutation({
+    mutationFn: async (args: {
+      task_id: string;
+      title?: string | null;
+      description?: string | null;
+      assigned_to?: string | null;
+      priority?: string | null;
+      due_at?: string | null;
+      case_id?: string;
+    }) => {
+      const { error } = await supabase.rpc("update_case_task", {
+        p_task_id: args.task_id,
+        p_title: args.title ?? null,
+        p_description: args.description ?? null,
+        p_assigned_to: args.assigned_to ?? null,
+        p_priority: args.priority ?? null,
+        p_due_at: args.due_at ?? null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, vars) => {
+      if (vars.case_id) qc.invalidateQueries({ queryKey: ["case_tasks", vars.case_id] });
+      qc.invalidateQueries({ queryKey: ["my_case_tasks", orgId, user?.id] });
+    },
+  });
+
+  const transitionCaseTask = useMutation({
+    mutationFn: async (args: {
+      task_id: string;
+      to_status: string;
+      note?: string | null;
+      case_id?: string;
+    }) => {
+      const { error } = await supabase.rpc("transition_case_task", {
+        p_task_id: args.task_id,
+        p_to_status: args.to_status,
+        p_note: args.note ?? null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, vars) => {
+      if (vars.case_id) {
+        qc.invalidateQueries({ queryKey: ["case_tasks", vars.case_id] });
+        qc.invalidateQueries({ queryKey: ["case_task_events", vars.case_id] });
+      }
+      qc.invalidateQueries({ queryKey: ["my_case_tasks", orgId, user?.id] });
+    },
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
   // E7.8: realtime subscriptions — push-based invalidation of the relevant
   // React Query caches whenever a postgres_changes event fires.
   // ────────────────────────────────────────────────────────────────────────
@@ -600,6 +745,13 @@ export function useOrganization() {
     deleteMessage,
     upsertMyPublicProfile,
     upsertOrgMemberProfile,
+    // E7.10C outputs
+    myTasks: myTasksQuery.data ?? [],
+    myTasksLoading: myTasksQuery.isLoading,
+    assignEnterpriseCase,
+    createCaseTask,
+    updateCaseTask,
+    transitionCaseTask,
     refetchMembers: () => qc.invalidateQueries({ queryKey: ["org_members", orgId] }),
     refetchCases: () => qc.invalidateQueries({ queryKey: ["enterprise_cases", orgId] }),
     refetchInvitations: () => qc.invalidateQueries({ queryKey: ["org_invitations", orgId] }),

@@ -55,8 +55,11 @@ import CreateOrganizationCard from "@/components/enterprise/CreateOrganizationCa
 import InviteMemberForm from "@/components/enterprise/InviteMemberForm";
 import MemberList from "@/components/enterprise/MemberList";
 import OrgCard from "@/components/enterprise/OrgCard";
+import CaseResponsibilityBadge from "@/components/enterprise/CaseResponsibilityBadge";
+import MyTasksWidget from "@/components/enterprise/MyTasksWidget";
 import OrgMessagesPanel from "@/components/enterprise/OrgMessagesPanel";
 import TeamPresencePanel from "@/components/enterprise/TeamPresencePanel";
+import TrackingReadinessCard from "@/components/enterprise/TrackingReadinessCard";
 
 // ── Static copy ───────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<string, { ar: string; en: string }> = {
@@ -219,6 +222,13 @@ export default function EnterpriseWorkspace() {
   }, {});
   const latestCases      = cases.slice(0, 5);
   const actionableCases  = cases.filter((c) => NEEDS_ACTION_STATUSES.has(c.status));
+
+  // E7.10C: assignment-blocking cases (an actionable case missing the FK that
+  // gates its next status transition).
+  const NEEDS_ENGINEER_STATUSES = new Set(["submitted", "assigned", "under_engineering_review", "ai_review_attached", "engineer_review_completed", "returned_for_revision"]);
+  const NEEDS_HEAD_STATUSES     = new Set(["engineer_review_completed", "submitted_to_head"]);
+  const casesMissingEngineer = cases.filter((c) => NEEDS_ENGINEER_STATUSES.has(c.status) && !c.assigned_engineer_id);
+  const casesMissingHead     = cases.filter((c) => NEEDS_HEAD_STATUSES.has(c.status)     && !c.head_reviewer_id);
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
@@ -401,6 +411,16 @@ export default function EnterpriseWorkspace() {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Tracking readiness (E7.10A) — deterministic, no AI yet */}
+            {!isFinanceOfficer && cases.length > 0 && (
+              <TrackingReadinessCard orgId={orgId} totalCasesCount={cases.length} ar={ar} />
+            )}
+
+            {/* My open tasks (E7.10C) */}
+            {!isFinanceOfficer && (
+              <MyTasksWidget ar={ar} onOpenCase={() => setTab("cases")} />
             )}
 
             {/* Latest cases */}
@@ -617,6 +637,66 @@ export default function EnterpriseWorkspace() {
               <DisabledSection ar={ar} title={ar ? "غير متاح للمالي" : "Not available for finance officers"} desc={ar ? "التقارير الفنية مخصصة لأعضاء الفريق الهندسي." : "Technical reports are for engineering team members only."} />
             ) : (
               <>
+                {/* E7.10C: assignment-gap queues — surfaces the workflow blocker
+                    where head_reviewer_id / assigned_engineer_id is null. */}
+                {(casesMissingEngineer.length > 0 || casesMissingHead.length > 0) && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                    <p className="text-sm font-semibold flex items-center gap-2 text-amber-200">
+                      <AlertTriangle className="w-4 h-4" />
+                      {ar ? "معاملات تنتظر التعيين" : "Cases awaiting assignment"}
+                    </p>
+                    {casesMissingEngineer.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-[11px] text-amber-200/80">
+                          {ar ? "بحاجة إلى تعيين مهندس مسؤول:" : "Need an engineer assigned:"}
+                        </p>
+                        {casesMissingEngineer.map((c) => {
+                          const lbl = STATUS_LABEL[c.status] ?? { ar: c.status, en: c.status, cls: "bg-muted/40 text-muted-foreground border-border/40" };
+                          return (
+                            <button key={c.id} onClick={() => setReportSelectedCase(c)}
+                              className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 text-start transition-colors">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{c.title}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">{c.case_number}{c.client_name ? ` · ${c.client_name}` : ""}</p>
+                              </div>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${lbl.cls}`}>
+                                {ar ? lbl.ar : lbl.en}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {casesMissingHead.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-[11px] text-amber-200/80">
+                          {ar ? "عيّن رئيس قسم قبل الإرسال للاعتماد:" : "Assign a head reviewer before approval submission:"}
+                        </p>
+                        {casesMissingHead.map((c) => {
+                          const lbl = STATUS_LABEL[c.status] ?? { ar: c.status, en: c.status, cls: "bg-muted/40 text-muted-foreground border-border/40" };
+                          return (
+                            <button key={c.id} onClick={() => setReportSelectedCase(c)}
+                              className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 text-start transition-colors">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{c.title}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">{c.case_number}{c.client_name ? ` · ${c.client_name}` : ""}</p>
+                              </div>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${lbl.cls}`}>
+                                {ar ? lbl.ar : lbl.en}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p className="text-[11px] text-amber-200/70 leading-relaxed">
+                      {ar
+                        ? "افتح المعاملة ثم بطاقة \"التعيين\" لتعيين المسؤولين. لا يمكن للنظام التقدم في سير العمل دون ذلك."
+                        : "Open a case and use the Assignment tab to set responsibilities. The workflow cannot advance without these."}
+                    </p>
+                  </div>
+                )}
+
                 {/* Actionable cases */}
                 <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
                   <p className="text-sm font-semibold flex items-center gap-2">
@@ -639,15 +719,25 @@ export default function EnterpriseWorkspace() {
                     <div className="space-y-1">
                       {actionableCases.map((c) => {
                         const lbl = STATUS_LABEL[c.status] ?? { ar: c.status, en: c.status, cls: "bg-muted/40 text-muted-foreground border-border/40" };
+                        const needsEng  = !c.assigned_engineer_id && NEEDS_ENGINEER_STATUSES.has(c.status);
+                        const needsHead = !c.head_reviewer_id     && NEEDS_HEAD_STATUSES.has(c.status);
                         return (
                           <button
                             key={c.id}
                             onClick={() => setReportSelectedCase(c)}
-                            className="w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors text-start"
+                            className="w-full flex items-start justify-between gap-3 px-3 py-3 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors text-start"
                           >
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium truncate">{c.title}</p>
                               <p className="text-[11px] text-muted-foreground truncate">{c.case_number}{c.client_name ? ` · ${c.client_name}` : ""}</p>
+                              <div className="mt-1.5">
+                                <CaseResponsibilityBadge
+                                  assignedEngineerId={c.assigned_engineer_id ?? null}
+                                  headReviewerId={c.head_reviewer_id ?? null}
+                                  ar={ar}
+                                  showHints={needsEng || needsHead}
+                                />
+                              </div>
                             </div>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${lbl.cls}`}>
                               {ar ? lbl.ar : lbl.en}

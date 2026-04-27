@@ -3,6 +3,7 @@ import { Briefcase, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import CaseDetailDrawer from "@/components/enterprise/CaseDetailDrawer";
+import CaseResponsibilityBadge from "@/components/enterprise/CaseResponsibilityBadge";
 import type { useOrganization } from "@/hooks/useOrganization";
 import type { UserPublicProfileRow } from "@/lib/memberDisplay";
 
@@ -93,17 +94,25 @@ export default function CaseList({
                 <button
                   key={c.id}
                   onClick={() => setSelectedCase(c)}
-                  className="w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors text-start"
+                  className="w-full flex items-start justify-between gap-3 px-3 py-3 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors text-start"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
                       <Briefcase className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{c.title}</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {c.case_number}{c.client_name ? ` · ${c.client_name}` : ""}
                       </p>
+                      <div className="mt-1.5">
+                        <CaseResponsibilityBadge
+                          assignedEngineerId={c.assigned_engineer_id ?? null}
+                          headReviewerId={c.head_reviewer_id ?? null}
+                          ar={ar}
+                          showHints={isOwnerOrAdmin}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
