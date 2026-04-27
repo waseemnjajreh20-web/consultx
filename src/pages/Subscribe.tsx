@@ -333,12 +333,24 @@ const Subscribe = () => {
                 onClick={openPaymentModal}
                 disabled={!selectedPlan || !sdkLoaded || processing}
               >
-                {isReturningUser ? t("startSubscription") : isTrialActive ? t("addCardContinue") : t("startFreeTrial")}
-                {processing
-                  ? <Loader2 className="w-5 h-5 ms-2 animate-spin" />
-                  : dir === "rtl"
-                    ? <ArrowLeft className="w-5 h-5 me-2" />
-                    : <ArrowRight className="w-5 h-5 ms-2" />}
+                {!sdkLoaded ? (
+                  <>
+                    <Loader2 className="w-5 h-5 me-2 animate-spin" />
+                    {language === "ar" ? "جاري التحميل..." : "Loading..."}
+                  </>
+                ) : processing ? (
+                  <>
+                    {isTrialActive ? t("activateAndAddCard") : t("startSubscription")}
+                    <Loader2 className="w-5 h-5 ms-2 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    {isTrialActive ? t("activateAndAddCard") : t("startSubscription")}
+                    {dir === "rtl"
+                      ? <ArrowLeft className="w-5 h-5 me-2" />
+                      : <ArrowRight className="w-5 h-5 ms-2" />}
+                  </>
+                )}
               </Button>
             </div>
           )}
