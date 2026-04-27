@@ -34,6 +34,7 @@ import type { useOrganization } from "@/hooks/useOrganization";
 import type { UserPublicProfileRow } from "@/lib/memberDisplay";
 import { initialsFromName } from "@/lib/memberDisplay";
 import MemberAvatar from "@/components/MemberAvatar";
+import CaseDocumentsPanel from "@/components/enterprise/CaseDocumentsPanel";
 
 type Case = ReturnType<typeof useOrganization>["cases"][number];
 
@@ -174,7 +175,13 @@ export default function CaseDetailDrawer({
 
             {/* Documents */}
             <TabsContent value="documents" className="mt-0">
-              <DocumentsTab caseId={caseId} ar={ar} />
+              <CaseDocumentsPanel
+                caseId={caseId}
+                orgId={orgId}
+                orgRole={orgRole}
+                currentUserId={currentUserId}
+                ar={ar}
+              />
             </TabsContent>
           </div>
         </Tabs>
@@ -668,46 +675,6 @@ function AIEvidenceTab({ caseId, ar }: { caseId: string; ar: boolean }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-// ─── Documents ───────────────────────────────────────────────────────────────
-
-function DocumentsTab({ caseId, ar }: { caseId: string; ar: boolean }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["case_documents", caseId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("case_documents")
-        .select("id, title, category, visibility, created_at, uploaded_by")
-        .eq("case_id", caseId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 60 * 1000,
-  });
-
-  if (isLoading) return <Skeleton rows={3} />;
-  if (!data || data.length === 0) {
-    return <Empty ar={ar} msg={ar ? "لا توجد مستندات بعد" : "No documents yet"} />;
-  }
-
-  return (
-    <div className="space-y-2">
-      {data.map((d) => (
-        <div key={d.id} className="rounded-lg bg-muted/10 border border-border/30 px-3 py-2.5 flex items-center gap-3">
-          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{d.title}</p>
-            <p className="text-[10px] text-muted-foreground">{d.category} · {d.visibility}</p>
-          </div>
-          <span className="text-[10px] text-muted-foreground/60 shrink-0">
-            {new Date(d.created_at).toLocaleDateString(ar ? "ar-SA" : "en-US")}
-          </span>
-        </div>
-      ))}
     </div>
   );
 }
