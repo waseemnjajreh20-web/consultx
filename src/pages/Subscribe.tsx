@@ -142,6 +142,7 @@ const Subscribe = () => {
         given_id: givenId,
       },
       methods: ["creditcard"],
+      supported_networks: ["mada", "visa", "mastercard"],
     });
   };
 
