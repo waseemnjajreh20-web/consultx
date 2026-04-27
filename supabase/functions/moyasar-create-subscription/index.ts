@@ -92,7 +92,9 @@ serve(async (req) => {
       );
     }
 
-    // ── In-flight check (pending_activation with 30-min TTL) ─────────────────
+    // ── In-flight check: reuse existing pending_activation rows ──────────────
+    // Rather than blocking the user with a 30-min TTL, refresh the given_id on
+    // the existing row so a clean Moyasar form can be mounted immediately.
     const { data: existingPendingSub } = await adminClient
       .from("user_subscriptions")
       .select("id, status, trial_end, created_at")
@@ -103,13 +105,30 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingPendingSub?.status === "pending_activation") {
-      const rowAgeMs = Date.now() - new Date(existingPendingSub.created_at).getTime();
-      if (rowAgeMs < 30 * 60 * 1000) {
-        return new Response(
-          JSON.stringify({ error: "Payment verification already in progress", pending: true }),
-          { status: 409, headers: corsHeaders },
-        );
+      const freshGivenId = crypto.randomUUID();
+      const { data: refreshedSub, error: refreshError } = await adminClient
+        .from("user_subscriptions")
+        .update({ plan_id, moyasar_given_id: freshGivenId })
+        .eq("id", existingPendingSub.id)
+        .select()
+        .single();
+      if (refreshError || !refreshedSub) {
+        return new Response(JSON.stringify({ error: "Failed to refresh payment session" }), {
+          status: 500, headers: corsHeaders,
+        });
       }
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription_id: refreshedSub.id,
+          given_id: freshGivenId,
+          is_returning_user: true,
+          amount: 100,
+          currency: "SAR",
+          description: `Card verification for ${plan.name_en}`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const trialingSub = existingPendingSub?.status === "trialing" ? existingPendingSub : null;
