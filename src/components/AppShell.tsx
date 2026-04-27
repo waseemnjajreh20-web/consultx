@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, UserCircle, CreditCard, Settings, Sliders,
   LogOut, ExternalLink, Upload, CheckCircle, X, ChevronRight,
-  ShieldCheck, ChevronLeft, FlaskConical, Building2,
+  ShieldCheck, ChevronLeft, FlaskConical, Building2, User,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -50,6 +50,7 @@ export interface AppShellProps {
 // ── Sidebar nav item descriptor ───────────────────────────────────────────────
 const NAV_ITEMS = [
   { id: "conversations" as const, icon: MessageSquare },
+  { id: "profile"       as const, icon: User          },
   { id: "account"       as const, icon: UserCircle    },
   { id: "subscription"  as const, icon: CreditCard    },
   { id: "settings"      as const, icon: Settings      },
@@ -59,11 +60,12 @@ const NAV_ITEMS = [
 // ── Labels helper ─────────────────────────────────────────────────────────────
 function label(id: string, lang: "ar" | "en") {
   const map: Record<string, [string, string]> = {
-    conversations: ["المحادثات",   "Conversations"],
-    account:       ["الحساب",      "Account"      ],
-    subscription:  ["الاشتراك",   "Subscription" ],
-    settings:      ["الإعدادات",   "Settings"     ],
-    customization: ["التخصيص",    "Customization"],
+    conversations: ["المحادثات",       "Conversations"],
+    profile:       ["الملف الشخصي",   "Profile"      ],
+    account:       ["الحساب",          "Account"      ],
+    subscription:  ["الاشتراك",        "Subscription" ],
+    settings:      ["الإعدادات",       "Settings"     ],
+    customization: ["التخصيص",         "Customization"],
   };
   return lang === "ar" ? map[id]?.[0] : map[id]?.[1];
 }
@@ -147,6 +149,10 @@ export default function AppShell({
     }
     if (id === "admin") {
       navigate("/admin");
+      return;
+    }
+    if (id === "profile") {
+      navigate("/profile");
       return;
     }
     setActiveSection(prev => prev === id ? null : id as SidebarSection);
@@ -457,6 +463,14 @@ function AccountSection({ lang }: { lang: "ar" | "en" }) {
       </div>
 
       <div className="space-y-2">
+        <button
+          onClick={() => navigate("/profile")}
+          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-white hover:bg-white/5 transition-colors border border-white/10"
+        >
+          <span>{ar ? "الملف الشخصي" : "View Profile"}</span>
+          <ExternalLink className="w-4 h-4 text-muted-foreground" />
+        </button>
+
         <button
           onClick={() => navigate("/account")}
           className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-white hover:bg-white/5 transition-colors border border-white/10"

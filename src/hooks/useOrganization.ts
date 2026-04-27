@@ -1,6 +1,17 @@
+import { useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEntitlement } from "@/hooks/useEntitlement";
+import { useLanguage } from "@/hooks/useLanguage";
+import {
+  resolveMemberDisplay,
+  type OrgMemberProfileRow,
+  type UserPublicProfileRow,
+  type ResolvedDisplay,
+} from "@/lib/memberDisplay";
+
+// Local interface for member rows used by the resolver factory.
+type MemberLite = { id: string; user_id: string; role: string };
 
 export function useOrganization() {
   const {
@@ -12,6 +23,7 @@ export function useOrganization() {
     refetch: refetchEntitlement,
   } = useEntitlement();
   const qc = useQueryClient();
+  const { language } = useLanguage();
 
   // E7.5: defense-in-depth membership fallback.
   // The check-subscription edge function may not be redeployed yet, or under
@@ -185,8 +197,14 @@ export function useOrganization() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+    // E7.8: when the change targets the current user, force the entitlement
+    // chain to re-resolve so the sidebar/capability flags refresh immediately.
+    onSuccess: async (_data, vars) => {
+      const target = membersQuery.data?.find((m) => m.id === vars.memberId);
+      await qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+      if (target?.user_id === user?.id) {
+        refetchEntitlement();
+      }
     },
   });
 
@@ -198,8 +216,12 @@ export function useOrganization() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+    onSuccess: async (_data, vars) => {
+      const target = membersQuery.data?.find((m) => m.id === vars.memberId);
+      await qc.invalidateQueries({ queryKey: ["org_members", orgId] });
+      if (target?.user_id === user?.id) {
+        refetchEntitlement();
+      }
     },
   });
 
@@ -313,6 +335,221 @@ export function useOrganization() {
     },
   });
 
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: org_member_profiles — per-org display overrides
+  // ────────────────────────────────────────────────────────────────────────
+  const memberProfilesQuery = useQuery({
+    queryKey: ["org_member_profiles", orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("org_member_profiles")
+        .select("*")
+        .eq("org_id", orgId!);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as OrgMemberProfileRow[];
+    },
+    enabled: !!orgId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: user_public_profiles for the current org's members
+  // ────────────────────────────────────────────────────────────────────────
+  const memberUserIds = membersQuery.data?.map((m) => m.user_id) ?? [];
+  const memberUserIdsKey = [...memberUserIds].sort().join(",");
+
+  const userProfilesForOrgQuery = useQuery({
+    queryKey: ["user_public_profiles_for_org", orgId, memberUserIdsKey],
+    queryFn: async () => {
+      if (memberUserIds.length === 0) return [] as UserPublicProfileRow[];
+      const { data, error } = await supabase
+        .from("user_public_profiles")
+        .select("*")
+        .in("user_id", memberUserIds);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as UserPublicProfileRow[];
+    },
+    enabled: !!orgId && memberUserIds.length > 0,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: caller's own user_public_profiles row (for the /profile page)
+  // ────────────────────────────────────────────────────────────────────────
+  const myPublicProfileQuery = useQuery({
+    queryKey: ["user_public_profile_self", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("user_public_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return (data ?? null) as UserPublicProfileRow | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: profile mutations
+  // ────────────────────────────────────────────────────────────────────────
+  const upsertMyPublicProfile = useMutation({
+    mutationFn: async (args: {
+      display_name: string | null;
+      avatar_url: string | null;
+      job_title: string | null;
+      phone: string | null;
+      bio: string | null;
+      preferred_language: "ar" | "en";
+    }) => {
+      const { error } = await supabase.rpc("upsert_my_public_profile", {
+        p_display_name:       args.display_name,
+        p_avatar_url:         args.avatar_url,
+        p_job_title:          args.job_title,
+        p_phone:              args.phone,
+        p_bio:                args.bio,
+        p_preferred_language: args.preferred_language,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["user_public_profile_self", user?.id] });
+      if (orgId) {
+        qc.invalidateQueries({ queryKey: ["user_public_profiles_for_org", orgId] });
+      }
+    },
+  });
+
+  const upsertOrgMemberProfile = useMutation({
+    mutationFn: async (args: {
+      member_id: string;
+      display_name_override: string | null;
+      role_title_ar: string | null;
+      role_title_en: string | null;
+      department: string | null;
+      phone_ext: string | null;
+      notes: string | null;
+    }) => {
+      const { error } = await supabase.rpc("upsert_org_member_profile", {
+        p_member_id:             args.member_id,
+        p_display_name_override: args.display_name_override,
+        p_role_title_ar:         args.role_title_ar,
+        p_role_title_en:         args.role_title_en,
+        p_department:            args.department,
+        p_phone_ext:             args.phone_ext,
+        p_notes:                 args.notes,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_member_profiles", orgId] });
+    },
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: realtime subscriptions — push-based invalidation of the relevant
+  // React Query caches whenever a postgres_changes event fires.
+  // ────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel(`org-messages:${orgId}`)
+      .on(
+        // postgres_changes payload typing varies between supabase-js versions;
+        // the channel is on a static publication so we don't need the typing.
+        "postgres_changes" as never,
+        {
+          event: "*",
+          schema: "public",
+          table: "org_messages",
+          filter: `org_id=eq.${orgId}`,
+        } as never,
+        () => {
+          qc.invalidateQueries({ queryKey: ["org_messages", orgId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, qc]);
+
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel(`org-presence:${orgId}`)
+      .on(
+        "postgres_changes" as never,
+        {
+          event: "*",
+          schema: "public",
+          table: "org_member_presence",
+          filter: `org_id=eq.${orgId}`,
+        } as never,
+        () => {
+          qc.invalidateQueries({ queryKey: ["org_presence", orgId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, qc]);
+
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel(`org-member-profiles:${orgId}`)
+      .on(
+        "postgres_changes" as never,
+        {
+          event: "*",
+          schema: "public",
+          table: "org_member_profiles",
+          filter: `org_id=eq.${orgId}`,
+        } as never,
+        () => {
+          qc.invalidateQueries({ queryKey: ["org_member_profiles", orgId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, qc]);
+
+  // ────────────────────────────────────────────────────────────────────────
+  // E7.8: closed-over resolver factory used by Member/Message/Presence views.
+  // ────────────────────────────────────────────────────────────────────────
+  const memberProfilesByMember = useMemo(() => {
+    const map = new Map<string, OrgMemberProfileRow>();
+    for (const p of memberProfilesQuery.data ?? []) {
+      map.set(p.member_id, p);
+    }
+    return map;
+  }, [memberProfilesQuery.data]);
+
+  const userProfilesByUser = useMemo(() => {
+    const map = new Map<string, UserPublicProfileRow>();
+    for (const p of userProfilesForOrgQuery.data ?? []) {
+      map.set(p.user_id, p);
+    }
+    return map;
+  }, [userProfilesForOrgQuery.data]);
+
+  const resolveDisplay = useCallback(
+    (m: MemberLite): ResolvedDisplay =>
+      resolveMemberDisplay({
+        member: m,
+        orgProfile: memberProfilesByMember.get(m.id),
+        userProfile: userProfilesByUser.get(m.user_id),
+        language: language === "ar" ? "ar" : "en",
+      }),
+    [memberProfilesByMember, userProfilesByUser, language],
+  );
+
   // E7.4: composite capability flags so UI doesn't have to re-derive.
   const hasOrganization      = !!orgId;
   const canManageMembers     = hasOrganization && isOwnerOrAdmin;
@@ -345,6 +582,12 @@ export function useOrganization() {
     messagesLoading: messagesQuery.isLoading,
     presence: presenceQuery.data ?? [],
     presenceLoading: presenceQuery.isLoading,
+    // E7.8 outputs
+    memberProfiles: memberProfilesQuery.data ?? [],
+    userProfilesForOrg: userProfilesForOrgQuery.data ?? [],
+    myPublicProfile: myPublicProfileQuery.data ?? null,
+    myPublicProfileLoading: myPublicProfileQuery.isLoading,
+    resolveDisplay,
     createOrganization,
     inviteMember,
     createCase,
@@ -355,8 +598,11 @@ export function useOrganization() {
     touchPresence,
     sendMessage,
     deleteMessage,
+    upsertMyPublicProfile,
+    upsertOrgMemberProfile,
     refetchMembers: () => qc.invalidateQueries({ queryKey: ["org_members", orgId] }),
     refetchCases: () => qc.invalidateQueries({ queryKey: ["enterprise_cases", orgId] }),
     refetchInvitations: () => qc.invalidateQueries({ queryKey: ["org_invitations", orgId] }),
+    refetchMyPublicProfile: () => qc.invalidateQueries({ queryKey: ["user_public_profile_self", user?.id] }),
   };
 }
