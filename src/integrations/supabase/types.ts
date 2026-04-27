@@ -738,6 +738,127 @@ export type Database = {
           },
         ]
       }
+      case_task_events: {
+        Row: {
+          actor_user_id: string
+          case_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          note: string | null
+          org_id: string
+          task_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_user_id: string
+          case_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          org_id: string
+          task_id: string
+          to_status: string
+        }
+        Update: {
+          actor_user_id?: string
+          case_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          org_id?: string
+          task_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_task_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_task_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_task_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "case_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_tasks: {
+        Row: {
+          assigned_to: string | null
+          case_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_at: string | null
+          id: string
+          org_id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          case_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          org_id: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          case_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          org_id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_tasks_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_tasks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_summaries: {
         Row: {
           central_theme: string | null
@@ -2281,6 +2402,15 @@ export type Database = {
     }
     Functions: {
       accept_org_invitation: { Args: { p_token: string }; Returns: string }
+      assign_enterprise_case: {
+        Args: {
+          p_assigned_engineer_id?: string
+          p_case_id: string
+          p_head_reviewer_id?: string
+          p_note?: string
+        }
+        Returns: undefined
+      }
       attach_ai_report_version: {
         Args: {
           p_citations?: Json
@@ -2309,6 +2439,17 @@ export type Database = {
           p_conversation_id?: string
           p_session_mode: string
           p_title?: string
+        }
+        Returns: string
+      }
+      create_case_task: {
+        Args: {
+          p_assigned_to?: string
+          p_case_id: string
+          p_description?: string
+          p_due_at?: string
+          p_priority?: string
+          p_title: string
         }
         Returns: string
       }
@@ -2516,6 +2657,10 @@ export type Database = {
         Args: { p_case_id: string; p_note?: string; p_to_status: string }
         Returns: undefined
       }
+      transition_case_task: {
+        Args: { p_note?: string; p_task_id: string; p_to_status: string }
+        Returns: undefined
+      }
       update_case_public_tracking_settings: {
         Args: {
           p_case_id: string
@@ -2524,6 +2669,17 @@ export type Database = {
           p_public_title?: string
           p_show_engineer_contact?: boolean
           p_show_progress_percent?: boolean
+        }
+        Returns: undefined
+      }
+      update_case_task: {
+        Args: {
+          p_assigned_to?: string
+          p_description?: string
+          p_due_at?: string
+          p_priority?: string
+          p_task_id: string
+          p_title?: string
         }
         Returns: undefined
       }

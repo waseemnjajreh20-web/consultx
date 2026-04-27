@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Clock,
   FileText,
+  ListTodo,
   MessageSquare,
   QrCode,
   RotateCcw,
@@ -14,6 +15,7 @@ import {
   Shield,
   ThumbsDown,
   ThumbsUp,
+  UserCog,
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +37,10 @@ import type { useOrganization } from "@/hooks/useOrganization";
 import type { UserPublicProfileRow } from "@/lib/memberDisplay";
 import { initialsFromName } from "@/lib/memberDisplay";
 import MemberAvatar from "@/components/MemberAvatar";
+import CaseAssignmentPanel from "@/components/enterprise/CaseAssignmentPanel";
 import CaseDocumentsPanel from "@/components/enterprise/CaseDocumentsPanel";
+import CaseResponsibilityBadge from "@/components/enterprise/CaseResponsibilityBadge";
+import CaseTasksPanel from "@/components/enterprise/CaseTasksPanel";
 import CaseTrackingPanel from "@/components/enterprise/CaseTrackingPanel";
 
 type Case = ReturnType<typeof useOrganization>["cases"][number];
@@ -131,6 +136,8 @@ export default function CaseDetailDrawer({
             <TabsTrigger value="reviews"   className="text-[11px] gap-1"><Shield className="w-3 h-3" />{ar ? "المراجعات" : "Reviews"}</TabsTrigger>
             <TabsTrigger value="ai"        className="text-[11px] gap-1"><Bot className="w-3 h-3" />{ar ? "أدلة الذكاء" : "AI Evidence"}</TabsTrigger>
             <TabsTrigger value="documents" className="text-[11px] gap-1"><FileText className="w-3 h-3" />{ar ? "المستندات" : "Documents"}</TabsTrigger>
+            <TabsTrigger value="assignment" className="text-[11px] gap-1"><UserCog className="w-3 h-3" />{ar ? "التعيين" : "Assignment"}</TabsTrigger>
+            <TabsTrigger value="tasks"     className="text-[11px] gap-1"><ListTodo className="w-3 h-3" />{ar ? "المهام" : "Tasks"}</TabsTrigger>
             <TabsTrigger value="tracking"  className="text-[11px] gap-1"><QrCode className="w-3 h-3" />{ar ? "تتبع العميل" : "Tracking"}</TabsTrigger>
           </TabsList>
 
@@ -185,6 +192,22 @@ export default function CaseDetailDrawer({
                 currentUserId={currentUserId}
                 ar={ar}
               />
+            </TabsContent>
+
+            {/* Assignment */}
+            <TabsContent value="assignment" className="mt-0">
+              <CaseAssignmentPanel
+                caseId={caseId}
+                caseStatus={case_.status}
+                currentAssignedEngineerId={case_.assigned_engineer_id ?? null}
+                currentHeadReviewerId={case_.head_reviewer_id ?? null}
+                ar={ar}
+              />
+            </TabsContent>
+
+            {/* Tasks */}
+            <TabsContent value="tasks" className="mt-0">
+              <CaseTasksPanel caseId={caseId} orgId={orgId} ar={ar} />
             </TabsContent>
 
             {/* Tracking */}
