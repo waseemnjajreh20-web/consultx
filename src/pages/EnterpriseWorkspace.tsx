@@ -48,6 +48,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 
+import AICommandDashboard from "@/components/enterprise/AICommandDashboard";
 import CaseDetailDrawer from "@/components/enterprise/CaseDetailDrawer";
 import CaseList from "@/components/enterprise/CaseList";
 import CreateCaseModal from "@/components/enterprise/CreateCaseModal";
@@ -113,7 +114,7 @@ const NEEDS_ACTION_STATUSES = new Set([
   "engineer_review_completed", "submitted_to_head",
 ]);
 
-type WorkspaceTab = "dashboard" | "cases" | "members" | "invitations" | "reports" | "settings";
+type WorkspaceTab = "command" | "dashboard" | "cases" | "members" | "invitations" | "reports" | "settings";
 
 // ════════════════════════════════════════════════════════════════════════════
 // Page
@@ -377,13 +378,23 @@ export default function EnterpriseWorkspace() {
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as WorkspaceTab)} dir={ar ? "rtl" : "ltr"}>
           <TabsList className="flex flex-wrap h-auto gap-1 bg-card/40 p-1">
-            <TabsTrigger value="dashboard"   className="text-xs gap-1.5"><Sparkles className="w-3.5 h-3.5" />    {ar ? "لوحة القيادة"        : "Dashboard"}</TabsTrigger>
+            {!isFinanceOfficer && (
+              <TabsTrigger value="command"   className="text-xs gap-1.5"><Sparkles className="w-3.5 h-3.5" />    {ar ? "مركز القيادة"         : "Command"}</TabsTrigger>
+            )}
+            <TabsTrigger value="dashboard"   className="text-xs gap-1.5"><Layers className="w-3.5 h-3.5" />      {ar ? "لوحة القيادة"        : "Dashboard"}</TabsTrigger>
             <TabsTrigger value="cases"       className="text-xs gap-1.5"><Briefcase className="w-3.5 h-3.5" />   {ar ? "المعاملات"           : "Cases"}</TabsTrigger>
             <TabsTrigger value="members"     className="text-xs gap-1.5"><Users className="w-3.5 h-3.5" />       {ar ? "الأعضاء والصلاحيات" : "Members & Roles"}</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs gap-1.5"><Mail className="w-3.5 h-3.5" />        {ar ? "الدعوات"             : "Invitations"}</TabsTrigger>
             <TabsTrigger value="reports"     className="text-xs gap-1.5"><FileSignature className="w-3.5 h-3.5" />{ar ? "التقارير والاعتمادات" : "Reports"}{actionableCases.length > 0 && !isFinanceOfficer && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 ms-0.5" />}</TabsTrigger>
             <TabsTrigger value="settings"    className="text-xs gap-1.5"><Settings className="w-3.5 h-3.5" />    {ar ? "إعدادات المؤسسة"    : "Settings"}</TabsTrigger>
           </TabsList>
+
+          {/* ── Command center (E7.10B Phase 1) ─────────────────────────── */}
+          {!isFinanceOfficer && (
+            <TabsContent value="command" className="space-y-4 mt-4">
+              <AICommandDashboard ar={ar} currentUserId={user?.id} />
+            </TabsContent>
+          )}
 
           {/* ── Dashboard ─────────────────────────────────────────────────── */}
           <TabsContent value="dashboard" className="space-y-4 mt-4">
