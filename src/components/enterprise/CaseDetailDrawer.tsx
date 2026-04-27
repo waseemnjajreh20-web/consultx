@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -31,6 +31,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import type { useOrganization } from "@/hooks/useOrganization";
+import type { UserPublicProfileRow } from "@/lib/memberDisplay";
+import { initialsFromName } from "@/lib/memberDisplay";
+import MemberAvatar from "@/components/MemberAvatar";
 
 type Case = ReturnType<typeof useOrganization>["cases"][number];
 
@@ -41,6 +44,7 @@ interface CaseDetailDrawerProps {
   orgId: string;
   currentUserId?: string;
   orgRole?: string | null;
+  userProfilesForOrg?: UserPublicProfileRow[];
 }
 
 const STATUS_BADGE: Record<string, { en: string; ar: string; cls: string }> = {
@@ -77,6 +81,7 @@ export default function CaseDetailDrawer({
   orgId,
   currentUserId,
   orgRole,
+  userProfilesForOrg = [],
 }: CaseDetailDrawerProps) {
   const { language } = useLanguage();
   const ar = language === "ar";
@@ -142,6 +147,7 @@ export default function CaseDetailDrawer({
                 caseId={caseId}
                 orgId={orgId}
                 currentUserId={currentUserId}
+                userProfilesForOrg={userProfilesForOrg}
                 ar={ar}
                 toast={toast}
                 qc={qc}
@@ -251,11 +257,12 @@ function TimelineTab({ caseId, ar }: { caseId: string; ar: boolean }) {
 // ─── Discussion ─────────────────────────────────────────────────────────────
 
 function DiscussionTab({
-  caseId, orgId, currentUserId, ar, toast, qc,
+  caseId, orgId, currentUserId, userProfilesForOrg, ar, toast, qc,
 }: {
   caseId: string;
   orgId: string;
   currentUserId?: string;
+  userProfilesForOrg: UserPublicProfileRow[];
   ar: boolean;
   toast: ReturnType<typeof useToast>["toast"];
   qc: ReturnType<typeof useQueryClient>;
@@ -275,6 +282,44 @@ function DiscussionTab({
     },
     staleTime: 30 * 1000,
   });
+
+  // E7.8: realtime invalidation for this case's notes.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`case-notes:${caseId}`)
+      .on(
+        "postgres_changes" as never,
+        {
+          event: "*",
+          schema: "public",
+          table: "case_notes",
+          filter: `case_id=eq.${caseId}`,
+        } as never,
+        () => {
+          qc.invalidateQueries({ queryKey: ["case_notes", caseId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [caseId, qc]);
+
+  const userProfilesByUser = useMemo(() => {
+    const map = new Map<string, UserPublicProfileRow>();
+    for (const p of userProfilesForOrg) map.set(p.user_id, p);
+    return map;
+  }, [userProfilesForOrg]);
+
+  const resolveAuthor = (userId: string) => {
+    const profile = userProfilesByUser.get(userId);
+    const name = profile?.display_name?.trim() || `…${userId.slice(-8)}`;
+    return {
+      name,
+      avatar: profile?.avatar_url ?? null,
+      initials: initialsFromName(name),
+    };
+  };
 
   const sendNote = useMutation({
     mutationFn: async (noteBody: string) => {
@@ -326,20 +371,29 @@ function DiscussionTab({
         <Empty ar={ar} msg={ar ? "لا توجد ملاحظات بعد" : "No notes yet"} />
       ) : (
         <div className="space-y-2">
-          {data.map((note) => (
-            <div key={note.id} className="rounded-lg bg-muted/10 border border-border/30 px-3 py-2.5">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] text-muted-foreground font-mono">{shortUid(note.author_id)}</span>
-                {note.author_id === currentUserId && (
-                  <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">{ar ? "أنت" : "you"}</Badge>
-                )}
-                <span className="text-[10px] text-muted-foreground/60 ms-auto">
-                  {new Date(note.created_at).toLocaleString(ar ? "ar-SA" : "en-US")}
-                </span>
+          {data.map((note) => {
+            const author = resolveAuthor(note.author_id);
+            return (
+              <div key={note.id} className="rounded-lg bg-muted/10 border border-border/30 px-3 py-2.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <MemberAvatar
+                    src={author.avatar}
+                    initials={author.initials}
+                    size="xs"
+                    alt={author.name}
+                  />
+                  <span className="text-xs font-medium text-foreground/80 truncate">{author.name}</span>
+                  {note.author_id === currentUserId && (
+                    <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">{ar ? "أنت" : "you"}</Badge>
+                  )}
+                  <span className="text-[10px] text-muted-foreground/60 ms-auto">
+                    {new Date(note.created_at).toLocaleString(ar ? "ar-SA" : "en-US")}
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed">{note.body}</p>
               </div>
-              <p className="text-sm leading-relaxed">{note.body}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

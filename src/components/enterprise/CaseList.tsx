@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import CaseDetailDrawer from "@/components/enterprise/CaseDetailDrawer";
 import type { useOrganization } from "@/hooks/useOrganization";
+import type { UserPublicProfileRow } from "@/lib/memberDisplay";
 
 type Case = ReturnType<typeof useOrganization>["cases"][number];
 
@@ -11,10 +12,11 @@ interface CaseListProps {
   cases: Case[];
   loading: boolean;
   isOwnerOrAdmin: boolean;
-  orgId: string;
+  orgId?: string;
   currentUserId?: string;
   orgRole?: string | null;
   onCreateClick: () => void;
+  userProfilesForOrg?: UserPublicProfileRow[];
 }
 
 const STATUS_BADGE: Record<string, { en: string; ar: string; cls: string }> = {
@@ -40,10 +42,11 @@ export default function CaseList({
   cases,
   loading,
   isOwnerOrAdmin,
-  orgId,
+  orgId = "",
   currentUserId,
   orgRole,
   onCreateClick,
+  userProfilesForOrg = [],
 }: CaseListProps) {
   const { language } = useLanguage();
   const ar = language === "ar";
@@ -123,6 +126,7 @@ export default function CaseList({
         orgId={orgId}
         currentUserId={currentUserId}
         orgRole={orgRole}
+        userProfilesForOrg={userProfilesForOrg}
       />
     </>
   );

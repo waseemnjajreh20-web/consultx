@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserCircle, UserPlus, ChevronDown, Shield, UserMinus, UserCheck, AlertTriangle } from "lucide-react";
+import { UserPlus, ChevronDown, Shield, UserMinus, UserCheck, AlertTriangle, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,10 +24,14 @@ import {
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import type { useOrganization } from "@/hooks/useOrganization";
+import type { OrgMemberProfileRow, ResolvedDisplay } from "@/lib/memberDisplay";
+import MemberAvatar from "@/components/MemberAvatar";
+import EditMemberProfileDialog from "@/components/enterprise/EditMemberProfileDialog";
 
 type Member = ReturnType<typeof useOrganization>["members"][number];
 type UpdateRoleMutation = ReturnType<typeof useOrganization>["updateMemberRole"];
 type UpdateStatusMutation = ReturnType<typeof useOrganization>["updateMemberStatus"];
+type UpsertOrgMemberProfileMutation = ReturnType<typeof useOrganization>["upsertOrgMemberProfile"];
 
 interface MemberListProps {
   members: Member[];
@@ -35,9 +39,26 @@ interface MemberListProps {
   isOwnerOrAdmin: boolean;
   currentUserId?: string;
   onInviteClick: () => void;
-  updateMemberRole: UpdateRoleMutation;
-  updateMemberStatus: UpdateStatusMutation;
+  updateMemberRole?: UpdateRoleMutation;
+  updateMemberStatus?: UpdateStatusMutation;
+  upsertOrgMemberProfile?: UpsertOrgMemberProfileMutation;
+  memberProfiles?: OrgMemberProfileRow[];
+  resolveDisplay?: (m: Member) => ResolvedDisplay;
 }
+
+// Fallback resolver used when a parent (e.g. the Account preview) does not
+// supply one. Falls back to the user-id tail with no avatar/role-title.
+const fallbackResolve = (m: Member): ResolvedDisplay => {
+  const tail = m.user_id.replace(/-/g, "").slice(-8);
+  return {
+    displayName: `…${tail}`,
+    initials: tail.slice(0, 2).toUpperCase(),
+    avatarUrl: null,
+    roleTitle: null,
+    department: null,
+    baseRole: m.role,
+  };
+};
 
 const ROLE_LABEL: Record<string, { en: string; ar: string; cls: string }> = {
   owner:              { en: "Owner",           ar: "المالك",      cls: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
@@ -60,10 +81,6 @@ const ASSIGNABLE_ROLES = [
   { value: "finance_officer",    labelEn: "Finance Officer",    labelAr: "مسؤول مالي" },
 ];
 
-function shortUserId(uid: string) {
-  return `user_…${uid.slice(-8)}`;
-}
-
 export default function MemberList({
   members,
   loading,
@@ -72,6 +89,9 @@ export default function MemberList({
   onInviteClick,
   updateMemberRole,
   updateMemberStatus,
+  upsertOrgMemberProfile,
+  memberProfiles = [],
+  resolveDisplay,
 }: MemberListProps) {
   const { language } = useLanguage();
   const { toast } = useToast();
@@ -79,9 +99,13 @@ export default function MemberList({
 
   const [roleDialogMember, setRoleDialogMember] = useState<Member | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
+  const [profileDialogMember, setProfileDialogMember] = useState<Member | null>(null);
+
+  const resolve = resolveDisplay ?? fallbackResolve;
+  const profilesByMember = new Map(memberProfiles.map((p) => [p.member_id, p]));
 
   const handleRoleChange = async () => {
-    if (!roleDialogMember || !selectedRole) return;
+    if (!roleDialogMember || !selectedRole || !updateMemberRole) return;
     try {
       await updateMemberRole.mutateAsync({ memberId: roleDialogMember.id, role: selectedRole });
       toast({ title: ar ? "تم تغيير الدور" : "Role updated" });
@@ -93,6 +117,7 @@ export default function MemberList({
   };
 
   const handleStatusChange = async (member: Member, newStatus: string) => {
+    if (!updateMemberStatus) return;
     const actionAr = newStatus === "suspended" ? "إيقاف" : newStatus === "removed" ? "حذف" : "إعادة تفعيل";
     const actionEn = newStatus === "suspended" ? "suspend" : newStatus === "removed" ? "remove" : "reactivate";
     try {
@@ -103,6 +128,11 @@ export default function MemberList({
       toast({ title: ar ? "خطأ" : "Error", description: msg, variant: "destructive" });
     }
   };
+
+  // Capability flags scoped to whether the parent supplied the mutations.
+  const canMutateRole   = !!updateMemberRole;
+  const canMutateStatus = !!updateMemberStatus;
+  const canEditProfileBase = !!upsertOrgMemberProfile;
 
   return (
     <>
@@ -127,7 +157,7 @@ export default function MemberList({
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-10 bg-muted/30 rounded-lg animate-pulse" />
+              <div key={i} className="h-12 bg-muted/30 rounded-lg animate-pulse" />
             ))}
           </div>
         ) : members.length === 0 ? (
@@ -135,16 +165,21 @@ export default function MemberList({
             {ar ? "لا يوجد أعضاء بعد" : "No members yet"}
           </p>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {members.map((m) => {
               const role = ROLE_LABEL[m.role] ?? { en: m.role, ar: m.role, cls: "bg-muted/40 text-muted-foreground border-border/40" };
               const status = STATUS_LABEL[m.status] ?? STATUS_LABEL.active;
               const isOwnerRow = m.role === "owner";
               const isSelf = m.user_id === currentUserId;
-              const canAct = isOwnerOrAdmin && !isOwnerRow && !isSelf;
+              const canActOnRole = canMutateRole && canMutateStatus && isOwnerOrAdmin && !isOwnerRow && !isSelf;
+              // Profile edits are allowed for owner/admin on any non-owner row,
+              // and for the row's user themselves (personal fields only).
+              const canEditProfile = canEditProfileBase && ((isOwnerOrAdmin && !isOwnerRow) || isSelf);
               const joinedDate = m.joined_at
                 ? new Date(m.joined_at).toLocaleDateString(ar ? "ar-SA" : "en-US", { year: "numeric", month: "short" })
                 : null;
+
+              const display = resolve(m);
 
               return (
                 <div
@@ -155,24 +190,35 @@ export default function MemberList({
                     "bg-muted/10 hover:bg-muted/20 border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-muted/40 flex items-center justify-center shrink-0">
-                      <UserCircle className="w-4 h-4 text-muted-foreground" />
-                    </div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <MemberAvatar
+                      src={display.avatarUrl}
+                      initials={display.initials}
+                      size="md"
+                      alt={display.displayName}
+                    />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium font-mono truncate text-foreground/80">
-                        {shortUserId(m.user_id)}
+                      <p className="text-sm font-medium truncate text-foreground">
+                        {display.displayName}
                         {isSelf && (
-                          <span className="ms-1.5 text-[10px] text-primary font-sans font-semibold">
+                          <span className="ms-1.5 text-[10px] text-primary font-semibold">
                             {ar ? "(أنت)" : "(you)"}
                           </span>
                         )}
                       </p>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {display.roleTitle && (
+                          <p className="text-xs text-foreground/70 truncate">{display.roleTitle}</p>
+                        )}
+                        {display.department && (
+                          <span className="text-xs text-muted-foreground truncate">
+                            · {display.department}
+                          </span>
+                        )}
                         {joinedDate && (
-                          <p className="text-xs text-muted-foreground">
-                            {ar ? `انضم: ${joinedDate}` : `Joined: ${joinedDate}`}
-                          </p>
+                          <span className="text-[10px] text-muted-foreground/70">
+                            · {ar ? `انضم ${joinedDate}` : `Joined ${joinedDate}`}
+                          </span>
                         )}
                         {m.status !== "active" && (
                           <span className={`text-[10px] font-semibold ${status.cls}`}>
@@ -188,7 +234,7 @@ export default function MemberList({
                       {ar ? role.ar : role.en}
                     </span>
 
-                    {canAct ? (
+                    {(canActOnRole || canEditProfile) ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -200,41 +246,55 @@ export default function MemberList({
                             <ChevronDown className="w-3.5 h-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align={ar ? "start" : "end"} className="w-44">
-                          <DropdownMenuItem
-                            onClick={() => { setSelectedRole(m.role); setRoleDialogMember(m); }}
-                            className="gap-2 text-sm"
-                          >
-                            <Shield className="w-3.5 h-3.5" />
-                            {ar ? "تغيير الدور" : "Change role"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {m.status === "active" && (
+                        <DropdownMenuContent align={ar ? "start" : "end"} className="w-48">
+                          {canEditProfile && (
                             <DropdownMenuItem
-                              onClick={() => handleStatusChange(m, "suspended")}
-                              className="gap-2 text-sm text-amber-400 focus:text-amber-400"
+                              onClick={() => setProfileDialogMember(m)}
+                              className="gap-2 text-sm"
                             >
-                              <UserMinus className="w-3.5 h-3.5" />
-                              {ar ? "إيقاف العضو" : "Suspend"}
+                              <IdCard className="w-3.5 h-3.5" />
+                              {ar ? "تعديل بيانات العضو" : "Edit profile"}
                             </DropdownMenuItem>
                           )}
-                          {m.status === "suspended" && (
-                            <DropdownMenuItem
-                              onClick={() => handleStatusChange(m, "active")}
-                              className="gap-2 text-sm text-green-400 focus:text-green-400"
-                            >
-                              <UserCheck className="w-3.5 h-3.5" />
-                              {ar ? "إعادة تفعيل" : "Reactivate"}
-                            </DropdownMenuItem>
-                          )}
-                          {m.status !== "removed" && (
-                            <DropdownMenuItem
-                              onClick={() => handleStatusChange(m, "removed")}
-                              className="gap-2 text-sm text-red-400 focus:text-red-400"
-                            >
-                              <UserMinus className="w-3.5 h-3.5" />
-                              {ar ? "حذف العضو" : "Remove"}
-                            </DropdownMenuItem>
+                          {canActOnRole && (
+                            <>
+                              {canEditProfile && <DropdownMenuSeparator />}
+                              <DropdownMenuItem
+                                onClick={() => { setSelectedRole(m.role); setRoleDialogMember(m); }}
+                                className="gap-2 text-sm"
+                              >
+                                <Shield className="w-3.5 h-3.5" />
+                                {ar ? "تغيير الدور" : "Change role"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {m.status === "active" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(m, "suspended")}
+                                  className="gap-2 text-sm text-amber-400 focus:text-amber-400"
+                                >
+                                  <UserMinus className="w-3.5 h-3.5" />
+                                  {ar ? "إيقاف العضو" : "Suspend"}
+                                </DropdownMenuItem>
+                              )}
+                              {m.status === "suspended" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(m, "active")}
+                                  className="gap-2 text-sm text-green-400 focus:text-green-400"
+                                >
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                  {ar ? "إعادة تفعيل" : "Reactivate"}
+                                </DropdownMenuItem>
+                              )}
+                              {m.status !== "removed" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(m, "removed")}
+                                  className="gap-2 text-sm text-red-400 focus:text-red-400"
+                                >
+                                  <UserMinus className="w-3.5 h-3.5" />
+                                  {ar ? "حذف العضو" : "Remove"}
+                                </DropdownMenuItem>
+                              )}
+                            </>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -272,8 +332,8 @@ export default function MemberList({
             <div className="space-y-1.5">
               <p className="text-xs text-muted-foreground">
                 {ar ? "العضو:" : "Member:"}{" "}
-                <span className="font-mono text-foreground/80">
-                  {roleDialogMember ? shortUserId(roleDialogMember.user_id) : ""}
+                <span className="font-medium text-foreground/80">
+                  {roleDialogMember ? resolveDisplay(roleDialogMember).displayName : ""}
                 </span>
               </p>
               <Select value={selectedRole} onValueChange={setSelectedRole} disabled={roleDialogMember?.role === "owner"}>
@@ -296,15 +356,29 @@ export default function MemberList({
               <Button
                 size="sm"
                 className="flex-1"
-                disabled={!selectedRole || selectedRole === roleDialogMember?.role || updateMemberRole.isPending || roleDialogMember?.role === "owner"}
+                disabled={!selectedRole || selectedRole === roleDialogMember?.role || !!updateMemberRole?.isPending || roleDialogMember?.role === "owner"}
                 onClick={handleRoleChange}
               >
-                {updateMemberRole.isPending ? (ar ? "جارٍ…" : "Saving…") : (ar ? "حفظ" : "Save")}
+                {updateMemberRole?.isPending ? (ar ? "جارٍ…" : "Saving…") : (ar ? "حفظ" : "Save")}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Member-profile edit dialog */}
+      <EditMemberProfileDialog
+        open={!!profileDialogMember}
+        onClose={() => setProfileDialogMember(null)}
+        member={profileDialogMember}
+        existingProfile={profileDialogMember ? profilesByMember.get(profileDialogMember.id) ?? null : null}
+        isAdminEdit={isOwnerOrAdmin && profileDialogMember?.user_id !== currentUserId}
+        pending={!!upsertOrgMemberProfile?.isPending}
+        onSubmit={async (input) => {
+          if (!upsertOrgMemberProfile) return;
+          await upsertOrgMemberProfile.mutateAsync(input);
+        }}
+      />
     </>
   );
 }

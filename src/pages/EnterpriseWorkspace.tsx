@@ -148,6 +148,9 @@ export default function EnterpriseWorkspace() {
     messagesLoading,
     presence,
     presenceLoading,
+    memberProfiles,
+    userProfilesForOrg,
+    resolveDisplay,
     isOwnerOrAdmin,
     isFinanceOfficer,
     hasOrganization,
@@ -161,6 +164,7 @@ export default function EnterpriseWorkspace() {
     updateMemberRole,
     updateMemberStatus,
     upsertBranding,
+    upsertOrgMemberProfile,
     touchPresence,
     sendMessage,
     deleteMessage,
@@ -464,12 +468,15 @@ export default function EnterpriseWorkspace() {
                   members={members}
                   presence={presence}
                   loading={membersLoading || presenceLoading}
+                  resolveDisplay={resolveDisplay}
                 />
                 <OrgMessagesPanel
                   messages={messages}
                   loading={messagesLoading}
                   currentUserId={user?.id}
                   isOwnerOrAdmin={isOwnerOrAdmin}
+                  members={members}
+                  userProfilesForOrg={userProfilesForOrg}
                   sendMessage={sendMessage}
                   deleteMessage={deleteMessage}
                 />
@@ -505,6 +512,7 @@ export default function EnterpriseWorkspace() {
                 currentUserId={user?.id}
                 orgRole={orgRole}
                 onCreateClick={() => setShowCase(true)}
+                userProfilesForOrg={userProfilesForOrg}
               />
             )}
           </TabsContent>
@@ -519,6 +527,9 @@ export default function EnterpriseWorkspace() {
               onInviteClick={() => { setTab("invitations"); setShowInvite(true); }}
               updateMemberRole={updateMemberRole}
               updateMemberStatus={updateMemberStatus}
+              upsertOrgMemberProfile={upsertOrgMemberProfile}
+              memberProfiles={memberProfiles}
+              resolveDisplay={resolveDisplay}
             />
 
             <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-2">
@@ -592,8 +603,8 @@ export default function EnterpriseWorkspace() {
                   <Mail className="w-3 h-3 mt-0.5 shrink-0" />
                   <span>
                     {ar
-                      ? "الإرسال بالبريد الإلكتروني قادم؛ انسخ الرابط يدويًا الآن وأرسله للعضو المدعو."
-                      : "Email delivery is coming next; copy the link manually and share it with the invited member."}
+                      ? "تتم مشاركة الدعوة حالياً برابط مباشر. الإرسال التلقائي بالبريد سيُضاف في مرحلة لاحقة."
+                      : "Invitations are shared via direct link. Automatic email delivery will be added in a later phase."}
                   </span>
                 </div>
               </>
@@ -707,8 +718,8 @@ export default function EnterpriseWorkspace() {
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {ar
-                  ? "فوترة المقاعد للمؤسسة قيد التطوير. الفوترة الحالية فردية على مستوى الحساب."
-                  : "Per-seat enterprise billing is coming next. Current billing remains per-user."}
+                  ? "إدارة الفوترة تتم حالياً عبر صفحة الحساب الفردي. فوترة المقاعد المؤسسية مرحلة لاحقة."
+                  : "Billing is managed from the personal account page. Per-seat enterprise billing is a later phase."}
               </p>
               <Button size="sm" variant="outline" asChild>
                 <Link to="/account">
@@ -730,6 +741,7 @@ export default function EnterpriseWorkspace() {
         orgId={orgId ?? ""}
         currentUserId={user?.id}
         orgRole={orgRole}
+        userProfilesForOrg={userProfilesForOrg}
       />
     </div>
   );

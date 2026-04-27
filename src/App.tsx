@@ -17,6 +17,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Subscribe = lazy(() => import("./pages/Subscribe"));
 const Account = lazy(() => import("./pages/Account"));
+const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -49,6 +50,7 @@ const AnimatedRoutes = () => {
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
           <Route path="/subscribe" element={<PageTransition><Subscribe /></PageTransition>} />
           <Route path="/account" element={<PageTransition><Account /></PageTransition>} />
+          <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
           <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
           <Route path="/payment-callback" element={<PageTransition><PaymentCallback /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />

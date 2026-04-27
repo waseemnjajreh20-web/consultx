@@ -1,24 +1,26 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { MessageSquare, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import type { useOrganization } from "@/hooks/useOrganization";
+import type { UserPublicProfileRow } from "@/lib/memberDisplay";
+import { initialsFromName } from "@/lib/memberDisplay";
+import MemberAvatar from "@/components/MemberAvatar";
 
 type Message = ReturnType<typeof useOrganization>["messages"][number];
+type Member  = ReturnType<typeof useOrganization>["members"][number];
 
 interface OrgMessagesPanelProps {
   messages: Message[];
   loading: boolean;
   currentUserId?: string;
   isOwnerOrAdmin: boolean;
+  members: Member[];
+  userProfilesForOrg: UserPublicProfileRow[];
   sendMessage: ReturnType<typeof useOrganization>["sendMessage"];
   deleteMessage: ReturnType<typeof useOrganization>["deleteMessage"];
-}
-
-function shortUid(uid: string) {
-  return `…${uid.slice(-6)}`;
 }
 
 export default function OrgMessagesPanel({
@@ -26,6 +28,8 @@ export default function OrgMessagesPanel({
   loading,
   currentUserId,
   isOwnerOrAdmin,
+  members,
+  userProfilesForOrg,
   sendMessage,
   deleteMessage,
 }: OrgMessagesPanelProps) {
@@ -38,6 +42,28 @@ export default function OrgMessagesPanel({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
+
+  const userProfilesByUser = useMemo(() => {
+    const map = new Map<string, UserPublicProfileRow>();
+    for (const p of userProfilesForOrg) map.set(p.user_id, p);
+    return map;
+  }, [userProfilesForOrg]);
+
+  // Note: org_member_profiles overrides aren't piped here on purpose — message
+  // authorship is a user concept, not a member concept (a user could leave the
+  // org and their old messages still need a name). The resolver in useOrganization
+  // handles the org-scoped overrides for member-row UIs.
+  const resolveAuthor = (userId: string): { name: string; avatar: string | null; initials: string } => {
+    const profile = userProfilesByUser.get(userId);
+    const member = members.find((m) => m.user_id === userId);
+    const display = profile?.display_name?.trim()
+      || (member ? `…${member.user_id.slice(-8)}` : `…${userId.slice(-8)}`);
+    return {
+      name: display,
+      avatar: profile?.avatar_url ?? null,
+      initials: initialsFromName(display),
+    };
+  };
 
   const handleSend = async () => {
     const trimmed = body.trim();
@@ -74,10 +100,10 @@ export default function OrgMessagesPanel({
         )}
       </p>
 
-      <div className="max-h-64 overflow-y-auto space-y-2 rounded-lg bg-background/30 border border-border/30 p-2">
+      <div className="max-h-72 overflow-y-auto space-y-2 rounded-lg bg-background/30 border border-border/30 p-2">
         {loading ? (
           <div className="space-y-2">
-            {[1, 2, 3].map((i) => <div key={i} className="h-10 bg-muted/20 rounded animate-pulse" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-12 bg-muted/20 rounded animate-pulse" />)}
           </div>
         ) : sorted.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4">
@@ -86,15 +112,32 @@ export default function OrgMessagesPanel({
         ) : (
           sorted.map((m) => {
             const isSelf = m.author_id === currentUserId;
-            const canDel  = isSelf || isOwnerOrAdmin;
+            const canDel = isSelf || isOwnerOrAdmin;
+            const author = resolveAuthor(m.author_id);
             return (
               <div
                 key={m.id}
-                className={`flex gap-2 group ${isSelf ? (ar ? "flex-row-reverse" : "flex-row-reverse") : ""}`}
+                className={`flex gap-2 group ${isSelf ? "flex-row-reverse" : ""}`}
               >
-                <div className={`flex-1 min-w-0 rounded-lg px-3 py-2 text-sm ${isSelf ? "bg-primary/10 border border-primary/20" : "bg-muted/20 border border-border/30"}`}>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] text-muted-foreground font-mono">{shortUid(m.author_id)}</span>
+                <div className="shrink-0 pt-0.5">
+                  <MemberAvatar
+                    src={author.avatar}
+                    initials={author.initials}
+                    size="sm"
+                    alt={author.name}
+                  />
+                </div>
+                <div
+                  className={`flex-1 min-w-0 rounded-lg px-3 py-2 text-sm ${
+                    isSelf
+                      ? "bg-primary/10 border border-primary/20"
+                      : "bg-muted/20 border border-border/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-xs font-medium text-foreground/80 truncate">
+                      {author.name}
+                    </span>
                     {isSelf && (
                       <span className="text-[10px] text-primary font-semibold">{ar ? "(أنت)" : "(you)"}</span>
                     )}

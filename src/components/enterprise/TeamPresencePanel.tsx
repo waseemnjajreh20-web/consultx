@@ -1,6 +1,8 @@
 import { Users } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import type { useOrganization } from "@/hooks/useOrganization";
+import type { ResolvedDisplay } from "@/lib/memberDisplay";
+import MemberAvatar from "@/components/MemberAvatar";
 
 type Member   = ReturnType<typeof useOrganization>["members"][number];
 type Presence = ReturnType<typeof useOrganization>["presence"][number];
@@ -9,6 +11,7 @@ interface TeamPresencePanelProps {
   members:  Member[];
   presence: Presence[];
   loading:  boolean;
+  resolveDisplay: (m: Member) => ResolvedDisplay;
 }
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
@@ -19,14 +22,14 @@ function isOnline(lastSeen: string | undefined): boolean {
 }
 
 const ROLE_SHORT: Record<string, { en: string; ar: string }> = {
-  owner:              { en: "Owner",  ar: "المالك" },
-  admin:              { en: "Admin",  ar: "مدير" },
-  head_of_department: { en: "Head",   ar: "رئيس" },
-  engineer:           { en: "Eng",    ar: "مهندس" },
-  finance_officer:    { en: "Finance",ar: "مالي" },
+  owner:              { en: "Owner",   ar: "المالك" },
+  admin:              { en: "Admin",   ar: "مدير" },
+  head_of_department: { en: "Head",    ar: "رئيس" },
+  engineer:           { en: "Eng",     ar: "مهندس" },
+  finance_officer:    { en: "Finance", ar: "مالي" },
 };
 
-export default function TeamPresencePanel({ members, presence, loading }: TeamPresencePanelProps) {
+export default function TeamPresencePanel({ members, presence, loading, resolveDisplay }: TeamPresencePanelProps) {
   const { language } = useLanguage();
   const ar = language === "ar";
 
@@ -58,7 +61,7 @@ export default function TeamPresencePanel({ members, presence, loading }: TeamPr
 
       {loading ? (
         <div className="space-y-1.5">
-          {[1, 2, 3].map((i) => <div key={i} className="h-8 bg-muted/20 rounded animate-pulse" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-10 bg-muted/20 rounded animate-pulse" />)}
         </div>
       ) : members.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">
@@ -69,14 +72,40 @@ export default function TeamPresencePanel({ members, presence, loading }: TeamPr
           {sorted.map((m) => {
             const lastSeen = presenceMap.get(m.user_id) ?? undefined;
             const online = isOnline(lastSeen);
+            const display = resolveDisplay(m);
             const roleShort = ROLE_SHORT[m.role] ?? { en: m.role, ar: m.role };
+            const secondary =
+              display.roleTitle ??
+              (ar ? roleShort.ar : roleShort.en);
+
             return (
-              <div key={m.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-muted/10 transition-colors">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${online ? "bg-green-400" : "bg-muted-foreground/30"}`} />
-                <span className="text-xs font-mono text-foreground/70 truncate flex-1">
-                  …{m.user_id.slice(-8)}
-                </span>
-                <span className="text-[10px] text-muted-foreground shrink-0">{ar ? roleShort.ar : roleShort.en}</span>
+              <div
+                key={m.id}
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-muted/10 transition-colors"
+              >
+                <div className="relative shrink-0">
+                  <MemberAvatar
+                    src={display.avatarUrl}
+                    initials={display.initials}
+                    size="sm"
+                    alt={display.displayName}
+                  />
+                  <span
+                    className={`absolute -bottom-0.5 -end-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card ${online ? "bg-green-400" : "bg-muted-foreground/40"}`}
+                    aria-hidden
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-foreground/90 truncate">
+                    {display.displayName}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {secondary}
+                    {display.department && (
+                      <span className="text-muted-foreground/60"> · {display.department}</span>
+                    )}
+                  </p>
+                </div>
                 {!online && lastSeen && (
                   <span className="text-[10px] text-muted-foreground/50 shrink-0 hidden sm:inline">
                     {formatRelative(lastSeen, ar)}
