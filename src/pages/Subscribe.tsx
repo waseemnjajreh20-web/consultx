@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 
-const MOYASAR_PUBLISHABLE_KEY = import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string;
+const MOYASAR_PUBLISHABLE_KEY = (import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string)?.trim();
 
 declare global {
   interface Window {
@@ -80,8 +80,9 @@ const Subscribe = () => {
       if (data && data.length > 0) {
         setPlans(data);
         const urlPlan = searchParams.get("plan");
-        if (urlPlan && data.find((p) => p.id === urlPlan)) {
-          setSelectedPlan(urlPlan);
+        const matchedPlan = urlPlan ? data.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
+        if (matchedPlan) {
+          setSelectedPlan(matchedPlan.id);
         } else {
           const proPlan = data.find((p) => p.slug === "pro");
           setSelectedPlan(proPlan?.id || data[0].id);
@@ -99,7 +100,8 @@ const Subscribe = () => {
     }
     const existingScript = document.querySelector('script[src*="moyasar"]');
     if (existingScript) {
-      setSdkLoaded(true);
+      if (window.Moyasar) setSdkLoaded(true);
+      else existingScript.addEventListener('load', () => setSdkLoaded(true));
       return;
     }
     if (!document.querySelector('link[href*="moyasar"]')) {
