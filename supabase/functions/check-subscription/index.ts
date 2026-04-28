@@ -96,6 +96,13 @@ serve(async (req) => {
         advisory_used: 0, analysis_used: 0,
         org_access: adminOrgAccess,
         effective_access_source: "admin_override",
+        // Additive entitlement booleans — admin override grants every mode.
+        has_main_access: true,
+        has_advisory_access: true,
+        has_analytical_access: true,
+        is_trial: false,
+        trial_end: null as string | null,
+        card_on_file: false,
       };
 
       if (override === "free") {
@@ -108,6 +115,8 @@ serve(async (req) => {
           plan_slug: "free", advisory_limit: null, analysis_limit: null,
           owner_mode: false,
           effective_access: "ineligible", effective_plan_slug: "free",
+          // Free-registered: Main only.
+          has_main_access: true, has_advisory_access: false, has_analytical_access: false,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -445,6 +454,20 @@ serve(async (req) => {
     const effectivePlanSlug: string = isOrgAiAccess ? "enterprise" : planSlug;
     const effectiveAccess: string   = isOrgAiAccess ? "enterprise" : accessState;
 
+    // ── Per-mode entitlement booleans (additive, backward-compatible) ────────
+    // Policy: every authenticated user has Main. Advisory/Analytical require
+    // active trial, paid subscription, or enterprise org seat.
+    const hasMainAccess       = true;
+    const hasAdvisoryAccess   = isPaidActive || launchTrialActive || isOrgAiAccess ||
+                                subscription?.status === "trialing";
+    const hasAnalyticalAccess = hasAdvisoryAccess;
+    const isTrial             = launchTrialActive || subscription?.status === "trialing";
+    const trialEndIso: string | null =
+      subscription?.status === "trialing" && subscription?.trial_end
+        ? new Date(subscription.trial_end).toISOString()
+        : (launchTrialEnd ?? null);
+    const cardOnFile = !!subscription?.card_brand && !!subscription?.card_last_four;
+
     return new Response(
       JSON.stringify({
         // Standard paid subscription fields (unchanged interface)
@@ -484,6 +507,14 @@ serve(async (req) => {
         effective_access_source: effectiveAccessSource,
         effective_access:        effectiveAccess,
         effective_plan_slug:     effectivePlanSlug,
+
+        // Additive entitlement booleans (backward-compatible)
+        has_main_access:       hasMainAccess,
+        has_advisory_access:   hasAdvisoryAccess,
+        has_analytical_access: hasAnalyticalAccess,
+        is_trial:              isTrial,
+        trial_end:             trialEndIso,
+        card_on_file:          cardOnFile,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

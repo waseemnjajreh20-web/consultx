@@ -81,6 +81,13 @@ export interface UseEntitlementResult {
   // E7.1: Admin override
   isOwnerMode: boolean;          // admin + owner_mode override active
   adminOverrideMode: string | null; // current override slug if active, else null
+
+  // Per-mode entitlement (unified gates — prefer these in components)
+  hasMainAccess: boolean;        // any authenticated user, including expired/free
+  hasAdvisoryAccess: boolean;    // trial / paid / enterprise / admin override
+  hasAnalyticalAccess: boolean;  // same gates as Advisory
+  isProTrial: boolean;           // active trial running on Pro plan
+  cardOnFile: boolean;           // brand + last4 saved on subscription
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -115,6 +122,19 @@ export function useEntitlement(): UseEntitlementResult {
   const adminOverrideMode = (isAdmin && subscription?.effective_access_source === "admin_override")
     ? (subscription?.effective_plan_slug ?? null)
     : null;
+
+  // Per-mode entitlement — prefer server fields when present, fall back to derivation.
+  const hasMainAccess =
+    subscription?.has_main_access ?? (!!user || isAdmin);
+  const hasAdvisoryAccess =
+    subscription?.has_advisory_access ??
+    (isAdmin || isPaidActive || isTrialActive || hasEnterpriseAccess);
+  const hasAnalyticalAccess =
+    subscription?.has_analytical_access ?? hasAdvisoryAccess;
+  const isProTrial =
+    isTrialActive && (subscription?.plan_slug === "pro" || effectivePlanSlug === "pro");
+  const cardOnFile =
+    subscription?.card_on_file ?? !!(subscription?.card_brand && subscription?.card_last_four);
 
   const hasActiveAccess = isPaidActive || isTrialActive || hasEnterpriseAccess;
   // isFreeLoggedIn: authenticated user with no active paid/trial/enterprise access.
@@ -177,5 +197,11 @@ export function useEntitlement(): UseEntitlementResult {
     // E7.1: Admin override
     isOwnerMode,
     adminOverrideMode,
+    // Per-mode entitlement
+    hasMainAccess,
+    hasAdvisoryAccess,
+    hasAnalyticalAccess,
+    isProTrial,
+    cardOnFile,
   };
 }

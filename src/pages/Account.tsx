@@ -363,22 +363,22 @@ const Account = () => {
     if (isTrialActive) {
       glowClass = "border-cyan-500/40 shadow-[0_0_24px_rgba(6,182,212,0.12)]";
       gradientClass = "from-cyan-500/10 to-transparent";
-      stateTitle = language === "ar" ? "وصول كامل مفعّل" : "Full Access Active";
+      stateTitle = language === "ar" ? "تجربة Pro نشطة" : "Pro Trial Active";
       stateSubtitle =
         language === "ar"
-          ? `${trialDaysRemaining} أيام متبقية من التجربة`
-          : `${trialDaysRemaining} days remaining in trial`;
+          ? `${trialDaysRemaining} أيام متبقية — أضف بطاقتك الآن لمواصلة الاشتراك بدون انقطاع`
+          : `${trialDaysRemaining} days remaining — add your card now to continue without interruption`;
     } else if (isTrialExpired) {
       glowClass = "border-amber-500/40 shadow-[0_0_24px_rgba(245,158,11,0.12)]";
       gradientClass = "from-amber-500/10 to-transparent";
       stateTitle =
         language === "ar"
-          ? "اكتملت التجربة الهندسية"
-          : "Engineering Trial Complete";
+          ? "انتهت تجربة Pro"
+          : "Pro Trial Ended";
       stateSubtitle =
         language === "ar"
-          ? "فعّل باقة مهندس للوصول الكامل"
-          : "Activate Engineer subscription for full access";
+          ? "الوضع الرئيسي ما زال متاحاً مجاناً. فعّل Pro للوصول إلى الاستشاري والتحليلي."
+          : "Main mode is still free. Activate Pro for Advisory and Analytical access.";
     } else if (subscription?.status === "past_due") {
       // past_due within grace — isPaidActive is true but a payment renewal failed.
       // GRACE_DAYS mirrors the constant in check-subscription and fire-safety-chat.
@@ -450,7 +450,7 @@ const Account = () => {
               onClick={() => navigate("/subscribe")}
             >
               <Zap className="w-4 h-4 me-2" />
-              {language === "ar" ? "فعّل باقة مهندس" : "Activate Engineer"}
+              {language === "ar" ? "تفعيل Pro" : "Activate Pro"}
             </Button>
           )}
         </div>

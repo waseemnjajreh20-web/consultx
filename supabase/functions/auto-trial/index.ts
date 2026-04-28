@@ -46,18 +46,18 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the Pro (engineer) plan explicitly by slug — slug is the stable identifier.
-    // We must NOT use a nondeterministic query (type+target+LIMIT 1) because it could
-    // return the free plan. The trial must always be on the engineer/Pro plan.
+    // Trial plan = Pro. Every newly registered user receives a 7-day Pro trial.
+    // Slug is the stable identifier — never use type+target+LIMIT, which could
+    // accidentally return the free plan.
     const { data: plan, error: planError } = await adminClient
       .from("subscription_plans")
       .select("id")
       .eq("is_active", true)
-      .eq("slug", "engineer")
+      .eq("slug", "pro")
       .maybeSingle();
 
     if (planError || !plan) {
-      console.error("Engineer plan not found — cannot create trial:", planError);
+      console.error("Pro plan not found — cannot create trial:", planError);
       return new Response(JSON.stringify({ error: "Pro plan not found" }), { status: 500, headers: corsHeaders });
     }
 
