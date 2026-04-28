@@ -41,6 +41,14 @@ export interface SubscriptionStatus {
   analysis_limit?: number | null;
   analysis_used?: number;
 
+  // Per-mode entitlement booleans (additive)
+  has_main_access?: boolean;
+  has_advisory_access?: boolean;
+  has_analytical_access?: boolean;
+  is_trial?: boolean;
+  trial_end?: string | null;
+  card_on_file?: boolean;
+
   // E7.1: Admin entitlement override fields
   owner_mode?: boolean;
 

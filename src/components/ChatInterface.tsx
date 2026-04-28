@@ -30,6 +30,7 @@ import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
 import { useConversations } from "@/hooks/useConversations";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLaunchTrial } from "@/hooks/useLaunchTrial";
 import { useIsMobile } from "@/hooks/use-mobile";
 import InChatUpgradePrompt from "./InChatUpgradePrompt";
@@ -802,6 +803,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   }, [user?.email]);
   const { trialData, dismissWelcomeBanner } = useLaunchTrial();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
+  const { hasAdvisoryAccess, hasAnalyticalAccess } = useEntitlement();
   const [showExpiryModal, setShowExpiryModal] = useState(false);
   const [localMessagesUsed, setLocalMessagesUsed] = useState(0);
   const [modeLockTarget, setModeLockTarget] = useState<"standard" | "analysis" | null>(null);
@@ -942,10 +944,14 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
 
   // ===== MODE SWITCH HANDLER — also aborts any pending request =====
   const handleModeSwitch = useCallback((newMode: ChatMode, fromAI: boolean = false) => {
-    // Free plan enforcement: block standard and analysis unless launch trial is active
-    const launchTrialActive = trialData?.trial_active ?? false;
-    if (isFreePlan() && !launchTrialActive && (newMode === "standard" || newMode === "analysis")) {
-      setModeLockTarget(newMode as "standard" | "analysis");
+    // Unified entitlement gate. Main is always allowed for authenticated users;
+    // Advisory/Analytical require active trial / paid / enterprise / admin override.
+    if (newMode === "standard" && !hasAdvisoryAccess) {
+      setModeLockTarget("standard");
+      return;
+    }
+    if (newMode === "analysis" && !hasAnalyticalAccess) {
+      setModeLockTarget("analysis");
       return;
     }
 
@@ -983,7 +989,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       duration: 3000,
       style: { borderLeft: `4px solid ${toastBorderColor}` },
     });
-  }, [chatMode, t, toast, isFreePlan, trialData]);
+  }, [chatMode, t, toast, hasAdvisoryAccess, hasAnalyticalAccess]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) await addFiles(e.target.files);
@@ -1422,25 +1428,25 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                     backdropFilter: "blur(12px)",
                     boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
                     minWidth: "220px",
+                    maxWidth: "300px",
                     top: "calc(100% + 8px)",
                     right: 0,
-                    whiteSpace: "nowrap",
                   }}
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-2" style={{ whiteSpace: "normal", maxWidth: "260px" }}>
                     <Lock size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "hsl(195 85% 50%)" }} />
                     <div>
-                      <p className="font-medium text-foreground mb-1 text-xs">
+                      <p className="font-medium text-foreground mb-1 text-xs leading-relaxed">
                         {language === "en"
-                          ? `${modeLockTarget === "standard" ? "Advisory Mode" : "Analysis Mode"} is available on the Engineer plan`
-                          : `${modeLockTarget === "standard" ? "الوضع الاستشاري" : "الوضع التحليلي"} متاح في باقة مهندس`}
+                          ? "Main mode is free for registered users. Activate Pro to access Advisory and Analytical."
+                          : "الوضع الرئيسي متاح مجاناً للمستخدمين المسجلين. فعّل Pro للوصول إلى الاستشاري والتحليلي."}
                       </p>
                       <button
                         onClick={() => { setModeLockTarget(null); navigate("/subscribe"); }}
                         className="text-xs font-semibold"
                         style={{ color: "hsl(195 85% 50%)" }}
                       >
-                        {language === "en" ? "Upgrade →" : "ترقية ←"}
+                        {language === "en" ? "Activate Pro →" : "تفعيل Pro ←"}
                       </button>
                     </div>
                     <button

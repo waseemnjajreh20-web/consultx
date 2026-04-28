@@ -102,7 +102,14 @@ const PricingLanding = () => {
   const isAr = language === "ar";
 
   const plans = getPlans(isAr);
-  const handleCTA = () => navigate("/subscribe");
+  // Engineer/Pro go to self-service Moyasar checkout. Enterprise is sales-led.
+  const handleCTA = (slug: string) => () => {
+    if (slug === "enterprise") {
+      navigate("/contact");
+    } else {
+      navigate("/subscribe");
+    }
+  };
 
   return (
     <section id="pricing" className="py-16 md:py-24 px-4 md:px-6">
@@ -173,7 +180,7 @@ const PricingLanding = () => {
               </ul>
 
               <button
-                onClick={handleCTA}
+                onClick={handleCTA(plan.slug)}
                 className="w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 style={
                   plan.popular
@@ -189,7 +196,9 @@ const PricingLanding = () => {
                       }
                 }
               >
-                {t("startFreeTrial")}
+                {plan.slug === "enterprise"
+                  ? (isAr ? "تواصل مع فريق المبيعات" : "Contact Sales")
+                  : t("startFreeTrial")}
               </button>
             </div>
           ))}

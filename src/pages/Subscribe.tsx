@@ -108,6 +108,7 @@ const Subscribe = () => {
         .select("*")
         .eq("is_active", true)
         .neq("slug", "free")
+        .neq("slug", "enterprise") // Enterprise is sales-led, not self-service.
         .order("price_amount", { ascending: true });
       if (data && data.length > 0) {
         setPlans(data);
@@ -424,7 +425,7 @@ const Subscribe = () => {
                     {plan.price_amount > 0 && (
                       <Badge className="mt-3 bg-primary/15 text-primary border border-primary/30 text-xs font-medium">
                         <Clock className="w-3 h-3 me-1" />
-                        {language === "ar" ? "7 أيام تجربة مجانية" : "7-day free trial"}
+                        {language === "ar" ? "تجربة Pro مجانية لمدة 7 أيام" : "7-day free Pro trial"}
                       </Badge>
                     )}
                     {selected && <CheckCircle className="w-5 h-5 text-primary mx-auto mt-2" />}
@@ -432,6 +433,34 @@ const Subscribe = () => {
                 </Card>
               );
             })}
+          </div>
+
+          {/* Enterprise — sales-led, not self-service */}
+          <div className="max-w-4xl mx-auto mb-8">
+            <Card className="border-primary/30 bg-card/40">
+              <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold mb-1">
+                    {language === "ar" ? "باقة المنشآت" : "Enterprise"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {language === "ar"
+                      ? "للمكاتب الهندسية والفرق متعددة المستخدمين — تواصل معنا لعرض مخصص."
+                      : "For engineering firms and multi-user teams — contact us for a tailored quote."}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto shrink-0"
+                  onClick={() => navigate("/contact")}
+                >
+                  {language === "ar" ? "تواصل مع فريق المبيعات" : "Contact Sales"}
+                  {dir === "rtl"
+                    ? <ArrowLeft className="w-4 h-4 me-2" />
+                    : <ArrowRight className="w-4 h-4 ms-2" />}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {currentPlan && (
