@@ -181,13 +181,28 @@ const Subscribe = () => {
   };
 
   const domSnapshot = (label: string) => {
-    const el = document.getElementById("mysr-form");
-    if (!el) { dbg(`[${label}] #mysr-form NOT in DOM`); return; }
-    const children = el.childElementCount;
-    const inputs = el.querySelectorAll("input").length;
-    const iframes = el.querySelectorAll("iframe").length;
-    const text = (el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 100);
-    dbg(`[${label}] children=${children} inputs=${inputs} iframes=${iframes} text="${text}"`);
+    // Primary: check the wrapper container (survives SDK element replacement)
+    const wrap = document.getElementById("mysr-form-container");
+    const orig = document.getElementById("mysr-form");
+    const origInDom = !!orig;
+
+    // Also search entire dialog for any moyasar-related elements
+    const sdkEls = document.querySelectorAll("[class*='mysr'],[class*='moyasar'],[id*='moyasar'],[class*='mp-'],[class*='payment-form']");
+
+    if (!wrap) {
+      dbg(`[${label}] #mysr-form-container NOT in DOM`);
+    } else {
+      const children = wrap.childElementCount;
+      const inputs = wrap.querySelectorAll("input").length;
+      const iframes = wrap.querySelectorAll("iframe").length;
+      const text = (wrap.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 120);
+      dbg(`[${label}] container: children=${children} inputs=${inputs} iframes=${iframes} text="${text}"`);
+    }
+    dbg(`[${label}] #mysr-form in DOM: ${origInDom} | SDK els found: ${sdkEls.length}`);
+    if (sdkEls.length > 0) {
+      const el0 = sdkEls[0] as HTMLElement;
+      dbg(`[${label}] SDK el[0]: tag=${el0.tagName} id="${el0.id}" cls="${el0.className.toString().slice(0,60)}" text="${(el0.textContent ?? "").trim().slice(0,60)}"`);
+    }
   };
 
   const initMoyasarForm = (givenId: string, subscriptionId: string) => {
@@ -214,6 +229,32 @@ const Subscribe = () => {
     }
 
     dbg(`[init] #mysr-form found — childCount before: ${el.childElementCount}`);
+    dbg(`[init] ApplePaySession available: ${typeof (window as any).ApplePaySession}`);
+
+    // MutationObserver: detect if/when SDK removes #mysr-form from its parent
+    if (debugMode && el.parentNode) {
+      const mo = new MutationObserver((mutations) => {
+        mutations.forEach((m) => {
+          m.removedNodes.forEach((node) => {
+            if (node === el) {
+              const parentId = (m.target as Element).id || m.target.nodeName;
+              const parentChildren = (m.target as Element).childElementCount;
+              dbg(`[MO] #mysr-form REMOVED from parent "${parentId}" — parent now has ${parentChildren} children`);
+              mo.disconnect();
+            }
+          });
+          m.addedNodes.forEach((node) => {
+            const added = node as Element;
+            if (added.id !== "mysr-form" && added.tagName) {
+              dbg(`[MO] new element added to parent: <${added.tagName.toLowerCase()} id="${added.id}" class="${(added.className ?? "").toString().slice(0, 60)}">`);
+            }
+          });
+        });
+      });
+      mo.observe(el.parentNode, { childList: true, subtree: false });
+      dbg(`[init] MutationObserver armed on parent of #mysr-form`);
+    }
+
     dbg(`[init] calling Moyasar.init...`);
 
     const plan = plans.find((p) => p.id === selectedPlan);
@@ -249,12 +290,15 @@ const Subscribe = () => {
     // 8s: final diagnosis
     setTimeout(() => {
       if (threw) return; // already set dbgFinal in catch
-      const el2 = document.getElementById("mysr-form");
-      const children8s = el2?.childElementCount ?? -1;
-      const inputs8s = el2 ? el2.querySelectorAll("input").length : -1;
-      const iframes8s = el2 ? el2.querySelectorAll("iframe").length : -1;
-      const text8s = (el2?.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 100);
-      dbg(`[8s] children=${children8s} inputs=${inputs8s} iframes=${iframes8s} text="${text8s}"`);
+      // Use wrapper container (survives SDK element replacement)
+      const wrap = document.getElementById("mysr-form-container");
+      const origEl = document.getElementById("mysr-form");
+      const children8s = wrap?.childElementCount ?? -1;
+      const inputs8s = wrap ? wrap.querySelectorAll("input").length : -1;
+      const iframes8s = wrap ? wrap.querySelectorAll("iframe").length : -1;
+      const text8s = (wrap?.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 100);
+      dbg(`[8s] container: children=${children8s} inputs=${inputs8s} iframes=${iframes8s}`);
+      dbg(`[8s] #mysr-form still in DOM: ${!!origEl} | text: "${text8s}"`);
 
       const netLines: string[] = [];
       try {
@@ -277,17 +321,22 @@ const Subscribe = () => {
       netLines.forEach(l => dbg(`[network] ${l}`));
 
       let rootCause: string;
+      const origStillInDom = !!origEl;
       if (inputs8s > 0) {
-        rootCause = "✓ FORM OK — input fields visible (form rendered successfully)";
+        rootCause = "✓ FORM OK — input fields visible in container";
       } else if (iframes8s > 0) {
-        rootCause = "⚠ iframe rendered but inputs=0 — card fields may be inside iframe (normal for some SDKs); check if iframe loaded or shows error";
+        rootCause = "⚠ iframe in container but no direct inputs — card fields may be inside iframe; check if iframe loaded correctly";
+      } else if (children8s > 0 && !origStillInDom) {
+        rootCause = "⚠ SDK replaced #mysr-form with new element — new element has children but no inputs/iframes — SDK stuck in Loading; check MO log above for what was added";
       } else if (children8s > 0) {
-        rootCause = "⚠ DOM children exist but no inputs/iframes — SDK stuck in 'Loading' state; likely cause: Apple Pay check or api.moyasar.com call hanging/failing (CORS or 401)";
+        rootCause = "⚠ SDK rendered children but no inputs — stuck in Loading; likely: Apple Pay check or api.moyasar.com call not completing";
+      } else if (!origStillInDom) {
+        rootCause = "✗ SDK removed #mysr-form but its replacement has no children — SDK initialization failed silently; check Moyasar account activation and API key validity";
       } else {
-        rootCause = "✗ SDK rendered NOTHING — likely: API key rejected by api.moyasar.com, CORS block on api.moyasar.com, or Moyasar.init() returned without mounting";
+        rootCause = "✗ SDK rendered nothing — #mysr-form still in DOM but empty; Moyasar.init() returned without mounting — verify publishable key is correct and Moyasar account is active";
       }
 
-      setDbgFinal({ initCalled: true, initThrew: false, initError: null, children8s, inputs8s, iframes8s, network: netLines, rootCause });
+      setDbgFinal({ initCalled: true, initThrew: false, initError: origStillInDom ? null : "#mysr-form replaced by SDK", children8s, inputs8s, iframes8s, network: netLines, rootCause });
     }, 8000);
   };
 
@@ -578,8 +627,8 @@ const Subscribe = () => {
                 </div>
               )}
 
-              {/* Moyasar form container — always in DOM when modal is open so snapshots can check it */}
-              <div className={formError ? "hidden" : "my-2"} dir="ltr">
+              {/* Moyasar form container — wrapper stays in DOM; SDK may replace #mysr-form inside */}
+              <div id="mysr-form-container" className={formError ? "hidden" : "my-2"} dir="ltr">
                 <div id="mysr-form" className="min-h-[180px]">
                   {!sdkLoaded && (
                     <div className="flex items-center justify-center h-[180px]">
@@ -600,8 +649,11 @@ const Subscribe = () => {
                       init called: {String(dbgFinal.initCalled)}
                     </div>
                     <div className={dbgFinal.initThrew ? "text-red-400" : "text-green-400"}>
-                      init threw: {String(dbgFinal.initThrew)}{dbgFinal.initError ? ` — ${dbgFinal.initError}` : ""}
+                      init threw: {String(dbgFinal.initThrew)}{dbgFinal.initThrew && dbgFinal.initError ? ` — ${dbgFinal.initError}` : ""}
                     </div>
+                    {dbgFinal.initError && !dbgFinal.initThrew && (
+                      <div className="text-orange-400">note: {dbgFinal.initError}</div>
+                    )}
                     {dbgFinal.children8s !== null && (
                       <div className={dbgFinal.inputs8s === 0 ? "text-red-400" : "text-green-400"}>
                         @8s — children: {dbgFinal.children8s} | inputs: {dbgFinal.inputs8s} | iframes: {dbgFinal.iframes8s}
