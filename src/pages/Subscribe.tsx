@@ -107,11 +107,11 @@ const Subscribe = () => {
     if (!document.querySelector('link[href*="moyasar"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "https://cdn.moyasar.com/mpf/1.7.3/moyasar.css";
+      link.href = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.css";
       document.head.appendChild(link);
     }
     const script = document.createElement("script");
-    script.src = "https://cdn.moyasar.com/mpf/1.7.3/moyasar.js";
+    script.src = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.js";
     script.async = true;
     script.onload = () => setSdkLoaded(true);
     script.onerror = () => console.error("Moyasar SDK failed to load");
