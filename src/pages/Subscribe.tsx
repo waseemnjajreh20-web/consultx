@@ -162,7 +162,7 @@ const Subscribe = () => {
       `amount: 100 SAR-halalas (=1 SAR)`,
       `currency: SAR`,
       `methods: ["creditcard"]`,
-      `supported_networks: ["mada","visa","mastercard"]`,
+      `supported_networks: (removed — was blocking di() call)`,
       `--- waiting for init (300ms delay) ---`,
     ]);
   }, [paymentModalOpen]);
@@ -270,7 +270,6 @@ const Subscribe = () => {
         callback_url: `${window.location.origin}/payment-callback`,
         metadata: { subscription_id: subscriptionId, given_id: givenId },
         methods: ["creditcard"],
-        supported_networks: ["mada", "visa", "mastercard"],
       });
       dbg(`[init] Moyasar.init() returned without throwing`);
     } catch (err: any) {
