@@ -58,6 +58,9 @@ const Subscribe = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+  const debugMode = searchParams.get("debugPayment") === "1";
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -128,22 +131,89 @@ const Subscribe = () => {
   }, [paymentModalOpen, sdkLoaded, pendingGivenId, pendingSubscriptionId]);
 
   const initMoyasarForm = (givenId: string, subscriptionId: string) => {
-    if (!window.Moyasar) return;
+    setFormError(null);
+    if (!window.Moyasar) {
+      const msg = "window.Moyasar unavailable after script load";
+      setFormError(language === "ar" ? "لم يتم تحميل بوابة الدفع. يرجى المحاولة مرة أخرى." : "Payment SDK unavailable. Please retry.");
+      if (debugMode) setDebugLog(prev => [...prev, `[ERROR] ${msg}`]);
+      return;
+    }
+    const el = document.getElementById("mysr-form");
+    if (!el) {
+      const msg = "#mysr-form element not found in DOM at init time";
+      setFormError(language === "ar" ? "خطأ في تهيئة نموذج الدفع." : "Payment form container not found.");
+      if (debugMode) setDebugLog(prev => [...prev, `[ERROR] ${msg}`]);
+      return;
+    }
+    const keyLen = MOYASAR_PUBLISHABLE_KEY?.length ?? 0;
+    const keyPreview = keyLen > 8
+      ? `${MOYASAR_PUBLISHABLE_KEY.slice(0, 4)}...${MOYASAR_PUBLISHABLE_KEY.slice(-4)} (len=${keyLen})`
+      : `(len=${keyLen} — possibly missing)`;
+    if (debugMode) {
+      setDebugLog(prev => [...prev,
+        `key: ${keyPreview}`,
+        `#mysr-form found: true, childCount: ${el.childElementCount}`,
+        `window.Moyasar type: ${typeof window.Moyasar}`,
+        `calling Moyasar.init...`,
+      ]);
+    }
     const plan = plans.find((p) => p.id === selectedPlan);
-    window.Moyasar.init({
-      element: "#mysr-form",
-      amount: 100, // 1 SAR in halalas — card verification charge
-      currency: "SAR",
-      description: plan ? `Card verification for ${plan.name_en}` : "Card verification",
-      publishable_api_key: MOYASAR_PUBLISHABLE_KEY,
-      callback_url: `${window.location.origin}/payment-callback`,
-      metadata: {
-        subscription_id: subscriptionId,
-        given_id: givenId,
-      },
-      methods: ["creditcard"],
-      supported_networks: ["mada", "visa", "mastercard"],
-    });
+    try {
+      window.Moyasar.init({
+        element: "#mysr-form",
+        amount: 100,
+        currency: "SAR",
+        description: plan ? `Card verification for ${plan.name_en}` : "Card verification",
+        publishable_api_key: MOYASAR_PUBLISHABLE_KEY,
+        callback_url: `${window.location.origin}/payment-callback`,
+        metadata: { subscription_id: subscriptionId, given_id: givenId },
+        methods: ["creditcard"],
+        supported_networks: ["mada", "visa", "mastercard"],
+      });
+      if (debugMode) {
+        setTimeout(() => {
+          const el2 = document.getElementById("mysr-form");
+          const childCount = el2?.childElementCount ?? "?";
+          const hasInput = !!el2?.querySelector("input");
+          const innerText = (el2?.textContent ?? "").trim().slice(0, 80);
+          setDebugLog(prev => [...prev,
+            `after 1s — childCount: ${childCount}, hasInput: ${hasInput}, text: "${innerText}"`,
+          ]);
+        }, 1000);
+      }
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      setFormError(language === "ar" ? `خطأ في تهيئة الدفع: ${msg}` : `Payment init error: ${msg}`);
+      if (debugMode) setDebugLog(prev => [...prev, `[INIT THROW] ${msg}`]);
+    }
+  };
+
+  // Fail-fast: if form has no input fields after 8s, show error + retry
+  useEffect(() => {
+    if (!paymentModalOpen) return;
+    const failTimer = setTimeout(() => {
+      if (formError) return; // already showing an error
+      const el = document.getElementById("mysr-form");
+      const hasInput = !!el?.querySelector("input");
+      if (!hasInput) {
+        const childText = (el?.textContent ?? "").trim().slice(0, 120);
+        if (debugMode) setDebugLog(prev => [...prev, `[FAIL-FAST] no input after 8s. text: "${childText}"`]);
+        setFormError(language === "ar"
+          ? "لم يتم تحميل نموذج الدفع خلال الوقت المحدد. يرجى المحاولة مرة أخرى."
+          : "Payment form did not load in time. Please retry.");
+      }
+    }, 8000);
+    return () => clearTimeout(failTimer);
+  }, [paymentModalOpen, formError]);
+
+  const retryPaymentForm = () => {
+    setFormError(null);
+    if (debugMode) setDebugLog(prev => [...prev, "--- RETRY ---"]);
+    const el = document.getElementById("mysr-form");
+    if (el) el.innerHTML = "";
+    if (pendingGivenId && pendingSubscriptionId) {
+      setTimeout(() => initMoyasarForm(pendingGivenId, pendingSubscriptionId), 150);
+    }
   };
 
   // Call backend to create subscription record, then open payment modal
@@ -366,6 +436,8 @@ const Subscribe = () => {
               if (!open) {
                 setPendingGivenId(null);
                 setPendingSubscriptionId(null);
+                setFormError(null);
+                setDebugLog([]);
               }
             }}
           >
@@ -376,15 +448,29 @@ const Subscribe = () => {
                   {isReturningUser ? t("verificationChargeReturning") : t("verificationCharge")}
                 </DialogDescription>
               </DialogHeader>
-              <div className="my-2" dir="ltr">
-                <div id="mysr-form" className="min-h-[180px]">
-                  {!sdkLoaded && (
-                    <div className="flex items-center justify-center h-[180px]">
-                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                    </div>
-                  )}
+              {formError ? (
+                <div className="my-4 flex flex-col items-center gap-3 text-center">
+                  <p className="text-sm text-destructive">{formError}</p>
+                  <Button variant="outline" size="sm" onClick={retryPaymentForm}>
+                    {language === "ar" ? "إعادة المحاولة" : "Retry"}
+                  </Button>
                 </div>
-              </div>
+              ) : (
+                <div className="my-2" dir="ltr">
+                  <div id="mysr-form" className="min-h-[180px]">
+                    {!sdkLoaded && (
+                      <div className="flex items-center justify-center h-[180px]">
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {debugMode && debugLog.length > 0 && (
+                <div className="mt-2 p-2 bg-muted rounded text-xs font-mono space-y-0.5 max-h-48 overflow-y-auto" dir="ltr">
+                  {debugLog.map((line, i) => <div key={i}>{line}</div>)}
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
