@@ -13,6 +13,8 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 
 const MOYASAR_PUBLISHABLE_KEY = (import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string)?.trim();
+const SDK_JS_URL = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.js";
+const SDK_CSS_URL = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.css";
 
 declare global {
   interface Window {
@@ -59,14 +61,17 @@ const Subscribe = () => {
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [debugLog, setDebugLog] = useState<string[]>([]);
-  const debugMode = searchParams.get("debugPayment") === "1";
+
+  // Debug mode: ?debugPayment=1 or ?debugPayment=true
+  const dbgParam = searchParams.get("debugPayment");
+  const debugMode = dbgParam === "1" || dbgParam === "true";
+  const [dbgLines, setDbgLines] = useState<string[]>([]);
+  const [dbgReady, setDbgReady] = useState(false); // true as soon as modal opens
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
-  // Redirect users who already have a paid active subscription away from subscribe page
   useEffect(() => {
     if (!subLoading && isPaidActive) navigate("/");
   }, [isPaidActive, subLoading, navigate]);
@@ -110,16 +115,50 @@ const Subscribe = () => {
     if (!document.querySelector('link[href*="moyasar"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.css";
+      link.href = SDK_CSS_URL;
       document.head.appendChild(link);
     }
     const script = document.createElement("script");
-    script.src = "https://cdn.moyasar.com/mpf/1.14.0/moyasar.js";
+    script.src = SDK_JS_URL;
     script.async = true;
     script.onload = () => setSdkLoaded(true);
     script.onerror = () => console.error("Moyasar SDK failed to load");
     document.body.appendChild(script);
   }, []);
+
+  // Capture initial debug state immediately when modal opens
+  useEffect(() => {
+    if (!paymentModalOpen) return;
+    if (!debugMode) return;
+    setDbgReady(true);
+    const keyRaw = MOYASAR_PUBLISHABLE_KEY ?? "";
+    const keyLen = keyRaw.length;
+    const keyPreview = keyLen > 10
+      ? `${keyRaw.slice(0, 6)}...${keyRaw.slice(-4)} (len=${keyLen})`
+      : `(len=${keyLen} — POSSIBLY MISSING OR TOO SHORT)`;
+    const keyHasWs = /\s/.test(keyRaw);
+    const cssPresent = !!document.querySelector(`link[href*="moyasar"]`);
+    const scriptPresent = !!document.querySelector(`script[src*="moyasar"]`);
+    setDbgLines([
+      `=== DEBUG PAYMENT v2 ===`,
+      `url: ${window.location.href}`,
+      `debugPayment param: "${dbgParam}"`,
+      `sdk js url: ${SDK_JS_URL}`,
+      `sdk script tag in DOM: ${scriptPresent}`,
+      `sdkLoaded (onload fired): ${sdkLoaded}`,
+      `window.Moyasar exists: ${!!window.Moyasar}`,
+      `typeof window.Moyasar: ${typeof window.Moyasar}`,
+      `typeof window.Moyasar?.init: ${typeof window.Moyasar?.init}`,
+      `sdk css tag in DOM: ${cssPresent}`,
+      `key preview: ${keyPreview}`,
+      `key has whitespace: ${keyHasWs}`,
+      `amount: 100 SAR-halalas (=1 SAR)`,
+      `currency: SAR`,
+      `methods: ["creditcard"]`,
+      `supported_networks: ["mada","visa","mastercard"]`,
+      `--- waiting for init (300ms delay) ---`,
+    ]);
+  }, [paymentModalOpen]);
 
   // Init Moyasar form once modal is open and we have the pending IDs
   useEffect(() => {
@@ -130,33 +169,43 @@ const Subscribe = () => {
     return () => { if (timer) clearTimeout(timer); };
   }, [paymentModalOpen, sdkLoaded, pendingGivenId, pendingSubscriptionId]);
 
+  const dbg = (line: string) => {
+    if (debugMode) setDbgLines(prev => [...prev, line]);
+  };
+
+  const domSnapshot = (label: string) => {
+    const el = document.getElementById("mysr-form");
+    if (!el) { dbg(`[${label}] #mysr-form NOT in DOM`); return; }
+    const children = el.childElementCount;
+    const inputs = el.querySelectorAll("input").length;
+    const iframes = el.querySelectorAll("iframe").length;
+    const text = (el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 100);
+    dbg(`[${label}] children=${children} inputs=${inputs} iframes=${iframes} text="${text}"`);
+  };
+
   const initMoyasarForm = (givenId: string, subscriptionId: string) => {
     setFormError(null);
+
     if (!window.Moyasar) {
-      const msg = "window.Moyasar unavailable after script load";
-      setFormError(language === "ar" ? "لم يتم تحميل بوابة الدفع. يرجى المحاولة مرة أخرى." : "Payment SDK unavailable. Please retry.");
-      if (debugMode) setDebugLog(prev => [...prev, `[ERROR] ${msg}`]);
+      dbg(`[init] ABORT — window.Moyasar is ${typeof window.Moyasar}`);
+      setFormError(language === "ar"
+        ? "لم يتم تحميل بوابة الدفع. يرجى المحاولة مرة أخرى."
+        : "Payment SDK unavailable. Please retry.");
       return;
     }
+
     const el = document.getElementById("mysr-form");
     if (!el) {
-      const msg = "#mysr-form element not found in DOM at init time";
-      setFormError(language === "ar" ? "خطأ في تهيئة نموذج الدفع." : "Payment form container not found.");
-      if (debugMode) setDebugLog(prev => [...prev, `[ERROR] ${msg}`]);
+      dbg(`[init] ABORT — #mysr-form not found in DOM`);
+      setFormError(language === "ar"
+        ? "خطأ في تهيئة نموذج الدفع."
+        : "Payment form container not found.");
       return;
     }
-    const keyLen = MOYASAR_PUBLISHABLE_KEY?.length ?? 0;
-    const keyPreview = keyLen > 8
-      ? `${MOYASAR_PUBLISHABLE_KEY.slice(0, 4)}...${MOYASAR_PUBLISHABLE_KEY.slice(-4)} (len=${keyLen})`
-      : `(len=${keyLen} — possibly missing)`;
-    if (debugMode) {
-      setDebugLog(prev => [...prev,
-        `key: ${keyPreview}`,
-        `#mysr-form found: true, childCount: ${el.childElementCount}`,
-        `window.Moyasar type: ${typeof window.Moyasar}`,
-        `calling Moyasar.init...`,
-      ]);
-    }
+
+    dbg(`[init] #mysr-form found — childCount before: ${el.childElementCount}`);
+    dbg(`[init] calling Moyasar.init...`);
+
     const plan = plans.find((p) => p.id === selectedPlan);
     try {
       window.Moyasar.init({
@@ -170,34 +219,52 @@ const Subscribe = () => {
         methods: ["creditcard"],
         supported_networks: ["mada", "visa", "mastercard"],
       });
-      if (debugMode) {
-        setTimeout(() => {
-          const el2 = document.getElementById("mysr-form");
-          const childCount = el2?.childElementCount ?? "?";
-          const hasInput = !!el2?.querySelector("input");
-          const innerText = (el2?.textContent ?? "").trim().slice(0, 80);
-          setDebugLog(prev => [...prev,
-            `after 1s — childCount: ${childCount}, hasInput: ${hasInput}, text: "${innerText}"`,
-          ]);
-        }, 1000);
-      }
+      dbg(`[init] Moyasar.init() returned without throwing`);
+
+      // Snapshots at 1s, 3s, 8s
+      setTimeout(() => domSnapshot("1s"), 1000);
+      setTimeout(() => domSnapshot("3s"), 3000);
+      setTimeout(() => {
+        domSnapshot("8s");
+        // Network evidence at 8s
+        if (debugMode) {
+          try {
+            const entries = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+            const mpfEntries = entries.filter(e =>
+              e.name.includes("moyasar") || e.name.includes("mpf") || e.name.includes("api.moyasar")
+            );
+            if (mpfEntries.length === 0) {
+              dbg(`[network] no moyasar resource entries found in performance API`);
+            } else {
+              mpfEntries.forEach(e => {
+                const blocked = e.transferSize === 0 && e.duration < 5;
+                dbg(`[network] ${e.name.split("/").slice(-2).join("/")} — ${Math.round(e.duration)}ms — transferSize=${e.transferSize}${blocked ? " (POSSIBLY BLOCKED/FAILED)" : ""}`);
+              });
+            }
+          } catch {
+            dbg(`[network] performance API unavailable`);
+          }
+          dbg(`[network] NOTE: XHR/fetch made by SDK internals may not appear above — open DevTools > Network > filter "moyasar" for full evidence`);
+        }
+      }, 8000);
     } catch (err: any) {
-      const msg = err?.message || String(err);
-      setFormError(language === "ar" ? `خطأ في تهيئة الدفع: ${msg}` : `Payment init error: ${msg}`);
-      if (debugMode) setDebugLog(prev => [...prev, `[INIT THROW] ${msg}`]);
+      const msg = (err?.message || String(err)).slice(0, 200);
+      dbg(`[init] THREW: ${msg}`);
+      setFormError(language === "ar"
+        ? `خطأ في تهيئة الدفع: ${msg}`
+        : `Payment init error: ${msg}`);
     }
   };
 
-  // Fail-fast: if form has no input fields after 8s, show error + retry
+  // Fail-fast: if no inputs after 8s, show error + retry
   useEffect(() => {
     if (!paymentModalOpen) return;
     const failTimer = setTimeout(() => {
-      if (formError) return; // already showing an error
+      if (formError) return;
       const el = document.getElementById("mysr-form");
       const hasInput = !!el?.querySelector("input");
       if (!hasInput) {
-        const childText = (el?.textContent ?? "").trim().slice(0, 120);
-        if (debugMode) setDebugLog(prev => [...prev, `[FAIL-FAST] no input after 8s. text: "${childText}"`]);
+        dbg(`[fail-fast] no input after 8s — triggering error state`);
         setFormError(language === "ar"
           ? "لم يتم تحميل نموذج الدفع خلال الوقت المحدد. يرجى المحاولة مرة أخرى."
           : "Payment form did not load in time. Please retry.");
@@ -208,7 +275,7 @@ const Subscribe = () => {
 
   const retryPaymentForm = () => {
     setFormError(null);
-    if (debugMode) setDebugLog(prev => [...prev, "--- RETRY ---"]);
+    dbg(`--- RETRY ---`);
     const el = document.getElementById("mysr-form");
     if (el) el.innerHTML = "";
     if (pendingGivenId && pendingSubscriptionId) {
@@ -295,7 +362,7 @@ const Subscribe = () => {
             </p>
           </div>
 
-          {/* Trial banner — shown for ALL active trial users (launch trial OR paid trialing) */}
+          {/* Trial banner */}
           {isTrialActive && !isReturningUser && (
             <div className="max-w-lg mx-auto mb-6 bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 text-sm text-center text-primary">
               <Clock className="w-4 h-4 inline-block me-1 mb-0.5" />
@@ -427,7 +494,7 @@ const Subscribe = () => {
             </div>
           )}
 
-          {/* Payment Modal — Moyasar form renders inside #mysr-form */}
+          {/* Payment Modal */}
           <Dialog
             open={paymentModalOpen}
             onOpenChange={(open) => {
@@ -437,38 +504,63 @@ const Subscribe = () => {
                 setPendingGivenId(null);
                 setPendingSubscriptionId(null);
                 setFormError(null);
-                setDebugLog([]);
+                setDbgLines([]);
+                setDbgReady(false);
               }
             }}
           >
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
                 <DialogDescription>
                   {isReturningUser ? t("verificationChargeReturning") : t("verificationCharge")}
                 </DialogDescription>
               </DialogHeader>
-              {formError ? (
+
+              {/* DEBUG BANNER — always visible when debug mode active, independent of logs */}
+              {debugMode && (
+                <div className="px-2 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-xs font-mono text-yellow-400 text-center" dir="ltr">
+                  ⚙ DEBUG PAYMENT MODE ACTIVE — dbgReady={String(dbgReady)} sdkLoaded={String(sdkLoaded)}
+                </div>
+              )}
+
+              {/* Error state */}
+              {formError && (
                 <div className="my-4 flex flex-col items-center gap-3 text-center">
                   <p className="text-sm text-destructive">{formError}</p>
                   <Button variant="outline" size="sm" onClick={retryPaymentForm}>
                     {language === "ar" ? "إعادة المحاولة" : "Retry"}
                   </Button>
                 </div>
-              ) : (
-                <div className="my-2" dir="ltr">
-                  <div id="mysr-form" className="min-h-[180px]">
-                    {!sdkLoaded && (
-                      <div className="flex items-center justify-center h-[180px]">
-                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                </div>
               )}
-              {debugMode && debugLog.length > 0 && (
-                <div className="mt-2 p-2 bg-muted rounded text-xs font-mono space-y-0.5 max-h-48 overflow-y-auto" dir="ltr">
-                  {debugLog.map((line, i) => <div key={i}>{line}</div>)}
+
+              {/* Moyasar form container — always in DOM when modal is open so snapshots can check it */}
+              <div className={formError ? "hidden" : "my-2"} dir="ltr">
+                <div id="mysr-form" className="min-h-[180px]">
+                  {!sdkLoaded && (
+                    <div className="flex items-center justify-center h-[180px]">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* DEBUG LOG PANEL — renders whenever debug mode is active, regardless of log length */}
+              {debugMode && (
+                <div className="mt-2 border border-yellow-500/30 rounded bg-black/60 overflow-hidden" dir="ltr">
+                  <div className="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-xs font-mono font-bold">
+                    PAYMENT DEBUG LOG ({dbgLines.length} lines)
+                  </div>
+                  <div className="p-2 text-xs font-mono space-y-0.5 max-h-64 overflow-y-auto text-green-300">
+                    {dbgLines.length === 0
+                      ? <div className="text-yellow-400/60">waiting for modal init...</div>
+                      : dbgLines.map((line, i) => (
+                          <div key={i} className={line.startsWith("[ABORT") || line.includes("THREW") || line.includes("MISSING") || line.includes("FAIL") ? "text-red-400" : line.startsWith("===") || line.startsWith("---") ? "text-yellow-400" : "text-green-300"}>
+                            {line}
+                          </div>
+                        ))
+                    }
+                  </div>
                 </div>
               )}
             </DialogContent>
