@@ -231,6 +231,37 @@ const Subscribe = () => {
     dbg(`[init] #mysr-form found — childCount before: ${el.childElementCount}`);
     dbg(`[init] ApplePaySession available: ${typeof (window as any).ApplePaySession}`);
 
+    // Capture silent JS errors / console errors / promise rejections during SDK init
+    if (debugMode) {
+      const origErr = console.error;
+      const origWarn = console.warn;
+      console.error = (...args: any[]) => {
+        const msg = args.map(a => { try { return typeof a === "string" ? a : (a?.message || JSON.stringify(a)); } catch { return String(a); } }).join(" ").slice(0, 200);
+        dbg(`[console.error] ${msg}`);
+        origErr.apply(console, args);
+      };
+      console.warn = (...args: any[]) => {
+        const msg = args.map(a => { try { return typeof a === "string" ? a : (a?.message || JSON.stringify(a)); } catch { return String(a); } }).join(" ").slice(0, 200);
+        dbg(`[console.warn] ${msg}`);
+        origWarn.apply(console, args);
+      };
+      const onErr = (ev: ErrorEvent) => dbg(`[window.error] ${ev.message} @ ${ev.filename?.split("/").pop()}:${ev.lineno}`);
+      const onRej = (ev: PromiseRejectionEvent) => {
+        const r: any = ev.reason;
+        const msg = r?.message || (typeof r === "string" ? r : JSON.stringify(r));
+        dbg(`[unhandledrejection] ${String(msg).slice(0, 200)}`);
+      };
+      window.addEventListener("error", onErr);
+      window.addEventListener("unhandledrejection", onRej);
+      // Restore after 10s (after final diagnosis)
+      setTimeout(() => {
+        console.error = origErr;
+        console.warn = origWarn;
+        window.removeEventListener("error", onErr);
+        window.removeEventListener("unhandledrejection", onRej);
+      }, 10000);
+    }
+
     // MutationObserver: detect if/when SDK removes #mysr-form from its parent
     if (debugMode && el.parentNode) {
       const mo = new MutationObserver((mutations) => {
@@ -285,6 +316,38 @@ const Subscribe = () => {
     // Snapshots at 1s and 3s (scroll log only)
     setTimeout(() => domSnapshot("1s"), 1000);
     setTimeout(() => domSnapshot("3s"), 3000);
+
+    // 4s: dump SDK internals
+    setTimeout(() => {
+      try {
+        const M: any = (window as any).Moyasar;
+        const keys = M ? Object.keys(M).slice(0, 20).join(",") : "(none)";
+        dbg(`[4s] window.Moyasar keys: ${keys}`);
+        // Try to find Preact instance on the rendered SDK element
+        const sdkEl = document.getElementById("mysr-form-form-el") as any;
+        if (sdkEl) {
+          const propKeys = Object.keys(sdkEl).filter(k => k.startsWith("__") || k.startsWith("_") || k.includes("preact") || k.includes("react"));
+          dbg(`[4s] sdk element internal keys: ${propKeys.join(",") || "(none)"}`);
+          // Walk children looking for Preact vnode
+          const probe = sdkEl.firstElementChild;
+          if (probe) {
+            const probeKeys = Object.keys(probe).filter(k => k.startsWith("__") || k.startsWith("_"));
+            dbg(`[4s] sdk firstChild tag=${probe.tagName} keys: ${probeKeys.join(",") || "(none)"}`);
+            // Try _component or __k (Preact)
+            const comp = probe._component || probe.__c;
+            if (comp) {
+              const stateKeys = comp.state ? Object.keys(comp.state).join(",") : "(no state)";
+              dbg(`[4s] preact component state keys: ${stateKeys}`);
+              if (comp.state) {
+                dbg(`[4s] state.fi (loading)=${comp.state.fi} state.mi (methods)=${JSON.stringify(comp.state.mi)?.slice(0,80)}`);
+              }
+            }
+          }
+        }
+      } catch (e: any) {
+        dbg(`[4s] introspection error: ${e?.message || String(e)}`);
+      }
+    }, 4000);
 
     // 8s: final diagnosis
     setTimeout(() => {
