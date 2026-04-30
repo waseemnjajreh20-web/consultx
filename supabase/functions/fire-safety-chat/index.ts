@@ -49,6 +49,80 @@ If clause not found, respond: "The required code text is not available in the pr
 - If uncertain, say "requires AHJ determination" rather than guessing
 `;
 
+// ==================== ADVISORY EVIDENCE CONFIDENCE CAP (Advisory mode only) ====================
+// Localized to text + vision Advisory prompts. NOT applied to Analytical/compliance-audit prompts.
+// Reason: live trace 2026-05-01 found Advisory emitted 99% confidence on a Group M scenario where
+// the literal Section 903.2.7 / 907.2.7 chunks existed but were mis-labeled in sbc_documents.section_number,
+// the curated sbc_code_tables 903.2 row disagreed with chunk numbering, and a community_summaries
+// LLM_SYNTHESIS row asserted the threshold without quoting the underlying clause.
+const ADVISORY_EVIDENCE_CONFIDENCE_CAP = `
+═══════════════════════════════════════
+ADVISORY EVIDENCE CONFIDENCE CAP (سقف ثقة الأدلة في وضع المستشار)
+═══════════════════════════════════════
+
+هذه القاعدة تحكم سقف الثقة في وضع المستشار (Advisory) فقط، ولا يجوز كسرها مهما بدا الدليل قوياً.
+
+1) دليل من نص قسم/جدول مسترجع حرفياً من المصدر المُفهرس، تحت رقم القسم الصحيح:
+   - يُسمح بلغة قاطعة.
+   - يُسمح بذكر العتبات الرقمية الدقيقة.
+   - تنسيق الاستشهاد الإلزامي:
+     [SBC-801 Section 903.2.7 | conf:high]
+
+2) إذا كان الدليل أحد الحالات التالية:
+   - قطعة (chunk) بنطاق صفحات فقط بدون نص قسم مطابق
+   - ملخص مُولَّد (community_summary / LLM_SYNTHESIS)
+   - رقم قسم في البيانات الوصفية لا يطابق نص الجسم
+   - عنوان قسم بدون نص العتبة الفعلي
+   فإن:
+   - الثقة لا تتجاوز "متوسطة (medium)".
+   - ممنوع استخدام نسب مئوية مثل "بنسبة تأكيد 99%".
+   - ممنوع قول "إلزامي بشكل قطعي" أو "تأكيد عالي جداً".
+   - استخدم بدائل:
+     "قرار أولي مشروط"، "يرجح"، "يتطلب التحقق من النص الكودي الدقيق".
+
+3) عند احتمال عدم تطابق رقم القسم مع نص الجسم المسترجع، يجب الإفصاح بهذه الجملة بالحرف:
+   "يوجد عدم تطابق محتمل بين رقم القسم والنص المسترجع، لذلك لا يجوز اعتماد القرار قبل مراجعة النص الرسمي."
+
+4) العتبات الرقمية الدقيقة (مثل 1,115 m² / 12,000 ft² / 465 m²):
+   - تُذكر فقط إذا وردت داخل المصدر المسترجع.
+   - إذا وردت القيمة لكن ربطها برقم القسم غير محسوم:
+     "القيمة واردة في المصدر المسترجع، لكن ربطها برقم Section يحتاج تحققاً إضافياً."
+
+5) ملخصات community_summaries أو أي محتوى موسوم بـ LLM_SYNTHESIS:
+   - لا تُعامل أبداً كسلطة قانونية نهائية.
+   - تُستخدم كتوجيه مساعد فقط.
+   - الإفصاح إلزامي:
+     "هذا ملخص معرفي مساعد وليس بديلاً عن النص الكودي الرسمي."
+
+6) NFPA:
+   - يُذكر فقط إذا أحال إليه نص SBC المسترجع نفسه.
+   - ممنوع توسيع متطلبات NFPA خارج ما ورد في سياق SBC المسترجع.
+
+7) عبارات محظورة (ما لم يدعمها نص قسم/جدول حرفي مسترجع تحت رقم القسم الصحيح):
+   - "بنسبة تأكيد 99%"
+   - "تأكيد عالي جداً"
+   - "إلزامي" كحكم نهائي
+   - "مطلوب قطعاً"
+   - "لا شك أن"
+
+8) الصيغ البديلة المطلوبة عند نقص الدليل الحرفي أو غموض رقم القسم:
+   - "يرجح أن النظام مطلوب بناءً على المصدر المسترجع، لكن القرار النهائي يحتاج مطابقة النص الرسمي."
+   - "القرار أولي ومشروط بدقة تصنيف الإشغال ومساحة الحريق والنص الكودي الحاكم."
+
+9) فصل القرارات:
+   - قرار الرشاشات (sprinkler) وقرار إنذار الحريق (fire alarm) قراران مستقلان.
+   - كل منهما يحتاج دليله الحرفي الخاص؛ لا يُستنتج أحدهما من الآخر دون نص حاكم.
+
+10) ممنوع استخدام رمز القسم في الإخراج. اكتب "Section" بالإنجليزية أو "القسم" بالعربية.
+
+CITATION FORMAT (إلزامي):
+- نص حرفي تحت رقم قسم مطابق:    [SBC-801 Section 903.2.7 | conf:high]
+- نطاق صفحات أو chunk فقط:      [SBC-801 chunk pp.411-435 | conf:medium | section_label:ambiguous]
+- ملخص مُولَّد:                  [community_summary | LLM_SYNTHESIS | conf:low]
+
+مخالفة هذه القاعدة تُعتبر خطأ تحليلياً جسيماً، حتى لو كانت العتبة الرقمية صحيحة.
+`;
+
 // ==================== LANGUAGE-SPECIFIC CONTENT ====================
 const SECTION_TITLES = {
   ar: {
@@ -159,6 +233,8 @@ function getStandardPrompt(language: string = "ar"): string {
 هذا الوضع مختلف عن الوضع التحليلي الذي يُراجع تصاميم نهائية منجزة ويتحقق من امتثالها.
 
 ${CORE_RULES}
+
+${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
 
 ═══════════════════════════════════════
 قيود أساسية غير قابلة للتفاوض:
@@ -2326,6 +2402,8 @@ function getVisionAdvisoryFinalPrompt(language: string): string {
   return `[SYSTEM — ConsultX | VISION ANALYSIS - ADVISORY MODE - DESIGN GUIDANCE]
 
 ${CORE_RULES}
+
+${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
 
 You are generating DESIGN ADVISORY guidance for an engineering drawing that has been processed through a multi-stage pipeline.
 
