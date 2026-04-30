@@ -41,6 +41,12 @@ export interface SubscriptionStatus {
   analysis_limit?: number | null;
   analysis_used?: number;
 
+  // Per-seat billing (enterprise_team / enterprise_office only).
+  // Flat plans report seat_count = 1 and price_per_seat = null.
+  seat_count?: number;
+  min_seats?: number;
+  price_per_seat?: number | null;
+
   // E7.1: Admin entitlement override fields
   owner_mode?: boolean;
 

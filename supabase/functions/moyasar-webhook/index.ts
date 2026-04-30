@@ -136,7 +136,7 @@ serve(async (req) => {
     // ── Find subscription ─────────────────────────────────────────────────────
     const { data: sub, error: subLookupError } = await adminClient
       .from("user_subscriptions")
-      .select("*, subscription_plans(duration_days, slug, currency, price_amount)")
+      .select("*, subscription_plans(duration_days, slug, currency, price_amount, price_per_seat, min_seats)")
       .eq("id", subscriptionId)
       .maybeSingle();
 
@@ -317,7 +317,16 @@ serve(async (req) => {
     // Amount validation (renewal vs verification flow).
     const isRenewalTx = (existingTx as any)?.payment_type === "renewal";
     if (isRenewalTx) {
-      const expectedAmount = (sub as any)?.subscription_plans?.price_amount;
+      // Per-seat plans (price_per_seat != null) charge price_per_seat * effective_seats
+      // where effective_seats = max(sub.seat_count, plan.min_seats, 1).
+      // Flat plans (price_per_seat = null) charge price_amount unchanged.
+      const planRow      = (sub as any)?.subscription_plans;
+      const seatCount    = (sub as any)?.seat_count ?? 1;
+      const minSeats     = planRow?.min_seats ?? 1;
+      const effectiveSeats = Math.max(seatCount, minSeats, 1);
+      const expectedAmount = planRow?.price_per_seat != null
+        ? (planRow.price_per_seat as number) * effectiveSeats
+        : planRow?.price_amount;
       if (
         typeof expectedAmount !== "undefined" &&
         expectedAmount !== null &&

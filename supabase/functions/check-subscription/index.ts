@@ -342,10 +342,14 @@ serve(async (req) => {
       active &&
       (subscription?.status === "active" || subscription?.status === "past_due");
 
-    // Compute per-mode limits from plan features
+    // Compute per-mode limits from plan features.
+    // Enterprise-tier slugs are: legacy 'enterprise' (flat, kept for backward
+    // compat) plus the self-service per-seat plans 'enterprise_team' and
+    // 'enterprise_office'. All grant unlimited modes.
     const planSlug = plan?.slug ?? profile?.plan_type ?? "free";
     const planFeatures = plan?.features ?? {};
-    const isEnterprise = planSlug === "enterprise" || isOrgAiAccess;
+    const ENTERPRISE_TIER_SLUGS = ["enterprise", "enterprise_team", "enterprise_office"];
+    const isEnterprise = ENTERPRISE_TIER_SLUGS.includes(planSlug) || isOrgAiAccess;
     const isLimitedPaid = planSlug === "engineer" || planSlug === "pro";
 
     const advisoryLimit = isEnterprise ? null : (planFeatures?.advisory_limit ?? (planSlug === "engineer" ? 20 : 100));
@@ -478,6 +482,12 @@ serve(async (req) => {
         advisory_used:               advisoryUsed,
         analysis_limit:              analysisLimit,
         analysis_used:               analysisUsed,
+
+        // Per-seat billing fields (enterprise_team / enterprise_office only;
+        // flat plans report seat_count=1 and price_per_seat=null).
+        seat_count:                  subscription?.seat_count ?? 1,
+        min_seats:                   plan?.min_seats ?? 1,
+        price_per_seat:              plan?.price_per_seat ?? null,
 
         // E6: Enterprise org access fields
         org_access:              orgAccess,

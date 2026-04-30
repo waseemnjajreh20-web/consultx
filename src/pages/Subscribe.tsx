@@ -27,6 +27,8 @@ interface Plan {
   name_en: string;
   slug: string;
   price_amount: number;
+  price_per_seat: number | null;
+  min_seats: number;
   type: string;
   target: string;
   duration_days: number;
@@ -39,6 +41,12 @@ interface Plan {
     analysis_limit?: number;
   };
 }
+
+// Slugs hidden from public self-service checkout.
+// 'enterprise' is the legacy 349 SAR flat plan — kept active in DB for the
+// existing trialing subscriber but no longer publicly purchasable.
+const HIDDEN_PUBLIC_SLUGS = new Set(["free", "enterprise"]);
+const PER_SEAT_SLUGS = new Set(["enterprise_team", "enterprise_office"]);
 
 type CardForm = {
   name: string;
@@ -81,6 +89,7 @@ const Subscribe = () => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [seatCounts, setSeatCounts] = useState<Record<string, number>>({});
   const [processing, setProcessing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
@@ -107,17 +116,26 @@ const Subscribe = () => {
         .from("subscription_plans")
         .select("*")
         .eq("is_active", true)
-        .neq("slug", "free")
         .order("price_amount", { ascending: true });
       if (data && data.length > 0) {
-        setPlans(data);
+        // Hide free + legacy 'enterprise' from public checkout.
+        const visible: Plan[] = (data as Plan[]).filter((p) => !HIDDEN_PUBLIC_SLUGS.has(p.slug));
+        setPlans(visible);
+        // Initialise seat count for per-seat plans at min_seats.
+        const initialSeats: Record<string, number> = {};
+        for (const p of visible) {
+          if (PER_SEAT_SLUGS.has(p.slug)) {
+            initialSeats[p.id] = Math.max(1, p.min_seats ?? 1);
+          }
+        }
+        setSeatCounts(initialSeats);
         const urlPlan = searchParams.get("plan");
-        const matchedPlan = urlPlan ? data.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
+        const matchedPlan = urlPlan ? visible.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
         if (matchedPlan) {
           setSelectedPlan(matchedPlan.id);
         } else {
-          const proPlan = data.find((p) => p.slug === "pro");
-          setSelectedPlan(proPlan?.id || data[0].id);
+          const proPlan = visible.find((p) => p.slug === "pro");
+          setSelectedPlan(proPlan?.id || visible[0].id);
         }
       }
     };
@@ -132,10 +150,26 @@ const Subscribe = () => {
 
   const openPaymentModal = async () => {
     if (!selectedPlan || !session || processing) return;
+    const plan = plans.find((p) => p.id === selectedPlan);
+    const isPerSeat = plan ? PER_SEAT_SLUGS.has(plan.slug) : false;
+    const seatCount = isPerSeat ? seatCounts[selectedPlan] : undefined;
+    if (isPerSeat && plan) {
+      const minSeats = Math.max(1, plan.min_seats ?? 1);
+      if (!seatCount || seatCount < minSeats) {
+        toast({
+          title: t("errorTitle"),
+          description: language === "ar"
+            ? `الحد الأدنى لعدد المستخدمين هو ${minSeats}`
+            : `Minimum seat count is ${minSeats}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     setProcessing(true);
     try {
       const { data, error } = await supabase.functions.invoke("moyasar-create-subscription", {
-        body: { plan_id: selectedPlan },
+        body: isPerSeat ? { plan_id: selectedPlan, seat_count: seatCount } : { plan_id: selectedPlan },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error || !data?.given_id || !data?.subscription_id) {
@@ -357,6 +391,13 @@ const Subscribe = () => {
             {plans.map((plan, i) => {
               const selected = plan.id === selectedPlan;
               const popular = plan.slug === "pro";
+              const isPerSeat = PER_SEAT_SLUGS.has(plan.slug);
+              const minSeats = Math.max(1, plan.min_seats ?? 1);
+              const seatCount = isPerSeat ? (seatCounts[plan.id] ?? minSeats) : 1;
+              const perSeatSar = (plan.price_per_seat ?? 0) / 100;
+              const monthlyTotalSar = isPerSeat
+                ? perSeatSar * seatCount
+                : plan.price_amount / 100;
               return (
                 <Card
                   key={plan.id}
@@ -380,14 +421,79 @@ const Subscribe = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-center pb-4">
-                    <div className="text-3xl font-bold text-primary">
-                      {plan.price_amount === 0
-                        ? language === "ar" ? "مجاني" : "Free"
-                        : (plan.price_amount / 100).toFixed(0)}
-                      {plan.price_amount > 0 && (
-                        <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
-                      )}
-                    </div>
+                    {isPerSeat ? (
+                      <>
+                        <div className="text-3xl font-bold text-primary">
+                          {perSeatSar.toFixed(0)}
+                          <span className="text-sm text-muted-foreground ms-1">
+                            {language === "ar" ? "ريال / مستخدم / شهر" : "SAR / user / mo"}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2">
+                          {language === "ar"
+                            ? `الحد الأدنى ${minSeats} مستخدمين`
+                            : `Minimum ${minSeats} users`}
+                        </div>
+                        <div
+                          className="mt-3 flex items-center justify-center gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            className="w-8 h-8 rounded-md border border-border/60 text-foreground hover:border-primary/60 disabled:opacity-40"
+                            disabled={seatCount <= minSeats}
+                            onClick={() => setSeatCounts((prev) => ({
+                              ...prev,
+                              [plan.id]: Math.max(minSeats, (prev[plan.id] ?? minSeats) - 1),
+                            }))}
+                            aria-label={language === "ar" ? "إنقاص" : "Decrease"}
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min={minSeats}
+                            max={100}
+                            value={seatCount}
+                            onChange={(e) => {
+                              const raw = parseInt(e.target.value, 10);
+                              const clamped = Math.min(100, Math.max(minSeats, Number.isFinite(raw) ? raw : minSeats));
+                              setSeatCounts((prev) => ({ ...prev, [plan.id]: clamped }));
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-16 h-8 text-center text-sm rounded-md bg-background/60 border border-border/60"
+                            dir="ltr"
+                            aria-label={language === "ar" ? "عدد المستخدمين" : "Seat count"}
+                          />
+                          <button
+                            type="button"
+                            className="w-8 h-8 rounded-md border border-border/60 text-foreground hover:border-primary/60 disabled:opacity-40"
+                            disabled={seatCount >= 100}
+                            onClick={() => setSeatCounts((prev) => ({
+                              ...prev,
+                              [plan.id]: Math.min(100, (prev[plan.id] ?? minSeats) + 1),
+                            }))}
+                            aria-label={language === "ar" ? "زيادة" : "Increase"}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <div className="text-sm font-semibold text-foreground mt-2">
+                          {language === "ar"
+                            ? `الإجمالي: ${monthlyTotalSar.toFixed(0)} ريال / شهر`
+                            : `Total: ${monthlyTotalSar.toFixed(0)} SAR / month`}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-3xl font-bold text-primary">
+                        {plan.price_amount === 0
+                          ? language === "ar" ? "مجاني" : "Free"
+                          : (plan.price_amount / 100).toFixed(0)}
+                        {plan.price_amount > 0 && (
+                          <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
+                        )}
+                      </div>
+                    )}
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
                       <li>
                         {plan.features.graphrag
