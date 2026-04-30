@@ -15,10 +15,12 @@ import { useToast } from "@/hooks/use-toast";
 import type { useOrganization } from "@/hooks/useOrganization";
 
 type InviteMutation = ReturnType<typeof useOrganization>["inviteMember"];
+type SeatUsage = ReturnType<typeof useOrganization>["seatUsage"];
 
 interface InviteMemberFormProps {
   inviteMutation: InviteMutation;
   onClose: () => void;
+  seatUsage?: SeatUsage;
 }
 
 const ROLES = [
@@ -28,7 +30,7 @@ const ROLES = [
   { value: "finance_officer",    labelEn: "Finance Officer",    labelAr: "مسؤول مالي" },
 ];
 
-export default function InviteMemberForm({ inviteMutation, onClose }: InviteMemberFormProps) {
+export default function InviteMemberForm({ inviteMutation, onClose, seatUsage }: InviteMemberFormProps) {
   const { language } = useLanguage();
   const { toast } = useToast();
 
@@ -37,8 +39,24 @@ export default function InviteMemberForm({ inviteMutation, onClose }: InviteMemb
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied]     = useState(false);
 
+  const enforced = !!seatUsage?.is_enforced;
+  const seatCount = seatUsage?.seat_count ?? null;
+  const usedSeats = (seatUsage?.active_members_count ?? 0) + (seatUsage?.pending_invitations_count ?? 0);
+  const seatsAvailable = seatUsage?.available_seats ?? null;
+  const atSeatLimit = enforced && seatCount != null && usedSeats >= seatCount;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (atSeatLimit) {
+      toast({
+        title: language === "ar" ? "حد المقاعد" : "Seat limit reached",
+        description: language === "ar"
+          ? "تم الوصول إلى حد المقاعد. قم بزيادة عدد المقاعد قبل دعوة عضو جديد."
+          : "Seat limit reached. Increase seat count before inviting another member.",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       const result = await inviteMutation.mutateAsync({ email, role });
       const link = `${window.location.origin}/accept-invite?token=${result.token}`;
@@ -50,9 +68,16 @@ export default function InviteMemberForm({ inviteMutation, onClose }: InviteMemb
           : "Share the link manually with the invited member",
       });
     } catch (err: any) {
+      // Surface SEAT_LIMIT_REACHED with a clean Arabic/English message
+      const raw = err?.message ?? "";
+      const isSeatLimit = typeof raw === "string" && raw.includes("SEAT_LIMIT_REACHED");
       toast({
         title: language === "ar" ? "خطأ" : "Error",
-        description: err?.message ?? (language === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred"),
+        description: isSeatLimit
+          ? (language === "ar"
+              ? "تم الوصول إلى حد المقاعد. قم بزيادة عدد المقاعد قبل دعوة عضو جديد."
+              : "Seat limit reached. Increase seat count before inviting another member.")
+          : (raw || (language === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred")),
         variant: "destructive",
       });
     }
@@ -121,6 +146,30 @@ export default function InviteMemberForm({ inviteMutation, onClose }: InviteMemb
         </button>
       </div>
 
+      {enforced && seatCount != null && (
+        <div
+          className={
+            "rounded-lg border px-3 py-2 text-xs " +
+            (atSeatLimit
+              ? "border-destructive/40 bg-destructive/10 text-destructive"
+              : "border-border/40 bg-muted/30 text-muted-foreground")
+          }
+        >
+          {language === "ar"
+            ? `المقاعد المستخدمة: ${usedSeats} من ${seatCount}` +
+              (seatsAvailable != null ? ` — متاح ${seatsAvailable}` : "")
+            : `Seats used: ${usedSeats} of ${seatCount}` +
+              (seatsAvailable != null ? ` — ${seatsAvailable} available` : "")}
+          {atSeatLimit && (
+            <div className="mt-1">
+              {language === "ar"
+                ? "تم الوصول إلى حد المقاعد. قم بزيادة عدد المقاعد قبل دعوة عضو جديد."
+                : "Seat limit reached. Increase seat count before inviting another member."}
+            </div>
+          )}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="space-y-1.5">
           <Label htmlFor="invite-email" className="text-xs">
@@ -159,10 +208,12 @@ export default function InviteMemberForm({ inviteMutation, onClose }: InviteMemb
           type="submit"
           size="sm"
           className="w-full"
-          disabled={inviteMutation.isPending}
+          disabled={inviteMutation.isPending || atSeatLimit}
         >
           {inviteMutation.isPending
             ? (language === "ar" ? "جارٍ الإنشاء…" : "Creating…")
+            : atSeatLimit
+            ? (language === "ar" ? "حد المقاعد ممتلئ" : "Seat limit reached")
             : (language === "ar" ? "إنشاء الدعوة" : "Create Invitation")}
         </Button>
       </form>

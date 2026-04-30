@@ -155,6 +155,7 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
     createOrganization,
     inviteMember,
     createCase,
+    seatUsage,
   } = useOrganization();
 
   const [showInviteForm, setShowInviteForm] = useState(false);
@@ -392,6 +393,7 @@ export default function EnterpriseCommandCenter({ embedded = false }: Props) {
             <InviteMemberForm
               inviteMutation={inviteMember}
               onClose={() => setShowInviteForm(false)}
+              seatUsage={seatUsage}
             />
           )}
         </>
