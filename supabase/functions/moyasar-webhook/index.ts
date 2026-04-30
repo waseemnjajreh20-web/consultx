@@ -447,15 +447,13 @@ serve(async (req) => {
       if (subUpdateError) {
         console.error("Failed to update subscription on paid event:", subUpdateError);
       } else {
-        // Sync profiles.plan_type when subscription becomes active
-        if (updateData.status === "active") {
-          const { data: planInfo } = await adminClient
-            .from("subscription_plans")
-            .select("slug")
-            .eq("id", sub.plan_id)
-            .single();
+        // Plan slug is needed by both the profiles.plan_type sync (active path)
+        // and the enterprise org auto-link (any paid path), so fetch it once.
+        const planSlug = (sub as any)?.subscription_plans?.slug ?? null;
 
-          const planType = planInfo?.slug || "engineer";
+        // Sync profiles.plan_type when subscription becomes active.
+        if (updateData.status === "active") {
+          const planType = planSlug || "engineer";
           const { error: profileError } = await adminClient
             .from("profiles")
             .update({ plan_type: planType })
@@ -465,6 +463,77 @@ serve(async (req) => {
             console.error("Failed to update profiles.plan_type:", profileError);
           } else {
             console.log(`profiles.plan_type updated to '${planType}' for user ${sub.user_id}`);
+          }
+        }
+
+        // Enterprise org auto-link: only for the per-seat plans
+        // (enterprise_team / enterprise_office). Legacy slug='enterprise'
+        // is intentionally NOT auto-linked. Service role bypasses RLS.
+        if (planSlug === "enterprise_team" || planSlug === "enterprise_office") {
+          try {
+            const { data: existingOrg } = await adminClient
+              .from("organizations")
+              .select("id, subscription_id")
+              .eq("owner_user_id", sub.user_id)
+              .maybeSingle();
+
+            if (!existingOrg) {
+              // Create org + owner membership, link subscription.
+              const orgName = "ConsultX Enterprise Workspace";
+              const { data: newOrg, error: orgErr } = await adminClient
+                .from("organizations")
+                .insert({
+                  name: orgName,
+                  owner_user_id: sub.user_id,
+                  status: "active",
+                  subscription_id: sub.id,
+                })
+                .select("id")
+                .single();
+              if (orgErr || !newOrg) {
+                console.error("Org auto-create failed for sub", sub.id, ":", orgErr?.message);
+              } else {
+                const { error: memErr } = await adminClient
+                  .from("org_members")
+                  .insert({
+                    org_id: newOrg.id,
+                    user_id: sub.user_id,
+                    role: "owner",
+                    status: "active",
+                    joined_at: new Date().toISOString(),
+                  });
+                if (memErr) {
+                  console.error("Owner member insert failed for org", newOrg.id, ":", memErr.message);
+                } else {
+                  console.log(`Auto-created org ${newOrg.id} and linked to subscription ${sub.id} (${planSlug})`);
+                }
+              }
+            } else if (existingOrg.subscription_id === null) {
+              const { error: linkErr } = await adminClient
+                .from("organizations")
+                .update({ subscription_id: sub.id })
+                .eq("id", existingOrg.id);
+              if (linkErr) {
+                console.error("Org link update failed for org", existingOrg.id, ":", linkErr.message);
+              } else {
+                console.log(`Linked existing org ${existingOrg.id} to subscription ${sub.id} (${planSlug})`);
+              }
+            } else if (existingOrg.subscription_id !== sub.id) {
+              // Owner already has an org linked to a different subscription —
+              // do not overwrite, just log a warning for ops to investigate.
+              console.warn(
+                `Org ${existingOrg.id} already linked to subscription ${existingOrg.subscription_id}, ` +
+                `not overwriting with new subscription ${sub.id} (${planSlug})`,
+              );
+            } else {
+              console.log(`Org ${existingOrg.id} already linked to this subscription ${sub.id} — idempotent`);
+            }
+          } catch (linkErr) {
+            // Never let org-link failure break the webhook ack.
+            console.error(
+              "Enterprise org auto-link threw (non-fatal):",
+              linkErr instanceof Error ? linkErr.message : String(linkErr),
+            );
           }
         }
       }

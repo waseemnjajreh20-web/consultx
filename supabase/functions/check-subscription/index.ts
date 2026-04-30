@@ -214,10 +214,11 @@ serve(async (req) => {
         .eq("user_id", userId)
         .maybeSingle(),
       adminClient.rpc("get_all_mode_daily_counts", { p_user_id: userId }),
-      // E6: org membership lookup — active seat in an active/trial organization
+      // E6: org membership lookup — active seat in an active/trial organization.
+      // Also pull subscription_id so we can surface seat_count to the client.
       adminClient
         .from("org_members")
-        .select("role, status, organizations!inner(id, name, status, trial_end)")
+        .select("role, status, organizations!inner(id, name, status, trial_end, subscription_id)")
         .eq("user_id", userId)
         .eq("status", "active")
         .maybeSingle(),
@@ -233,6 +234,54 @@ serve(async (req) => {
     const orgData       = orgMemberRow ? (orgMemberRow.organizations as any) : null;
     const orgStatusOk   = orgData && (orgData.status === "active" || orgData.status === "trial");
     const isOrgAiAccess = !!(orgStatusOk && orgMemberRow && AI_ACCESS_ROLES.includes(orgMemberRow.role));
+
+    // Seat metadata — only meaningful when the org is linked to a per-seat
+    // subscription. Surfaced via org_access so the workspace UI can show
+    // "X of Y seats used" without an extra round trip.
+    let orgSeatMeta: {
+      seat_count: number | null;
+      min_seats: number | null;
+      active_members_count: number;
+      pending_invitations_count: number;
+      available_seats: number | null;
+      is_enforced: boolean;
+    } | null = null;
+    if (orgData?.id && orgData?.subscription_id) {
+      const [seatPlanRes, activeMembersRes, pendingInvsRes] = await Promise.all([
+        adminClient
+          .from("user_subscriptions")
+          .select("seat_count, subscription_plans(min_seats, price_per_seat)")
+          .eq("id", orgData.subscription_id)
+          .maybeSingle(),
+        adminClient
+          .from("org_members")
+          .select("id", { count: "exact", head: true })
+          .eq("org_id", orgData.id)
+          .eq("status", "active"),
+        adminClient
+          .from("org_invitations")
+          .select("id", { count: "exact", head: true })
+          .eq("org_id", orgData.id)
+          .eq("status", "pending"),
+      ]);
+      const seatRow = seatPlanRes.data as any;
+      const planRow = (seatRow?.subscription_plans as any) ?? null;
+      const enforced = !!planRow && planRow.price_per_seat != null;
+      const seatCount = (seatRow?.seat_count as number | null) ?? null;
+      const activeCount  = activeMembersRes.count ?? 0;
+      const pendingCount = pendingInvsRes.count ?? 0;
+      orgSeatMeta = {
+        seat_count: seatCount,
+        min_seats: (planRow?.min_seats as number | null) ?? null,
+        active_members_count: activeCount,
+        pending_invitations_count: pendingCount,
+        available_seats: enforced && seatCount != null
+          ? Math.max(0, seatCount - activeCount - pendingCount)
+          : null,
+        is_enforced: enforced,
+      };
+    }
+
     const orgAccess = orgMemberRow && orgData
       ? {
           active:            true,
@@ -244,6 +293,8 @@ serve(async (req) => {
           trial_end:         (orgData.trial_end    as string | null) ?? null,
           access_source:     "organization" as const,
           ai_access:         isOrgAiAccess,
+          subscription_id:   (orgData.subscription_id as string | null) ?? null,
+          seat:              orgSeatMeta,
         }
       : null;
 

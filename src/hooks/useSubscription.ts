@@ -61,6 +61,17 @@ export interface SubscriptionStatus {
     trial_end: string | null;
     access_source: "organization";
     ai_access: boolean;
+    // Seat-enforcement metadata — populated when the org is linked to a
+    // per-seat subscription. Null when not enforced.
+    subscription_id?: string | null;
+    seat?: {
+      seat_count: number | null;
+      min_seats: number | null;
+      active_members_count: number;
+      pending_invitations_count: number;
+      available_seats: number | null;
+      is_enforced: boolean;
+    } | null;
   } | null;
   effective_access_source?: string;
   effective_access?: string;

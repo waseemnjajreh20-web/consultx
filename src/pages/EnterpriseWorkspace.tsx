@@ -171,6 +171,7 @@ export default function EnterpriseWorkspace() {
     touchPresence,
     sendMessage,
     deleteMessage,
+    seatUsage,
   } = useOrganization();
 
   const [tab, setTab]                   = useState<WorkspaceTab>("dashboard");
@@ -595,7 +596,11 @@ export default function EnterpriseWorkspace() {
                 </div>
 
                 {showInviteForm && (
-                  <InviteMemberForm inviteMutation={inviteMember} onClose={() => setShowInvite(false)} />
+                  <InviteMemberForm
+                    inviteMutation={inviteMember}
+                    onClose={() => setShowInvite(false)}
+                    seatUsage={seatUsage}
+                  />
                 )}
 
                 {invitationsLoading ? (

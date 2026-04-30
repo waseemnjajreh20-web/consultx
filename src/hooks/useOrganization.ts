@@ -164,18 +164,71 @@ export function useOrganization() {
   const inviteMember = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
       if (!orgId || !session) throw new Error("Not authenticated");
-      const token = crypto.randomUUID();
-      const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
-        .from("org_invitations")
-        .insert({ org_id: orgId, email, role, token, expires_at, created_by: session.user.id })
-        .select()
-        .single();
+      // Direct insert is no longer allowed by RLS — must go through the
+      // SECURITY DEFINER RPC which validates seat limits, role, dedup, etc.
+      const { data, error } = await supabase.rpc("create_org_invitation_enforced", {
+        p_org_id: orgId,
+        p_email:  email,
+        p_role:   role,
+      });
+      if (error) throw error;
+      // The RPC returns a single org_invitations row.
+      return data as {
+        id: string;
+        org_id: string;
+        email: string;
+        role: string;
+        token: string;
+        status: string;
+        expires_at: string;
+        created_by: string;
+        created_at: string;
+      };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["org_invitations", orgId] });
+      qc.invalidateQueries({ queryKey: ["org_seat_usage", orgId] });
+    },
+  });
+
+  // Seat usage — drives invite-button disable state and the "X of Y seats" copy.
+  const seatUsageQuery = useQuery({
+    queryKey: ["org_seat_usage", orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_org_seat_usage", {
+        p_org_id: orgId!,
+      });
+      if (error) throw new Error(error.message);
+      // RPC returns a single-row table; supabase-js delivers it as an array.
+      const row = Array.isArray(data) ? data[0] : data;
+      return (row ?? null) as {
+        org_id: string;
+        subscription_id: string | null;
+        plan_slug: string | null;
+        seat_count: number | null;
+        min_seats: number | null;
+        active_members_count: number;
+        pending_invitations_count: number;
+        available_seats: number | null;
+        is_enforced: boolean;
+      } | null;
+    },
+    enabled: !!orgId,
+    staleTime: 30 * 1000,
+  });
+
+  const updateSubscriptionSeatCount = useMutation({
+    mutationFn: async ({ subscriptionId, seatCount }: { subscriptionId: string; seatCount: number }) => {
+      const { data, error } = await supabase.rpc("update_subscription_seat_count", {
+        p_subscription_id: subscriptionId,
+        p_seat_count:      seatCount,
+      });
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["org_invitations", orgId] });
+      qc.invalidateQueries({ queryKey: ["org_seat_usage", orgId] });
+      refetchEntitlement();
     },
   });
 
@@ -727,6 +780,10 @@ export function useOrganization() {
     messagesLoading: messagesQuery.isLoading,
     presence: presenceQuery.data ?? [],
     presenceLoading: presenceQuery.isLoading,
+    // Seat enforcement
+    seatUsage: seatUsageQuery.data ?? null,
+    seatUsageLoading: seatUsageQuery.isLoading,
+    updateSubscriptionSeatCount,
     // E7.8 outputs
     memberProfiles: memberProfilesQuery.data ?? [],
     userProfilesForOrg: userProfilesForOrgQuery.data ?? [],
