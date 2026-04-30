@@ -4515,6 +4515,36 @@ serve(async (req) => {
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
+
+      // Guard: CPU Time exceeded fires when Stages 1-2 (two sequential Gemini Pro
+      // calls) exhaust the edge-function CPU budget before Stage 5 can stream.
+      // Confirmed in logs: 13-image (7.6 MB) and 17-image (10 MB) requests both hit
+      // "CPU Time exceeded" mid-stream, surfacing as "حدث خطأ في الاتصال" on the client.
+      // Rejecting oversized payloads here returns a 400 (triggers onError, not the
+      // generic catch toast) so the user gets an actionable message instead of a crash.
+      const VISION_MAX_IMAGES = 10;
+      const VISION_MAX_BYTES = 8_000_000; // ~8 MB estimated decoded
+      const estimatedPayloadBytes = resolvedImages.reduce(
+        (s: number, img: string) => s + img.length * 0.75, 0,
+      );
+      if (resolvedImages.length > VISION_MAX_IMAGES || estimatedPayloadBytes > VISION_MAX_BYTES) {
+        const arMsg =
+          `عدد الصور المرفوعة (${resolvedImages.length}) أو حجمها الإجمالي يتجاوز الحد المسموح به. ` +
+          `يُرجى تحميل ${VISION_MAX_IMAGES} صور كحد أقصى بحجم إجمالي لا يتجاوز 8 ميغابايت لكل طلب، ` +
+          `أو قسّم المخططات على عدة طلبات.`;
+        const enMsg =
+          `Too many images (${resolvedImages.length}) or total size too large. ` +
+          `Please upload at most ${VISION_MAX_IMAGES} images with a combined size under 8 MB per request, ` +
+          `or split your drawings across multiple requests.`;
+        console.log(
+          `[VisionGuard] Rejected: images=${resolvedImages.length} estimated_bytes=${Math.round(estimatedPayloadBytes)}`,
+        );
+        return new Response(JSON.stringify({ error: language === "en" ? enMsg : arMsg }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
       const userQuery = lastUserMessage?.content || "";
 
