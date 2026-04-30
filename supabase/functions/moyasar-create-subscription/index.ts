@@ -52,7 +52,9 @@ serve(async (req) => {
     }
 
     const userId = user.id;
-    const { plan_id } = await req.json();
+    const body = await req.json();
+    const plan_id = body?.plan_id;
+    const requestedSeatCount = body?.seat_count;
     if (!plan_id) {
       return new Response(JSON.stringify({ error: "plan_id is required" }), {
         status: 400,
@@ -76,6 +78,39 @@ serve(async (req) => {
         headers: corsHeaders,
       });
     }
+
+    // ── Seat count resolution ────────────────────────────────────────────────
+    // Per-seat plans (price_per_seat IS NOT NULL) require seat_count >= min_seats.
+    // Flat plans (engineer / pro / legacy enterprise) default to seat_count=1.
+    const SEAT_CAP = 100;
+    const isPerSeatPlan = plan.price_per_seat != null;
+    const minSeats = Math.max(1, plan.min_seats ?? 1);
+    let seatCount = 1;
+    if (isPerSeatPlan) {
+      const raw = Number(requestedSeatCount);
+      if (!Number.isFinite(raw) || !Number.isInteger(raw)) {
+        return new Response(
+          JSON.stringify({ error: "seat_count is required for this plan and must be an integer" }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+      if (raw < minSeats) {
+        return new Response(
+          JSON.stringify({ error: `seat_count must be at least ${minSeats} for plan ${plan.slug}` }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+      if (raw > SEAT_CAP) {
+        return new Response(
+          JSON.stringify({ error: `seat_count exceeds the maximum of ${SEAT_CAP}; contact sales for larger orders` }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+      seatCount = raw;
+    }
+    const monthlyTotal = isPerSeatPlan
+      ? (plan.price_per_seat as number) * seatCount
+      : (plan.price_amount as number);
 
     // ── Block double-active subscriptions ────────────────────────────────────
     const { data: activeSub } = await adminClient
@@ -108,7 +143,7 @@ serve(async (req) => {
       const freshGivenId = crypto.randomUUID();
       const { data: refreshedSub, error: refreshError } = await adminClient
         .from("user_subscriptions")
-        .update({ plan_id, moyasar_given_id: freshGivenId })
+        .update({ plan_id, moyasar_given_id: freshGivenId, seat_count: seatCount })
         .eq("id", existingPendingSub.id)
         .select()
         .single();
@@ -126,6 +161,8 @@ serve(async (req) => {
           amount: 100,
           currency: "SAR",
           description: `Card verification for ${plan.name_en}`,
+          seat_count: seatCount,
+          monthly_total: monthlyTotal,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -174,6 +211,7 @@ serve(async (req) => {
         .update({
           plan_id,
           moyasar_given_id: givenId,
+          seat_count: seatCount,
         })
         .eq("id", trialingSub.id)
         .select()
@@ -191,6 +229,7 @@ serve(async (req) => {
           trial_start: null,
           trial_end: null,
           moyasar_given_id: givenId,
+          seat_count: seatCount,
         })
         .select()
         .single();
@@ -207,6 +246,7 @@ serve(async (req) => {
           trial_start: now.toISOString(),
           trial_end: trialEnd7Days.toISOString(),
           moyasar_given_id: givenId,
+          seat_count: seatCount,
         })
         .select()
         .single();
@@ -231,6 +271,8 @@ serve(async (req) => {
         amount: 100,
         currency: "SAR",
         description: `Card verification for ${plan.name_en}`,
+        seat_count: seatCount,
+        monthly_total: monthlyTotal,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

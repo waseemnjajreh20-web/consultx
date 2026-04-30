@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Must match GRACE_DAYS in check-subscription, moyasar-webhook,
@@ -50,9 +50,9 @@ serve(async (req) => {
   const { data: dueSubscriptions, error: queryError } = await adminClient
     .from("user_subscriptions")
     .select(`
-      id, user_id, plan_id, moyasar_card_token,
+      id, user_id, plan_id, moyasar_card_token, seat_count,
       next_billing_date, current_period_end, past_due_since,
-      subscription_plans ( price_amount, currency, duration_days, name_en, slug )
+      subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
     `)
     .eq("status", "active")
     .eq("cancel_at_period_end", false)
@@ -73,9 +73,9 @@ serve(async (req) => {
   const { data: pastDueSubs, error: pastDueError } = await adminClient
     .from("user_subscriptions")
     .select(`
-      id, user_id, plan_id, moyasar_card_token,
+      id, user_id, plan_id, moyasar_card_token, seat_count,
       next_billing_date, current_period_end, past_due_since,
-      subscription_plans ( price_amount, currency, duration_days, name_en, slug )
+      subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
     `)
     .eq("status", "past_due")
     .eq("cancel_at_period_end", false)
@@ -117,6 +117,16 @@ serve(async (req) => {
       processed++; continue;
     }
 
+    // Per-seat amount: enterprise_team / enterprise_office have price_per_seat
+    // set; legacy enterprise / engineer / pro keep price_per_seat = null and
+    // continue to charge the flat plan.price_amount.
+    const seatCount      = (sub as any).seat_count ?? 1;
+    const planMinSeats   = plan.min_seats ?? 1;
+    const effectiveSeats = Math.max(seatCount, planMinSeats, 1);
+    const chargeAmount   = plan.price_per_seat != null
+      ? (plan.price_per_seat as number) * effectiveSeats
+      : (plan.price_amount as number);
+
     // Idempotency: skip if renewal tx already exists for this period
     const durationDays = plan.duration_days || 30;
     const periodWindowStart = sub.current_period_end
@@ -149,7 +159,7 @@ serve(async (req) => {
         user_id: sub.user_id,
         subscription_id: sub.id,
         moyasar_payment_id: null,
-        amount: plan.price_amount,
+        amount: chargeAmount,
         currency: plan.currency || "SAR",
         status: "initiated",
         payment_type: "renewal",
@@ -177,7 +187,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: plan.price_amount,
+          amount: chargeAmount,
           currency: plan.currency || "SAR",
           description: `Subscription renewal — ${plan.name_en}`,
           callback_url: webhookUrl,
