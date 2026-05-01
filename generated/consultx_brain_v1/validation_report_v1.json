@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.0",
+  "overall": "PASS",
+  "generated_at": "2026-05-01T09:21:50.038Z",
+  "counts": {
+    "invariants": 94,
+    "passed": 94,
+    "failed": 0
+  },
+  "domain_summary": {
+    "sbc_201_chunks": 1,
+    "sbc_801_chunks": 11,
+    "relations": 15,
+    "facts": 9,
+    "decision_tree_steps": 10
+  },
+  "invariants": [
+    {
+      "name": "source-section-exists:sbc-201-section-309",
+      "status": "PASS",
+      "detail": "sbc-201-section-309"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-903.2",
+      "status": "PASS",
+      "detail": "sbc-801-section-903.2"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": "sbc-801-section-903.2.7"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-903.2.7.1",
+      "status": "PASS",
+      "detail": "sbc-801-section-903.2.7.1"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-903.2.7.2",
+      "status": "PASS",
+      "detail": "sbc-801-section-903.2.7.2"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-907.2",
+      "status": "PASS",
+      "detail": "sbc-801-section-907.2"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": "sbc-801-section-907.2.7"
+    },
+    {
+      "name": "source-section-exists:sbc-801-section-907.2.7.1",
+      "status": "PASS",
+      "detail": "sbc-801-section-907.2.7.1"
+    },
+    {
+      "name": "relations-edge-count-min-13",
+      "status": "PASS",
+      "detail": "actual=15"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-fire-area-1115",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-903.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-stories-above-grade-3",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-903.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-combined-area-2230",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-903.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-upholstered-furniture-465",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-903.2.7.2\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-high-piled-chapter-32",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-903.2.7.1\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-occupant-load-500",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-907.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-occupant-load-100-discharge",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-907.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-alarm-exception-mall",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-907.2.7\"]"
+    },
+    {
+      "name": "fact-has-source-refs:fact-group-m-alarm-exception-sprinkler-waterflow",
+      "status": "PASS",
+      "detail": "[\"sbc-801-section-907.2.7\"]"
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc201-309-to-sbc801-903-2-7-classification",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc201-309-to-sbc801-907-2-7-classification",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-903-2-7-parent-of-903-2-7-1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-903-2-7-parent-of-903-2-7-2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-907-2-7-parent-of-907-2-7-1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-cond-fire-area-1115-to-sbc801-903-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-cond-combined-area-2230-to-sbc801-903-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-cond-upholstered-furniture-465-to-sbc801-903-2-7-2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-cond-occupant-load-500-to-sbc801-907-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-cond-occupant-load-100-discharge-to-sbc801-907-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-907-2-7-exception-mall-buildings-402",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-907-2-7-to-sbc201-402-code-to-code",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-sbc801-907-2-7-exception-sprinkler-903-3-1-1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-analytical-mercantile-review-depends-903-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-has-source-basis:rel-analytical-mercantile-review-depends-907-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-4",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-5",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-6",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-8",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-9",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "tree-step-has-refs:step-10",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-201-section-309",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-903.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-903.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-903.2.7.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-903.2.7.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.1.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.1.3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-llm-synthesis:sbc-801-section-907.2.7.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-201-section-309",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-903.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-903.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-903.2.7.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-903.2.7.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.1.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.1.3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-no-structured-fact-tag:sbc-801-section-907.2.7.1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-201-section-309",
+      "status": "PASS",
+      "detail": "p. 193"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-903.1",
+      "status": "PASS",
+      "detail": "pp. 443-471"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-903.2",
+      "status": "PASS",
+      "detail": "pp. 443-471"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": "pp. 443-471"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-903.2.7.1",
+      "status": "PASS",
+      "detail": "pp. 443-471"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-903.2.7.2",
+      "status": "PASS",
+      "detail": "pp. 443-471"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.1",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.1.2",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.1.3",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.2",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "source-chunk-has-source-pages:sbc-801-section-907.2.7.1",
+      "status": "PASS",
+      "detail": "pp. 531-588"
+    },
+    {
+      "name": "no-banned-symbol:SBC201_Ch3_GroupM_canonical_v1_chunks.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "no-banned-symbol:SBC801_Ch9_GroupM_canonical_v1_chunks.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "no-banned-symbol:group_m_relations_v1.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "no-banned-symbol:group_m_facts_v1.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "no-banned-symbol:group_m_advisory_decision_tree_v1.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "903-2-7-contains-group-m-and-1115",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "name": "907-2-7-contains-group-m-500-100",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "name": "309-contains-mercantile",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "name": "relation-309-to-903-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "relation-309-to-907-2-7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "fact-1115-to-sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "fact-2230-to-sbc-801-section-903.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "fact-465-to-sbc-801-section-903.2.7.2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "fact-500-to-sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "fact-100-to-sbc-801-section-907.2.7",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "failures": []
+}

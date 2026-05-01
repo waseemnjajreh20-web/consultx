@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T12:19:44.874Z",
+  "inputs": {
+    "sources_sbc201": 148,
+    "sources_sbc801": 221,
+    "sections_in_index": 357,
+    "relations_total": 842,
+    "cross_code_relations": 13,
+    "facts_total": 305,
+    "thresholds": 90,
+    "exceptions": 37,
+    "definitions": 0,
+    "advisory_workflows": 8,
+    "analytical_workflows": 4,
+    "main_patterns": 10,
+    "decision_trees": 3
+  },
+  "outputs": [
+    {
+      "path": "generated/consultx_brain_full/chunks/SBC201_canonical_chunks.json",
+      "bytes": 3183248,
+      "sha256": "ce4cdc046ce0c6087fb31d3dfec308142c3a09a8f542f40e195e22af29d83830"
+    },
+    {
+      "path": "generated/consultx_brain_full/chunks/SBC801_canonical_chunks.json",
+      "bytes": 8329658,
+      "sha256": "470ec6de81bfce9a33ede40ce12fabf5c0f63933c18f38dddec0c4cca0d7abe6"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/relations_full.json",
+      "bytes": 576608,
+      "sha256": "93268a3c8c50379875f4fd03aaf80b0e32e8e0461564245fccaaae9a6ddcec37"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/cross_code_relations_full.json",
+      "bytes": 7741,
+      "sha256": "fa7c9f2709407bc3e1e7aa4fa6bba58cd1efa9d4955952ef9e771e09821afa66"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/parent_child_relations_full.json",
+      "bytes": 1851,
+      "sha256": "e8af3f0856ecf2458894df5406238e952f0c51b58708f191d5752e16ce6998d6"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/exception_relations_full.json",
+      "bytes": 1325,
+      "sha256": "1a4d29831db2642a290679ed397393438b843ad40d3c7806e2fc50ee43a34fb2"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/trigger_relations_full.json",
+      "bytes": 13121,
+      "sha256": "658229c2584a1f03fe18a66d437e2c6a04ed671de45c1c6a5b37b02bf0598ff2"
+    },
+    {
+      "path": "generated/consultx_brain_full/relations/analytical_dependency_relations_full.json",
+      "bytes": 112141,
+      "sha256": "df58b45b3c149698f341babbbe2277ee5a5fa5a78d643cf96ee4e4e7e63af0d2"
+    },
+    {
+      "path": "generated/consultx_brain_full/facts/facts_full.json",
+      "bytes": 284804,
+      "sha256": "21e820bb57aa5ed5a1ac75fa03c1ffcb680978b0cf794ad0794da99e9a81ec0d"
+    },
+    {
+      "path": "generated/consultx_brain_full/facts/thresholds_full.json",
+      "bytes": 76315,
+      "sha256": "d5300865e992f121c3f3394678b3a298953072befad5385a806843994f3315ea"
+    },
+    {
+      "path": "generated/consultx_brain_full/facts/exceptions_full.json",
+      "bytes": 34873,
+      "sha256": "5dee742a2fd431b83a1ca578f5e3b0b218bacdbb10081e07f4af8b1e300ff2df"
+    },
+    {
+      "path": "generated/consultx_brain_full/facts/definitions_full.json",
+      "bytes": 64,
+      "sha256": "67ce47f7ac375bd4be7942100d4baf4cec78e1473e1f15c25db67663cc188b5b"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/advisory_workflows.json",
+      "bytes": 22626,
+      "sha256": "43d36a7b54f7dc9512692c88d45f4fe191a7a4ab921f663c733aa88af444689c"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/analytical_workflows.json",
+      "bytes": 9207,
+      "sha256": "814993cfa3f286f478dbbdddbe65439c587082811e973c883cf5a35b04dea4a3"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/main_mode_patterns.json",
+      "bytes": 10591,
+      "sha256": "1987820e56b68525a70f48b32215f64c3ccd413f338b1ac778574f0805d9e116"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/decision_trees/egress-design-checklist.json",
+      "bytes": 11128,
+      "sha256": "144e6fc258db7b69f1f8ae4f4de4ce611c3333afa6f87e3ffff27be23dc7e3b6"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/decision_trees/group-m-fire-protection.json",
+      "bytes": 9811,
+      "sha256": "f11d9963ee4d0ed8436123bb734475b62ce6620e901277c3953837bbcdced937"
+    },
+    {
+      "path": "generated/consultx_brain_full/synthesis/decision_trees/sprinkler-required-decision.json",
+      "bytes": 11890,
+      "sha256": "89291670c7003763b206330a04b84c5373dfc19671874e2dce0e94b70632bbb3"
+    },
+    {
+      "path": "generated/consultx_brain_full/indexes/section_index.json",
+      "bytes": 167483,
+      "sha256": "a3fba14484bb929bd3af5698d658936ade14cb3ca98cfe7c2e672cf65fe25063"
+    },
+    {
+      "path": "generated/consultx_brain_full/indexes/section_aliases.json",
+      "bytes": 20111,
+      "sha256": "67823e4a5de5182dfc4c3bf4d292592186c77cae0615542eeb6f478c379c3a69"
+    },
+    {
+      "path": "generated/consultx_brain_full/indexes/page_map.json",
+      "bytes": 40014,
+      "sha256": "e3e7d0315c9695aa7e3033985fda184d84ab44b203872e7de850a002b3f617cf"
+    },
+    {
+      "path": "generated/consultx_brain_full/indexes/pdf_map.json",
+      "bytes": 8116,
+      "sha256": "2df7b687a30569a95d008ae080743d6fa4b07119f0e6ea5631786be004ab3171"
+    }
+  ],
+  "banned_symbol_audit": {
+    "ban_target": "U+00A7",
+    "all_outputs_clean": true
+  }
+}

@@ -1,0 +1,2288 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-05-01T12:17:02.530954+00:00",
+  "generated_by": "sub-agent-b4-round2",
+  "code_basis": [
+    "SBC-201-CC-2024",
+    "SBC-801-CC-2024"
+  ],
+  "additive_to": [
+    "facts_full.json",
+    "gap_completion_facts.json"
+  ],
+  "round": 2,
+  "cap": 80,
+  "fact_count": 77,
+  "facts": [
+    {
+      "id": "fact-r2-707-6-15ed8b37",
+      "source_code": "SBC-201",
+      "section_ref": "707.6",
+      "fact_type": "threshold",
+      "statement": "The maximum aggregate width of openings in a fire barrier shall not exceed 25 percent of the length of the wall.",
+      "value": 25,
+      "unit": "percent",
+      "scope": "SBC-201 Section 707.6 — fire barrier openings",
+      "conditions": [
+        {
+          "trigger": "aggregate_width_max_percent_of_wall_length",
+          "value": 25,
+          "unit": "percent"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-707"
+      ],
+      "source_quote": "Openings shall be limited to a maximum aggregate width of 25 percent of the length of the wall, and the maximum area of any single opening shall not exceed 15 m².",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-707-6-03d65c5f",
+      "source_code": "SBC-201",
+      "section_ref": "707.6",
+      "fact_type": "threshold",
+      "statement": "The maximum area of any single opening in a fire barrier shall not exceed 15 m2.",
+      "value": 15,
+      "unit": "m2",
+      "scope": "SBC-201 Section 707.6 — single opening area limit",
+      "conditions": [
+        {
+          "trigger": "single_opening_area_exceeds",
+          "value": 15,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [
+        "Adjoining floor areas equipped throughout with an automatic sprinkler system per Section 903.3.1.1 (Exception 1)",
+        "Opening protective is a fire door serving exit access stairway/ramp enclosures (Exception 2)",
+        "Opening protective tested per ASTM E 119 / UL 263 with rating not less than the wall (Exception 3)"
+      ],
+      "source_refs": [
+        "sbc-201-section-707"
+      ],
+      "source_quote": "Openings shall be limited to a maximum aggregate width of 25 percent of the length of the wall, and the maximum area of any single opening shall not exceed 15 m².",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-707-6-ff76287b",
+      "source_code": "SBC-201",
+      "section_ref": "707.6",
+      "fact_type": "threshold",
+      "statement": "The maximum length of any single opening in a fire barrier is 4050 mm.",
+      "value": 4050,
+      "unit": "mm",
+      "scope": "SBC-201 Section 707.6 — single opening length limit",
+      "conditions": [
+        {
+          "trigger": "single_opening_length_max",
+          "value": 4050,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-707"
+      ],
+      "source_quote": "The maximum length of any single opening is limited to 4050 mm for the same reason when used during the testing process.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-708-3-eb3657a3",
+      "source_code": "SBC-201",
+      "section_ref": "708.3",
+      "fact_type": "threshold",
+      "statement": "Fire partitions shall have a fire-resistance rating of not less than 1 hour.",
+      "value": 1,
+      "unit": "hour",
+      "scope": "SBC-201 Section 708.3 — fire partition rating",
+      "conditions": [
+        {
+          "trigger": "fire_resistance_rating_min",
+          "value": 1,
+          "unit": "hour"
+        }
+      ],
+      "exceptions": [
+        "Corridor walls permitted to have a 1/2 hour fire-resistance rating by Table 1020.2 (Exception 1)",
+        "Dwelling/sleeping unit separations in Type IIB, IIIB and VB buildings sprinklered per 903.3.1.1 may be 1/2 hour (Exception 2)"
+      ],
+      "source_refs": [
+        "sbc-201-section-708"
+      ],
+      "source_quote": "Fire partitions shall have a fire-resistance rating of not less than 1 hour.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-708-4-844d09ff",
+      "source_code": "SBC-201",
+      "section_ref": "708.4",
+      "fact_type": "threshold",
+      "statement": "Fire partitions are not required to extend into a crawl space below where the floor above the crawl space has a minimum 1-hour fire-resistance rating.",
+      "value": 1,
+      "unit": "hour",
+      "scope": "SBC-201 Section 708.4 Exception 1 — crawl space exception",
+      "conditions": [
+        {
+          "trigger": "floor_above_crawl_space_rating_min",
+          "value": 1,
+          "unit": "hour"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-708"
+      ],
+      "source_quote": "Fire partitions shall not be required to extend into a crawl space below where the floor above the crawl space has a minimum 1-hour fire-resistance rating.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-709-3-8d8daf5d",
+      "source_code": "SBC-201",
+      "section_ref": "709.3",
+      "fact_type": "threshold",
+      "statement": "A 1-hour fire-resistance rating is required for smoke barriers.",
+      "value": 1,
+      "unit": "hour",
+      "scope": "SBC-201 Section 709.3 — smoke barrier rating",
+      "conditions": [
+        {
+          "trigger": "smoke_barrier_rating_min",
+          "value": 1,
+          "unit": "hour"
+        }
+      ],
+      "exceptions": [
+        "Smoke barriers constructed of minimum 2.5 mm steel in Group I-3 buildings"
+      ],
+      "source_refs": [
+        "sbc-201-section-709"
+      ],
+      "source_quote": "A 1-hour fire-resistance rating is required for smoke barriers.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-709-3-2a21ce21",
+      "source_code": "SBC-201",
+      "section_ref": "709.3",
+      "fact_type": "threshold",
+      "statement": "Smoke barriers in Group I-3 buildings may be constructed of minimum 2.5 mm steel as an exception to the 1-hour fire-resistance rating.",
+      "value": 2.5,
+      "unit": "mm",
+      "scope": "SBC-201 Section 709.3 Exception — Group I-3 steel smoke barrier",
+      "conditions": [
+        {
+          "trigger": "min_steel_thickness",
+          "value": 2.5,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-709"
+      ],
+      "source_quote": "Exception: Smoke barriers constructed of minimum 2.5 mm steel in Group I-3 buildings.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-1-3505a37d",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.1",
+      "fact_type": "threshold",
+      "statement": "Two exit access doorways are required in boiler, incinerator and furnace rooms where the area is over 45 m2 and any fuel-fired equipment exceeds 422,000 kJ input capacity.",
+      "value": 45,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1006.2.2.1 — boiler/incinerator/furnace room egress",
+      "conditions": [
+        {
+          "trigger": "room_area_exceeds",
+          "value": 45,
+          "unit": "m2"
+        },
+        {
+          "trigger": "fuel_fired_input_exceeds",
+          "value": 422000,
+          "unit": "kJ"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Two exit access doorways are required in boiler, incinerator and furnace rooms where the area is over 45 m2 and any fuel-fired equipment exceeds 422,000 kJ input capacity.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-1-0f5b8b8b",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.1",
+      "fact_type": "threshold",
+      "statement": "Boiler/incinerator/furnace room two-exit trigger applies when fuel-fired equipment input capacity exceeds 422,000 kJ.",
+      "value": 422000,
+      "unit": "kJ",
+      "scope": "SBC-201 Section 1006.2.2.1 — fuel-fired input threshold",
+      "conditions": [
+        {
+          "trigger": "fuel_fired_input_capacity_exceeds",
+          "value": 422000,
+          "unit": "kJ"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Two exit access doorways are required in boiler, incinerator and furnace rooms where the area is over 45 m2 and any fuel-fired equipment exceeds 422,000 kJ input capacity.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-2-4a091ed7",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.2",
+      "fact_type": "threshold",
+      "statement": "Refrigeration machinery rooms larger than 100 m2 shall have not less than two exits or exit access doorways.",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1006.2.2.2 — refrigeration machinery room two-exit trigger",
+      "conditions": [
+        {
+          "trigger": "machinery_room_area_exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Machinery rooms larger than 100 m2 shall have not less than two exits or exit access doorways.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-2-d09ff442",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.2",
+      "fact_type": "threshold",
+      "statement": "All portions of refrigeration machinery rooms shall be within 45 m of an exit or exit access doorway.",
+      "value": 45,
+      "unit": "m",
+      "scope": "SBC-201 Section 1006.2.2.2 — refrigeration machinery room travel distance",
+      "conditions": [
+        {
+          "trigger": "max_travel_distance_to_exit",
+          "value": 45,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [
+        "An increase in exit access travel distance is permitted in accordance with Section 1017.1"
+      ],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "All portions of machinery rooms shall be within 45 m of an exit or exit access doorway.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-3-35ca3676",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.3",
+      "fact_type": "threshold",
+      "statement": "Refrigerated rooms or spaces having a floor area larger than 100 m2 containing a refrigerant evaporator and maintained below 20°C shall have access to not less than two exits or exit access doorways.",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1006.2.2.3 — refrigerated room two-exit trigger",
+      "conditions": [
+        {
+          "trigger": "floor_area_exceeds",
+          "value": 100,
+          "unit": "m2"
+        },
+        {
+          "trigger": "temperature_maintained_below",
+          "value": 20,
+          "unit": "celsius"
+        }
+      ],
+      "exceptions": [
+        "Where using refrigerants in quantities limited to the amounts based on the volume set forth in SBC 501"
+      ],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Rooms or spaces having a floor area larger than 100 m2, containing a refrigerant evaporator and maintained at a temperature below 20°C, shall have access to not less than two exits or exit access doorways.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-3-bac4ea7c",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.3",
+      "fact_type": "threshold",
+      "statement": "All portions of a refrigerated room or space shall be within 45 m of an exit or exit access doorway where such rooms are not protected by an approved automatic sprinkler system.",
+      "value": 45,
+      "unit": "m",
+      "scope": "SBC-201 Section 1006.2.2.3 — refrigerated room travel distance",
+      "conditions": [
+        {
+          "trigger": "max_travel_distance_unsprinklered",
+          "value": 45,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Exit access travel distance shall be determined as specified in Section 1017.1, but all portions of a refrigerated room or space shall be within 45 m of an exit or exit access doorway where such rooms are not protected by an approved automatic sprinkler system.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-6-e3fabf1b",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.6",
+      "fact_type": "threshold",
+      "statement": "Where Group R-3 occupancies are protected by an automatic sprinkler system installed per Section 903.3.1.3, the exit access travel distance for Group R-3 shall be not more than 38 m.",
+      "value": 38,
+      "unit": "m",
+      "scope": "SBC-201 Section 1006.2.2.6 — Group R-3 travel distance with NFPA 13D",
+      "conditions": [
+        {
+          "trigger": "max_exit_access_travel_distance",
+          "value": 38,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Where Group R-3 occupancies are permitted by Section 903.2.8 to be protected by an automatic sprinkler system installed in accordance with Section 903.3.1.3, the exit access travel distance for Group R-3 shall be not more than 38 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-2-6-223396bb",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.2.6",
+      "fact_type": "threshold",
+      "statement": "Where Group R-4 occupancies are protected by an automatic sprinkler system installed per Section 903.3.1.3, the exit access travel distance for Group R-4 shall be not more than 23 m.",
+      "value": 23,
+      "unit": "m",
+      "scope": "SBC-201 Section 1006.2.2.6 — Group R-4 travel distance with NFPA 13D",
+      "conditions": [
+        {
+          "trigger": "max_exit_access_travel_distance",
+          "value": 23,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Where Group R-4 occupancies are permitted by Section 903.2.8 to be protected by an automatic sprinkler system installed in accordance with Section 903.3.1.3, the exit access travel distance for Group R-4 shall be not more than 23 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-1-3437e818",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1.1",
+      "fact_type": "threshold",
+      "statement": "Three exits or exit access doorways shall be provided from any space with an occupant load of 501 to 1,000.",
+      "value": 501,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1006.2.1.1 — three-exit threshold",
+      "conditions": [
+        {
+          "trigger": "occupant_load_lower_bound",
+          "value": 501,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Three exits or exit access doorways shall be provided from any space with an occupant load of 501 to 1,000.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-1-aca5b922",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1.1",
+      "fact_type": "threshold",
+      "statement": "Four exits or exit access doorways shall be provided from any space with an occupant load greater than 1,000.",
+      "value": 1000,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1006.2.1.1 — four-exit threshold",
+      "conditions": [
+        {
+          "trigger": "occupant_load_exceeds",
+          "value": 1000,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Four exits or exit access doorways shall be provided from any space with an occupant load greater than 1,000.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-f49095dd",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "Each door opening in the means of egress shall provide a minimum clear opening width of 800 mm.",
+      "value": 800,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 — minimum door clear opening width",
+      "conditions": [
+        {
+          "trigger": "min_clear_opening_width",
+          "value": 800,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [
+        "Group I-3 resident sleeping units (Exception 2: 700 mm minimum)",
+        "Storage closets less than 1.0 m2 in area (Exception 3)",
+        "Doors to walk-in freezers/coolers less than 100 m2 (Exception 10)",
+        "Nonaccessible single-user shower/sauna/toilet stalls (Exception 11: 500 mm minimum)"
+      ],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "The required capacity of each door opening shall be sufficient for the occupant load thereof and shall provide a minimum clear opening width of 800 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-6f38ec00",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "In Group I-2, doors serving as means of egress doors used for the movement of beds shall provide a minimum clear opening width of 1000 mm.",
+      "value": 1000,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 — Group I-2 bed-movement door width",
+      "conditions": [
+        {
+          "trigger": "min_clear_opening_width_bed_movement",
+          "value": 1000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "In Group I-2, doors serving as means of egress doors where used for the movement of beds shall provide a minimum clear opening width of 1000 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-c9130797",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "The minimum clear opening height of doors shall be 2000 mm.",
+      "value": 2000,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 — minimum door clear opening height",
+      "conditions": [
+        {
+          "trigger": "min_clear_opening_height",
+          "value": 2000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [
+        "Exterior door openings other than the required exit door in dwelling/sleeping units not required to be Accessible: 1900 mm (Exception 7)"
+      ],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "The minimum clear opening height of doors shall be 2000 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-a5e4f0cd",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "Door openings to resident sleeping units in Group I-3 not required to be Accessible shall have a minimum clear opening width of 700 mm.",
+      "value": 700,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 Exception 2 — Group I-3 cell doors",
+      "conditions": [
+        {
+          "trigger": "min_clear_opening_width_group_i3",
+          "value": 700,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "In Group I-3, door openings to resident sleeping units that are not required to be an Accessible unit shall have a minimum clear opening width of 700 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-20fbea17",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "Doors serving nonaccessible single-user shower/sauna compartments, toilet stalls, or dressing/fitting/changing rooms shall have a minimum clear opening width of 500 mm.",
+      "value": 500,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 Exception 11 — single-user fixtures",
+      "conditions": [
+        {
+          "trigger": "min_clear_opening_width_nonaccessible_single_user",
+          "value": 500,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Doors serving nonaccessible single-user shower or sauna compartments, toilet stalls or dressing, fitting or changing rooms shall have a minimum clear opening width of 500 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-1-d931708a",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1.1",
+      "fact_type": "threshold",
+      "statement": "Projections into the required clear opening width are not permitted lower than 850 mm above the floor or ground.",
+      "value": 850,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1.1 — projection height limit",
+      "conditions": [
+        {
+          "trigger": "projections_prohibited_below_height",
+          "value": 850,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "There shall not be projections into the required clear opening width lower than 850 mm above the floor or ground.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-1-bcba661a",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1.1",
+      "fact_type": "threshold",
+      "statement": "Projections into the clear opening width between 850 mm and 2000 mm above the floor or ground shall not exceed 100 mm.",
+      "value": 100,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1.1 — projection depth limit",
+      "conditions": [
+        {
+          "trigger": "max_projection_depth",
+          "value": 100,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [
+        "Door closers, overhead door stops, power door operators, and electromagnetic door locks shall be permitted to be 2000 mm minimum above the floor"
+      ],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Projections into the clear opening width between 850 mm and 2000 mm above the floor or ground shall not exceed 100 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-2-1-814c2cdc",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.2.1",
+      "fact_type": "threshold",
+      "statement": "Side-hinged swinging doors, pivoted doors and balanced doors shall swing in the direction of egress travel where serving a room with an occupant load of 50 or more or a Group H occupancy.",
+      "value": 50,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1010.1.2.1 — direction-of-swing trigger",
+      "conditions": [
+        {
+          "trigger": "occupant_load_threshold_for_egress_swing",
+          "value": 50,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Side-hinged swinging doors, pivoted doors and balanced doors shall swing in the direction of egress travel where serving a room or area containing an occupant load of 50 or more persons or a Group H occupancy.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-3-02cf2d85",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.3",
+      "fact_type": "threshold",
+      "statement": "The operational force to unlatch doors with push or pull hardware shall not exceed 67 N.",
+      "value": 67,
+      "unit": "N",
+      "scope": "SBC-201 Section 1010.1.3 — push/pull unlatch force",
+      "conditions": [
+        {
+          "trigger": "max_unlatch_force_push_pull",
+          "value": 67,
+          "unit": "N"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Where door hardware operates by push or pull, the operational force to unlatch the door shall not exceed 67 N.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-3-2468d3d9",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.3",
+      "fact_type": "threshold",
+      "statement": "The operational force to unlatch doors with rotation hardware shall not exceed 3.15 N-m.",
+      "value": 3.15,
+      "unit": "N-m",
+      "scope": "SBC-201 Section 1010.1.3 — rotation unlatch torque",
+      "conditions": [
+        {
+          "trigger": "max_unlatch_torque_rotation",
+          "value": 3.15,
+          "unit": "N-m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Where door hardware operates by rotation, the operational force to unlatch the door shall not exceed 3.15 N-m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-3-49e2350b",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.3",
+      "fact_type": "threshold",
+      "statement": "For interior swinging egress doors that are manually operated, other than fire-rated, the force for pushing or pulling the door shall not exceed 22 N.",
+      "value": 22,
+      "unit": "N",
+      "scope": "SBC-201 Section 1010.1.3 — interior swinging egress door opening force",
+      "conditions": [
+        {
+          "trigger": "max_open_force_interior_swinging",
+          "value": 22,
+          "unit": "N"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "For interior swinging egress doors that are manually operated, other than doors required to be fire rated, the force for pushing or pulling open the door shall not exceed 22 N.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-3-26074998",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.3",
+      "fact_type": "threshold",
+      "statement": "For other swinging, sliding, folding, or fire-rated doors, the door shall require not more than 133 N to set in motion.",
+      "value": 133,
+      "unit": "N",
+      "scope": "SBC-201 Section 1010.1.3 — other doors set-in-motion force",
+      "conditions": [
+        {
+          "trigger": "max_force_to_set_in_motion",
+          "value": 133,
+          "unit": "N"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "For other swinging doors, sliding doors or folding doors, and doors required to be fire rated, the door shall require not more than a 133 N force to be set in motion and shall move to a full-open position when subjected to not more than a 67 N force.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-3-141728e0",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.3",
+      "fact_type": "threshold",
+      "statement": "Other swinging, sliding, folding, and fire-rated doors shall move to a full-open position when subjected to not more than 67 N force.",
+      "value": 67,
+      "unit": "N",
+      "scope": "SBC-201 Section 1010.1.3 — other doors full-open force",
+      "conditions": [
+        {
+          "trigger": "max_force_to_full_open",
+          "value": 67,
+          "unit": "N"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "For other swinging doors, sliding doors or folding doors, and doors required to be fire rated, the door shall require not more than a 133 N force to be set in motion and shall move to a full-open position when subjected to not more than a 67 N force.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-5-57fe1b0d",
+      "source_code": "SBC-201",
+      "section_ref": "1011.5",
+      "fact_type": "threshold",
+      "statement": "Stair riser heights shall be 175 mm maximum and 100 mm minimum.",
+      "value": 175,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.5 — stair riser maximum height",
+      "conditions": [
+        {
+          "trigger": "max_riser_height",
+          "value": 175,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "Stair riser heights shall be 175 mm maximum and 100 mm minimum.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-5-f01bfad0",
+      "source_code": "SBC-201",
+      "section_ref": "1011.5",
+      "fact_type": "threshold",
+      "statement": "Stair riser heights shall not be less than 100 mm.",
+      "value": 100,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.5 — stair riser minimum height",
+      "conditions": [
+        {
+          "trigger": "min_riser_height",
+          "value": 100,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "Stair riser heights shall be 175 mm maximum and 100 mm minimum.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-5-b3b330df",
+      "source_code": "SBC-201",
+      "section_ref": "1011.5",
+      "fact_type": "threshold",
+      "statement": "Stair tread depth shall be 275 mm minimum measured horizontally between the vertical planes of the foremost projection of adjacent treads.",
+      "value": 275,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.5 — stair tread depth minimum",
+      "conditions": [
+        {
+          "trigger": "min_tread_depth",
+          "value": 275,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "275 mm minimum measured horizontally between the vertical planes of the foremost projection of adjacent treads.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-3-3a64c73e",
+      "source_code": "SBC-201",
+      "section_ref": "1011.3",
+      "fact_type": "threshold",
+      "statement": "Stairways shall have a minimum headroom clearance of not less than 2100 mm measured vertically from a line connecting the edge of the nosings.",
+      "value": 2100,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.3 — stairway headroom",
+      "conditions": [
+        {
+          "trigger": "min_headroom_clearance",
+          "value": 2100,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [
+        "Spiral stairways permitted by Section 1011.10 are permitted a 2000 mm headroom"
+      ],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "headroom clearance of not less than 2100 mm",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-2-78126052",
+      "source_code": "SBC-201",
+      "section_ref": "1011.2",
+      "fact_type": "threshold",
+      "statement": "The required width of stairways shall be not less than 1100 mm.",
+      "value": 1100,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.2 — stairway minimum width",
+      "conditions": [
+        {
+          "trigger": "min_stairway_width",
+          "value": 1100,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [
+        "Stairways serving an occupant load of less than 50 may be 900 mm wide",
+        "Spiral stairways may be 660 mm where conforming"
+      ],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "width shall be not less than 1100 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1017-2-1-4c55795e",
+      "source_code": "SBC-201",
+      "section_ref": "1017.2.1",
+      "fact_type": "threshold",
+      "statement": "Exit access travel distances may be increased up to an additional 30 m where the last portion of exit access leading to the exit occurs on an exterior egress balcony complying with Section 1021.",
+      "value": 30,
+      "unit": "m",
+      "scope": "SBC-201 Section 1017.2.1 — exterior egress balcony increase",
+      "conditions": [
+        {
+          "trigger": "max_additional_travel_distance",
+          "value": 30,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1017"
+      ],
+      "source_quote": "Exit access travel distances specified in Table 1017.2 shall be increased up to an additional 30 m provided the last portion of the exit access leading to the exit occurs on an exterior egress balcony constructed in accordance with Section 1021.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1017-2-2-669de4c7",
+      "source_code": "SBC-201",
+      "section_ref": "1017.2.2",
+      "fact_type": "threshold",
+      "statement": "The maximum exit access travel distance shall be 120 m in Group F-1 or S-1 occupancies meeting the one-story, 7300 mm ceiling, and sprinklered conditions.",
+      "value": 120,
+      "unit": "m",
+      "scope": "SBC-201 Section 1017.2.2 — Group F-1/S-1 increase",
+      "conditions": [
+        {
+          "trigger": "max_exit_access_travel_distance",
+          "value": 120,
+          "unit": "m"
+        },
+        {
+          "trigger": "min_finished_floor_to_ceiling_height",
+          "value": 7300,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1017"
+      ],
+      "source_quote": "The maximum exit access travel distance shall be 120 m in Group F-1 or S-1 occupancies where all of the following conditions are met:",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1017-2-2-4fc5d71f",
+      "source_code": "SBC-201",
+      "section_ref": "1017.2.2",
+      "fact_type": "threshold",
+      "statement": "Group F-1/S-1 increase to 120 m travel distance requires minimum height from finished floor to bottom of ceiling/roof slab of 7300 mm.",
+      "value": 7300,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1017.2.2 condition 2 — minimum ceiling height",
+      "conditions": [
+        {
+          "trigger": "min_ceiling_height_for_120m_increase",
+          "value": 7300,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1017"
+      ],
+      "source_quote": "The minimum height from the finished floor to the bottom of the ceiling or roof slab or deck is 7300 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1018-3-27baa6ca",
+      "source_code": "SBC-201",
+      "section_ref": "1018.3",
+      "fact_type": "threshold",
+      "statement": "In Group B and M occupancies, non-public aisles serving less than 50 people and not required to be accessible need not exceed 700 mm in width.",
+      "value": 700,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1018.3 Exception — narrow aisles",
+      "conditions": [
+        {
+          "trigger": "max_aisle_width_nonpublic",
+          "value": 700,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1018"
+      ],
+      "source_quote": "Exception: Non-public aisles serving less than 50 people and not required to be accessible by Chapter 11 need not exceed 700 mm in width.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1018-4-29c6721d",
+      "source_code": "SBC-201",
+      "section_ref": "1018.4",
+      "fact_type": "threshold",
+      "statement": "In Group M, the minimum clear width for an aisle access-way not required to be accessible shall be 750 mm.",
+      "value": 750,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1018.4 — Group M merchandise pad aisle access-way",
+      "conditions": [
+        {
+          "trigger": "min_clear_width_aisle_accessway",
+          "value": 750,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1018"
+      ],
+      "source_quote": "The minimum clear width for an aisle access-way not required to be accessible shall be 750 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1018-4-c5c0350e",
+      "source_code": "SBC-201",
+      "section_ref": "1018.4",
+      "fact_type": "threshold",
+      "statement": "The common path of egress travel within a Group M merchandise pad shall not exceed 9 m from any point in the merchandise pad.",
+      "value": 9,
+      "unit": "m",
+      "scope": "SBC-201 Section 1018.4 — merchandise pad common path of egress",
+      "conditions": [
+        {
+          "trigger": "max_common_path_egress_travel",
+          "value": 9,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [
+        "For areas serving not more than 50 occupants, the common path of egress travel shall not exceed 23 m"
+      ],
+      "source_refs": [
+        "sbc-201-section-1018"
+      ],
+      "source_quote": "The common path of egress travel shall not exceed 9 m from any point in the merchandise pad.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1018-4-f338757b",
+      "source_code": "SBC-201",
+      "section_ref": "1018.4",
+      "fact_type": "threshold",
+      "statement": "For areas serving not more than 50 occupants in a Group M merchandise pad, the common path of egress travel shall not exceed 23 m.",
+      "value": 23,
+      "unit": "m",
+      "scope": "SBC-201 Section 1018.4 Exception — merchandise pad small-occupant common path",
+      "conditions": [
+        {
+          "trigger": "max_common_path_egress_travel_50_or_less",
+          "value": 23,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1018"
+      ],
+      "source_quote": "Exception: For areas serving not more than 50 occupants, the common path of egress travel shall not exceed 23 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1018-5-3a894fd0",
+      "source_code": "SBC-201",
+      "section_ref": "1018.5",
+      "fact_type": "threshold",
+      "statement": "In other than assembly spaces and Group B/M, non-public aisles serving less than 50 people and not required to be accessible need not exceed 700 mm in width.",
+      "value": 700,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1018.5 Exception — non-public aisle width",
+      "conditions": [
+        {
+          "trigger": "max_aisle_width_nonpublic",
+          "value": 700,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1018"
+      ],
+      "source_quote": "Exception: Nonpublic aisles serving less than 50 people and not required to be accessible by Chapter 11 need not exceed 700 mm in width.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-3-6710ddb7",
+      "source_code": "SBC-201",
+      "section_ref": "1020.3",
+      "fact_type": "threshold",
+      "statement": "In Group I-2 occupancies, corridors are not required to have a clear width of 2400 mm in areas where there will not be stretcher or bed movement.",
+      "value": 2400,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1020.3 Exception — Group I-2 corridor width",
+      "conditions": [
+        {
+          "trigger": "max_corridor_width_no_bed_movement",
+          "value": 2400,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "Exception: In Group I-2 occupancies, corridors are not required to have a clear width of 2400 mm in areas where there will not be stretcher or bed movement for access to care or as part of the defend-in-place strategy.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-bcd9e76a",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "threshold",
+      "statement": "Where more than one exit or exit access doorway is required, dead-end corridors shall not exceed 6 m in length.",
+      "value": 6,
+      "unit": "m",
+      "scope": "SBC-201 Section 1020.5 — dead-end corridor length",
+      "conditions": [
+        {
+          "trigger": "max_dead_end_corridor_length",
+          "value": 6,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [
+        "Group I-3 Condition 2/3/4: 15 m (Exception 1)",
+        "Sprinklered Groups B/E/F/I-1/M/R-1/R-2/S/U: 15 m (Exception 2)",
+        "Length less than 2.5x the least width (Exception 3)",
+        "Group I-2 Condition 2 non-patient: 9 m (Exception 4)"
+      ],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "Where more than one exit or exit access doorway is required, the exit access shall be arranged such that dead-end corridors do not exceed 6 m in length.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-9dc77c3e",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "threshold",
+      "statement": "In Group I-3 Condition 2, 3 or 4 occupancies, the dead end in a corridor shall not exceed 15 m.",
+      "value": 15,
+      "unit": "m",
+      "scope": "SBC-201 Section 1020.5 Exception 1 — Group I-3 dead end",
+      "conditions": [
+        {
+          "trigger": "max_dead_end_corridor_length_group_i3",
+          "value": 15,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "In Group I-3, Condition 2, 3 or 4, occupancies, the dead end in a corridor shall not exceed 15 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-1ab8b6bb",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "threshold",
+      "statement": "In sprinklered Groups B, E, F, I-1, M, R-1, R-2, S and U occupancies, the length of dead-end corridors shall not exceed 15 m.",
+      "value": 15,
+      "unit": "m",
+      "scope": "SBC-201 Section 1020.5 Exception 2 — sprinklered building dead end",
+      "conditions": [
+        {
+          "trigger": "max_dead_end_corridor_length_sprinklered",
+          "value": 15,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "In occupancies in Groups B, E, F, I-1, M, R-1, R-2, S and U, where the building is equipped throughout with an automatic sprinkler system in accordance with Section 903.3.1.1, the length of the dead-end corridors shall not exceed 15 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-f1059a9b",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "threshold",
+      "statement": "In Group I-2 Condition 2 occupancies, dead-end corridors that do not serve patient rooms or treatment spaces shall not exceed 9 m.",
+      "value": 9,
+      "unit": "m",
+      "scope": "SBC-201 Section 1020.5 Exception 4 — Group I-2 non-patient dead end",
+      "conditions": [
+        {
+          "trigger": "max_dead_end_corridor_length_group_i2_nonpatient",
+          "value": 9,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "In Group I-2, Condition 2 occupancies, the length of dead-end corridors that do not serve patient rooms or patient treatment spaces shall not exceed 9 m.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-f707a24e",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "threshold",
+      "statement": "Dead-end corridor shall not be limited in length where the length is less than 2.5 times the least width of the dead-end corridor.",
+      "value": 2.5,
+      "unit": "ratio",
+      "scope": "SBC-201 Section 1020.5 Exception 3 — length-to-width ratio exemption",
+      "conditions": [
+        {
+          "trigger": "max_length_to_width_ratio_exemption",
+          "value": 2.5,
+          "unit": "ratio"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "A dead-end corridor shall not be limited in length where the length of the dead-end corridor is less than 2.5 times the least width of the dead-end corridor.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-6-0e989a2e",
+      "source_code": "SBC-201",
+      "section_ref": "1020.6",
+      "fact_type": "threshold",
+      "statement": "In tenant spaces of 100 m2 or less in area, utilization of corridors for conveying return air is permitted.",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1020.6 Exception 3 — small tenant space return air",
+      "conditions": [
+        {
+          "trigger": "max_tenant_space_area_for_return_air",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "Where located within tenant spaces of 100 m2 or less in area, utilization of corridors for conveying return air is permitted.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1023-9-59502c71",
+      "source_code": "SBC-201",
+      "section_ref": "1023.9",
+      "fact_type": "threshold",
+      "statement": "Interior exit stairway floor identification signs shall be located not less than 1500 mm above the floor.",
+      "value": 1500,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1023.9 — stairway floor identification sign height",
+      "conditions": [
+        {
+          "trigger": "min_sign_height_above_floor",
+          "value": 1500,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1023"
+      ],
+      "source_quote": "located not less than 1500 mm above the floor",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1023-9-18a26c4d",
+      "source_code": "SBC-201",
+      "section_ref": "1023.9",
+      "fact_type": "threshold",
+      "statement": "Interior exit stairway floor identification signs shall be a minimum size of 450 mm by 300 mm.",
+      "value": 450,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1023.9 — sign minimum dimension",
+      "conditions": [
+        {
+          "trigger": "min_sign_width",
+          "value": 450,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1023"
+      ],
+      "source_quote": "The signs shall be a minimum size of 450 mm by 300 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-705-5-ae2dc27d",
+      "source_code": "SBC-201",
+      "section_ref": "705.5",
+      "fact_type": "threshold",
+      "statement": "Exterior wall fire-resistance ratings apply for a distance of 3000 mm where openings face one another at an angle of less than 180 degrees.",
+      "value": 3000,
+      "unit": "mm",
+      "scope": "SBC-201 Section 705.5 — exterior wall opening rating distance",
+      "conditions": [
+        {
+          "trigger": "rating_application_distance",
+          "value": 3000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-705"
+      ],
+      "source_quote": "The ratings apply for a distance of 3000 mm",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-705-6-d2741d45",
+      "source_code": "SBC-201",
+      "section_ref": "705.6",
+      "fact_type": "threshold",
+      "statement": "Parapet height for exterior walls shall extend at least 750 mm above the finished floor of the floor immediately above where required.",
+      "value": 750,
+      "unit": "mm",
+      "scope": "SBC-201 Section 705.6 — parapet/wall extension above finished floor",
+      "conditions": [
+        {
+          "trigger": "min_extension_above_floor",
+          "value": 750,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-705"
+      ],
+      "source_quote": "extend at least 750 mm above the finished floor",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-705-11-1b2b8ba2",
+      "source_code": "SBC-201",
+      "section_ref": "705.11",
+      "fact_type": "threshold",
+      "statement": "Parapets shall extend not less than 750 mm above the roof surface where required.",
+      "value": 750,
+      "unit": "mm",
+      "scope": "SBC-201 Section 705.11 — parapet minimum height above roof",
+      "conditions": [
+        {
+          "trigger": "min_parapet_height",
+          "value": 750,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-705"
+      ],
+      "source_quote": "height shall be not less than 750 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-705-11-09661089",
+      "source_code": "SBC-201",
+      "section_ref": "705.11",
+      "fact_type": "threshold",
+      "statement": "Parapet noncombustible faces shall be provided for the uppermost 450 mm above the roof surface.",
+      "value": 450,
+      "unit": "mm",
+      "scope": "SBC-201 Section 705.11 — parapet noncombustible face depth",
+      "conditions": [
+        {
+          "trigger": "min_noncombustible_face_depth",
+          "value": 450,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-705"
+      ],
+      "source_quote": "noncombustible faces for the uppermost 450 mm",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-705-8-827d3ba5",
+      "source_code": "SBC-201",
+      "section_ref": "705.8",
+      "fact_type": "threshold",
+      "statement": "Where exterior wall projections are permitted, projections shall not exceed 50 percent of the depth permitted by other code provisions.",
+      "value": 50,
+      "unit": "percent",
+      "scope": "SBC-201 Section 705.8 — projection depth limit",
+      "conditions": [
+        {
+          "trigger": "max_projection_depth_percent",
+          "value": 50,
+          "unit": "percent"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-705"
+      ],
+      "source_quote": "projections shall not exceed 50 percent of the",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-4a96b0b2",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "exception",
+      "statement": "Door openings to storage closets less than 1.0 m2 in area shall not be limited by the minimum clear opening width.",
+      "value": 1.0,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1010.1.1 Exception 3 — small storage closet",
+      "conditions": [
+        {
+          "trigger": "storage_closet_area_below",
+          "value": 1.0,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Door openings to storage closets less than 1.0 m2 in area shall not be limited by the minimum clear opening width.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-8e51c3cd",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "exception",
+      "statement": "Doors to walk-in freezers and coolers less than 100 m2 in area shall have a maximum width of 1500 mm nominal.",
+      "value": 1500,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 Exception 10 — walk-in freezers/coolers",
+      "conditions": [
+        {
+          "trigger": "max_door_width",
+          "value": 1500,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Doors to walk-in freezers and coolers less than 100 m2 in area shall have a maximum width of 1500 mm nominal.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-b06a4cbd",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "exception",
+      "statement": "Door openings within a dwelling unit or sleeping unit shall have a minimum clear opening height of 2000 mm.",
+      "value": 2000,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 Exception 6 — dwelling unit door height",
+      "conditions": [
+        {
+          "trigger": "min_door_clear_opening_height_dwelling",
+          "value": 2000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "Door openings within a dwelling unit or sleeping unit shall have a minimum clear opening height of 2000 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1010-1-1-55bb399d",
+      "source_code": "SBC-201",
+      "section_ref": "1010.1.1",
+      "fact_type": "exception",
+      "statement": "In dwelling and sleeping units not required to be Accessible/Type A/Type B, exterior door openings other than the required exit door shall have a minimum clear opening height of 1900 mm.",
+      "value": 1900,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1010.1.1 Exception 7 — exterior dwelling door height",
+      "conditions": [
+        {
+          "trigger": "min_exterior_door_height_nonaccessible",
+          "value": 1900,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1010"
+      ],
+      "source_quote": "In dwelling and sleeping units that are not required to be Accessible, Type A or Type B units, exterior door openings, other than the required exit door, shall have a minimum clear opening height of 1900 mm.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-5-3ced2067",
+      "source_code": "SBC-201",
+      "section_ref": "1020.5",
+      "fact_type": "exception",
+      "statement": "Dead-end corridor length is unlimited where the length is less than 2.5 times the least width of the dead-end corridor.",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 1020.5 Exception 3 — geometry exemption",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "A dead-end corridor shall not be limited in length where the length of the dead-end corridor is less than 2.5 times the least width of the dead-end corridor.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-806-817c8f4b",
+      "source_code": "SBC-801",
+      "section_ref": "806",
+      "fact_type": "threshold",
+      "statement": "A heat release rate limit of 100 kW, when tested per UL 1975 or NFPA 289, is placed on foam plastic materials used in Group A occupancies.",
+      "value": 100,
+      "unit": "kW",
+      "scope": "SBC-801 Section 415 commentary on Group A foam plastic decorative materials",
+      "conditions": [
+        {
+          "trigger": "max_heat_release_rate",
+          "value": 100,
+          "unit": "kW"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-415"
+      ],
+      "source_quote": "a heat release rate limit of 100 kW, when tested in accordance with UL 1975 or NFPA 289, is placed on foam plastic materials used in Group A occupancies.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-806-1-2-4044eb13",
+      "source_code": "SBC-801",
+      "section_ref": "806.1.2",
+      "fact_type": "threshold",
+      "statement": "Natural cut tree support device must hold a two-day water supply with a minimum coverage of water to 50 mm above the bottom of the stem.",
+      "value": 50,
+      "unit": "mm",
+      "scope": "SBC-801 Section 806.1.2 / 411 commentary — natural cut tree water level",
+      "conditions": [
+        {
+          "trigger": "min_water_coverage_above_stem",
+          "value": 50,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-411"
+      ],
+      "source_quote": "Item 3 requires a minimum coverage of water to 50 mm above the bottom of the stem.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-806-1-2-fa7433eb",
+      "source_code": "SBC-801",
+      "section_ref": "806.1.2",
+      "fact_type": "threshold",
+      "statement": "Natural cut tree support device must be capable of holding a two-day water supply.",
+      "value": 2,
+      "unit": "days",
+      "scope": "SBC-801 Section 806.1.2 / 411 commentary — water supply duration",
+      "conditions": [
+        {
+          "trigger": "min_water_supply_duration",
+          "value": 2,
+          "unit": "days"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-411"
+      ],
+      "source_quote": "Item 2 states that the device must be capable of holding a two-day water supply",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-807-2-27f58f9c",
+      "source_code": "SBC-801",
+      "section_ref": "807.2",
+      "fact_type": "threshold",
+      "statement": "Section 807.2 Exception 2 allows up to 50 percent of the aggregate wall areas to contain decorative materials if an automatic sprinkler system is provided.",
+      "value": 50,
+      "unit": "percent",
+      "scope": "SBC-801 Section 807.2 Exception 2 / 418 commentary — sleeping unit decorative wall area",
+      "conditions": [
+        {
+          "trigger": "max_aggregate_wall_area_decorative_sprinklered",
+          "value": 50,
+          "unit": "percent"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-418"
+      ],
+      "source_quote": "Section 807.2, Exception 2 allows up to 50 percent of the aggregate wall areas to contain decorative materials if an automatic sprinkler system is provided.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-6-d48a5a18",
+      "source_code": "SBC-201",
+      "section_ref": "1020.6",
+      "fact_type": "exception",
+      "statement": "Use of a corridor as a source of makeup air for exhaust systems in directly opening rooms is permitted, provided each corridor is supplied with outdoor air at a rate greater than the rate of makeup air taken from the corridor.",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 1020.6 Exception 1 — makeup air corridors",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "Use of a corridor as a source of makeup air for exhaust systems in rooms that open directly onto such corridors, including toilet rooms, bathrooms, dressing rooms, smoking lounges and janitor closets, shall be permitted, provided that each such corridor is directly supplied with outdoor air at a rate greater than the rate of makeup air taken from the corridor.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-10-b4f836a9",
+      "source_code": "SBC-201",
+      "section_ref": "1011.10",
+      "fact_type": "threshold",
+      "statement": "Spiral stairways permitted by Section 1011.10 are permitted a 2000 mm headroom.",
+      "value": 2000,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.10 — spiral stairway headroom",
+      "conditions": [
+        {
+          "trigger": "min_spiral_stairway_headroom",
+          "value": 2000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "Spiral stairways permitted by Section 1011.10 are permitted a 2000 mm headroom",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-10-8acc64f0",
+      "source_code": "SBC-201",
+      "section_ref": "1011.10",
+      "fact_type": "threshold",
+      "statement": "Spiral stairway riser height shall be 200 mm maximum, tread depth 250 mm minimum at the walkline, and clear width 660 mm minimum where conforming.",
+      "value": 200,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.10 — spiral stairway riser height",
+      "conditions": [
+        {
+          "trigger": "max_spiral_riser_height",
+          "value": 200,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "be 200 mm; the minimum tread depth shall be 250 mm; the minimum winder tread depth at the walkline shall be 250 mm",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1011-10-7eb4e4c5",
+      "source_code": "SBC-201",
+      "section_ref": "1011.10",
+      "fact_type": "threshold",
+      "statement": "Spiral stairway minimum tread depth at the walkline shall be 250 mm.",
+      "value": 250,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1011.10 — spiral stairway tread depth",
+      "conditions": [
+        {
+          "trigger": "min_spiral_tread_depth",
+          "value": 250,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1011"
+      ],
+      "source_quote": "the minimum tread depth shall be 250 mm; the minimum winder tread depth at the walkline shall be 250 mm",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1023-11-bd6a175a",
+      "source_code": "SBC-201",
+      "section_ref": "1023.11",
+      "fact_type": "threshold",
+      "statement": "High-rise buildings have occupied floors greater than 23 m above the level of exit discharge.",
+      "value": 23,
+      "unit": "m",
+      "scope": "SBC-201 Section 1023.11 — high-rise threshold reference",
+      "conditions": [
+        {
+          "trigger": "high_rise_floor_height_above_exit_discharge",
+          "value": 23,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1023"
+      ],
+      "source_quote": "levels higher than 23 m above the level of exit",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-3-f9b6e71e",
+      "source_code": "SBC-201",
+      "section_ref": "1020.3",
+      "fact_type": "threshold",
+      "statement": "Where the total occupant load served by a corridor is 49 or less, a minimum width of 900 mm is permitted.",
+      "value": 900,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1020.3 — corridor width for low occupant load",
+      "conditions": [
+        {
+          "trigger": "min_corridor_width_low_occupant",
+          "value": 900,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "less, a minimum width of 900 mm is permitted.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1020-3-a5c13c6d",
+      "source_code": "SBC-201",
+      "section_ref": "1020.3",
+      "fact_type": "threshold",
+      "statement": "Passageways that lead to building equipment and systems must be at least 600 mm in width.",
+      "value": 600,
+      "unit": "mm",
+      "scope": "SBC-201 Section 1020.3 — equipment access passageway width",
+      "conditions": [
+        {
+          "trigger": "min_equipment_passageway_width",
+          "value": 600,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1020"
+      ],
+      "source_quote": "and systems must be at least 600 mm in width",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-d5bfb1ae",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1",
+      "fact_type": "threshold",
+      "statement": "The number of occupants in a single egress unit is limited to 10 for Groups I and R-1.",
+      "value": 10,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1006.2.1 — single egress for Groups I and R-1",
+      "conditions": [
+        {
+          "trigger": "max_occupants_single_egress_groups_i_r1",
+          "value": 10,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "the number of occupants in a single egress unit is limited to 10 for Groups I and R-1",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-6db6ca1d",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1",
+      "fact_type": "threshold",
+      "statement": "The number of occupants in a single egress unit is limited to 20 for Groups R-2, R-3 and R-4.",
+      "value": 20,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1006.2.1 — single egress for Groups R-2/R-3/R-4",
+      "conditions": [
+        {
+          "trigger": "max_occupants_single_egress_groups_r2_r3_r4",
+          "value": 20,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "20 for Groups R-2, R-3 and R-4",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-4c7e5e8d",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1",
+      "fact_type": "threshold",
+      "statement": "The single egress condition in Groups H-1, H-2 and H-3 is limited to a maximum of three persons.",
+      "value": 3,
+      "unit": "persons",
+      "scope": "SBC-201 Section 1006.2.1 — single egress in high-hazard groups",
+      "conditions": [
+        {
+          "trigger": "max_persons_single_egress_groups_h1_h2_h3",
+          "value": 3,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "the single egress condition in Groups H-1, H-2 and H-3 is limited to a maximum of three persons.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-r2-1006-2-1-f97661fa",
+      "source_code": "SBC-201",
+      "section_ref": "1006.2.1",
+      "fact_type": "threshold",
+      "statement": "Group S single egress condition is permitted with an occupant load of 29.",
+      "value": 29,
+      "unit": "occupants",
+      "scope": "SBC-201 Section 1006.2.1 — Group S single egress",
+      "conditions": [
+        {
+          "trigger": "max_occupant_load_single_egress_group_s",
+          "value": 29,
+          "unit": "occupants"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1006"
+      ],
+      "source_quote": "Group S and the occupants' normal familiarity with the building, the single egress condition is permitted with an occupant load of 29.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    }
+  ]
+}

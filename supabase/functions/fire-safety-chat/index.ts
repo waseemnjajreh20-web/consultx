@@ -1186,6 +1186,119 @@ ENFORCEMENT:
 `;
 }
 
+// ==================== BRAIN FULL V1 SIDECAR LOADER (Phase 2) =================
+// Loads canonical chunks + relations + facts + decision tree from the passive
+// nested bucket path ssss/brain_full_v1/ uploaded in Phase 1. Returns a single
+// compact prompt-context block, or null if the query is out of domain or the
+// load fails. Advisory-only; never invoked in Main / Analytical.
+// Content is REASONING AID — never a legal citation. The downstream Citation
+// Verifier remains the source-grounding authority.
+const BRAIN_V1_CACHE: Record<string, { value: any; ts: number }> = {};
+const BRAIN_V1_TTL_MS = 5 * 60 * 1000;
+async function brainV1Fetch(supabaseAdmin: any, key: string): Promise<any | null> {
+  const cached = BRAIN_V1_CACHE[key];
+  if (cached && (Date.now() - cached.ts) < BRAIN_V1_TTL_MS) return cached.value;
+  try {
+    const { data, error } = await supabaseAdmin.storage.from("ssss").download(`brain_full_v1/${key}`);
+    if (error || !data) return null;
+    const text = await data.text();
+    const parsed = JSON.parse(text);
+    BRAIN_V1_CACHE[key] = { value: parsed, ts: Date.now() };
+    return parsed;
+  } catch { return null; }
+}
+
+async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promise<string | null> {
+  // Domain trigger: only fire for the V1 Group M / fire-protection / egress family.
+  // Conservative: false negatives are acceptable (loader silently no-ops); false
+  // positives would just append modest extra context to non-Group-M Advisory turns.
+  const trigger = /(mercantile|group\s+m|محلات\s+تجارية|مجموعة\s+M|sprinkler|automatic\s+sprinkler|fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|fire\s+area|occupant\s+notification|waterflow|standpipe|smoke\s+control|egress|exit\s+discharge|رش|إنذار|مخرج|مخارج|إخلاء|تنبيه)/i.test(query);
+  if (!trigger) return null;
+
+  const [chunks201, chunks801, relations, facts, tree] = await Promise.all([
+    brainV1Fetch(supabaseAdmin, "SBC201_canonical_chunks.json"),
+    brainV1Fetch(supabaseAdmin, "SBC801_canonical_chunks.json"),
+    brainV1Fetch(supabaseAdmin, "relations_v1.json"),
+    brainV1Fetch(supabaseAdmin, "facts_v1.json"),
+    brainV1Fetch(supabaseAdmin, "decision_tree_v1.json"),
+  ]);
+
+  if (!chunks201 && !chunks801 && !relations && !facts && !tree) return null;
+
+  // Curated relevant set covering Group M chain (Section 309 / 903.2.7 / 907.2.7
+  // and immediate dependencies). The loader stays narrow on purpose to keep
+  // prompt size bounded; broader sections fall back to the keyword path.
+  const RELEVANT = new Set([
+    "309", "903", "903.2", "903.2.1", "903.2.6", "903.2.7", "903.2.7.1",
+    "903.2.7.2", "903.3", "903.3.1.1",
+    "907", "907.2", "907.2.1", "907.2.7", "907.2.7.1", "907.5", "907.5.2.2",
+    "402",
+  ]);
+  const isRelevantSection = (ref: string) => {
+    if (!ref) return false;
+    return RELEVANT.has(ref) || /^(903|907)\./.test(ref) || ref === "309" || ref === "402";
+  };
+
+  const cArr201 = (chunks201 && Array.isArray(chunks201.chunks)) ? chunks201.chunks : [];
+  const cArr801 = (chunks801 && Array.isArray(chunks801.chunks)) ? chunks801.chunks : [];
+  const relevantChunks = [...cArr201, ...cArr801].filter((c: any) => isRelevantSection(c.section_ref || ""));
+
+  // Facts: filter by source_refs containing any RELEVANT section
+  const stripPrefix = (s: string) => (s || "").replace(/^sbc-\d+-section-/, "");
+  const allFacts = (facts && (Array.isArray(facts) ? facts : facts.facts)) || [];
+  const relevantFacts = allFacts.filter((f: any) =>
+    Array.isArray(f.source_refs) && f.source_refs.some((r: string) => isRelevantSection(stripPrefix(r)))
+  ).slice(0, 25);
+
+  // Relations: filter by from_ref OR to_ref touching any RELEVANT section
+  const allRels = (relations && (Array.isArray(relations) ? relations : relations.edges)) || [];
+  const relevantRels = allRels.filter((r: any) => {
+    const a = stripPrefix(r.from_ref || ""); const b = stripPrefix(r.to_ref || "");
+    return isRelevantSection(a) || isRelevantSection(b);
+  }).slice(0, 25);
+
+  if (relevantChunks.length === 0 && relevantFacts.length === 0 && relevantRels.length === 0 && !tree) {
+    return null;
+  }
+
+  const lines: string[] = [];
+  lines.push("\n\n📚 BRAIN FULL V1 — REASONING AID (Advisory only):");
+  lines.push("// The text below is a curated reference for reasoning. Citations MUST still come only from the Evidence Ledger above. Relations and facts here are NOT legal sources.");
+
+  if (relevantChunks.length > 0) {
+    lines.push("\n📋 CANONICAL TEXT (verbatim — quote sparingly with proper citation):");
+    for (const c of relevantChunks.slice(0, 12)) {
+      const body = (c.content || "").slice(0, 1200);
+      lines.push(`\n=== ${c.id} | ${c.source_code} | Section ${c.section_ref} | ${c.title || ""} ===\n${body}`);
+    }
+  }
+  if (relevantFacts.length > 0) {
+    lines.push("\n📋 FACTS (citable only via source_refs that are also in the Evidence Ledger):");
+    for (const f of relevantFacts) {
+      lines.push(`- ${f.statement} (source: ${(f.source_refs || []).join(",")})`);
+    }
+  }
+  if (relevantRels.length > 0) {
+    lines.push("\n📋 RELATIONS (reasoning aid; NOT citable as legal source):");
+    for (const r of relevantRels) {
+      lines.push(`- ${r.from_ref} → ${r.to_ref} [${r.relation_type}] — ${r.reason || ""} (basis: ${r.source_basis || ""})`);
+    }
+  }
+  if (tree && Array.isArray(tree.steps)) {
+    lines.push("\n📋 DECISION TREE (Group M; use to structure your reasoning):");
+    for (let i = 0; i < tree.steps.length; i++) {
+      const s = tree.steps[i];
+      lines.push(`${i + 1}. ${s.id || ""} — ${s.title || s.use_case || s.prompt || ""}`);
+    }
+    if (Array.isArray(tree.required_inputs) && tree.required_inputs.length > 0) {
+      lines.push(`\nRequired inputs: ${tree.required_inputs.join(", ")}`);
+    }
+  }
+
+  lines.push("\nINSTRUCTION: Use this material to ground your reasoning. Citations must still be section/table tokens that the Evidence Ledger and Citation Verifier accept; if Brain V1 reveals a section that is NOT in the Evidence Ledger, you may use the phrase \"مرجع متوقع يحتاج تحقق من مصدر مطابق\" rather than fabricating a high-confidence citation.");
+  return lines.join("\n");
+}
+
 // ==================== ADVISORY CITATION VERIFIER (Step 4) ====================
 // Scan the model's final Advisory answer for `[SBC-XXX … | conf:Y]` tokens and
 // downgrade any that the ledger cannot prove. Pure transformation on the
@@ -5196,6 +5309,23 @@ ABSOLUTELY FORBIDDEN:
         const summary = buildEvidenceSummaryForPrompt(advisoryLedger);
         fullSystemPrompt += summary;
         console.log(`[Ledger] Advisory ledger built: ${advisoryLedger.length} entries (${[...ledgerFamilies(advisoryLedger)].join(",") || "none"})`);
+
+        // ── Phase 2 Brain Full V1 sidecar loader ─────────────────────────────────
+        // Purpose: enrich Advisory reasoning with canonical SBC text + relations +
+        // facts + decision tree, fetched from the passive nested bucket path
+        // ssss/brain_full_v1/ uploaded in Phase 1. Strictly Advisory-only; Main
+        // and Analytical paths are not affected. Existing keyword retrieval +
+        // Evidence Ledger + Citation Verifier remain in charge of citations;
+        // Brain V1 content is reasoning aid, NOT legal source.
+        try {
+          const brainBlock = await loadBrainFullV1Sidecars(userQuery, supabaseAdminForTables);
+          if (brainBlock) {
+            fullSystemPrompt += brainBlock;
+            console.log("[BrainFullV1] Sidecar context appended to Advisory prompt");
+          }
+        } catch (e) {
+          console.warn("[BrainFullV1] Sidecar load failed; continuing without enrichment:", e instanceof Error ? e.message : e);
+        }
 
         // Step 4.1 — surface structured-table evidence to the UI as non-clickable
         // sources. Without this, the ledger family (e.g. SBC-201 from a structured

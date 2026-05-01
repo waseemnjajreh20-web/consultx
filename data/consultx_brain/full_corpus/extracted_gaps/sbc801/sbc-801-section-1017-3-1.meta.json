@@ -1,0 +1,16 @@
+{
+  "record_id": "sbc-801-section-1017-3-1",
+  "section_number": "1017.3.1",
+  "chapter": "10",
+  "code_family": "SBC 801",
+  "extraction_method": "newly_extracted",
+  "source_files": [
+    "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+  ],
+  "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+  "source_page": 116,
+  "body_chars": 4000,
+  "garble_ratio": 0.0018,
+  "sha256_md": "5efe723f7092d33eb1b8cec2eec44dd027f8291dd65a8397948ecfcfe76cca1d",
+  "extracted_at_utc": "2026-05-01T10:31:02.841543Z"
+}

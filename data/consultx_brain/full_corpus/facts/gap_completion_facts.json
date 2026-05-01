@@ -1,0 +1,2732 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-05-01T10:30:47.932127+00:00",
+  "generated_by": "sub-agent-b4",
+  "code_basis": [
+    "SBC-201-CC-2024",
+    "SBC-801-CC-2024"
+  ],
+  "additive_to": "facts_full.json",
+  "facts": [
+    {
+      "id": "fact-gap-1004-4-d6e0b66d",
+      "source_code": "SBC-801",
+      "section_ref": "1004.4",
+      "fact_type": "threshold",
+      "statement": "minimum of 2400 mm in clear width.",
+      "value": 2400,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1004.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 2400,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1004"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "minimum of 2400 mm in clear width."
+    },
+    {
+      "id": "fact-gap-1005-1-940e20a9",
+      "source_code": "SBC-801",
+      "section_ref": "1005.1",
+      "fact_type": "exception",
+      "statement": "Exception: Aisles and aisle accessways in rooms or spaces used for assembly purposes complying with Section 1030. ❖ This section is a charging paragraph for sizing for the means of egress system in a tenant spa…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 1005.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1005"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Aisles and aisle accessways in rooms or spaces used for assembly purposes complying with Section 1030. ❖ This section is a charging paragraph for sizing for the means of egress system in a…"
+    },
+    {
+      "id": "fact-gap-1006-2-b3d0e21f",
+      "source_code": "SBC-801",
+      "section_ref": "1006.2",
+      "fact_type": "threshold",
+      "statement": "of egress travel does not exceed 38 m.",
+      "value": 38,
+      "unit": "m",
+      "scope": "SBC-801 Section 1006.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 38,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1006"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "of egress travel does not exceed 38 m."
+    },
+    {
+      "id": "fact-gap-1010-1-1-074821d2",
+      "source_code": "SBC-801",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "minimum clear opening width of 800 mm.",
+      "value": 800,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1010.1.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 800,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1010"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "minimum clear opening width of 800 mm."
+    },
+    {
+      "id": "fact-gap-1021-2-4126c746",
+      "source_code": "SBC-801",
+      "section_ref": "1021.2",
+      "fact_type": "exception",
+      "statement": "Exception: Separation is not required where the exterior egress balcony is served by not less than two stairways and a dead-end travel condition does not require travel past an unprotected opening to reach a st…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 1021.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1021"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Separation is not required where the exterior egress balcony is served by not less than two stairways and a dead-end travel condition does not require travel past an unprotected opening to…"
+    },
+    {
+      "id": "fact-gap-906-2-c0f460fe",
+      "source_code": "SBC-801",
+      "section_ref": "906.2",
+      "fact_type": "exception",
+      "statement": "Exception: 1. The distance of travel to reach an extinguisher shall not apply to the spectator seating portions of Group A-5 occupancies. 2. Thirty-day inspections shall not be required and maintenance shall be…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 906.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1. The distance of travel to reach an extinguisher shall not apply to the spectator seating portions of Group A-5 occupancies. 2. Thirty-day inspections shall not be required and maintenan…"
+    },
+    {
+      "id": "fact-gap-909-4-7d906cd4",
+      "source_code": "SBC-801",
+      "section_ref": "909.4",
+      "fact_type": "threshold",
+      "statement": "mandated at a minimum of 20 minutes or 1.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-801 Section 909.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "mandated at a minimum of 20 minutes or 1."
+    },
+    {
+      "id": "fact-gap-910-2-c0c61482",
+      "source_code": "SBC-801",
+      "section_ref": "910.2",
+      "fact_type": "exception",
+      "statement": "Exception: 1. Frozen food warehouses used solely for storage of Class I and II commodities where protected by an approved automatic sprinkler system. 2. Smoke and heat removal shall not be required in areas of…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 910.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1. Frozen food warehouses used solely for storage of Class I and II commodities where protected by an approved automatic sprinkler system. 2. Smoke and heat removal shall not be required i…"
+    },
+    {
+      "id": "fact-gap-911-2-109fb1f9",
+      "source_code": "SBC-801",
+      "section_ref": "911.2",
+      "fact_type": "threshold",
+      "statement": "a minimum internal pressure of 4.8 kPa.",
+      "value": 4.8,
+      "unit": "kpa",
+      "scope": "SBC-801 Section 911.2",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 4.8,
+          "unit": "kpa"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "a minimum internal pressure of 4.8 kPa."
+    },
+    {
+      "id": "fact-gap-912-2-2-597acf9c",
+      "source_code": "SBC-801",
+      "section_ref": "912.2.2",
+      "fact_type": "threshold",
+      "statement": "he \nside of the building. Such sign shall have the letters \n“FDC” not less than 150 mm high and words in \nletters not less than 50 mm high or an arrow to \nindicate the location. Such sig",
+      "value": 150,
+      "unit": "mm",
+      "scope": "SBC-801 Section 912.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 150,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "he side of the building. Such sign shall have the letters “FDC” not less than 150 mm high and words in letters not less than 50 mm high or an arrow to indicate the location. Such sig"
+    },
+    {
+      "id": "fact-gap-914-2-1-7e93671f",
+      "source_code": "SBC-801",
+      "section_ref": "914.2.1",
+      "fact_type": "exception",
+      "statement": "Exception: An automatic sprinkler system shall not be required in spaces or areas of open parking garages separated from the covered or open mall in accordance with Section 402.4.2.3 of SBC 201 and constructed…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 914.2.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: An automatic sprinkler system shall not be required in spaces or areas of open parking garages separated from the covered or open mall in accordance with Section 402.4.2.3 of SBC 201 and c…"
+    },
+    {
+      "id": "fact-gap-915-1-3-6fcb3f30",
+      "source_code": "SBC-801",
+      "section_ref": "915.1.3",
+      "fact_type": "exception",
+      "statement": "Exception: Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms where a carbon monoxide detector is provided in the first room or area served by each main duct leavin…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 915.1.3",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms where a carbon monoxide detector is provided in the first room or area served by each main…"
+    },
+    {
+      "id": "fact-gap-916-7-6d79b21f",
+      "source_code": "SBC-801",
+      "section_ref": "916.7",
+      "fact_type": "threshold",
+      "statement": "performed at intervals not exceeding 30 \nminutes.",
+      "value": 30,
+      "unit": "minutes",
+      "scope": "SBC-801 Section 916.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 30,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-916"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "performed at intervals not exceeding 30 minutes."
+    },
+    {
+      "id": "fact-gap-504-1-920c1a75",
+      "source_code": "SBC-201",
+      "section_ref": "504.1",
+      "fact_type": "exception",
+      "statement": "Exception: The building height of one-story aircraft hangars, aircraft paint hangars and buildings used for the manufacturing of aircraft shall not be limited where the building is provided with an automatic sp…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 504.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-504"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: The building height of one-story aircraft hangars, aircraft paint hangars and buildings used for the manufacturing of aircraft shall not be limited where the building is provided with an a…"
+    },
+    {
+      "id": "fact-gap-506-1-3-1-aeee1aa4",
+      "source_code": "SBC-201",
+      "section_ref": "506.1.3.1",
+      "fact_type": "threshold",
+      "statement": "+ (2137 × 0)] × 3 = 6410 m2. Although \nthe maximum area of any single story is 2137 \nm2, the average area of all five stories must be \n1282 m2 to be within the total allowable area of \nth",
+      "value": 2137,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.1.3.1",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 2137,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "+ (2137 × 0)] × 3 = 6410 m2. Although the maximum area of any single story is 2137 m2, the average area of all five stories must be 1282 m2 to be within the total allowable area of th"
+    },
+    {
+      "id": "fact-gap-903-2-a3567399",
+      "source_code": "SBC-201",
+      "section_ref": "903.2",
+      "fact_type": "exception",
+      "statement": "Exception: Spaces or areas in telecommunications buildings used exclusively for telecommunications equipment, associated electrical power distribution equipment, batteries and standby engines, provided that tho…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 903.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Spaces or areas in telecommunications buildings used exclusively for telecommunications equipment, associated electrical power distribution equipment, batteries and standby engines, provid…"
+    },
+    {
+      "id": "fact-gap-904-3-2-1e18a6a2",
+      "source_code": "SBC-201",
+      "section_ref": "904.3.2",
+      "fact_type": "exception",
+      "statement": "Exception: Multiple systems shall be permitted to be installed if they are designed to operate simultaneously. ❖ Section 904.3.2 requires alternative fire- extinguishing systems to be designed for automatic act…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 904.3.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-904"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Multiple systems shall be permitted to be installed if they are designed to operate simultaneously. ❖ Section 904.3.2 requires alternative fire- extinguishing systems to be designed for au…"
+    },
+    {
+      "id": "fact-gap-905-3-a7acb863",
+      "source_code": "SBC-201",
+      "section_ref": "905.3",
+      "fact_type": "exception",
+      "statement": "Exception: Standpipe systems are not required in Group R-3 occupancies. ❖ Standpipe systems are installed in buildings based on the occupancy, fire department accessibility and special conditions that may requi…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 905.3",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-905"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Standpipe systems are not required in Group R-3 occupancies. ❖ Standpipe systems are installed in buildings based on the occupancy, fire department accessibility and special conditions tha…"
+    },
+    {
+      "id": "fact-gap-906-2-485b79c9",
+      "source_code": "SBC-201",
+      "section_ref": "906.2",
+      "fact_type": "exception",
+      "statement": "Exception: 1 The distance of travel to reach an extinguisher shall not apply to the spectator seating portions of Group A-5 occupancies. 2 In Group I-3, portable fire extinguishers shall be permitted to be loca…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 906.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1 The distance of travel to reach an extinguisher shall not apply to the spectator seating portions of Group A-5 occupancies. 2 In Group I-3, portable fire extinguishers shall be permitted…"
+    },
+    {
+      "id": "fact-gap-907-1-3-bef3990f",
+      "source_code": "SBC-201",
+      "section_ref": "907.1.3",
+      "fact_type": "exception",
+      "statement": "Exception: 1 The manual fire alarm box is not required for fire alarm systems dedicated to elevator recall control and supervisory service. 2 The manual fire alarm box is not required for Group R-2 occupancies…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 907.1.3",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1 The manual fire alarm box is not required for fire alarm systems dedicated to elevator recall control and supervisory service. 2 The manual fire alarm box is not required for Group R-2 o…"
+    },
+    {
+      "id": "fact-gap-909-4-54056f58",
+      "source_code": "SBC-201",
+      "section_ref": "909.4",
+      "fact_type": "threshold",
+      "statement": "mandated at a minimum of 20 minutes or 1.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 909.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "mandated at a minimum of 20 minutes or 1."
+    },
+    {
+      "id": "fact-gap-910-2-408ff5f3",
+      "source_code": "SBC-201",
+      "section_ref": "910.2",
+      "fact_type": "exception",
+      "statement": "Exception: 1 Frozen food warehouses used solely for storage of Class I and II commodities where protected by an approved automatic sprinkler system. 2 Smoke and heat removal shall not be required in areas of bu…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 910.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1 Frozen food warehouses used solely for storage of Class I and II commodities where protected by an approved automatic sprinkler system. 2 Smoke and heat removal shall not be required in…"
+    },
+    {
+      "id": "fact-gap-911-1-3-a45ed4c6",
+      "source_code": "SBC-201",
+      "section_ref": "911.1.3",
+      "fact_type": "threshold",
+      "statement": "less than 0.015 percent of the total building area of \nthe facility served or 20 m2 in area, whichever is \ngreater, with a minimum dimension of 0.7 times the \nsquare root of the room",
+      "value": 20,
+      "unit": "m2",
+      "scope": "SBC-201 Section 911.1.3",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 20,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "less than 0.015 percent of the total building area of the facility served or 20 m2 in area, whichever is greater, with a minimum dimension of 0.7 times the square root of the room"
+    },
+    {
+      "id": "fact-gap-912-2-2-f778fd2d",
+      "source_code": "SBC-201",
+      "section_ref": "912.2.2",
+      "fact_type": "threshold",
+      "statement": "he \nside of the building. Such sign shall have the letters \n“FDC” not less than 150 mm high and words in \nletters not less than 50 mm high or an arrow to \nindicate the location. Such sig",
+      "value": 150,
+      "unit": "mm",
+      "scope": "SBC-201 Section 912.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 150,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "he side of the building. Such sign shall have the letters “FDC” not less than 150 mm high and words in letters not less than 50 mm high or an arrow to indicate the location. Such sig"
+    },
+    {
+      "id": "fact-gap-913-1-79da4a96",
+      "source_code": "SBC-201",
+      "section_ref": "913.1",
+      "fact_type": "exception",
+      "statement": "Exception: Pumps for automatic sprinkler systems installed in accordance with Section 903.3.1.3, or Section 2904 of SBC 1101/1102. -",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 913.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-913"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Pumps for automatic sprinkler systems installed in accordance with Section 903.3.1.3, or Section 2904 of SBC 1101/1102. -"
+    },
+    {
+      "id": "fact-gap-914-1-1-afad2a4f",
+      "source_code": "SBC-201",
+      "section_ref": "914.1.1",
+      "fact_type": "threshold",
+      "statement": "shall be plainly marked with the word \n“SHAFTWAY” in red letters not less than 150 mm \nhigh on a white background. Such warning signs \nshall be placed so as to be readily discernible fr",
+      "value": 150,
+      "unit": "mm",
+      "scope": "SBC-201 Section 914.1.1",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 150,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "shall be plainly marked with the word “SHAFTWAY” in red letters not less than 150 mm high on a white background. Such warning signs shall be placed so as to be readily discernible fr"
+    },
+    {
+      "id": "fact-gap-915-1-fae14eea",
+      "source_code": "SBC-201",
+      "section_ref": "915.1",
+      "fact_type": "exception",
+      "statement": "Exception: Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms if a carbon monoxide detector is provided in the first room or area served by each main duct leaving t…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 915.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms if a carbon monoxide detector is provided in the first room or area served by each main duc…"
+    },
+    {
+      "id": "fact-gap-916-7-4671a935",
+      "source_code": "SBC-201",
+      "section_ref": "916.7",
+      "fact_type": "threshold",
+      "statement": "performed at intervals not exceeding 30 \nminutes.",
+      "value": 30,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 916.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 30,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-916"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "performed at intervals not exceeding 30 minutes."
+    },
+    {
+      "id": "fact-gap-1004-5-5ad9dee6",
+      "source_code": "SBC-801",
+      "section_ref": "1004.5",
+      "fact_type": "exception",
+      "statement": "Exception: Where approved by the fire official, the actual number of occupants for whom each occupied space, floor or building is designed, although less than those determined by calculation, shall be permitted…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 1004.5",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1004"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Where approved by the fire official, the actual number of occupants for whom each occupied space, floor or building is designed, although less than those determined by calculation, shall b…"
+    },
+    {
+      "id": "fact-gap-1005-3-1-112f4f14",
+      "source_code": "SBC-801",
+      "section_ref": "1005.3.1",
+      "fact_type": "threshold",
+      "statement": "width with a second-floor occupant load of \n350: \n• 350 occupants multiplied by 7.62 mm = 2667 \nmm minimum; \n• 2667 mm divided by two stairways is 1334 mm \nminimum per stairway. \n• Sectio",
+      "value": 7.62,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1005.3.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 7.62,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1005"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "width with a second-floor occupant load of 350: • 350 occupants multiplied by 7.62 mm = 2667 mm minimum; • 2667 mm divided by two stairways is 1334 mm minimum per stairway. • Sectio"
+    },
+    {
+      "id": "fact-gap-1006-2-c00905a6",
+      "source_code": "SBC-801",
+      "section_ref": "1006.2",
+      "fact_type": "threshold",
+      "statement": "are required in \nboiler, incinerator and furnace rooms where the area \nis over 45 m2 and any fuel-fired equipment exceeds \n422,000 KJ input capacity. Where two exit access \ndoorways ar",
+      "value": 45,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1006.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 45,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1006"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "are required in boiler, incinerator and furnace rooms where the area is over 45 m2 and any fuel-fired equipment exceeds 422,000 KJ input capacity. Where two exit access doorways ar"
+    },
+    {
+      "id": "fact-gap-1010-1-1-6d7dc94c",
+      "source_code": "SBC-801",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "open 90 degrees. Where this \nsection requires a minimum clear opening width of \n800 mm and a door opening includes two door \nleaves without a mullion, one leaf shall provide a \nminimum c",
+      "value": 800,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1010.1.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 800,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1010"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "open 90 degrees. Where this section requires a minimum clear opening width of 800 mm and a door opening includes two door leaves without a mullion, one leaf shall provide a minimum c"
+    },
+    {
+      "id": "fact-gap-1021-4-13a44f8a",
+      "source_code": "SBC-801",
+      "section_ref": "1021.4",
+      "fact_type": "threshold",
+      "statement": "on. Exterior egress balconies shall \nhave a minimum fire separation distance of 3000 \nmm measured at right angles from the exterior edge \nof the egress balcony to the following:  \n1. Adjac",
+      "value": 3000,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1021.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 3000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1021"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "on. Exterior egress balconies shall have a minimum fire separation distance of 3000 mm measured at right angles from the exterior edge of the egress balcony to the following: 1. Adjac"
+    },
+    {
+      "id": "fact-gap-906-3-3025e37a",
+      "source_code": "SBC-801",
+      "section_ref": "906.3",
+      "fact_type": "threshold",
+      "statement": "sher requirements where flammable or \ncombustible liquids are limited in depth [6 mm \nor less]. As can be seen in the table, the size of \nthe extinguisher is directly related to the \nd",
+      "value": 6,
+      "unit": "mm",
+      "scope": "SBC-801 Section 906.3",
+      "conditions": [
+        {
+          "trigger": "or_less",
+          "value": 6,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "sher requirements where flammable or combustible liquids are limited in depth [6 mm or less]. As can be seen in the table, the size of the extinguisher is directly related to the d"
+    },
+    {
+      "id": "fact-gap-909-4-6-f58a246a",
+      "source_code": "SBC-801",
+      "section_ref": "909.4.6",
+      "fact_type": "threshold",
+      "statement": "fire event for a period of not less than either 20 \nminutes or 1.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-801 Section 909.4.6",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "fire event for a period of not less than either 20 minutes or 1."
+    },
+    {
+      "id": "fact-gap-910-2-1-00484b0a",
+      "source_code": "SBC-801",
+      "section_ref": "910.2.1",
+      "fact_type": "threshold",
+      "statement": "rials that resist the passage of smoke. \nTypically, draft curtains are at least 1800 mm \nfrom the ceiling. In keeping with the concern for \nmanaging smoke, the joints and connections \nsho",
+      "value": 1800,
+      "unit": "mm",
+      "scope": "SBC-801 Section 910.2.1",
+      "conditions": [
+        {
+          "trigger": "at_least",
+          "value": 1800,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "rials that resist the passage of smoke. Typically, draft curtains are at least 1800 mm from the ceiling. In keeping with the concern for managing smoke, the joints and connections sho"
+    },
+    {
+      "id": "fact-gap-911-2-eba6ae82",
+      "source_code": "SBC-801",
+      "section_ref": "911.2",
+      "fact_type": "threshold",
+      "statement": "any combination of the \nfollowing to relieve at a maximum internal \npressure of 1 kPa, but not less than the loads \nrequired by SBC 201: \n5.1. Exterior walls designed to release \noutwar",
+      "value": 1,
+      "unit": "kpa",
+      "scope": "SBC-801 Section 911.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 1,
+          "unit": "kpa"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "any combination of the following to relieve at a maximum internal pressure of 1 kPa, but not less than the loads required by SBC 201: 5.1. Exterior walls designed to release outwar"
+    },
+    {
+      "id": "fact-gap-912-2-2-0aedd322",
+      "source_code": "SBC-801",
+      "section_ref": "912.2.2",
+      "fact_type": "threshold",
+      "statement": "he letters \n“FDC” not less than 150 mm high and words in \nletters not less than 50 mm high or an arrow to \nindicate the location. Such signs shall be subject to \nthe approval of the Fir",
+      "value": 50,
+      "unit": "mm",
+      "scope": "SBC-801 Section 912.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 50,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "he letters “FDC” not less than 150 mm high and words in letters not less than 50 mm high or an arrow to indicate the location. Such signs shall be subject to the approval of the Fir"
+    },
+    {
+      "id": "fact-gap-914-2-2-f5831ae5",
+      "source_code": "SBC-801",
+      "section_ref": "914.2.2",
+      "fact_type": "threshold",
+      "statement": "Emergency voice/alarm communication \nsystem. Where the total floor area exceeds 4650 m2 \nwithin either a covered mall building or within the \nperimeter line of an open mall building, an",
+      "value": 4650,
+      "unit": "m2",
+      "scope": "SBC-801 Section 914.2.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 4650,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Emergency voice/alarm communication system. Where the total floor area exceeds 4650 m2 within either a covered mall building or within the perimeter line of an open mall building, an"
+    },
+    {
+      "id": "fact-gap-915-1-3-6176369d",
+      "source_code": "SBC-801",
+      "section_ref": "915.1.3",
+      "fact_type": "exception",
+      "statement": "Exception: 1. Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms without communicating openings between the fuel-burning appliance or fuel- burning fireplace and th…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 915.1.3",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1. Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms without communicating openings between the fuel-burning appliance or fuel- burning firep…"
+    },
+    {
+      "id": "fact-gap-916-7-00f5a6c6",
+      "source_code": "SBC-801",
+      "section_ref": "916.7",
+      "fact_type": "threshold",
+      "statement": "at are not HPM, sample \nanalysis shall be performed at intervals not \nexceeding 5 minutes, in accordance with \nSection 6004.2.2.7. \n3. Where a less frequent or delayed sampling \ninterval is",
+      "value": 5,
+      "unit": "minutes",
+      "scope": "SBC-801 Section 916.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 5,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-916"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "at are not HPM, sample analysis shall be performed at intervals not exceeding 5 minutes, in accordance with Section 6004.2.2.7. 3. Where a less frequent or delayed sampling interval is"
+    },
+    {
+      "id": "fact-gap-504-3-eedbae25",
+      "source_code": "SBC-201",
+      "section_ref": "504.3",
+      "fact_type": "threshold",
+      "statement": "maximum height above grade plane of 12 m.",
+      "value": 12,
+      "unit": "m",
+      "scope": "SBC-201 Section 504.3",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 12,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-504"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "maximum height above grade plane of 12 m."
+    },
+    {
+      "id": "fact-gap-506-1-3-1-dab933bb",
+      "source_code": "SBC-201",
+      "section_ref": "506.1.3.1",
+      "fact_type": "threshold",
+      "statement": "long as the total area does not exceed 6410 m2.",
+      "value": 6410,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.1.3.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 6410,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "long as the total area does not exceed 6410 m2."
+    },
+    {
+      "id": "fact-gap-903-2-1-2f82f40e",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1",
+      "fact_type": "threshold",
+      "statement": "The fire area exceeds 1115 m2.",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-gap-904-11-2-2-3504eeda",
+      "source_code": "SBC-201",
+      "section_ref": "904.11.2.2",
+      "fact_type": "exception",
+      "statement": "Exception: Factory-built commercial cooking recirculating systems that are tested in accordance with UL 710B and listed, labeled and installed in accordance with Section 304.1 of SBC 501. ❖ The history of comme…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 904.11.2.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-904"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Factory-built commercial cooking recirculating systems that are tested in accordance with UL 710B and listed, labeled and installed in accordance with Section 304.1 of SBC 501. ❖ The histo…"
+    },
+    {
+      "id": "fact-gap-905-3-1-af5681de",
+      "source_code": "SBC-201",
+      "section_ref": "905.3.1",
+      "fact_type": "threshold",
+      "statement": "w \ngrade plane.  \n2 \nThe floor level of the highest story is located \nmore than 9 m above the lowest level of fire \ndepartment  vehicle access.  \n3 \nThe floor level of the lowest stor",
+      "value": 9,
+      "unit": "m",
+      "scope": "SBC-201 Section 905.3.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 9,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-905"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "w grade plane. 2 The floor level of the highest story is located more than 9 m above the lowest level of fire department vehicle access. 3 The floor level of the lowest stor"
+    },
+    {
+      "id": "fact-gap-906-3-0c8a9c00",
+      "source_code": "SBC-201",
+      "section_ref": "906.3",
+      "fact_type": "threshold",
+      "statement": "liquids are limited in depth [6 mm or less].",
+      "value": 6,
+      "unit": "mm",
+      "scope": "SBC-201 Section 906.3",
+      "conditions": [
+        {
+          "trigger": "or_less",
+          "value": 6,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "liquids are limited in depth [6 mm or less]."
+    },
+    {
+      "id": "fact-gap-907-2-1-40e1c105",
+      "source_code": "SBC-201",
+      "section_ref": "907.2.1",
+      "fact_type": "threshold",
+      "statement": "bly occupancy is 300 or more,  or where \nthe Group A occupant load is more than 100 \npersons above or below the lowest level of exit \ndischarge. Group A occupancies not separated from \none ano",
+      "value": 100,
+      "unit": "persons",
+      "scope": "SBC-201 Section 907.2.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 100,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "bly occupancy is 300 or more, or where the Group A occupant load is more than 100 persons above or below the lowest level of exit discharge. Group A occupancies not separated from one ano"
+    },
+    {
+      "id": "fact-gap-909-4-6-404af275",
+      "source_code": "SBC-201",
+      "section_ref": "909.4.6",
+      "fact_type": "threshold",
+      "statement": "fire event for a period of not less than either 20 \nminutes or 1.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 909.4.6",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "fire event for a period of not less than either 20 minutes or 1."
+    },
+    {
+      "id": "fact-gap-910-2-1-93e6dff6",
+      "source_code": "SBC-201",
+      "section_ref": "910.2.1",
+      "fact_type": "threshold",
+      "statement": "ials that \nresist the passage of smoke. Typically, draft \ncurtains are at least 1.8 m deep from the \nceiling. To keep with the concern for managing \nsmoke, the joints and connections sh",
+      "value": 1.8,
+      "unit": "m",
+      "scope": "SBC-201 Section 910.2.1",
+      "conditions": [
+        {
+          "trigger": "at_least",
+          "value": 1.8,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ials that resist the passage of smoke. Typically, draft curtains are at least 1.8 m deep from the ceiling. To keep with the concern for managing smoke, the joints and connections sh"
+    },
+    {
+      "id": "fact-gap-911-1-3-230fb4f9",
+      "source_code": "SBC-201",
+      "section_ref": "911.1.3",
+      "fact_type": "threshold",
+      "statement": "ter, with a minimum dimension of 0.7 times the \nsquare root of the room area or 3 m, whichever is \ngreater. Where a fire command is required for \nGroup F-1 and S-1 occupancies with a",
+      "value": 3,
+      "unit": "m",
+      "scope": "SBC-201 Section 911.1.3",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 3,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ter, with a minimum dimension of 0.7 times the square root of the room area or 3 m, whichever is greater. Where a fire command is required for Group F-1 and S-1 occupancies with a"
+    },
+    {
+      "id": "fact-gap-912-2-2-62302022",
+      "source_code": "SBC-201",
+      "section_ref": "912.2.2",
+      "fact_type": "threshold",
+      "statement": "he letters \n“FDC” not less than 150 mm high and words in \nletters not less than 50 mm high or an arrow to \nindicate the location. Such signs shall be subject to \nthe approval of the fir",
+      "value": 50,
+      "unit": "mm",
+      "scope": "SBC-201 Section 912.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 50,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "he letters “FDC” not less than 150 mm high and words in letters not less than 50 mm high or an arrow to indicate the location. Such signs shall be subject to the approval of the fir"
+    },
+    {
+      "id": "fact-gap-913-2-1-15edbc4f",
+      "source_code": "SBC-201",
+      "section_ref": "913.2.1",
+      "fact_type": "threshold",
+      "statement": "nit is located outdoors, Exception 2 \nrecognizes spatial separation of at least 15 m \nin accordance with Section 5.12 of NFPA 20 as \nan acceptable alternative to fire-resistance-\nrated",
+      "value": 15,
+      "unit": "m",
+      "scope": "SBC-201 Section 913.2.1",
+      "conditions": [
+        {
+          "trigger": "at_least",
+          "value": 15,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-913"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "nit is located outdoors, Exception 2 recognizes spatial separation of at least 15 m in accordance with Section 5.12 of NFPA 20 as an acceptable alternative to fire-resistance- rated"
+    },
+    {
+      "id": "fact-gap-914-1-2-f52d4b57",
+      "source_code": "SBC-201",
+      "section_ref": "914.1.2",
+      "fact_type": "exception",
+      "statement": "Exception: Markings shall not be required on shaftway openings that are readily discernible as openings onto a shaftway by the construction or arrangement. ❖ Openings into shaftways from the interior of the bui…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 914.1.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Markings shall not be required on shaftway openings that are readily discernible as openings onto a shaftway by the construction or arrangement. ❖ Openings into shaftways from the interior…"
+    },
+    {
+      "id": "fact-gap-915-1-ed8855a8",
+      "source_code": "SBC-201",
+      "section_ref": "915.1",
+      "fact_type": "exception",
+      "statement": "Exception: 1 Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms without communicating openings between the fuel-burning appliance or fuel- burning fireplace and the…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 915.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1 Carbon monoxide detection shall not be required in dwelling units, sleeping units and classrooms without communicating openings between the fuel-burning appliance or fuel- burning firepl…"
+    },
+    {
+      "id": "fact-gap-916-7-db3498e2",
+      "source_code": "SBC-201",
+      "section_ref": "916.7",
+      "fact_type": "threshold",
+      "statement": "at are not HPM, sample \nanalysis shall be performed at intervals not \nexceeding 5 minutes in accordance with \nSection 6004.2.2.7 of SBC 801. \n3 \nWhere a less frequent or delayed sampling \ni",
+      "value": 5,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 916.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 5,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-916"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "at are not HPM, sample analysis shall be performed at intervals not exceeding 5 minutes in accordance with Section 6004.2.2.7 of SBC 801. 3 Where a less frequent or delayed sampling i"
+    },
+    {
+      "id": "fact-gap-1004-5-1-fbda432f",
+      "source_code": "SBC-801",
+      "section_ref": "1004.5.1",
+      "fact_type": "threshold",
+      "statement": "occupants and \ncompliance with this section is attained. \n\nThe maximum area of 0.65 m2 per occupant \nshould allow for sufficient occupant movement \nin actual fire situations. This is not",
+      "value": 0.65,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1004.5.1",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 0.65,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1004"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "occupants and compliance with this section is attained. The maximum area of 0.65 m2 per occupant should allow for sufficient occupant movement in actual fire situations. This is not"
+    },
+    {
+      "id": "fact-gap-1005-3-1-c9a52d34",
+      "source_code": "SBC-801",
+      "section_ref": "1005.3.1",
+      "fact_type": "threshold",
+      "statement": "a second-floor occupant load of \n350: \n• 350 occupants multiplied by 7.62 mm = 2667 \nmm minimum; \n• 2667 mm divided by two stairways is 1334 mm \nminimum per stairway. \n• Section 1011.2 pr",
+      "value": 2667,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1005.3.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 2667,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1005"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "a second-floor occupant load of 350: • 350 occupants multiplied by 7.62 mm = 2667 mm minimum; • 2667 mm divided by two stairways is 1334 mm minimum per stairway. • Section 1011.2 pr"
+    },
+    {
+      "id": "fact-gap-1006-2-dfdef3c2",
+      "source_code": "SBC-801",
+      "section_ref": "1006.2",
+      "fact_type": "exception",
+      "statement": "Exception: 1. In Group R-2 and R-3 occupancies, one means of egress is permitted within and from individual dwelling units with a maximum occupant load of 20 where the dwelling unit is equipped throughout with…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 1006.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1006"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1. In Group R-2 and R-3 occupancies, one means of egress is permitted within and from individual dwelling units with a maximum occupant load of 20 where the dwelling unit is equipped throu…"
+    },
+    {
+      "id": "fact-gap-1010-1-1-5e7a6d6b",
+      "source_code": "SBC-801",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "minimum clear opening width of 1050 mm.",
+      "value": 1050,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1010.1.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 1050,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1010"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "minimum clear opening width of 1050 mm."
+    },
+    {
+      "id": "fact-gap-1021-4-8947eddc",
+      "source_code": "SBC-801",
+      "section_ref": "1021.4",
+      "fact_type": "threshold",
+      "statement": "tations (see SBC 201 Section \n503.1.2), they must be separated by a \nminimum of 3000 mm if there is a path for exit \ndischarge between them. The purpose of the \nlast sentence is to clarif",
+      "value": 3000,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1021.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 3000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1021"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "tations (see SBC 201 Section 503.1.2), they must be separated by a minimum of 3000 mm if there is a path for exit discharge between them. The purpose of the last sentence is to clarif"
+    },
+    {
+      "id": "fact-gap-906-3-2-dbc643d9",
+      "source_code": "SBC-801",
+      "section_ref": "906.3.2",
+      "fact_type": "threshold",
+      "statement": "volving flammable \nor combustible liquids with depths of less than or \nequal to 6.5 mm shall be selected and placed in \naccordance with Table 906.3(2). \nPortable \nfire \nextinguishers \nfo",
+      "value": 6.5,
+      "unit": "mm",
+      "scope": "SBC-801 Section 906.3.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 6.5,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "volving flammable or combustible liquids with depths of less than or equal to 6.5 mm shall be selected and placed in accordance with Table 906.3(2). Portable fire extinguishers fo"
+    },
+    {
+      "id": "fact-gap-909-5-3-8d8bdd01",
+      "source_code": "SBC-801",
+      "section_ref": "909.5.3",
+      "fact_type": "threshold",
+      "statement": "into the next smoke zone for at least 20 \nminutes.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-801 Section 909.5.3",
+      "conditions": [
+        {
+          "trigger": "at_least",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "into the next smoke zone for at least 20 minutes."
+    },
+    {
+      "id": "fact-gap-910-2-1-6e9bbec8",
+      "source_code": "SBC-801",
+      "section_ref": "910.2.1",
+      "fact_type": "exception",
+      "statement": "Exception: Group S-1 aircraft repair hangars.",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 910.2.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Group S-1 aircraft repair hangars."
+    },
+    {
+      "id": "fact-gap-911-2-fcdcb7e8",
+      "source_code": "SBC-801",
+      "section_ref": "911.2",
+      "fact_type": "threshold",
+      "statement": "ectly to the \nexterior of the building where an unoccupied \nspace not less than 15 m in width is provided \nbetween the exterior walls of the building and \nthe lot line. \nException: Ven",
+      "value": 15,
+      "unit": "m",
+      "scope": "SBC-801 Section 911.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 15,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ectly to the exterior of the building where an unoccupied space not less than 15 m in width is provided between the exterior walls of the building and the lot line. Exception: Ven"
+    },
+    {
+      "id": "fact-gap-912-4-ab784f68",
+      "source_code": "SBC-801",
+      "section_ref": "912.4",
+      "fact_type": "exception",
+      "statement": "Exception: Fences, where provided with an access gate equipped with a sign complying with the legend requirements of Section 912.5 and a means of emergency operation. The gate and the means of emergency operati…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 912.4",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Fences, where provided with an access gate equipped with a sign complying with the legend requirements of Section 912.5 and a means of emergency operation. The gate and the means of emerge…"
+    },
+    {
+      "id": "fact-gap-914-2-2-31332205",
+      "source_code": "SBC-801",
+      "section_ref": "914.2.2",
+      "fact_type": "threshold",
+      "statement": "specific instructions are \nconveyed. Covered and open malls that are \nless than 4650 m2 in area are not required to \nbe provided with an emergency voice alarm \nsystem. If a public address",
+      "value": 4650,
+      "unit": "m2",
+      "scope": "SBC-801 Section 914.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 4650,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "specific instructions are conveyed. Covered and open malls that are less than 4650 m2 in area are not required to be provided with an emergency voice alarm system. If a public address"
+    },
+    {
+      "id": "fact-gap-915-2-b19784bb",
+      "source_code": "SBC-801",
+      "section_ref": "915.2",
+      "fact_type": "exception",
+      "statement": "Exception: Carbon monoxide detection shall be allowed to be installed outside of each separate sleeping area in the immediate vicinity of the sleeping unit where the sleeping unit or its attached bathroom does…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 915.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Carbon monoxide detection shall be allowed to be installed outside of each separate sleeping area in the immediate vicinity of the sleeping unit where the sleeping unit or its attached bat…"
+    },
+    {
+      "id": "fact-gap-504-3-ab3ee7c8",
+      "source_code": "SBC-201",
+      "section_ref": "504.3",
+      "fact_type": "threshold",
+      "statement": "tion per Table 601. However, the \nheights proposed for Type IV-A construction \n(81 m maximum building height) are less than \nthose permitted for Type I-A construction \n(unlimited heigh",
+      "value": 81,
+      "unit": "m",
+      "scope": "SBC-201 Section 504.3",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 81,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-504"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "tion per Table 601. However, the heights proposed for Type IV-A construction (81 m maximum building height) are less than those permitted for Type I-A construction (unlimited heigh"
+    },
+    {
+      "id": "fact-gap-506-1-3-1-da74b080",
+      "source_code": "SBC-201",
+      "section_ref": "506.1.3.1",
+      "fact_type": "threshold",
+      "statement": "the total area does not exceed 6410 m2. \nFor example: the first story could be 2137 m2, \nthe second story 1765 m2, and the top three \nstories could be 836 m2 each for a total of 6410 \nm2",
+      "value": 2137,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.1.3.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2137,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the total area does not exceed 6410 m2. For example: the first story could be 2137 m2, the second story 1765 m2, and the top three stories could be 836 m2 each for a total of 6410 m2"
+    },
+    {
+      "id": "fact-gap-903-2-1-3aee1d3c",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1",
+      "fact_type": "threshold",
+      "statement": "floors. Condition 1 requires that, if any one fire \narea of Group A-1 exceeds 1115 m2, the \nautomatic sprinkler system is to be installed \nthroughout the entire story where a Group A-1",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "floors. Condition 1 requires that, if any one fire area of Group A-1 exceeds 1115 m2, the automatic sprinkler system is to be installed throughout the entire story where a Group A-1"
+    },
+    {
+      "id": "fact-gap-904-13-1-dd17d9f3",
+      "source_code": "SBC-201",
+      "section_ref": "904.13.1",
+      "fact_type": "threshold",
+      "statement": "l be located at or near \na means of egress from the cooking area not less \nthan 3 m and not more than 6 m from the kitchen \nexhaust system. The manual actuation device shall \nbe insta",
+      "value": 3,
+      "unit": "m",
+      "scope": "SBC-201 Section 904.13.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 3,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-904"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "l be located at or near a means of egress from the cooking area not less than 3 m and not more than 6 m from the kitchen exhaust system. The manual actuation device shall be insta"
+    },
+    {
+      "id": "fact-gap-905-3-1-d121fc96",
+      "source_code": "SBC-201",
+      "section_ref": "905.3.1",
+      "fact_type": "threshold",
+      "statement": "vehicle access.  \n3 \nThe floor level of the lowest story is located \nmore than 9 m below the highest level of fire \ndepartment vehicle  access. \nExceptions: \n1 \nClass I standpipes ar",
+      "value": 9,
+      "unit": "m",
+      "scope": "SBC-201 Section 905.3.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 9,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-905"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "vehicle access. 3 The floor level of the lowest story is located more than 9 m below the highest level of fire department vehicle access. Exceptions: 1 Class I standpipes ar"
+    },
+    {
+      "id": "fact-gap-906-3-2-545900db",
+      "source_code": "SBC-201",
+      "section_ref": "906.3.2",
+      "fact_type": "threshold",
+      "statement": "involving flammable \nor combustible liquids with depths less than or \nequal to 6.5 mm shall be selected and placed in \naccordance with Table 906.3(2). \nPortable \nfire \nextinguishers \nfo",
+      "value": 6.5,
+      "unit": "mm",
+      "scope": "SBC-201 Section 906.3.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 6.5,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "involving flammable or combustible liquids with depths less than or equal to 6.5 mm shall be selected and placed in accordance with Table 906.3(2). Portable fire extinguishers fo"
+    },
+    {
+      "id": "fact-gap-907-2-1-e5bd4e37",
+      "source_code": "SBC-201",
+      "section_ref": "907.2.1",
+      "fact_type": "threshold",
+      "statement": "is \nallowed \nto \nbe \nmanually \ndeactivated for a period of time, not to exceed 3 \nminutes, for the sole purpose of allowing a live \nvoice announcement from an approved, constantly \nattended",
+      "value": 3,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 907.2.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 3,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "is allowed to be manually deactivated for a period of time, not to exceed 3 minutes, for the sole purpose of allowing a live voice announcement from an approved, constantly attended"
+    },
+    {
+      "id": "fact-gap-909-5-3-603b7ddc",
+      "source_code": "SBC-201",
+      "section_ref": "909.5.3",
+      "fact_type": "threshold",
+      "statement": "into the next smoke zone for at least 20 \nminutes.",
+      "value": 20,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 909.5.3",
+      "conditions": [
+        {
+          "trigger": "at_least",
+          "value": 20,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "into the next smoke zone for at least 20 minutes."
+    },
+    {
+      "id": "fact-gap-910-2-1-e49aed1c",
+      "source_code": "SBC-201",
+      "section_ref": "910.2.1",
+      "fact_type": "exception",
+      "statement": "Exception: Group S-1 aircraft repair hangars. ❖ Large-area buildings with moderate to heavy fire loads present special challenges to the fire department in disposing of the smoke generated in a fire. In order t…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 910.2.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Group S-1 aircraft repair hangars. ❖ Large-area buildings with moderate to heavy fire loads present special challenges to the fire department in disposing of the smoke generated in a fire.…"
+    },
+    {
+      "id": "fact-gap-911-1-3-678213d3",
+      "source_code": "SBC-201",
+      "section_ref": "911.1.3",
+      "fact_type": "threshold",
+      "statement": "er than 46500 m2 in area, the fire \ncommand center shall have a minimum size of 9 m2 \nwith a minimum dimension of 2.4 m where \napproved by the fire code official. \n❖ \nThis section is i",
+      "value": 9,
+      "unit": "m2",
+      "scope": "SBC-201 Section 911.1.3",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 9,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "er than 46500 m2 in area, the fire command center shall have a minimum size of 9 m2 with a minimum dimension of 2.4 m where approved by the fire code official. ❖ This section is i"
+    },
+    {
+      "id": "fact-gap-912-4-5da48afd",
+      "source_code": "SBC-201",
+      "section_ref": "912.4",
+      "fact_type": "exception",
+      "statement": "Exception: Fences, where provided with an access gate equipped with a sign complying with the legend requirements of this section and a means of emergency operation. The gate and the means of emergency operatio…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 912.4",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Fences, where provided with an access gate equipped with a sign complying with the legend requirements of this section and a means of emergency operation. The gate and the means of emergen…"
+    },
+    {
+      "id": "fact-gap-913-2-1-367d0da9",
+      "source_code": "SBC-201",
+      "section_ref": "913.2.1",
+      "fact_type": "exception",
+      "statement": "Exception: 1 In other than high-rise buildings, separation by 1 hour fire barriers constructed in accordance with Section 707 or 1-hour horizontal assemblies constructed in accordance with Section 711, or both,…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 913.2.1",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-913"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1 In other than high-rise buildings, separation by 1 hour fire barriers constructed in accordance with Section 707 or 1-hour horizontal assemblies constructed in accordance with Section 71…"
+    },
+    {
+      "id": "fact-gap-915-2-b56db12a",
+      "source_code": "SBC-201",
+      "section_ref": "915.2",
+      "fact_type": "exception",
+      "statement": "Exception: Carbon monoxide detection shall be allowed to be installed outside of each separate sleeping area in the immediate vicinity of the sleeping unit where the sleeping unit or its attached bathroom does…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-201 Section 915.2",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Carbon monoxide detection shall be allowed to be installed outside of each separate sleeping area in the immediate vicinity of the sleeping unit where the sleeping unit or its attached bat…"
+    },
+    {
+      "id": "fact-gap-1004-7-e0870e4e",
+      "source_code": "SBC-801",
+      "section_ref": "1004.7",
+      "fact_type": "exception",
+      "statement": "Exception: 1. Outdoor areas used exclusively for service of the building need only have one means of egress. 2. Both outdoor areas associated with Group R- 3 and individual dwelling units of Group R- 2. ❖ This…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 1004.7",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1004"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: 1. Outdoor areas used exclusively for service of the building need only have one means of egress. 2. Both outdoor areas associated with Group R- 3 and individual dwelling units of Group R-…"
+    },
+    {
+      "id": "fact-gap-1005-3-1-c586fbff",
+      "source_code": "SBC-801",
+      "section_ref": "1005.3.1",
+      "fact_type": "threshold",
+      "statement": "ant load of \n350: \n• 350 occupants multiplied by 7.62 mm = 2667 \nmm minimum; \n• 2667 mm divided by two stairways is 1334 mm \nminimum per stairway. \n• Section 1011.2 prescribes that the wi",
+      "value": 2667,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1005.3.1",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 2667,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1005"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ant load of 350: • 350 occupants multiplied by 7.62 mm = 2667 mm minimum; • 2667 mm divided by two stairways is 1334 mm minimum per stairway. • Section 1011.2 prescribes that the wi"
+    },
+    {
+      "id": "fact-gap-1006-2-2-2-ad3970ca",
+      "source_code": "SBC-801",
+      "section_ref": "1006.2.2.2",
+      "fact_type": "threshold",
+      "statement": "1006.2.2.2 \nRefrigeration machinery rooms. \nMachinery rooms larger than 100 m2 shall have not \nless than two exits or exit access doorways. Where \ntwo exit access doorways are re",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1006.2.2.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1006"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1006.2.2.2 Refrigeration machinery rooms. Machinery rooms larger than 100 m2 shall have not less than two exits or exit access doorways. Where two exit access doorways are re"
+    },
+    {
+      "id": "fact-gap-1010-1-1-f2ac636f",
+      "source_code": "SBC-801",
+      "section_ref": "1010.1.1",
+      "fact_type": "threshold",
+      "statement": "less than 2000 mm.",
+      "value": 2000,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1010.1.1",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 2000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1010"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "less than 2000 mm."
+    },
+    {
+      "id": "fact-gap-1021-4-783dd1a6",
+      "source_code": "SBC-801",
+      "section_ref": "1021.4",
+      "fact_type": "threshold",
+      "statement": "of the \nlast sentence is to clarify that an egress \nbalcony \nneeds \na \nminimum \n3000 \nmm \nseparation where a building wraps around on \nitself, such as a U-shaped building. It is not \ninten",
+      "value": 3000,
+      "unit": "mm",
+      "scope": "SBC-801 Section 1021.4",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 3000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1021"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "of the last sentence is to clarify that an egress balcony needs a minimum 3000 mm separation where a building wraps around on itself, such as a U-shaped building. It is not inten"
+    },
+    {
+      "id": "fact-gap-906-3-2-ec4308c1",
+      "source_code": "SBC-801",
+      "section_ref": "906.3.2",
+      "fact_type": "threshold",
+      "statement": "the depth of the liquid that could become \ninvolved in a fire. If the depth is 6.5 mm or less, \nselection is made using Table 906.3(2). Class \nB extinguishers for greater liquid depth,",
+      "value": 6.5,
+      "unit": "mm",
+      "scope": "SBC-801 Section 906.3.2",
+      "conditions": [
+        {
+          "trigger": "or_less",
+          "value": 6.5,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the depth of the liquid that could become involved in a fire. If the depth is 6.5 mm or less, selection is made using Table 906.3(2). Class B extinguishers for greater liquid depth,"
+    },
+    {
+      "id": "fact-gap-909-5-3-7626f0fd",
+      "source_code": "SBC-801",
+      "section_ref": "909.5.3",
+      "fact_type": "threshold",
+      "statement": "trol systems required in Section 909.4.6. It \nshould be noted that a minimum of 4250 mm \nceilings are required to take advantage of this \nexception. This exception would require an \nengin",
+      "value": 4250,
+      "unit": "mm",
+      "scope": "SBC-801 Section 909.5.3",
+      "conditions": [
+        {
+          "trigger": "minimum",
+          "value": 4250,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-909"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "trol systems required in Section 909.4.6. It should be noted that a minimum of 4250 mm ceilings are required to take advantage of this exception. This exception would require an engin"
+    },
+    {
+      "id": "fact-gap-910-3-2-4c728cf4",
+      "source_code": "SBC-801",
+      "section_ref": "910.3.2",
+      "fact_type": "threshold",
+      "statement": "910.3.2 Smoke and heat vent locations. Smoke \nand heat vents shall be located 6 m or more from \nadjacent lot lines and fire walls and 3000 mm or \nmore from fire barriers. Vents shal",
+      "value": 6,
+      "unit": "m",
+      "scope": "SBC-801 Section 910.3.2",
+      "conditions": [
+        {
+          "trigger": "or_more",
+          "value": 6,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-910"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "910.3.2 Smoke and heat vent locations. Smoke and heat vents shall be located 6 m or more from adjacent lot lines and fire walls and 3000 mm or more from fire barriers. Vents shal"
+    },
+    {
+      "id": "fact-gap-911-2-2146b87c",
+      "source_code": "SBC-801",
+      "section_ref": "911.2",
+      "fact_type": "threshold",
+      "statement": "gration shall be \nso located that the discharge opening shall be \nnot less than 3000 mm vertically from \nwindow openings and exits in the building \nand 6 m horizontally from exits in the",
+      "value": 3000,
+      "unit": "mm",
+      "scope": "SBC-801 Section 911.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 3000,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-911"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "gration shall be so located that the discharge opening shall be not less than 3000 mm vertically from window openings and exits in the building and 6 m horizontally from exits in the"
+    },
+    {
+      "id": "fact-gap-912-4-2-48d59fe2",
+      "source_code": "SBC-801",
+      "section_ref": "912.4.2",
+      "fact_type": "threshold",
+      "statement": "912.4.2  Clear space around connections. A \nworking space of not less than 900 mm in width, \n900 mm in depth and 1950 mm in height shall be \nprovided and maintained in front of and",
+      "value": 900,
+      "unit": "mm",
+      "scope": "SBC-801 Section 912.4.2",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 900,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-912"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "912.4.2 Clear space around connections. A working space of not less than 900 mm in width, 900 mm in depth and 1950 mm in height shall be provided and maintained in front of and"
+    },
+    {
+      "id": "fact-gap-914-3-1-d78f6820",
+      "source_code": "SBC-801",
+      "section_ref": "914.3.1",
+      "fact_type": "threshold",
+      "statement": "and \nsystem design. Each sprinkler system zone in \nbuildings that are more than 128 m in height shall \nbe supplied by not fewer than two risers. Each riser \nshall supply sprinklers on a",
+      "value": 128,
+      "unit": "m",
+      "scope": "SBC-801 Section 914.3.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 128,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-914"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "and system design. Each sprinkler system zone in buildings that are more than 128 m in height shall be supplied by not fewer than two risers. Each riser shall supply sprinklers on a"
+    },
+    {
+      "id": "fact-gap-915-2-3-bb4198f8",
+      "source_code": "SBC-801",
+      "section_ref": "915.2.3",
+      "fact_type": "exception",
+      "statement": "Exception: Carbon monoxide alarm signals shall not be required to be automatically transmitted to an on-site location that is staffed by school personnel in Group E occupancies with an occupant load of 30 or le…",
+      "value": null,
+      "unit": "",
+      "scope": "SBC-801 Section 915.2.3",
+      "conditions": [],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-915"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exception: Carbon monoxide alarm signals shall not be required to be automatically transmitted to an on-site location that is staffed by school personnel in Group E occupancies with an occupant load…"
+    },
+    {
+      "id": "fact-gap-504-3-5617bb96",
+      "source_code": "SBC-201",
+      "section_ref": "504.3",
+      "fact_type": "threshold",
+      "statement": "ensure the \nreliability of the fire protection systems. The \nmaximum height of 81 m is well suited to a \nsingle standpipe pressure zone of 2050 KPa \nmaximum which can be achieved by r",
+      "value": 81,
+      "unit": "m",
+      "scope": "SBC-201 Section 504.3",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 81,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-504"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ensure the reliability of the fire protection systems. The maximum height of 81 m is well suited to a single standpipe pressure zone of 2050 KPa maximum which can be achieved by r"
+    },
+    {
+      "id": "fact-gap-506-1-3-1-547ecde0",
+      "source_code": "SBC-201",
+      "section_ref": "506.1.3.1",
+      "fact_type": "threshold",
+      "statement": "Maximum area of each story is 1486 m2.",
+      "value": 1486,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.1.3.1",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 1486,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Maximum area of each story is 1486 m2."
+    },
+    {
+      "id": "fact-gap-903-2-1-12d162d9",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1",
+      "fact_type": "threshold",
+      "statement": "ivided into more than one fire \narea. However, if all fire areas are less than \n1115 m2 (and less than the other thresholds), \nthen sprinklers would \nnot be required. \nCompartmentalizatio",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "ivided into more than one fire area. However, if all fire areas are less than 1115 m2 (and less than the other thresholds), then sprinklers would not be required. Compartmentalizatio"
+    },
+    {
+      "id": "fact-gap-904-13-1-7e2aac03",
+      "source_code": "SBC-201",
+      "section_ref": "904.13.1",
+      "fact_type": "threshold",
+      "statement": "r \na means of egress from the cooking area not less \nthan 3 m and not more than 6 m from the kitchen \nexhaust system. The manual actuation device shall \nbe installed not more than 120",
+      "value": 6,
+      "unit": "m",
+      "scope": "SBC-201 Section 904.13.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 6,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-904"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "r a means of egress from the cooking area not less than 3 m and not more than 6 m from the kitchen exhaust system. The manual actuation device shall be installed not more than 120"
+    },
+    {
+      "id": "fact-gap-905-3-1-e7564e49",
+      "source_code": "SBC-201",
+      "section_ref": "905.3.1",
+      "fact_type": "threshold",
+      "statement": "artment  vehicle, standard fire-fighting \noperations and standard hose sizes, a 9 m \nvertical distance is generally considered the \nmaximum height to which a typical fire \ndepartment",
+      "value": 9,
+      "unit": "m",
+      "scope": "SBC-201 Section 905.3.1",
+      "conditions": [
+        {
+          "trigger": "maximum",
+          "value": 9,
+          "unit": "m"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-905"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "artment vehicle, standard fire-fighting operations and standard hose sizes, a 9 m vertical distance is generally considered the maximum height to which a typical fire department"
+    },
+    {
+      "id": "fact-gap-906-3-2-8026271c",
+      "source_code": "SBC-201",
+      "section_ref": "906.3.2",
+      "fact_type": "threshold",
+      "statement": "the depth of the liquid that could become \ninvolved in a fire. If the depth is 6.5 mm or less, \nselection is made using Table 906.3(2). Class \nB extinguishers for greater liquid depth,",
+      "value": 6.5,
+      "unit": "mm",
+      "scope": "SBC-201 Section 906.3.2",
+      "conditions": [
+        {
+          "trigger": "or_less",
+          "value": 6.5,
+          "unit": "mm"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-906"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the depth of the liquid that could become involved in a fire. If the depth is 6.5 mm or less, selection is made using Table 906.3(2). Class B extinguishers for greater liquid depth,"
+    },
+    {
+      "id": "fact-gap-907-2-1-339e03f2",
+      "source_code": "SBC-201",
+      "section_ref": "907.2.1",
+      "fact_type": "threshold",
+      "statement": "instructions do not exceed 3 minutes.",
+      "value": 3,
+      "unit": "minutes",
+      "scope": "SBC-201 Section 907.2.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 3,
+          "unit": "minutes"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "instructions do not exceed 3 minutes."
+    }
+  ]
+}

@@ -1,0 +1,2616 @@
+{
+  "schema_version": "1.0",
+  "fact_count": 90,
+  "facts": [
+    {
+      "id": "fact-group-m-fire-area-1115",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when a Group M fire area exceeds 1115 m2.",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "Group M, single fire area",
+      "conditions": [
+        {
+          "trigger": "fire_area_exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "source_quote": "A Group M fire area exceeds 1115 m 2 .",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "903.2.7"
+    },
+    {
+      "id": "fact-group-m-stories-above-grade-3",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when a Group M fire area is located more than three stories above grade plane.",
+      "value": 3,
+      "unit": "stories",
+      "scope": "Group M, fire area above grade plane",
+      "conditions": [
+        {
+          "trigger": "stories_above_grade_plane_more_than",
+          "value": 3,
+          "unit": "stories"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "source_quote": "A Group M fire area is located more than three stories above grade plane.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "903.2.7"
+    },
+    {
+      "id": "fact-group-m-combined-area-2230",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when the combined area of all Group M fire areas on all floors, including any mezzanines, exceeds 2230 m2.",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "Group M, combined area on all floors including mezzanines",
+      "conditions": [
+        {
+          "trigger": "combined_fire_area_all_floors_including_mezzanines_exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "source_quote": "The combined area of all Group M fire areas on all floors, including any mezzanines, exceeds 2230 m 2 .",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "903.2.7"
+    },
+    {
+      "id": "fact-group-m-upholstered-furniture-465",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required throughout a Group M fire area where the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m2.",
+      "value": 465,
+      "unit": "m2",
+      "scope": "Group M fire area, upholstered furniture or mattresses display and sale",
+      "conditions": [
+        {
+          "trigger": "display_and_sale_area_for_upholstered_furniture_or_mattresses_exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.2.7.2"
+      ],
+      "source_quote": "An automatic sprinkler system shall be provided throughout a Group M fire area where the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m 2 .",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "903.2.7.2"
+    },
+    {
+      "id": "fact-group-m-occupant-load-500",
+      "fact_type": "threshold",
+      "statement": "A manual fire alarm system is required when the combined Group M occupant load of all floors is 500 or more persons.",
+      "value": 500,
+      "unit": "persons",
+      "scope": "Group M, combined occupant load all floors",
+      "conditions": [
+        {
+          "trigger": "combined_occupant_load_all_floors_at_least",
+          "value": 500,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-907.2.7"
+      ],
+      "source_quote": "The combined Group M occupant load of all floors is 500 or more persons.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "907.2.7"
+    },
+    {
+      "id": "fact-group-m-occupant-load-100-discharge",
+      "fact_type": "threshold",
+      "statement": "A manual fire alarm system is required when the Group M occupant load is more than 100 persons above or below the lowest level of exit discharge.",
+      "value": 100,
+      "unit": "persons",
+      "scope": "Group M, occupant load above or below the lowest level of exit discharge",
+      "conditions": [
+        {
+          "trigger": "occupant_load_above_or_below_lowest_exit_discharge_more_than",
+          "value": 100,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-907.2.7"
+      ],
+      "source_quote": "The Group M occupant load is more than 100 persons above or below the lowest level of exit discharge .",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "907.2.7"
+    },
+    {
+      "id": "fact-sbc-201-911.1.3-46500-m2",
+      "source_code": "SBC-201",
+      "section_ref": "911.1.3",
+      "fact_type": "threshold",
+      "statement": "Group F-1 and S-1 occupancies with a building footprint greater than 46500 m2 in area, the fire",
+      "value": 46500,
+      "unit": "m2",
+      "scope": "SBC-201 Section 911.1.3",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 46500,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-911.1.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Group F-1 and S-1 occupancies with a building footprint greater than 46500 m2 in area, the fire"
+    },
+    {
+      "id": "fact-sbc-201-506.2-6410-m2",
+      "source_code": "SBC-201",
+      "section_ref": "506.2",
+      "fact_type": "threshold",
+      "statement": "the code. The area of each story can vary as long as the total area does not exceed 6410 m2",
+      "value": 6410,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.2",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 6410,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the code. The area of each story can vary as long as the total area does not exceed 6410 m2."
+    },
+    {
+      "id": "fact-sbc-801-914.2.3-4650-m2",
+      "source_code": "SBC-801",
+      "section_ref": "914.2.3",
+      "fact_type": "threshold",
+      "statement": "914.2.3 Emergency voice/alarm communication system. Where the total floor area exceeds 4650 m2",
+      "value": 4650,
+      "unit": "m2",
+      "scope": "SBC-801 Section 914.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 4650,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-914.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "914.2.3 Emergency voice/alarm communication system. Where the total floor area exceeds 4650 m2"
+    },
+    {
+      "id": "fact-sbc-201-910.2.1-4650-m2",
+      "source_code": "SBC-201",
+      "section_ref": "910.2.1",
+      "fact_type": "threshold",
+      "statement": "buildings and portions thereof used as a Group F-1 or S-1 occupancy having more than 4650 m2 of",
+      "value": 4650,
+      "unit": "m2",
+      "scope": "SBC-201 Section 910.2.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 4650,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-910.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "buildings and portions thereof used as a Group F-1 or S-1 occupancy having more than 4650 m2 of"
+    },
+    {
+      "id": "fact-sbc-801-910.2.1-4645-m2",
+      "source_code": "SBC-801",
+      "section_ref": "910.2.1",
+      "fact_type": "threshold",
+      "statement": "buildings and portions thereof used as a Group F-1 or S-1 occupancy having more than 4645 m2 of",
+      "value": 4645,
+      "unit": "m2",
+      "scope": "SBC-801 Section 910.2.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 4645,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-910.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "buildings and portions thereof used as a Group F-1 or S-1 occupancy having more than 4645 m2 of"
+    },
+    {
+      "id": "fact-sbc-201-506.1.3-4645-m2",
+      "source_code": "SBC-201",
+      "section_ref": "506.1.3",
+      "fact_type": "threshold",
+      "statement": "area of all stories below grade plane must not exceed 4645 m2. If the aggregate area exceeds",
+      "value": 4645,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.1.3",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 4645,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506.1.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "area of all stories below grade plane must not exceed 4645 m2. If the aggregate area exceeds"
+    },
+    {
+      "id": "fact-sbc-201-907.2.20-4645-m2",
+      "source_code": "SBC-201",
+      "section_ref": "907.2.20",
+      "fact_type": "threshold",
+      "statement": "fire department , is required to aid in evacuation of covered mall buildings exceeding 4645 m2",
+      "value": 4645,
+      "unit": "m2",
+      "scope": "SBC-201 Section 907.2.20",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 4645,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907.2.20"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "fire department , is required to aid in evacuation of covered mall buildings exceeding 4645 m2"
+    },
+    {
+      "id": "fact-sbc-201-903.2.10-4460-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.10",
+      "fact_type": "threshold",
+      "statement": "garage in accordance with Section 406.5 exceeds 4460 m2",
+      "value": 4460,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.10",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 4460,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.10"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "garage in accordance with Section 406.5 exceeds 4460 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "on all floors, including any mezzanines, exceeds 2230 m2",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "on all floors, including any mezzanines, exceeds 2230 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "excess of 1115 m2; if the total of all fire areas is in excess of 2230 m2; or if the fire area is",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "in_excess_of",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "excess of 1115 m2; if the total of all fire areas is in excess of 2230 m2; or if the fire area is"
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "Because the aggregate area of all fire areas exceeds 2230 m2, additional compartmentation",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Because the aggregate area of all fire areas exceeds 2230 m2, additional compartmentation"
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "would reduce the aggregate area of each building to less than 2230 m2 and each fire area",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "would reduce the aggregate area of each building to less than 2230 m2 and each fire area"
+    },
+    {
+      "id": "fact-sbc-201-903.2.7-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.7",
+      "fact_type": "threshold",
+      "statement": "on all floors, including any mezzanines, exceeds 2230 m2",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "on all floors, including any mezzanines, exceeds 2230 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "on all floors, including any mezzanines, exceeds 2230 m2",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "on all floors, including any mezzanines, exceeds 2230 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-2230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "stories above grade plane; combined, on all floors including mezzanines, exceeds 2230 m2;",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "stories above grade plane; combined, on all floors including mezzanines, exceeds 2230 m2;"
+    },
+    {
+      "id": "fact-sbc-201-907.6.3-2100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "907.6.3",
+      "fact_type": "threshold",
+      "statement": "Fire alarm systems in single-story buildings less than 2100 m2 in area",
+      "value": 2100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 907.6.3",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 2100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907.6.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Fire alarm systems in single-story buildings less than 2100 m2 in area."
+    },
+    {
+      "id": "fact-sbc-201-907.6.4-2100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "907.6.4",
+      "fact_type": "threshold",
+      "statement": "Each floor shall be zoned separately, and a zone shall not exceed 2100 m2",
+      "value": 2100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 907.6.4",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 2100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907.6.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Each floor shall be zoned separately, and a zone shall not exceed 2100 m2."
+    },
+    {
+      "id": "fact-sbc-201-907.6.4-2100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "907.6.4",
+      "fact_type": "threshold",
+      "statement": "constitute one zone of the system. If the floor area exceeds 2100 m2, additional zones per",
+      "value": 2100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 907.6.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 2100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907.6.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "constitute one zone of the system. If the floor area exceeds 2100 m2, additional zones per"
+    },
+    {
+      "id": "fact-sbc-201-506.2-1950-m2",
+      "source_code": "SBC-201",
+      "section_ref": "506.2",
+      "fact_type": "threshold",
+      "statement": "for Type VB construction is 3344 m2, which is greater than the proposed 1950 m2",
+      "value": 1950,
+      "unit": "m2",
+      "scope": "SBC-201 Section 506.2",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 1950,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-506.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "for Type VB construction is 3344 m2, which is greater than the proposed 1950 m2."
+    },
+    {
+      "id": "fact-sbc-201-508.3.3-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "508.3.3",
+      "fact_type": "threshold",
+      "statement": "Step 3: The fire area containing the occupancy classified in Group S-1 is more than 1115 m2;",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 508.3.3",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-508.3.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Step 3: The fire area containing the occupancy classified in Group S-1 is more than 1115 m2;"
+    },
+    {
+      "id": "fact-sbc-201-903.2.7-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.7",
+      "fact_type": "threshold",
+      "statement": "903.2.7 a fire area containing a Group M occupancy and exceeding 1115 m2 must be",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.7",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "903.2.7 a fire area containing a Group M occupancy and exceeding 1115 m2 must be"
+    },
+    {
+      "id": "fact-sbc-201-508.4.4.1-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "508.4.4.1",
+      "fact_type": "threshold",
+      "statement": "The story containing the Group A-3 occupancy is also a fire area that is less than 1115 m2, but",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 508.4.4.1",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-508.4.4.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The story containing the Group A-3 occupancy is also a fire area that is less than 1115 m2, but"
+    },
+    {
+      "id": "fact-sbc-201-508.3-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "508.3",
+      "fact_type": "threshold",
+      "statement": "throughout all buildings containing a Group S- 1 fire area greater than 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 508.3",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-508.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "throughout all buildings containing a Group S- 1 fire area greater than 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.1-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.1",
+      "fact_type": "threshold",
+      "statement": "1 The fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 The fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.1-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.1",
+      "fact_type": "threshold",
+      "statement": "floors. Condition 1 requires that, if any one fire area of Group A-1 exceeds 1115 m2, the",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "floors. Condition 1 requires that, if any one fire area of Group A-1 exceeds 1115 m2, the"
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.3-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.3",
+      "fact_type": "threshold",
+      "statement": "1 The fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 The fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.4-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.4",
+      "fact_type": "threshold",
+      "statement": "1 The fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 The fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "1 A Group F-1 fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 A Group F-1 fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4",
+      "fact_type": "threshold",
+      "statement": "building to less than 2230 m2 and each fire area to less than 1115 m2, which would offset the",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "building to less than 2230 m2 and each fire area to less than 1115 m2, which would offset the"
+    },
+    {
+      "id": "fact-sbc-201-903.2.7-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.7",
+      "fact_type": "threshold",
+      "statement": "1 A Group M fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 A Group M fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "1 A Group S-1 fire area exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 A Group S-1 fire area exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "Group S-1 occupancy fire area where the fire area exceeds 1115 m2; is more than three",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Group S-1 occupancy fire area where the fire area exceeds 1115 m2; is more than three"
+    },
+    {
+      "id": "fact-sbc-201-903.2.9.1-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9.1",
+      "fact_type": "threshold",
+      "statement": "grade plane, with a fire area containing a repair garage exceeding 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9.1",
+      "conditions": [
+        {
+          "trigger": "exceed",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "grade plane, with a fire area containing a repair garage exceeding 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.10-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.10",
+      "fact_type": "threshold",
+      "statement": "garage in accordance with Section 406.6 exceeds 1115 m2",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.10",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.10"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "garage in accordance with Section 406.6 exceeds 1115 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.10-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.10",
+      "fact_type": "threshold",
+      "statement": "parking garage. If the enclosed parking garage has a fire area greater than 1115 m2 or is",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.10",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.10"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "parking garage. If the enclosed parking garage has a fire area greater than 1115 m2 or is"
+    },
+    {
+      "id": "fact-sbc-201-907.2.20-1115-m2",
+      "source_code": "SBC-201",
+      "section_ref": "907.2.20",
+      "fact_type": "threshold",
+      "statement": "boxes. Buildings with a fire area containing a Group M occupancy in excess of 1115 m2 must",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "SBC-201 Section 907.2.20",
+      "conditions": [
+        {
+          "trigger": "in_excess_of",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-907.2.20"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "boxes. Buildings with a fire area containing a Group M occupancy in excess of 1115 m2 must"
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.2-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.2",
+      "fact_type": "threshold",
+      "statement": "1 The fire area exceeds 465 m2",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1 The fire area exceeds 465 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.7.2-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.7.2",
+      "fact_type": "threshold",
+      "statement": "the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m2",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.7.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.7.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.7.2-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.7.2",
+      "fact_type": "threshold",
+      "statement": "upholstered furniture or mattresses in a fire area that exceeds 465 m2 are required to be",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.7.2",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.7.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "upholstered furniture or mattresses in a fire area that exceeds 465 m2 are required to be"
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "commercial motor vehicles where the fire area exceeds 465 m2",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "commercial motor vehicles where the fire area exceeds 465 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9",
+      "fact_type": "threshold",
+      "statement": "or is used for the storage of commercial motor vehicles and exceeds 465 m2. See the",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "or is used for the storage of commercial motor vehicles and exceeds 465 m2. See the"
+    },
+    {
+      "id": "fact-sbc-201-903.2.9.1-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9.1",
+      "fact_type": "threshold",
+      "statement": "commercial motor vehicles where the fire area exceeds 465 m2",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "commercial motor vehicles where the fire area exceeds 465 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.9.1-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9.1",
+      "fact_type": "threshold",
+      "statement": "intended for the repair of commercial motor vehicles that exceeds 465 m2 would require",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "intended for the repair of commercial motor vehicles that exceeds 465 m2 would require"
+    },
+    {
+      "id": "fact-sbc-201-903.2.10.1-465-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.10.1",
+      "fact_type": "threshold",
+      "statement": "commercial motor vehicles where the fire area exceeds 465 m2",
+      "value": 465,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.10.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.10.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "commercial motor vehicles where the fire area exceeds 465 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.7-300-persons",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.7",
+      "fact_type": "threshold",
+      "statement": "the fire areas that share these components exceeds 300 persons",
+      "value": 300,
+      "unit": "persons",
+      "scope": "SBC-201 Section 903.2.1.7",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 300,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "the fire areas that share these components exceeds 300 persons."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.7-300-persons",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.7",
+      "fact_type": "threshold",
+      "statement": "systems be added when the convergence of more than 300 persons share an exit. This is",
+      "value": 300,
+      "unit": "persons",
+      "scope": "SBC-201 Section 903.2.1.7",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 300,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "systems be added when the convergence of more than 300 persons share an exit. This is"
+    },
+    {
+      "id": "fact-sbc-201-508.5.1-280-m2",
+      "source_code": "SBC-201",
+      "section_ref": "508.5.1",
+      "fact_type": "threshold",
+      "statement": "The live/work unit is permitted to be not greater than 280 m2 in area",
+      "value": 280,
+      "unit": "m2",
+      "scope": "SBC-201 Section 508.5.1",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 280,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-508.5.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The live/work unit is permitted to be not greater than 280 m2 in area."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4.1-230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4.1",
+      "fact_type": "threshold",
+      "statement": "area when it contains a wood-working operation that exceeds 230 m2 in area",
+      "value": 230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "area when it contains a wood-working operation that exceeds 230 m2 in area."
+    },
+    {
+      "id": "fact-sbc-201-903.2.4.3-230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4.3",
+      "fact_type": "threshold",
+      "statement": "be provided throughout a Group F-1 fire area that exceeds 230 m2 used for the manufacture of",
+      "value": 230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "be provided throughout a Group F-1 fire area that exceeds 230 m2 used for the manufacture of"
+    },
+    {
+      "id": "fact-sbc-201-903.2.4.3-230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.4.3",
+      "fact_type": "threshold",
+      "statement": "upholstered furniture or mattresses in a fire area that exceeds 230 m2 are required to be",
+      "value": 230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.4.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.4.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "upholstered furniture or mattresses in a fire area that exceeds 230 m2 are required to be"
+    },
+    {
+      "id": "fact-sbc-201-903.2.9.4-230-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.9.4",
+      "fact_type": "threshold",
+      "statement": "where the area used for the storage of upholstered furniture or mattresses exceeds 230 m2",
+      "value": 230,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.9.4",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.9.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "where the area used for the storage of upholstered furniture or mattresses exceeds 230 m2."
+    },
+    {
+      "id": "fact-sbc-201-503.1.1-140-m2",
+      "source_code": "SBC-201",
+      "section_ref": "503.1.1",
+      "fact_type": "threshold",
+      "statement": "may be provided in the room such that the area of the mezzanine is not more than 140 m2 [465",
+      "value": 140,
+      "unit": "m2",
+      "scope": "SBC-201 Section 503.1.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 140,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-503.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "may be provided in the room such that the area of the mezzanine is not more than 140 m2 [465"
+    },
+    {
+      "id": "fact-sbc-201-903.2.11.1-140-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.11.1",
+      "fact_type": "threshold",
+      "statement": "throughout all stories, including basements, of all buildings where the floor area exceeds 140 m2 and",
+      "value": 140,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.11.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 140,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.11.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "throughout all stories, including basements, of all buildings where the floor area exceeds 140 m2 and"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-1030.6.2.3-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-801-903.3.1.1-100-m2",
+      "source_code": "SBC-801",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-801 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-801-907.2.1-100-persons",
+      "source_code": "SBC-801",
+      "section_ref": "907.2.1",
+      "fact_type": "threshold",
+      "statement": "embly occupancy is 300 or more, or where the Group A occupant load is more than 100 persons above or below the lowest level of exit discharge",
+      "value": 100,
+      "unit": "persons",
+      "scope": "SBC-801 Section 907.2.1",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 100,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-801-section-907.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "embly occupancy is 300 or more, or where the Group A occupant load is more than 100 persons above or below the lowest level of exit discharge."
+    },
+    {
+      "id": "fact-sbc-201-903.3.1.1-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of smoke-protected facilities where the area exceeds 100 m2. The primary"
+    },
+    {
+      "id": "fact-sbc-201-903.3.1.1-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.3.1.1",
+      "fact_type": "threshold",
+      "statement": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.3.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.3.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "storage areas of outdoor facilities where the area exceeds 100 m2. The primary reason for"
+    },
+    {
+      "id": "fact-sbc-201-507.8.1.1.2-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "507.8.1.1.2",
+      "fact_type": "threshold",
+      "statement": "for flammable or combustible liquid use in closed systems having a floor area of not more than 100 m2",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 507.8.1.1.2",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-507.8.1.1.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "for flammable or combustible liquid use in closed systems having a floor area of not more than 100 m2"
+    },
+    {
+      "id": "fact-sbc-201-507.8.1.1.2-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "507.8.1.1.2",
+      "fact_type": "threshold",
+      "statement": "or combustible liquid use in closed systems that are not more than 100 m2 are permitted to",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 507.8.1.1.2",
+      "conditions": [
+        {
+          "trigger": "more_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-507.8.1.1.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "or combustible liquid use in closed systems that are not more than 100 m2 are permitted to"
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.5-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.5",
+      "fact_type": "threshold",
+      "statement": "sprinkler system shall be provided for all enclosed Group A-5 accessory use areas in excess of 100 m2",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.5",
+      "conditions": [
+        {
+          "trigger": "in_excess_of",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.5"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "sprinkler system shall be provided for all enclosed Group A-5 accessory use areas in excess of 100 m2."
+    },
+    {
+      "id": "fact-sbc-201-903.2.1.5-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "903.2.1.5",
+      "fact_type": "threshold",
+      "statement": "require sprinklers if they are in excess of 100 m2. The",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 903.2.1.5",
+      "conditions": [
+        {
+          "trigger": "in_excess_of",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-903.2.1.5"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "require sprinklers if they are in excess of 100 m2. The"
+    },
+    {
+      "id": "fact-sbc-201-1030.6.2.3-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "1030.6.2.3",
+      "fact_type": "threshold",
+      "statement": "1030.6.2.3 , which exempts press boxes and storage facilities less than 100 m2 in area from",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1030.6.2.3",
+      "conditions": [
+        {
+          "trigger": "less_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1030.6.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1030.6.2.3 , which exempts press boxes and storage facilities less than 100 m2 in area from"
+    },
+    {
+      "id": "fact-sbc-201-1030.1.1.1-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "1030.1.1.1",
+      "fact_type": "threshold",
+      "statement": "2 The enclosed area exceeds 100 m2",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1030.1.1.1",
+      "conditions": [
+        {
+          "trigger": "exceeds",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1030.1.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "2 The enclosed area exceeds 100 m2."
+    },
+    {
+      "id": "fact-sbc-201-1030.1.1.1-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "1030.1.1.1",
+      "fact_type": "threshold",
+      "statement": "protection. Enclosed areas that are greater than 100 m2",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 1030.1.1.1",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-1030.1.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "protection. Enclosed areas that are greater than 100 m2"
+    },
+    {
+      "id": "fact-sbc-201-905.3.4-100-m2",
+      "source_code": "SBC-201",
+      "section_ref": "905.3.4",
+      "fact_type": "threshold",
+      "statement": "not exceed 61 m. 905.3.4  Stages. Stages greater than in area 100 m2",
+      "value": 100,
+      "unit": "m2",
+      "scope": "SBC-201 Section 905.3.4",
+      "conditions": [
+        {
+          "trigger": "greater_than",
+          "value": 100,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": [
+        "sbc-201-section-905.3.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_quote": "not exceed 61 m. 905.3.4  Stages. Stages greater than in area 100 m2"
+    }
+  ]
+}

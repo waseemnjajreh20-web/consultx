@@ -1,0 +1,215 @@
+﻿{
+    "parallelization":  [
+                            "Phases 1 and 2 can be deployed simultaneously if chunk JSON + sidecar JSON ready.",
+                            "Phase 4 can be deployed immediately after Phase 2 (no dependency).",
+                            "Phase 3 is optional and can be deferred."
+                        ],
+    "rollback_plan":  {
+                          "phase_2":  "Revert two commits (helper + call site). Delete bucket files: ssss/brain_full/*.json. Prompts revert to no sidecar context.",
+                          "phase_4":  "Revert analysis branch conditional (4-6 line revert). Analytical workflows no longer injected.",
+                          "phase_3":  "Revert optional section_number extraction (1-2 line revert). Ledger defaults to confidence: medium. No bucket rollback.",
+                          "phase_1":  "Delete bucket files: ssss/SBC*_canonical_chunks.json. Queries revert to existing fallback path (structured tables only). No code revert needed.",
+                          "complete":  "Delete bucket files: ssss/SBC*_canonical_chunks.json + ssss/brain_full/*. Revert four commits in order (Phase 4 =\u003e Phase 3 =\u003e Phase 2 =\u003e Phase 1). Verify: git log --oneline shows no \u0027brain\u0027 commits. Re-deploy edge function."
+                      },
+    "main_behavior":  "PRIMARY mode: ZERO changes. Zero corpus load, zero sidecar injection. No regression risk.",
+    "audited_at":  "2026-05-01T00:00:00Z",
+    "schema_version":  "1.0",
+    "advisory_behavior":  "STANDARD mode: Phase 1 canonical chunks retrieved by existing keyword path (no code change). Phase 2 relations/facts injected as non-citable reasoning aids (26-30 LOC). Buffered streaming path unchanged. Citation verifier auto-downgrades sidecar citations to conf:low; frontend shows faded.",
+    "total_loc_estimate":  37,
+    "references":  {
+                       "evidence_ledger":  "Step 4, migration 20260501000001 (903.2.7 / 907.2.7 seed)",
+                       "live_fire_safety_chat":  "supabase/functions/fire-safety-chat/index.ts (fetchSBCContext: 1846, buildEvidenceLedger: 1092, verifyAdvisoryCitations: 1217, validateAnalyticalReport: 3663)",
+                       "frontend_headers":  "ChatInterface.tsx (line 663), SourcePanel.tsx",
+                       "schema":  "sourceMetadata.ts, sbc_code_tables migration (20260410000002)",
+                       "v1_runtime_design":  "reports/brain_v1_runtime_integration_design.{md,json}",
+                       "v1_checkpoint":  "reports/consultx_brain_v1_phase12_checkpoint.md"
+                   },
+    "risks":  [
+                  {
+                      "title":  "Chunk JSON format incompatibility with extractAndScoreChunks",
+                      "mitigation":  "Pre-upload validation: test 5 sample chunks against parser; confirm score \u003e 0 for Group M keywords.",
+                      "severity":  "MEDIUM"
+                  },
+                  {
+                      "title":  "section_number mismatch with verbatim heading",
+                      "mitigation":  "Automated extraction with confidence:low; manual review before upload. Evidence Ledger downgrades if no match.",
+                      "severity":  "HIGH"
+                  },
+                  {
+                      "title":  "Sidecar citation leakage (model tries to cite relations as law)",
+                      "mitigation":  "Explicit [NOT CITABLE - REASONING AID ONLY] header; verifyAdvisoryCitations auto-downgrades to conf:low; frontend fades unsupported sources.",
+                      "severity":  "MEDIUM"
+                  },
+                  {
+                      "title":  "Domain trigger false positives (sidecar loads on irrelevant queries)",
+                      "mitigation":  "Narrow trigger regex to specific phrases (occupancy classification, sprinkler, alarm, egress). Add secondary occupancy-group check.",
+                      "severity":  "LOW"
+                  },
+                  {
+                      "title":  "Bucket naming inconsistency (Phase 2 files not found)",
+                      "mitigation":  "Document naming convention in ticket; test discovery before production upload.",
+                      "severity":  "LOW"
+                  },
+                  {
+                      "title":  "Primary mode performance regression from sidecar check",
+                      "mitigation":  "Gate on mode === \u0027primary\u0027 at line 1 of loadBrainFullSidecars; returns empty immediately. Zero overhead.",
+                      "severity":  "LOW"
+                  },
+                  {
+                      "title":  "Buffered Advisory streaming corruption from prompt injection",
+                      "mitigation":  "Sidecars prepended BEFORE streaming starts (line 5200, before mode === \u0027standard\u0027 branch). Verifier sees only the model\u0027s streamed output; sidecars are not in ledger.",
+                      "severity":  "LOW"
+                  }
+              ],
+    "auditor":  "SUB-AGENT H — Live Integration Design Auditor",
+    "phases":  [
+                   {
+                       "production_change":  "bucket upload only, zero code change, zero DB write",
+                       "db_changes":  [
+
+                                      ],
+                       "files_uploaded":  [
+                                              "ssss/SBC201_Ch3_GroupM_canonical_chunks.json",
+                                              "ssss/SBC801_Ch9_GroupM_canonical_chunks.json",
+                                              "ssss/SBC201_Ch10_Egress_canonical_chunks.json",
+                                              "ssss/[additional occupancy chapters as corpus prep completes]"
+                                          ],
+                       "risk_level":  "LOW",
+                       "rollback":  "delete bucket files",
+                       "phase":  1,
+                       "loc_estimate":  0,
+                       "code_changes":  [
+
+                                        ],
+                       "title":  "Bucket-only canonical chunks",
+                       "expected_advisory_change":  "Mercantile / Group M questions land canonical 903.2.7 / 907.2.7 chunks; expected-reference fallback eliminated"
+                   },
+                   {
+                       "expected_analytical_change":  "No change in Phase 2; Phase 4 will extend to analytical workflows",
+                       "production_change":  "26-30 LOC in fire-safety-chat/index.ts",
+                       "db_changes":  [
+
+                                      ],
+                       "files_uploaded":  [
+                                              "ssss/brain_full/relations_full.json",
+                                              "ssss/brain_full/facts_full.json",
+                                              "ssss/brain_full/analytical_workflows.json"
+                                          ],
+                       "risk_level":  "MEDIUM",
+                       "rollback":  "revert two commits; delete bucket files",
+                       "phase":  2,
+                       "loc_estimate":  28,
+                       "code_changes":  [
+                                            {
+                                                "lines":  20,
+                                                "description":  "Add helper loadBrainFullSidecars(query, mode, supabaseAdmin)",
+                                                "file":  "supabase/functions/fire-safety-chat/index.ts",
+                                                "location":  "after line 2430 (before fetchStructuredTables)"
+                                            },
+                                            {
+                                                "lines":  8,
+                                                "description":  "Call loadBrainFullSidecars and prepend sidecars to fullSystemPrompt",
+                                                "file":  "supabase/functions/fire-safety-chat/index.ts",
+                                                "location":  "around line 5200 (after fetchSBCContext in standard/advisory branch)"
+                                            }
+                                        ],
+                       "title":  "Sidecar relations + facts loader",
+                       "expected_advisory_change":  "Relations + facts appear in reasoning block; auto-downgraded to conf:low if citation attempted"
+                   },
+                   {
+                       "production_change":  "optional; backward-compatible; can defer to Phase 4",
+                       "db_changes":  [
+
+                                      ],
+                       "files_uploaded":  [
+
+                                          ],
+                       "risk_level":  "LOW",
+                       "rollback":  "revert optional section_number extraction; no bucket rollback",
+                       "phase":  3,
+                       "loc_estimate":  3,
+                       "code_changes":  [
+                                            {
+                                                "lines":  3,
+                                                "description":  "Extract section_number from chunk object and pass as sectionRef",
+                                                "file":  "supabase/functions/fire-safety-chat/index.ts",
+                                                "location":  "after line 1738 in extractAndScoreChunks"
+                                            }
+                                        ],
+                       "title":  "Evidence Ledger support for canonical_verbatim",
+                       "expected_advisory_change":  "If section_number matches verbatim heading, Evidence Ledger sets sectionConfidence: high"
+                   },
+                   {
+                       "expected_analytical_change":  "Analytical workflows injected into page-inventory block; gap-matrix generation improved",
+                       "production_change":  "4-6 LOC in fire-safety-chat/index.ts",
+                       "db_changes":  [
+
+                                      ],
+                       "files_uploaded":  [
+
+                                          ],
+                       "risk_level":  "LOW",
+                       "rollback":  "revert analysis branch conditional (4-6 lines)",
+                       "phase":  4,
+                       "loc_estimate":  6,
+                       "code_changes":  [
+                                            {
+                                                "lines":  6,
+                                                "description":  "Call loadBrainFullSidecars with mode parameter; inject workflows into pageInventoryBlock",
+                                                "file":  "supabase/functions/fire-safety-chat/index.ts",
+                                                "location":  "after line 5137 in mode === \u0027analysis\u0027 branch"
+                                            }
+                                        ],
+                       "title":  "Analytical mode hookup"
+                   },
+                   {
+                       "production_change":  "out of scope; sketch only",
+                       "db_changes":  [
+
+                                      ],
+                       "files_uploaded":  [
+
+                                          ],
+                       "risk_level":  "FUTURE",
+                       "rollback":  "N/A",
+                       "timing":  "Q3 2026+",
+                       "phase":  5,
+                       "loc_estimate":  0,
+                       "code_changes":  [
+
+                                        ],
+                       "title":  "Future DB / Vector / GraphRAG",
+                       "expected_advisory_change":  "5A: chunks migrated to sbc_code_tables; vector embedding feasible. 5B: GraphRAG layer added for transitive closure. 5C: Real-time schema versioning."
+                   }
+               ],
+    "status":  "READ-ONLY AUDIT",
+    "deployment_sequence":  [
+                                "Phase 1 (days 1-2): Upload canonical chunks. Monitor keyword-path retrieval. Zero risk.",
+                                "Phase 2 (days 3-5): Deploy helper + call site. Test sidecar injection in Advisory. Monitor citation verifier.",
+                                "Phase 3 (days 6-7, optional): Add section_number extraction. Validate Evidence Ledger.",
+                                "Phase 4 (days 8-10): Extend to Analytical mode. Test analytical-vision buffered path.",
+                                "Phase 5 (Q3 2026+): Future DB/vector migration."
+                            ],
+    "validation_checklist":  {
+                                 "phase_1_prereq":  [
+                                                        "Chunk JSON validated against extractAndScoreChunks parser (5+ test chunks score \u003e 0)",
+                                                        "File naming matches bucket-discovery regex (*chunk*.json)",
+                                                        "X-SBC-Source-Meta headers include sectionRef and sectionConfidence",
+                                                        "No U+00A7 bytes in chunk text or metadata JSON"
+                                                    ],
+                                 "phase_2_prereq":  [
+                                                        "Helper function signature matches call site (query, mode, supabaseAdmin)",
+                                                        "Relations/facts JSON structure matches [{id, ...}, ...] pattern",
+                                                        "Sidecars prepended with [NOT CITABLE - REASONING AID ONLY] header",
+                                                        "Domain triggers include occupancy, mercantile, egress, alarm, sprinkler (case-insensitive)",
+                                                        "Primary mode gate verified: no sidecar load for mode === primary",
+                                                        "One edge deploy; zero Vercel deploy"
+                                                    ],
+                                 "phase_4_prereq":  [
+                                                        "analytical_workflows.json populated with analytical-check relations",
+                                                        "Workflows list required-system checks (e.g., \u0027if mercantile \u0026 \u003e1115m2, sprinkler required\u0027)",
+                                                        "validateAnalyticalReport tested on sample output (downgrades unsupported claims, ignores workflow context)"
+                                                    ]
+                             },
+    "analytical_behavior":  "ANALYSIS mode: Phase 1 canonical chunks retrieved (as Advisory). Phase 2+4 analytical workflows injected into page-inventory block. validateAnalyticalReport unchanged; validator ignores workflow context (not Section VIII evidence). Gap-matrix generation improved."
+}

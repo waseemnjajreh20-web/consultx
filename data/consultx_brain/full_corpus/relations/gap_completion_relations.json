@@ -1,0 +1,4318 @@
+{
+  "generated_at": "2026-05-01T10:29:46.092776+00:00",
+  "count": 254,
+  "edges": [
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1013-5-parent_child-gap1",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1013-5",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Section 1013.5 is a sub-section of Section 1013 per section_index hierarchy",
+      "source_basis": "section_index.json hierarchy (SBC-801)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-201-section-1002-sbc-801-section-401-code_to_code-gap2",
+      "from_ref": "sbc-201-section-1002",
+      "to_ref": "sbc-801-section-401",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 1002 contains verbatim cross-reference: 'Section 401.2 of SBC 801'",
+      "source_basis": "SBC-201 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-1002-sbc-801-section-404-code_to_code-gap3",
+      "from_ref": "sbc-201-section-1002",
+      "to_ref": "sbc-801-section-404",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 1002 contains verbatim cross-reference: 'Section 404 of SBC 801'",
+      "source_basis": "SBC-201 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-1009-sbc-801-section-404-code_to_code-gap4",
+      "from_ref": "sbc-201-section-1009",
+      "to_ref": "sbc-801-section-404",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 1009 contains verbatim cross-reference: 'Section 404 of SBC 801'",
+      "source_basis": "SBC-201 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-802-sbc-801-section-807-code_to_code-gap5",
+      "from_ref": "sbc-201-section-802",
+      "to_ref": "sbc-801-section-807",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 802 contains verbatim cross-reference: 'Section \n807.4.2.1 of SBC 801'",
+      "source_basis": "SBC-201 Section 802 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-806-sbc-801-section-803-code_to_code-gap6",
+      "from_ref": "sbc-201-section-806",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 806 contains verbatim cross-reference: 'Section 803.7.3 of SBC 801'",
+      "source_basis": "SBC-201 Section 806 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-901-sbc-801-section-907-code_to_code-gap7",
+      "from_ref": "sbc-201-section-901",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 901 contains verbatim cross-reference: 'Section 907.3 of SBC 801'",
+      "source_basis": "SBC-201 Section 901 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-903-sbc-801-section-901-code_to_code-gap8",
+      "from_ref": "sbc-201-section-903",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 903 contains verbatim cross-reference: 'Section 901.7 of SBC 801'",
+      "source_basis": "SBC-201 Section 903 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-903-sbc-801-section-308-code_to_code-gap9",
+      "from_ref": "sbc-201-section-903",
+      "to_ref": "sbc-801-section-308",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 903 contains verbatim cross-reference: 'Section 308.1.4 of SBC 801'",
+      "source_basis": "SBC-201 Section 903 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-903-sbc-801-section-503-code_to_code-gap10",
+      "from_ref": "sbc-201-section-903",
+      "to_ref": "sbc-801-section-503",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 903 contains verbatim cross-reference: 'Section 503 of SBC 801'",
+      "source_basis": "SBC-201 Section 903 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-905-sbc-801-section-317-code_to_code-gap11",
+      "from_ref": "sbc-201-section-905",
+      "to_ref": "sbc-801-section-317",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 905 contains verbatim cross-reference: 'Section 317 of SBC 801'",
+      "source_basis": "SBC-201 Section 905 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-404-code_to_code-gap12",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-404",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section 404.2.3 of SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-403-code_to_code-gap13",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-403",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section \n403.8.3 of SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-510-code_to_code-gap14",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section 510 of SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-607-code_to_code-gap15",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-607",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section \n607.1 of SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-901-code_to_code-gap16",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section 901.9 \nof SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-907-sbc-801-section-907-code_to_code-gap17",
+      "from_ref": "sbc-201-section-907",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 907 contains verbatim cross-reference: 'Section 907.8 of SBC 801'",
+      "source_basis": "SBC-201 Section 907 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-909-sbc-801-section-909-code_to_code-gap18",
+      "from_ref": "sbc-201-section-909",
+      "to_ref": "sbc-801-section-909",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 909 contains verbatim cross-reference: 'Section 909.20.1 of SBC 801'",
+      "source_basis": "SBC-201 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-912-sbc-801-section-312-code_to_code-gap19",
+      "from_ref": "sbc-201-section-912",
+      "to_ref": "sbc-801-section-312",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 912 contains verbatim cross-reference: 'Section 312 of SBC 801'",
+      "source_basis": "SBC-201 Section 912 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-201-section-916-sbc-801-section-105-code_to_code-gap20",
+      "from_ref": "sbc-201-section-916",
+      "to_ref": "sbc-801-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-201 Section 916 contains verbatim cross-reference: 'Section 105.6.10 of SBC 801'",
+      "source_basis": "SBC-201 Section 916 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-1002-code_to_code-gap21",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-712-code_to_code-gap22",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-709-code_to_code-gap23",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-716-code_to_code-gap24",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-510-code_to_code-gap25",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-713-code_to_code-gap26",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-708-code_to_code-gap27",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1001 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-712-exception_to_main_-gap28",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1001 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1001-sbc-201-section-510-exception_to_main_-gap29",
+      "from_ref": "sbc-801-section-1001",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1001 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1001 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-1002-code_to_code-gap30",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-712-code_to_code-gap31",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-709-code_to_code-gap32",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-716-code_to_code-gap33",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-510-code_to_code-gap34",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-713-code_to_code-gap35",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-708-code_to_code-gap36",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1002 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-712-exception_to_main_-gap37",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1002 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1002-sbc-201-section-510-exception_to_main_-gap38",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1002 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1002 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-1002-code_to_code-gap39",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-712-code_to_code-gap40",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-709-code_to_code-gap41",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-716-code_to_code-gap42",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-510-code_to_code-gap43",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-713-code_to_code-gap44",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-708-code_to_code-gap45",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1003 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-712-exception_to_main_-gap46",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1003 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1003-sbc-201-section-510-exception_to_main_-gap47",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1003 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1003 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-903-code_to_code-gap48",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1004 declares dependency on Section 903: وجود الرش يؤثر على متطلبات الخروج المرتبطة بحمولة الشاغلين",
+      "source_basis": "SBC-801 Section 1004 frontmatter dependencies (record_id=sbc-801-section-1004)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1006-code_to_code-gap49",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1004 declares dependency on Section 1006: حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "SBC-801 Section 1004 frontmatter dependencies (record_id=sbc-801-section-1004)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1017-code_to_code-gap50",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1004 declares dependency on Section 1017: حمولة الشاغلين تُحدِّد مسافة السفر المسموحة",
+      "source_basis": "SBC-801 Section 1004 frontmatter dependencies (record_id=sbc-801-section-1004)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-1002-code_to_code-gap51",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-712-code_to_code-gap52",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-709-code_to_code-gap53",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-716-code_to_code-gap54",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-510-code_to_code-gap55",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-713-code_to_code-gap56",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-708-code_to_code-gap57",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1005 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-712-exception_to_main_-gap58",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1005 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1005-sbc-201-section-510-exception_to_main_-gap59",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1005 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1005 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1004-code_to_code-gap60",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1006 declares dependency on Section 1004: حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "SBC-801 Section 1006 frontmatter dependencies (record_id=sbc-801-section-1006)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1017-code_to_code-gap61",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1006 declares dependency on Section 1017: مسافة السفر المشتركة (Common Path) تُشغِّل متطلبات عدد المخارج",
+      "source_basis": "SBC-801 Section 1006 frontmatter dependencies (record_id=sbc-801-section-1006)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-903-code_to_code-gap62",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1006 declares dependency on Section 903: وجود الرش يُعدِّل بعض عتبات المسار المشترك",
+      "source_basis": "SBC-801 Section 1006 frontmatter dependencies (record_id=sbc-801-section-1006)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-1002-code_to_code-gap63",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-712-code_to_code-gap64",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-709-code_to_code-gap65",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-716-code_to_code-gap66",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-510-code_to_code-gap67",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-713-code_to_code-gap68",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-708-code_to_code-gap69",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1007 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-712-exception_to_main_-gap70",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1007 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1007-sbc-201-section-510-exception_to_main_-gap71",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1007 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1007 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-1002-code_to_code-gap72",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-712-code_to_code-gap73",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-709-code_to_code-gap74",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-716-code_to_code-gap75",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-510-code_to_code-gap76",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-713-code_to_code-gap77",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-708-code_to_code-gap78",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1008 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-712-exception_to_main_-gap79",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1008 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1008-sbc-201-section-510-exception_to_main_-gap80",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1008 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1008 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-1002-code_to_code-gap81",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-1002",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section \n1002.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-712-code_to_code-gap82",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-709-code_to_code-gap83",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section 709 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-716-code_to_code-gap84",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section 716 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-510-code_to_code-gap85",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-713-code_to_code-gap86",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-708-code_to_code-gap87",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1009 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-712-exception_to_main_-gap88",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-712",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1009 routes to 'Section 712 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1009-sbc-201-section-510-exception_to_main_-gap89",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1009 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1009 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1006-code_to_code-gap90",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1010 declares dependency on Section 1006: عدد المخارج يُحدِّد متطلبات الأبواب",
+      "source_basis": "SBC-801 Section 1010 frontmatter dependencies (record_id=sbc-801-section-1010)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1004-code_to_code-gap91",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1010 declares dependency on Section 1004: حمولة الشاغلين تُحدِّد متى يُشترط panic hardware",
+      "source_basis": "SBC-801 Section 1010 frontmatter dependencies (record_id=sbc-801-section-1010)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1020-code_to_code-gap92",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1010 declares dependency on Section 1020: الممرات تُحدِّد عرض وموقع الأبواب",
+      "source_basis": "SBC-801 Section 1010 frontmatter dependencies (record_id=sbc-801-section-1010)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-201-section-716-code_to_code-gap93",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1010 contains verbatim cross-reference: 'Section 716.1 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1010 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1006-code_to_code-gap94",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1011 declares dependency on Section 1006: عدد المخارج يُحدِّد عدد السلالم المطلوبة",
+      "source_basis": "SBC-801 Section 1011 frontmatter dependencies (record_id=sbc-801-section-1011)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1004-code_to_code-gap95",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1011 declares dependency on Section 1004: حمولة الشاغلين تُحدِّد عرض السلم",
+      "source_basis": "SBC-801 Section 1011 frontmatter dependencies (record_id=sbc-801-section-1011)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1023-code_to_code-gap96",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1023",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1011 declares dependency on Section 1023: سلالم المخارج تخضع لمتطلبات إضافية",
+      "source_basis": "SBC-801 Section 1011 frontmatter dependencies (record_id=sbc-801-section-1011)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1012-sbc-201-section-713-code_to_code-gap97",
+      "from_ref": "sbc-801-section-1012",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1012 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1012 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1012-sbc-201-section-708-code_to_code-gap98",
+      "from_ref": "sbc-801-section-1012",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1012 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1012 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1006-code_to_code-gap99",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1013 declares dependency on Section 1006: كل مخرج مطلوب يحتاج لافتة واضحة",
+      "source_basis": "SBC-801 Section 1013 frontmatter dependencies (record_id=sbc-801-section-1013)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1010-code_to_code-gap100",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1013 declares dependency on Section 1010: كل باب مخرج يحتاج علامة EXIT",
+      "source_basis": "SBC-801 Section 1013 frontmatter dependencies (record_id=sbc-801-section-1013)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-716-code_to_code-gap101",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 716.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-1030-code_to_code-gap102",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-1030",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 1030.7 of SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-509-code_to_code-gap103",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-509",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 509.4.1 of SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-603-code_to_code-gap104",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-603",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 603 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-709-code_to_code-gap105",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 709 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-717-code_to_code-gap106",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1014 contains verbatim cross-reference: 'Section 717 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1014 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-716-exception_to_main_-gap107",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1014 routes to 'Section 716.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1014-sbc-201-section-717-exception_to_main_-gap108",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1014 routes to 'Section 717 of SBC 201'",
+      "source_basis": "SBC-801 Section 1014 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-716-code_to_code-gap109",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 716.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-1030-code_to_code-gap110",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-1030",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 1030.7 of SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-509-code_to_code-gap111",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-509",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 509.4.1 of SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-603-code_to_code-gap112",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-603",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 603 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-709-code_to_code-gap113",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 709 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-717-code_to_code-gap114",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1015 contains verbatim cross-reference: 'Section 717 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1015 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-716-exception_to_main_-gap115",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1015 routes to 'Section 716.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1015-sbc-201-section-717-exception_to_main_-gap116",
+      "from_ref": "sbc-801-section-1015",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1015 routes to 'Section 717 of SBC 201'",
+      "source_basis": "SBC-801 Section 1015 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1016-sbc-201-section-713-code_to_code-gap117",
+      "from_ref": "sbc-801-section-1016",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1016 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1016 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1016-sbc-201-section-708-code_to_code-gap118",
+      "from_ref": "sbc-801-section-1016",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1016 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1016 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-903-code_to_code-gap119",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1017 declares dependency on Section 903: وجود الرش يُطيل مسافة السفر المسموحة بنسبة 25-50%",
+      "source_basis": "SBC-801 Section 1017 frontmatter dependencies (record_id=sbc-801-section-1017)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1004-code_to_code-gap120",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1017 declares dependency on Section 1004: حمولة الشاغلين تُشغِّل متطلبات عدد المخارج المرتبطة بالمسافة",
+      "source_basis": "SBC-801 Section 1017 frontmatter dependencies (record_id=sbc-801-section-1017)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1006-code_to_code-gap121",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1017 declares dependency on Section 1006: عدد المخارج يعتمد جزئياً على مسافة السفر",
+      "source_basis": "SBC-801 Section 1017 frontmatter dependencies (record_id=sbc-801-section-1017)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1018-sbc-201-section-713-code_to_code-gap122",
+      "from_ref": "sbc-801-section-1018",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1018 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1018 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1018-sbc-201-section-708-code_to_code-gap123",
+      "from_ref": "sbc-801-section-1018",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1018 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1018 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1019-sbc-201-section-713-code_to_code-gap124",
+      "from_ref": "sbc-801-section-1019",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1019 contains verbatim cross-reference: 'Section \n713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1019 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1019-sbc-201-section-708-code_to_code-gap125",
+      "from_ref": "sbc-801-section-1019",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1019 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1019 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1005-code_to_code-gap126",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1005",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1020 declares dependency on Section 1005: عروض الممرات تستند إلى المتطلبات العامة لمسارات الإخلاء",
+      "source_basis": "SBC-801 Section 1020 frontmatter dependencies (record_id=sbc-801-section-1020)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1006-code_to_code-gap127",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1020 declares dependency on Section 1006: عدد المخارج يُحدِّد ما إذا كان الممر مطلوباً",
+      "source_basis": "SBC-801 Section 1020 frontmatter dependencies (record_id=sbc-801-section-1020)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1017-code_to_code-gap128",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1020 declares dependency on Section 1017: مسافة السفر المسموحة تمر عبر الممرات",
+      "source_basis": "SBC-801 Section 1020 frontmatter dependencies (record_id=sbc-801-section-1020)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-708-code_to_code-gap129",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1020 declares dependency on Section 708: جدران الممرات المقاومة للحريق تخضع لـ SBC 201 Section 708",
+      "source_basis": "SBC-801 Section 1020 frontmatter dependencies (record_id=sbc-801-section-1020)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-201-section-713-code_to_code-gap130",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-201-section-713",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1020 contains verbatim cross-reference: 'Section 713 of SBC 201'",
+      "source_basis": "SBC-801 Section 1020 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-705-code_to_code-gap131",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 705 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-707-code_to_code-gap132",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-711-code_to_code-gap133",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-510-code_to_code-gap134",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-909-code_to_code-gap135",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section \n909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-716-code_to_code-gap136",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-714-code_to_code-gap137",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 714 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-706-code_to_code-gap138",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-717-code_to_code-gap139",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-708-code_to_code-gap140",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-703-code_to_code-gap141",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1021 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-510-exception_to_main_-gap142",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1021 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-714-exception_to_main_-gap143",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1021 routes to 'Section 714.4.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1021-sbc-201-section-909-exception_to_main_-gap144",
+      "from_ref": "sbc-801-section-1021",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1021 routes to 'Section 909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1021 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-707-code_to_code-gap145",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-711-code_to_code-gap146",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-510-code_to_code-gap147",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-909-code_to_code-gap148",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section \n909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-716-code_to_code-gap149",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-705-code_to_code-gap150",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section \n705.8 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-714-code_to_code-gap151",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 714 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-706-code_to_code-gap152",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-717-code_to_code-gap153",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-708-code_to_code-gap154",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-703-code_to_code-gap155",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1022 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-510-exception_to_main_-gap156",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1022 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-714-exception_to_main_-gap157",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1022 routes to 'Section 714.4.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1022-sbc-201-section-909-exception_to_main_-gap158",
+      "from_ref": "sbc-801-section-1022",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1022 routes to 'Section 909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1022 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-707-code_to_code-gap159",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-711-code_to_code-gap160",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-510-code_to_code-gap161",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-909-code_to_code-gap162",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section \n909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-716-code_to_code-gap163",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-705-code_to_code-gap164",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section \n705.8 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-714-code_to_code-gap165",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 714 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-706-code_to_code-gap166",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-717-code_to_code-gap167",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-708-code_to_code-gap168",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-703-code_to_code-gap169",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1023 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-510-exception_to_main_-gap170",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-510",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1023 routes to 'Section 510.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-714-exception_to_main_-gap171",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1023 routes to 'Section 714.4.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1023-sbc-201-section-909-exception_to_main_-gap172",
+      "from_ref": "sbc-801-section-1023",
+      "to_ref": "sbc-201-section-909",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1023 routes to 'Section 909.20.5 of SBC 201'",
+      "source_basis": "SBC-801 Section 1023 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-707-code_to_code-gap173",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-711-code_to_code-gap174",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-716-code_to_code-gap175",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-705-code_to_code-gap176",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 705.8 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-714-code_to_code-gap177",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 714 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-706-code_to_code-gap178",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-717-code_to_code-gap179",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-708-code_to_code-gap180",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-703-code_to_code-gap181",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1024 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1024-sbc-201-section-714-exception_to_main_-gap182",
+      "from_ref": "sbc-801-section-1024",
+      "to_ref": "sbc-201-section-714",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "Exception clause in SBC-801 Section 1024 routes to 'Section 714.4.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1024 body 'Exception(s):' block (verbatim)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-706-code_to_code-gap183",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-707-code_to_code-gap184",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-711-code_to_code-gap185",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 711 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-716-code_to_code-gap186",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-717-code_to_code-gap187",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-705-code_to_code-gap188",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 705 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-708-code_to_code-gap189",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1025-sbc-201-section-703-code_to_code-gap190",
+      "from_ref": "sbc-801-section-1025",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1025 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1025 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-706-code_to_code-gap191",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-706",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 706 of SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-707-code_to_code-gap192",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-711-code_to_code-gap193",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 711 of \nSBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-716-code_to_code-gap194",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-717-code_to_code-gap195",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 717 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-705-code_to_code-gap196",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 705 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-708-code_to_code-gap197",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1026-sbc-201-section-703-code_to_code-gap198",
+      "from_ref": "sbc-801-section-1026",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1026 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1026 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1027-sbc-201-section-705-code_to_code-gap199",
+      "from_ref": "sbc-801-section-1027",
+      "to_ref": "sbc-201-section-705",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1027 contains verbatim cross-reference: 'Section 705 \nof SBC 201'",
+      "source_basis": "SBC-801 Section 1027 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1027-sbc-201-section-708-code_to_code-gap200",
+      "from_ref": "sbc-801-section-1027",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1027 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1027 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1027-sbc-201-section-703-code_to_code-gap201",
+      "from_ref": "sbc-801-section-1027",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1027 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1027 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1027-sbc-201-section-707-code_to_code-gap202",
+      "from_ref": "sbc-801-section-1027",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1027 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1027 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1027-sbc-201-section-711-code_to_code-gap203",
+      "from_ref": "sbc-801-section-1027",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1027 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1027 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1028-sbc-201-section-708-code_to_code-gap204",
+      "from_ref": "sbc-801-section-1028",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1028 contains verbatim cross-reference: 'Section 708 of SBC 201'",
+      "source_basis": "SBC-801 Section 1028 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1028-sbc-201-section-703-code_to_code-gap205",
+      "from_ref": "sbc-801-section-1028",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1028 contains verbatim cross-reference: 'Section 703.2 of SBC 201'",
+      "source_basis": "SBC-801 Section 1028 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1028-sbc-201-section-707-code_to_code-gap206",
+      "from_ref": "sbc-801-section-1028",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1028 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1028 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1028-sbc-201-section-711-code_to_code-gap207",
+      "from_ref": "sbc-801-section-1028",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1028 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1028 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1029-sbc-201-section-707-code_to_code-gap208",
+      "from_ref": "sbc-801-section-1029",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1029 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1029 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1029-sbc-201-section-711-code_to_code-gap209",
+      "from_ref": "sbc-801-section-1029",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1029 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1029 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1030-sbc-201-section-707-code_to_code-gap210",
+      "from_ref": "sbc-801-section-1030",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1030 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 1030 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1030-sbc-201-section-711-code_to_code-gap211",
+      "from_ref": "sbc-801-section-1030",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 1030 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 1030 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-803-code_to_code-gap212",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 801 declares dependency on Section 803: Existing buildings reference",
+      "source_basis": "SBC-801 Section 801 frontmatter dependencies (record_id=sbc-801-section-801)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-903-code_to_code-gap213",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 803 declares dependency on Section 903: متطلبات الرش التلقائي لبعض المواد",
+      "source_basis": "SBC-801 Section 803 frontmatter dependencies (record_id=sbc-801-section-803)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-804-code_to_code-gap214",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 803 declares dependency on Section 804: الزخارف الداخلية (trim)",
+      "source_basis": "SBC-801 Section 803 frontmatter dependencies (record_id=sbc-801-section-803)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-201-section-803-code_to_code-gap215",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-201-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 803 contains verbatim cross-reference: 'Section 803 of SBC 201'",
+      "source_basis": "SBC-801 Section 803 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-803-code_to_code-gap216",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 804 declares dependency on Section 803: معايير NFPA 286 و ASTM E84 المرجعية",
+      "source_basis": "SBC-801 Section 804 frontmatter dependencies (record_id=sbc-801-section-804)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-903-code_to_code-gap217",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 804 declares dependency on Section 903: الرش التلقائي يُخفّف متطلبات الأرضيات",
+      "source_basis": "SBC-801 Section 804 frontmatter dependencies (record_id=sbc-801-section-804)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-805-sbc-801-section-903-code_to_code-gap218",
+      "from_ref": "sbc-801-section-805",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 805 declares dependency on Section 903: الرش التلقائي يُعفي من متطلبات معدل إطلاق الحرارة",
+      "source_basis": "SBC-801 Section 805 frontmatter dependencies (record_id=sbc-801-section-805)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-903-code_to_code-gap219",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 806 declares dependency on Section 903: الرش التلقائي يُسمح بالأشجار في بعض الإشغالات",
+      "source_basis": "SBC-801 Section 806 frontmatter dependencies (record_id=sbc-801-section-806)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-907-code_to_code-gap220",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 806 declares dependency on Section 907: كاشفات الدخان",
+      "source_basis": "SBC-801 Section 806 frontmatter dependencies (record_id=sbc-801-section-806)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-803-code_to_code-gap221",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 807 declares dependency on Section 803: المواد الزخرفية تُعتبر تشطيباً داخلياً في بعض الحالات",
+      "source_basis": "SBC-801 Section 807 frontmatter dependencies (record_id=sbc-801-section-807)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-903-code_to_code-gap222",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 807 declares dependency on Section 903: الرش التلقائي يُخفّف النسب المئوية",
+      "source_basis": "SBC-801 Section 807 frontmatter dependencies (record_id=sbc-801-section-807)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-907-code_to_code-gap223",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 807 declares dependency on Section 907: إنذار الحريق في Group E",
+      "source_basis": "SBC-801 Section 807 frontmatter dependencies (record_id=sbc-801-section-807)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-201-section-803-code_to_code-gap224",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-201-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 807 contains verbatim cross-reference: 'Section 803.15 of SBC 201'",
+      "source_basis": "SBC-801 Section 807 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-509-code_to_code-gap225",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-509",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 808 declares dependency on Section 509: غرف جمع النفايات والكتان",
+      "source_basis": "SBC-801 Section 808 frontmatter dependencies (record_id=sbc-801-section-808)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-903-code_to_code-gap226",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 901 declares dependency on Section 903: 901 يُحدِّد المتطلبات العامة التي تنطبق على الرش الآلي",
+      "source_basis": "SBC-801 Section 901 frontmatter dependencies (record_id=sbc-801-section-901)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-907-code_to_code-gap227",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 901 declares dependency on Section 907: 901 يُحدِّد المتطلبات العامة لأنظمة الإنذار",
+      "source_basis": "SBC-801 Section 901 frontmatter dependencies (record_id=sbc-801-section-901)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-913-code_to_code-gap228",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 901 declares dependency on Section 913: 901 يُحدِّد متطلبات الاختبار والصيانة الشاملة للمضخات",
+      "source_basis": "SBC-801 Section 901 frontmatter dependencies (record_id=sbc-801-section-901)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-913-code_to_code-gap229",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 903 declares dependency on Section 913: مضخات الحريق تُزوِّد الرش بالضغط اللازم",
+      "source_basis": "SBC-801 Section 903 frontmatter dependencies (record_id=sbc-801-section-903)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-905-code_to_code-gap230",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 903 declares dependency on Section 905: الأنابيب الرأسية تعمل جنباً إلى جنب مع الرش",
+      "source_basis": "SBC-801 Section 903 frontmatter dependencies (record_id=sbc-801-section-903)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-901-code_to_code-gap231",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 903 declares dependency on Section 901: المتطلبات العامة للاختبار والصيانة تنطبق على الرش",
+      "source_basis": "SBC-801 Section 903 frontmatter dependencies (record_id=sbc-801-section-903)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-901-code_to_code-gap232",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 904 declares dependency on Section 901: المتطلبات العامة تنطبق على الأنظمة البديلة",
+      "source_basis": "SBC-801 Section 904 frontmatter dependencies (record_id=sbc-801-section-904)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-903-code_to_code-gap233",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 904 declares dependency on Section 903: الأنظمة البديلة بديل أو إضافة لنظام الرش في حالات محددة",
+      "source_basis": "SBC-801 Section 904 frontmatter dependencies (record_id=sbc-801-section-904)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-901-code_to_code-gap234",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 905 declares dependency on Section 901: المتطلبات العامة للاختبار والصيانة تنطبق على الأنابيب الرأسية",
+      "source_basis": "SBC-801 Section 905 frontmatter dependencies (record_id=sbc-801-section-905)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-913-code_to_code-gap235",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 905 declares dependency on Section 913: مضخات الحريق تُزوِّد الأنابيب الرأسية بالضغط",
+      "source_basis": "SBC-801 Section 905 frontmatter dependencies (record_id=sbc-801-section-905)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-912-code_to_code-gap236",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-912",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 905 declares dependency on Section 912: وصلات الإطفاء مرتبطة بالأنابيب الرأسية",
+      "source_basis": "SBC-801 Section 905 frontmatter dependencies (record_id=sbc-801-section-905)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-901-code_to_code-gap237",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 907 declares dependency on Section 901: المتطلبات العامة للاختبار والصيانة تنطبق على أنظمة الإنذار",
+      "source_basis": "SBC-801 Section 907 frontmatter dependencies (record_id=sbc-801-section-907)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-903-code_to_code-gap238",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 907 declares dependency on Section 903: وجود الرش يؤثر على نوع الإنذار المطلوب",
+      "source_basis": "SBC-801 Section 907 frontmatter dependencies (record_id=sbc-801-section-907)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-909-sbc-201-section-709-code_to_code-gap239",
+      "from_ref": "sbc-801-section-909",
+      "to_ref": "sbc-201-section-709",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 909 contains verbatim cross-reference: 'Section 709 of SBC 201'",
+      "source_basis": "SBC-801 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-909-sbc-201-section-716-code_to_code-gap240",
+      "from_ref": "sbc-801-section-909",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 909 contains verbatim cross-reference: 'Section 716 of SBC 201'",
+      "source_basis": "SBC-801 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-909-sbc-201-section-717-code_to_code-gap241",
+      "from_ref": "sbc-801-section-909",
+      "to_ref": "sbc-201-section-717",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 909 contains verbatim cross-reference: 'Section 717 of SBC 201'",
+      "source_basis": "SBC-801 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-909-sbc-201-section-707-code_to_code-gap242",
+      "from_ref": "sbc-801-section-909",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 909 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-909-sbc-201-section-711-code_to_code-gap243",
+      "from_ref": "sbc-801-section-909",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 909 contains verbatim cross-reference: 'Section 711 of SBC 201'",
+      "source_basis": "SBC-801 Section 909 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-910-sbc-201-section-707-code_to_code-gap244",
+      "from_ref": "sbc-801-section-910",
+      "to_ref": "sbc-201-section-707",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 910 contains verbatim cross-reference: 'Section 707 of SBC 201'",
+      "source_basis": "SBC-801 Section 910 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-910-sbc-201-section-711-code_to_code-gap245",
+      "from_ref": "sbc-801-section-910",
+      "to_ref": "sbc-201-section-711",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 910 contains verbatim cross-reference: 'Section \n711 of SBC 201'",
+      "source_basis": "SBC-801 Section 910 body text (verbatim cross-reference)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-903-code_to_code-gap246",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 913 declares dependency on Section 903: الرش يحتاج الضغط الكافي — المضخة تُوفِّره",
+      "source_basis": "SBC-801 Section 913 frontmatter dependencies (record_id=sbc-801-section-913)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-905-code_to_code-gap247",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 913 declares dependency on Section 905: الأنابيب الرأسية تعتمد على ضغط المضخة",
+      "source_basis": "SBC-801 Section 913 frontmatter dependencies (record_id=sbc-801-section-913)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-901-code_to_code-gap248",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC-801 Section 913 declares dependency on Section 901: المتطلبات العامة للاختبار والصيانة تشمل المضخات",
+      "source_basis": "SBC-801 Section 913 frontmatter dependencies (record_id=sbc-801-section-913)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-1-2-1-sbc-201-section-716-code_to_code-gap249",
+      "from_ref": "sbc-801-section-1010-1-2-1",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Fire door assembly performance linked to SBC 201 Section 716 (Fire/Smoke Openings)",
+      "source_basis": "SBC 801 Section 1010.1.2.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-5-sbc-201-section-703-code_to_code-gap250",
+      "from_ref": "sbc-801-section-1013-5",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Exit sign wiring protection depends on SBC 201 Section 703 (Fire-Resistance Ratings)",
+      "source_basis": "SBC 801 Section 1013.5",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-analytical-fire-protection-review-sbc-801-section-905-analytical_check_d-gap251",
+      "from_ref": "analytical-fire-protection-review",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Analytical fire-protection review must evaluate compliance with SBC 801 Section 905",
+      "source_basis": "SBC 801 Section 905 (fire-protection trigger family)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-analytical-fire-protection-review-sbc-801-section-906-analytical_check_d-gap252",
+      "from_ref": "analytical-fire-protection-review",
+      "to_ref": "sbc-801-section-906",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Analytical fire-protection review must evaluate compliance with SBC 801 Section 906",
+      "source_basis": "SBC 801 Section 906 (fire-protection trigger family)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-analytical-fire-protection-review-sbc-801-section-909-analytical_check_d-gap253",
+      "from_ref": "analytical-fire-protection-review",
+      "to_ref": "sbc-801-section-909",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Analytical fire-protection review must evaluate compliance with SBC 801 Section 909",
+      "source_basis": "SBC 801 Section 909 (fire-protection trigger family)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-analytical-fire-protection-review-sbc-801-section-910-analytical_check_d-gap254",
+      "from_ref": "analytical-fire-protection-review",
+      "to_ref": "sbc-801-section-910",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Analytical fire-protection review must evaluate compliance with SBC 801 Section 910",
+      "source_basis": "SBC 801 Section 910 (fire-protection trigger family)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    }
+  ],
+  "additive_to": "relations_full.json",
+  "deduplicated_against_existing": 238
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "overall": "PASS",
+  "generated_at": "2026-05-01T12:19:44.984Z",
+  "counts": {
+    "invariants": 3498,
+    "passed": 3498,
+    "failed": 0
+  },
+  "domain_summary": {
+    "chunks_sbc201": 148,
+    "chunks_sbc801": 221,
+    "relations": 842,
+    "cross_code_edges": 13,
+    "facts": 305,
+    "decision_tree_count": 3
+  },
+  "invariants_per_category": {
+    "no_banned_symbol": 22,
+    "chunk_shape": 2214,
+    "facts": 305,
+    "relations": 842,
+    "decision_trees": 32,
+    "governance": 83
+  },
+  "failures": []
+}

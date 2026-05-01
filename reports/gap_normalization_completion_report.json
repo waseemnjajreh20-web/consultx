@@ -1,0 +1,923 @@
+{
+  "audited_at": "2026-05-01T10:40:04.388433+00:00",
+  "section_count": 357,
+  "added_from_gap_extraction": 125,
+  "delta_vs_prior": 129,
+  "prior_section_count": 228,
+  "duplicates_resolved_sources_wins": [],
+  "drift_findings": {
+    "title_drift": [
+      {
+        "id": "sbc-201-section-1001",
+        "manifest": "ADMINISTRATION",
+        "h1": "Section 1001"
+      },
+      {
+        "id": "sbc-201-section-1002",
+        "manifest": "MAINTENANCE AND",
+        "h1": "Section 1002"
+      },
+      {
+        "id": "sbc-201-section-1003",
+        "manifest": "GENERAL MEANS OF",
+        "h1": "Section 1003"
+      },
+      {
+        "id": "sbc-201-section-1004",
+        "manifest": "OCCUPANT LOAD",
+        "h1": "Section 1004"
+      },
+      {
+        "id": "sbc-201-section-1005",
+        "manifest": "MEANS OF EGRESS",
+        "h1": "Section 1005"
+      },
+      {
+        "id": "sbc-201-section-1006",
+        "manifest": "NUMBER OF EXITS",
+        "h1": "Section 1006"
+      },
+      {
+        "id": "sbc-201-section-1007",
+        "manifest": "EXIT AND EXIT",
+        "h1": "Section 1007"
+      },
+      {
+        "id": "sbc-201-section-1008",
+        "manifest": "MEANS OF EGRESS",
+        "h1": "Section 1008"
+      },
+      {
+        "id": "sbc-201-section-1009",
+        "manifest": "ACCESSIBLE MEANS",
+        "h1": "Section 1009"
+      },
+      {
+        "id": "sbc-201-section-1010",
+        "manifest": "DOORS, GATES AND",
+        "h1": "Section 1010"
+      },
+      {
+        "id": "sbc-201-section-1011",
+        "manifest": "STAIRWAYS",
+        "h1": "Section 1011"
+      },
+      {
+        "id": "sbc-201-section-1012",
+        "manifest": "RAMPS",
+        "h1": "Section 1012"
+      },
+      {
+        "id": "sbc-201-section-1013",
+        "manifest": "EXIT SIGNS",
+        "h1": "Section 1013"
+      },
+      {
+        "id": "sbc-201-section-1014",
+        "manifest": "HANDRAILS",
+        "h1": "Section 1014"
+      },
+      {
+        "id": "sbc-201-section-1015",
+        "manifest": "GUARDS",
+        "h1": "Section 1015"
+      },
+      {
+        "id": "sbc-201-section-1016",
+        "manifest": "EXIT ACCESS",
+        "h1": "Section 1016"
+      },
+      {
+        "id": "sbc-201-section-1017",
+        "manifest": "EXIT ACCESS TRAVEL",
+        "h1": "Section 1017"
+      },
+      {
+        "id": "sbc-201-section-1018",
+        "manifest": "AISLES",
+        "h1": "Section 1018"
+      },
+      {
+        "id": "sbc-201-section-1019",
+        "manifest": "EXIT ACCESS",
+        "h1": "Section 1019"
+      },
+      {
+        "id": "sbc-201-section-1020",
+        "manifest": "CORRIDORS",
+        "h1": "Section 1020"
+      },
+      {
+        "id": "sbc-201-section-1021",
+        "manifest": "EGRESS BALCONIES",
+        "h1": "Section 1021"
+      },
+      {
+        "id": "sbc-201-section-1022",
+        "manifest": "EXITS",
+        "h1": "Section 1022"
+      },
+      {
+        "id": "sbc-201-section-1023",
+        "manifest": "INTERIOR EXIT",
+        "h1": "Section 1023"
+      },
+      {
+        "id": "sbc-201-section-1024",
+        "manifest": "EXIT PASSAGEWAYS",
+        "h1": "Section 1024"
+      },
+      {
+        "id": "sbc-201-section-1025",
+        "manifest": "LUMINOUS EGRESS",
+        "h1": "Section 1025"
+      },
+      {
+        "id": "sbc-201-section-1026",
+        "manifest": "HORIZONTAL EXITS",
+        "h1": "Section 1026"
+      },
+      {
+        "id": "sbc-201-section-1027",
+        "manifest": "EXTERIOR EXIT",
+        "h1": "Section 1027"
+      },
+      {
+        "id": "sbc-201-section-1028",
+        "manifest": "EXIT DISCHARGE",
+        "h1": "Section 1028"
+      },
+      {
+        "id": "sbc-201-section-1029",
+        "manifest": "EGRESS COURTS",
+        "h1": "Section 1029"
+      },
+      {
+        "id": "sbc-201-section-1030",
+        "manifest": "ASSEMBLY",
+        "h1": "Section 1030"
+      },
+      {
+        "id": "sbc-201-section-1031",
+        "manifest": "EMERGENCY ESCAPE",
+        "h1": "Section 1031"
+      },
+      {
+        "id": "sbc-201-section-405",
+        "manifest": "UNDERGROUND",
+        "h1": "Section 405"
+      },
+      {
+        "id": "sbc-201-section-501",
+        "manifest": "GENERAL",
+        "h1": "Section 501"
+      },
+      {
+        "id": "sbc-201-section-502",
+        "manifest": "BUILDING ADDRESS",
+        "h1": "Section 502"
+      },
+      {
+        "id": "sbc-201-section-503",
+        "manifest": "GENERAL BUILDING",
+        "h1": "Section 503"
+      },
+      {
+        "id": "sbc-201-section-504",
+        "manifest": "BUILDING HEIGHT AND",
+        "h1": "Section 504"
+      },
+      {
+        "id": "sbc-201-section-505",
+        "manifest": "MEZZANINES AND",
+        "h1": "Section 505"
+      },
+      {
+        "id": "sbc-201-section-506",
+        "manifest": "BUILDING AREA",
+        "h1": "Section 506"
+      },
+      {
+        "id": "sbc-201-section-507",
+        "manifest": "UNLIMITED AREA",
+        "h1": "Section 507"
+      },
+      {
+        "id": "sbc-201-section-508",
+        "manifest": "MIXED USE AND",
+        "h1": "Section 508"
+      },
+      {
+        "id": "sbc-201-section-509",
+        "manifest": "INCIDENTAL USES",
+        "h1": "Section 509"
+      },
+      {
+        "id": "sbc-201-section-510",
+        "manifest": "SPECIAL PROVISIONS",
+        "h1": "Section 510"
+      },
+      {
+        "id": "sbc-201-section-601",
+        "manifest": "GENERAL",
+        "h1": "Section 601"
+      },
+      {
+        "id": "sbc-201-section-602",
+        "manifest": "CONSTRUCTION",
+        "h1": "Section 602"
+      },
+      {
+        "id": "sbc-201-section-603",
+        "manifest": "COMBUSTIBLE",
+        "h1": "Section 603"
+      },
+      {
+        "id": "sbc-201-section-701",
+        "manifest": "GENERAL",
+        "h1": "Section 701"
+      },
+      {
+        "id": "sbc-201-section-702",
+        "manifest": "MULTIPLE USE FIRE",
+        "h1": "Section 702"
+      },
+      {
+        "id": "sbc-201-section-703",
+        "manifest": "FIRE-RESISTANCE",
+        "h1": "Section 703"
+      },
+      {
+        "id": "sbc-201-section-704",
+        "manifest": "FIRE-RESISTANCE",
+        "h1": "Section 704"
+      },
+      {
+        "id": "sbc-201-section-705",
+        "manifest": "EXTERIOR WALLS",
+        "h1": "Section 705"
+      },
+      {
+        "id": "sbc-201-section-706",
+        "manifest": "FIRE WALLS",
+        "h1": "Section 706"
+      },
+      {
+        "id": "sbc-201-section-707",
+        "manifest": "FIRE BARRIERS",
+        "h1": "Section 707"
+      },
+      {
+        "id": "sbc-201-section-708",
+        "manifest": "FIRE PARTITIONS",
+        "h1": "Section 708"
+      },
+      {
+        "id": "sbc-201-section-709",
+        "manifest": "SMOKE BARRIERS",
+        "h1": "Section 709"
+      },
+      {
+        "id": "sbc-201-section-710",
+        "manifest": "SMOKE PARTITIONS",
+        "h1": "Section 710"
+      },
+      {
+        "id": "sbc-201-section-711",
+        "manifest": "HORIZONTAL",
+        "h1": "Section 711"
+      },
+      {
+        "id": "sbc-201-section-712",
+        "manifest": "VERTICAL OPENINGS",
+        "h1": "Section 712"
+      },
+      {
+        "id": "sbc-201-section-713",
+        "manifest": "SHAFT ENCLOSURES",
+        "h1": "Section 713"
+      },
+      {
+        "id": "sbc-201-section-714",
+        "manifest": "PENETRATIONS",
+        "h1": "Section 714"
+      },
+      {
+        "id": "sbc-201-section-715",
+        "manifest": "FIRE-RESISTANT JOINT",
+        "h1": "Section 715"
+      },
+      {
+        "id": "sbc-201-section-716",
+        "manifest": "OPENING PROTECTIVES",
+        "h1": "Section 716"
+      },
+      {
+        "id": "sbc-201-section-717",
+        "manifest": "DUCTS AND AIR",
+        "h1": "Section 717"
+      },
+      {
+        "id": "sbc-201-section-718",
+        "manifest": "CONCEALED SPACES",
+        "h1": "Section 718"
+      },
+      {
+        "id": "sbc-201-section-719",
+        "manifest": "FIRE-RESISTANCE",
+        "h1": "Section 719"
+      },
+      {
+        "id": "sbc-201-section-720",
+        "manifest": "THERMAL- AND SOUND-",
+        "h1": "Section 720"
+      },
+      {
+        "id": "sbc-201-section-721",
+        "manifest": "PRESCRIPTIVE FIRE",
+        "h1": "Section 721"
+      },
+      {
+        "id": "sbc-201-section-722",
+        "manifest": "CALCULATED FIRE",
+        "h1": "Section 722"
+      },
+      {
+        "id": "sbc-201-section-802",
+        "manifest": "GENERAL",
+        "h1": "Section 802"
+      },
+      {
+        "id": "sbc-201-section-803",
+        "manifest": "WALL AND CEILING",
+        "h1": "Section 803"
+      },
+      {
+        "id": "sbc-201-section-804",
+        "manifest": "INTERIOR FLOOR FINISH",
+        "h1": "Section 804"
+      },
+      {
+        "id": "sbc-201-section-805",
+        "manifest": "COMBUSTIBLE",
+        "h1": "Section 805"
+      },
+      {
+        "id": "sbc-201-section-806",
+        "manifest": "DECORATIVE",
+        "h1": "Section 806"
+      },
+      {
+        "id": "sbc-201-section-808",
+        "manifest": "ACOUSTICAL CEILING",
+        "h1": "Section 808"
+      },
+      {
+        "id": "sbc-201-section-901",
+        "manifest": "GENERAL",
+        "h1": "Section 901"
+      },
+      {
+        "id": "sbc-201-section-902",
+        "manifest": "FIRE PUMP AND RISER",
+        "h1": "Section 902"
+      },
+      {
+        "id": "sbc-201-section-903",
+        "manifest": "AUTOMATIC SPRINKLER",
+        "h1": "Section 903"
+      },
+      {
+        "id": "sbc-201-section-904",
+        "manifest": "ALTERNATIVE",
+        "h1": "Section 904"
+      },
+      {
+        "id": "sbc-201-section-905",
+        "manifest": "STANDPIPE SYSTEMS",
+        "h1": "Section 905"
+      },
+      {
+        "id": "sbc-201-section-906",
+        "manifest": "PORTABLE FIRE",
+        "h1": "Section 906"
+      },
+      {
+        "id": "sbc-201-section-907",
+        "manifest": "FIRE ALARM AND",
+        "h1": "Section 907"
+      },
+      {
+        "id": "sbc-201-section-908",
+        "manifest": "EMERGENCY ALARM",
+        "h1": "Section 908"
+      },
+      {
+        "id": "sbc-201-section-909",
+        "manifest": "SMOKE CONTROL",
+        "h1": "Section 909"
+      },
+      {
+        "id": "sbc-201-section-910",
+        "manifest": "SMOKE AND HEAT",
+        "h1": "Section 910"
+      },
+      {
+        "id": "sbc-201-section-911",
+        "manifest": "FIRE COMMAND",
+        "h1": "Section 911"
+      },
+      {
+        "id": "sbc-201-section-912",
+        "manifest": "FIRE DEPARTMENT",
+        "h1": "Section 912"
+      },
+      {
+        "id": "sbc-201-section-913",
+        "manifest": "FIRE PUMPS",
+        "h1": "Section 913"
+      },
+      {
+        "id": "sbc-201-section-914",
+        "manifest": "EMERGENCY",
+        "h1": "Section 914"
+      },
+      {
+        "id": "sbc-201-section-915",
+        "manifest": "CARBON MONOXIDE",
+        "h1": "Section 915"
+      },
+      {
+        "id": "sbc-201-section-916",
+        "manifest": "DETECTION SYSTEMS",
+        "h1": "Section 916"
+      },
+      {
+        "id": "sbc-201-section-917",
+        "manifest": "MASS NOTIFICATION",
+        "h1": "Section 917"
+      },
+      {
+        "id": "sbc-201-table-1004-5",
+        "manifest": "MAXIMUM FLOOR AREA ALLOWANCES PER OCCUPANT",
+        "h1": "Table 1004.5"
+      },
+      {
+        "id": "sbc-201-table-1006-3-3",
+        "manifest": "MINIMUM NUMBER OF EXITS OR ACCESS TO EXITS PER STORY",
+        "h1": "Table 1006.3.3"
+      },
+      {
+        "id": "sbc-201-table-504-3",
+        "manifest": "ALLOWABLE BUILDING HEIGHT IN METERS ABOVE GRADE PLANEa",
+        "h1": "Table 504.3"
+      },
+      {
+        "id": "sbc-201-table-504-4",
+        "manifest": "ALLOWABLE NUMBER OF STORIES ABOVE GRADE PLANEa,b",
+        "h1": "Table 504.4"
+      },
+      {
+        "id": "sbc-201-table-506-2",
+        "manifest": "a, b",
+        "h1": "Table 506.2"
+      }
+    ],
+    "body_does_not_mention_ref": [],
+    "orphan_parent": [
+      {
+        "id": "sbc-201-table-1004-5",
+        "missing_parent": "sbc-201-table-1004"
+      },
+      {
+        "id": "sbc-201-table-1006-3-3",
+        "missing_parent": "sbc-201-table-1006-3"
+      },
+      {
+        "id": "sbc-201-table-504-3",
+        "missing_parent": "sbc-201-table-504"
+      },
+      {
+        "id": "sbc-201-table-504-4",
+        "missing_parent": "sbc-201-table-504"
+      },
+      {
+        "id": "sbc-201-table-506-2",
+        "missing_parent": "sbc-201-table-506"
+      },
+      {
+        "id": "sbc-801-section-1010-1-2-1",
+        "missing_parent": "sbc-801-section-1010-1-2"
+      },
+      {
+        "id": "sbc-801-section-1006-2-2-1",
+        "missing_parent": "sbc-801-section-1006-2-2"
+      },
+      {
+        "id": "sbc-801-section-1007-1-1",
+        "missing_parent": "sbc-801-section-1007-1"
+      },
+      {
+        "id": "sbc-801-section-101-4-7",
+        "missing_parent": "sbc-801-section-101-4"
+      },
+      {
+        "id": "sbc-801-section-1010-2-9",
+        "missing_parent": "sbc-801-section-1010-2"
+      },
+      {
+        "id": "sbc-801-section-1017-3-1",
+        "missing_parent": "sbc-801-section-1017-3"
+      },
+      {
+        "id": "sbc-801-section-1029-1-1",
+        "missing_parent": "sbc-801-section-1029-1"
+      },
+      {
+        "id": "sbc-801-section-1030-1-1",
+        "missing_parent": "sbc-801-section-1030-1"
+      },
+      {
+        "id": "sbc-801-section-1031-3-3",
+        "missing_parent": "sbc-801-section-1031-3"
+      },
+      {
+        "id": "sbc-801-section-104-10-2",
+        "missing_parent": "sbc-801-section-104-10"
+      },
+      {
+        "id": "sbc-801-section-104-8-2",
+        "missing_parent": "sbc-801-section-104-8"
+      },
+      {
+        "id": "sbc-801-section-105-1-5",
+        "missing_parent": "sbc-801-section-105-1"
+      },
+      {
+        "id": "sbc-801-section-1103-1-1",
+        "missing_parent": "sbc-801-section-1103-1"
+      },
+      {
+        "id": "sbc-801-section-707-3-10",
+        "missing_parent": "sbc-801-section-707-3"
+      },
+      {
+        "id": "sbc-801-section-901-7-1",
+        "missing_parent": "sbc-801-section-901-7"
+      },
+      {
+        "id": "sbc-801-section-903-3-1-1",
+        "missing_parent": "sbc-801-section-903-3-1"
+      },
+      {
+        "id": "sbc-801-section-903-3-1-3",
+        "missing_parent": "sbc-801-section-903-3-1"
+      },
+      {
+        "id": "sbc-801-section-907-2-11",
+        "missing_parent": "sbc-801-section-907-2"
+      },
+      {
+        "id": "sbc-801-section-907-5-2-1-1",
+        "missing_parent": "sbc-801-section-907-5-2-1"
+      },
+      {
+        "id": "sbc-801-section-907-5-2-2",
+        "missing_parent": "sbc-801-section-907-5-2"
+      },
+      {
+        "id": "sbc-801-section-914-8-3",
+        "missing_parent": "sbc-801-section-914-8"
+      },
+      {
+        "id": "sbc-801-section-915-5-1",
+        "missing_parent": "sbc-801-section-915-5"
+      }
+    ],
+    "duplicate_section_ref": [
+      {
+        "family": "SBC-201",
+        "section_ref": "",
+        "ids": [
+          "sbc-201-table-1004-5",
+          "sbc-201-table-1006-3-3",
+          "sbc-201-table-504-3",
+          "sbc-201-table-504-4",
+          "sbc-201-table-506-2"
+        ]
+      }
+    ],
+    "missing_source_pages": [
+      {
+        "id": "sbc-801-section-409"
+      },
+      {
+        "id": "sbc-801-section-412"
+      },
+      {
+        "id": "sbc-801-section-418"
+      },
+      {
+        "id": "sbc-801-section-419"
+      },
+      {
+        "id": "sbc-801-section-421"
+      }
+    ]
+  },
+  "drift_findings_histogram": {
+    "title_drift": 95,
+    "body_does_not_mention_ref": 0,
+    "orphan_parent": 27,
+    "duplicate_section_ref": 1,
+    "missing_source_pages": 5
+  },
+  "by_chapter_coverage": {
+    "SBC-201": {
+      "10": {
+        "complete": 31,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "4": {
+        "complete": 1,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 24,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "5": {
+        "complete": 10,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "6": {
+        "complete": 3,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "7": {
+        "complete": 22,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "8": {
+        "complete": 6,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "9": {
+        "complete": 17,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "1": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 5,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "2": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 1,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "3": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 11,
+        "page_pending": 0,
+        "reused_existing": 0
+      }
+    },
+    "SBC-801": {
+      "10": {
+        "complete": 34,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 8,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "1": {
+        "complete": 14,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 33,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "11": {
+        "complete": 6,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 2,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "2": {
+        "complete": 2,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "3": {
+        "complete": 21,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "4": {
+        "complete": 7,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 16,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "5": {
+        "complete": 10,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "6": {
+        "complete": 10,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 0,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "7": {
+        "complete": 8,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 3,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "8": {
+        "complete": 8,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 2,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "9": {
+        "complete": 17,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 16,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "23": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 1,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "31": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 1,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "33": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 1,
+        "page_pending": 0,
+        "reused_existing": 0
+      },
+      "56": {
+        "complete": 0,
+        "partial": 0,
+        "stub": 0,
+        "manual_review": 0,
+        "targeted_extract": 1,
+        "page_pending": 0,
+        "reused_existing": 0
+      }
+    }
+  },
+  "by_chapter_coverage_focus_801_9_10_11": {
+    "9": {
+      "complete": 17,
+      "partial": 0,
+      "stub": 0,
+      "manual_review": 0,
+      "targeted_extract": 16,
+      "page_pending": 0,
+      "reused_existing": 0
+    },
+    "10": {
+      "complete": 34,
+      "partial": 0,
+      "stub": 0,
+      "manual_review": 0,
+      "targeted_extract": 8,
+      "page_pending": 0,
+      "reused_existing": 0
+    },
+    "11": {
+      "complete": 6,
+      "partial": 0,
+      "stub": 0,
+      "manual_review": 0,
+      "targeted_extract": 2,
+      "page_pending": 0,
+      "reused_existing": 0
+    }
+  },
+  "top_affected_sections": [
+    {
+      "id": "sbc-201-table-1004-5",
+      "drift_hits": 3
+    },
+    {
+      "id": "sbc-201-table-1006-3-3",
+      "drift_hits": 3
+    },
+    {
+      "id": "sbc-201-table-504-3",
+      "drift_hits": 3
+    },
+    {
+      "id": "sbc-201-table-504-4",
+      "drift_hits": 3
+    },
+    {
+      "id": "sbc-201-table-506-2",
+      "drift_hits": 3
+    }
+  ],
+  "checksums_sha256": {
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\indexes\\section_index.json": "bf22d584ebaf74235df7993936b8f8153aaa136105abbd0ed9e0aca913d1f26b",
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\indexes\\section_aliases.json": "1a1e09f7e98fe66d7894a4b0a18b6a07e9d8f9ef3728fb1cce491ce0ef567c15",
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\indexes\\page_map.json": "22122d852dfe125e9292d28b480d2cb6021813a8a17d43f2737a9a670c8f6a50",
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\indexes\\pdf_map.json": "6b6437d6b2ed40da87397639245866b1e0f7c988bf1c4a1d73d4df0c36238f44"
+  }
+}

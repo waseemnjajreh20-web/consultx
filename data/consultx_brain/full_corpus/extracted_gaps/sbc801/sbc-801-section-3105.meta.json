@@ -1,0 +1,16 @@
+{
+  "record_id": "sbc-801-section-3105",
+  "section_number": "3105",
+  "chapter": "31",
+  "code_family": "SBC 801",
+  "extraction_method": "reuse_existing",
+  "source_files": [
+    "D:/sbc_consultx/sbc-801-section-3105.md"
+  ],
+  "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+  "source_page": 95,
+  "body_chars": 342,
+  "garble_ratio": 0.0,
+  "sha256_md": "93d8cf1a75e83b297a295b7ab13a072c379298a03865c5374f9d0d562093cbca",
+  "extracted_at_utc": "2026-05-01T10:31:09.877683Z"
+}

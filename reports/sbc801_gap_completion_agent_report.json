@@ -1,0 +1,2653 @@
+{
+  "schema_version": "1.0",
+  "agent": "Sub-Agent B2",
+  "code_family": "SBC 801",
+  "edition": "2024",
+  "generated_at_utc": "2026-05-01T10:31:10.693639Z",
+  "input_gap_report": "D:/ConsultX_Clean/reports/sbc801_extraction_gap_report.json",
+  "input_manifest": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/manifests/sbc801_source_manifest.json",
+  "output_dir": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801",
+  "gaps_total": 253,
+  "summary": {
+    "completed": 87,
+    "reused": 47,
+    "newly_extracted": 40,
+    "manual_review": 166,
+    "skipped": 0,
+    "by_chapter_completed": {
+      "9": 16,
+      "10": 8,
+      "11": 4,
+      "1": 34,
+      "4": 16,
+      "7": 3,
+      "8": 2,
+      "23": 1,
+      "31": 1,
+      "33": 1,
+      "56": 1
+    },
+    "broad_extraction_required": false,
+    "new_extract_cap_applied": true,
+    "section_symbol_total": 0
+  },
+  "results": [
+    {
+      "section_number": "901.2",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-901-2.md",
+      "body_chars": 1078,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "901.6",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-901-6.md",
+      "body_chars": 354,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "901.6.2",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-901-6-2.md",
+      "body_chars": 1690,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "901.7.1",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-901-7-1.md",
+      "body_chars": 252,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "903.2",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-903-2.md",
+      "body_chars": 3503,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "903.3.1.1",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-903-3-1-1.md",
+      "body_chars": 198,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "903.3.1.3",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-903-3-1-3.md",
+      "body_chars": 249,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "904.10",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-904-10.md",
+      "body_chars": 1008,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "904.13",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-904-13.md",
+      "body_chars": 4994,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "904.7",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-904-7.md",
+      "body_chars": 368,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_sections.md"
+      ]
+    },
+    {
+      "section_number": "907.2.11",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-907-2-11.md",
+      "body_chars": 4244,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "907.3",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-907-3.md",
+      "body_chars": 6415,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "907.5.2.1.1",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-907-5-2-1-1.md",
+      "body_chars": 1866,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "907.5.2.2",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-907-5-2-2.md",
+      "body_chars": 4321,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909.txt"
+      ]
+    },
+    {
+      "section_number": "914.8.3",
+      "chapter": "9",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-914-8-3.md",
+      "body_chars": 3999,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "915.5.1",
+      "chapter": "9",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-915-5-1.md",
+      "body_chars": 334,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-915.md"
+      ]
+    },
+    {
+      "section_number": "1006.2.2.1",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1006-2-2-1.md",
+      "body_chars": 5287,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1006.md"
+      ]
+    },
+    {
+      "section_number": "1007.1.1",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1007-1-1.md",
+      "body_chars": 878,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1007.md"
+      ]
+    },
+    {
+      "section_number": "1010.2.9",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1010-2-9.md",
+      "body_chars": 28301,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1010.md"
+      ]
+    },
+    {
+      "section_number": "1017.3.1",
+      "chapter": "10",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1017-3-1.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "1027.6",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1027-6.md",
+      "body_chars": 32080,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1027.md"
+      ]
+    },
+    {
+      "section_number": "1029.1.1",
+      "chapter": "10",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1029-1-1.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "1030.1.1",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1030-1-1.md",
+      "body_chars": 3635,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1030.md"
+      ]
+    },
+    {
+      "section_number": "1031.3.3",
+      "chapter": "10",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1031-3-3.md",
+      "body_chars": 32639,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-1031.md"
+      ]
+    },
+    {
+      "section_number": "1103.1.1",
+      "chapter": "11",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1103-1-1.md",
+      "body_chars": 432,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "1103.1.1",
+      "chapter": "11",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1103-1-1.md",
+      "body_chars": 432,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "1104",
+      "chapter": "11",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1108",
+      "chapter": "11",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1108.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "1108",
+      "chapter": "11",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-1108.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "101.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-101-2.md",
+      "body_chars": 2356,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "101.4.7",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-101-4-7.md",
+      "body_chars": 3999,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "102.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-102-3.md",
+      "body_chars": 1923,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "102.4",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-102-4.md",
+      "body_chars": 1023,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "102.7",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-102-7.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "102.7.1",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-102-7-1.md",
+      "body_chars": 481,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "102.7.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-102-7-2.md",
+      "body_chars": 907,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "103.1",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-103-1.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "103.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-103-3.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.10.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-10-2.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.12",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-12.md",
+      "body_chars": 3299,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-3.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.4",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-4.md",
+      "body_chars": 3998,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.6",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "104.7",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-7.md",
+      "body_chars": 2691,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.7.1",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-7-1.md",
+      "body_chars": 1304,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "104.8.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-104-8-2.md",
+      "body_chars": 3999,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.1.5",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-1-5.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-2.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.2.1",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-2-1.md",
+      "body_chars": 712,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.2.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-2-2.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.2.4",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-2-4.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-3.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.3.5",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-3-5.md",
+      "body_chars": 325,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.4",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-4.md",
+      "body_chars": 1471,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.5",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-5.md",
+      "body_chars": 4000,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.5.16",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-5-16.md",
+      "body_chars": 2243,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.5.18",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-5-18.md",
+      "body_chars": 2381,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.5.9",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-5-9.md",
+      "body_chars": 3326,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.6",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-6.md",
+      "body_chars": 1284,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "105.7",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-105-7.md",
+      "body_chars": 1176,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "107.2",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-107-2.md",
+      "body_chars": 3999,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "112.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-112-3.md",
+      "body_chars": 179,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "112.3",
+      "chapter": "1",
+      "method": "newly_extracted",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-112-3.md",
+      "body_chars": 179,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf"
+      ]
+    },
+    {
+      "section_number": "112.4",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "112.4",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.1",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.1",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.1.1",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.1.1",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.3",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.3",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.4",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "114.4",
+      "chapter": "1",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "120",
+      "chapter": "1",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-120.md",
+      "body_chars": 187,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part3.txt"
+      ]
+    },
+    {
+      "section_number": "302.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "303.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "303.1.3",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "303.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "304.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "307.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "307.1.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "307.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "307.6",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "307.8",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "308.1.6.3",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "308.2",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "308.2.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "308.5.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "309.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "310.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "310.4.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "310.4.2",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "310.5",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "311.1.1",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "314.4",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "320.3",
+      "chapter": "3",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "403.5",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "403.5.2",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "403.5.5",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "404.2.3",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "404.6",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.3",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.4",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.5",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.5.2",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.6",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.7",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.7.2.1",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "406.8",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "407.4.4",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "408",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-408.md",
+      "body_chars": 3030,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "409",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-409.md",
+      "body_chars": 1892,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "410",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-410.md",
+      "body_chars": 299,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-410.md"
+      ]
+    },
+    {
+      "section_number": "411",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-411.md",
+      "body_chars": 833,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "412",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-412.md",
+      "body_chars": 821,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "412.2",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "412.3",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-412-3.md",
+      "body_chars": 821,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "412.4",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "412.5",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "412.6",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "413",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-413.md",
+      "body_chars": 1164,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "414",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-414.md",
+      "body_chars": 276,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "414.1.3",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "414.2",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "414.6",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "415",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-415.md",
+      "body_chars": 1720,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "415.11",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "415.7",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "416",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-416.md",
+      "body_chars": 913,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "417",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "418",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-418.md",
+      "body_chars": 686,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "419",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-419.md",
+      "body_chars": 310,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "420",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-420.md",
+      "body_chars": 203,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "421",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-421.md",
+      "body_chars": 3486,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "422",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-422.md",
+      "body_chars": 3018,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "423",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "424",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "425",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "426",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "427",
+      "chapter": "4",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "428",
+      "chapter": "4",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-428.md",
+      "body_chars": 388,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-428.md"
+      ]
+    },
+    {
+      "section_number": "503.1.1",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "503.2.3",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "505.3",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "506.1",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "506.2",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "507.3",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "507.5",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "508.1",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "508.2",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "508.5",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "510.4.1",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "510.4.2.4",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "510.4.2.5",
+      "chapter": "5",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "603.5.2",
+      "chapter": "6",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "605.2.1.1",
+      "chapter": "6",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "707.3.10",
+      "chapter": "7",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-707-3-10.md",
+      "body_chars": 960,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909.txt"
+      ]
+    },
+    {
+      "section_number": "711",
+      "chapter": "7",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-711.md",
+      "body_chars": 202,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part6.txt"
+      ]
+    },
+    {
+      "section_number": "711.2.4",
+      "chapter": "7",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "716",
+      "chapter": "7",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-716.md",
+      "body_chars": 595,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "716.2.6.4",
+      "chapter": "7",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "718",
+      "chapter": "7",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "718.2",
+      "chapter": "7",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "803.10",
+      "chapter": "8",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-803-10.md",
+      "body_chars": 2584,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "804.4",
+      "chapter": "8",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-804-4.md",
+      "body_chars": 3653,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/chapter8_full_text.txt"
+      ]
+    },
+    {
+      "section_number": "1202",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1203",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1203.3",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1204",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1205",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1205.1",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1206",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1207",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1207.10",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1207.6.4",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1209",
+      "chapter": "12",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1511",
+      "chapter": "15",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1511.2",
+      "chapter": "15",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1607",
+      "chapter": "16",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1607.14.3",
+      "chapter": "16",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1607.7",
+      "chapter": "16",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "1607.9",
+      "chapter": "16",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2007",
+      "chapter": "20",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2301.1",
+      "chapter": "23",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2306.8",
+      "chapter": "23",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2308",
+      "chapter": "23",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2311",
+      "chapter": "23",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-2311.md",
+      "body_chars": 247,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/extracted_907_909_part2.txt"
+      ]
+    },
+    {
+      "section_number": "2404",
+      "chapter": "24",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2404.9",
+      "chapter": "24",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2405",
+      "chapter": "24",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2406",
+      "chapter": "24",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2501.1",
+      "chapter": "25",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2808",
+      "chapter": "28",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2809",
+      "chapter": "28",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2904",
+      "chapter": "29",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "2906.4",
+      "chapter": "29",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3103",
+      "chapter": "31",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3103.2",
+      "chapter": "31",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3103.3",
+      "chapter": "31",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3105",
+      "chapter": "31",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-3105.md",
+      "body_chars": 342,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-3105.md"
+      ]
+    },
+    {
+      "section_number": "3106",
+      "chapter": "31",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3201.3",
+      "chapter": "32",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3202",
+      "chapter": "32",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3203",
+      "chapter": "32",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3206.10",
+      "chapter": "32",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3209.4",
+      "chapter": "32",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3305",
+      "chapter": "33",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-3305.md",
+      "body_chars": 261,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-3305.md"
+      ]
+    },
+    {
+      "section_number": "3503",
+      "chapter": "35",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3503.3",
+      "chapter": "35",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3510",
+      "chapter": "35",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "3705",
+      "chapter": "37",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5001.1",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.11",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.2.1",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.5",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.8.2",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.8.3",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.8.3.5",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.8.5",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5003.9.10",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5004",
+      "chapter": "50",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5101.4",
+      "chapter": "51",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5103",
+      "chapter": "51",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5104.4",
+      "chapter": "51",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5303.5.3",
+      "chapter": "53",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5307.4",
+      "chapter": "53",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5307.4.3",
+      "chapter": "53",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5601.1",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5601.2.3",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5601.4",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5602",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5604",
+      "chapter": "56",
+      "method": "reuse_existing",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801/sbc-801-section-5604.md",
+      "body_chars": 261,
+      "section_symbol_count": 0,
+      "source_files": [
+        "D:/sbc_consultx/sbc-801-section-5604.md"
+      ]
+    },
+    {
+      "section_number": "5604.5.1.3",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5605.1",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5605.3",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5606",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5606.4",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5608",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5608.9",
+      "chapter": "56",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5703.6.2",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5704.2.7",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5704.3.4.1",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5704.3.8",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5706",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5706.5",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5706.5.4.5",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5707",
+      "chapter": "57",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5807",
+      "chapter": "58",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "5906",
+      "chapter": "59",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "6004.2.2.10",
+      "chapter": "60",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "6005",
+      "chapter": "60",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "6301.1",
+      "chapter": "63",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    },
+    {
+      "section_number": "6304.2.1.1",
+      "chapter": "63",
+      "method": "manual_review",
+      "md_path": null,
+      "body_chars": 0,
+      "section_symbol_count": 0,
+      "source_files": [],
+      "reason": "extraction_failed_or_capped"
+    }
+  ]
+}

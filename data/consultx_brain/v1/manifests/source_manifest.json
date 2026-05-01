@@ -1,0 +1,61 @@
+[
+  {
+    "id": "sbc-201-section-309",
+    "output_path": "data/consultx_brain/v1/sources/sbc-201-section-309.md",
+    "source_paths": [
+      "D:/sbc_consultx/sbc-201-section-309.md"
+    ],
+    "source_book": "SBC 201",
+    "section_id": "309",
+    "section_refs_in_body": ["309"],
+    "source_pages": "p. 193",
+    "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf",
+    "checksum_sha256": "c6882b605a89ad1a8ceee1a03cbf61cd1f1de0ccebc74127b98e54b471e1dfa1",
+    "canonical_status": "EXISTS_CANONICAL",
+    "extraction_status": "partial",
+    "review_status": "manual_review",
+    "allowed_use": ["evidence"],
+    "intended_live_target": "bucket_chunk",
+    "copied_at": "2026-05-01T00:00:00Z"
+  },
+  {
+    "id": "sbc-801-section-903",
+    "output_path": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+    "source_paths": [
+      "D:/sbc_consultx/sbc-801-section-903.md",
+      "D:/sbc_consultx/extracted_sections.md (lines 869-897)"
+    ],
+    "source_book": "SBC 801",
+    "section_id": "903",
+    "section_refs_in_body": ["903.1", "903.2", "903.2.7", "903.2.7.1", "903.2.7.2"],
+    "source_pages": "pp. 443-471",
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+    "checksum_sha256": "e3d9bbd92b74a005bf16c51ef820fc4e11f278b3160bc8a9ec78b0ca6834cc6f",
+    "canonical_status": "EXISTS_CANONICAL",
+    "extraction_status": "complete",
+    "review_status": "auto_passed",
+    "allowed_use": ["evidence"],
+    "intended_live_target": "bucket_chunk",
+    "copied_at": "2026-05-01T00:00:00Z"
+  },
+  {
+    "id": "sbc-801-section-907",
+    "output_path": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+    "source_paths": [
+      "D:/sbc_consultx/sbc-801-section-907.md",
+      "D:/sbc_consultx/extracted_907_909.txt (lines 1312-1396)"
+    ],
+    "source_book": "SBC 801",
+    "section_id": "907",
+    "section_refs_in_body": ["907.1", "907.1.2", "907.1.3", "907.2", "907.2.7", "907.2.7.1"],
+    "source_pages": "pp. 531-588",
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+    "checksum_sha256": "569f7f4fabe762f91bba1a62cc67ae11ee28a91c320321c6c045d06ac0f25956",
+    "canonical_status": "EXISTS_CANONICAL",
+    "extraction_status": "complete",
+    "review_status": "auto_passed",
+    "allowed_use": ["evidence"],
+    "intended_live_target": "bucket_chunk",
+    "copied_at": "2026-05-01T00:00:00Z"
+  }
+]

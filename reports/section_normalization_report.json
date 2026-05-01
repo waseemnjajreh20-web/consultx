@@ -1,0 +1,305 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T09:51:06.998418+00:00",
+  "section_count": 228,
+  "by_family_count": {
+    "SBC-201": 90,
+    "SBC-801": 138
+  },
+  "by_extraction_status": {
+    "complete": 228
+  },
+  "tables_excluded_from_section_index": [
+    "sbc-201-table-1004-5",
+    "sbc-201-table-1006-3-3",
+    "sbc-201-table-504-3",
+    "sbc-201-table-504-4",
+    "sbc-201-table-506-2"
+  ],
+  "drift_findings": {
+    "title_drift": [],
+    "body_does_not_mention_ref": [],
+    "orphan_parent": [
+      "sbc-801-section-1010-1-2-1"
+    ],
+    "duplicate_section_ref": [
+      {
+        "source_code": "SBC-801",
+        "section_ref": "1029",
+        "ids": [
+          "sbc-801-section-1029",
+          "sbc-801-section-1029"
+        ]
+      }
+    ],
+    "missing_source_pages": [
+      "sbc-201-section-503",
+      "sbc-201-section-504",
+      "sbc-201-section-506",
+      "sbc-201-section-601",
+      "sbc-201-section-602",
+      "sbc-201-section-702",
+      "sbc-201-section-703",
+      "sbc-201-section-708",
+      "sbc-201-section-716",
+      "sbc-201-section-913",
+      "sbc-201-section-501",
+      "sbc-201-section-502",
+      "sbc-201-section-505",
+      "sbc-201-section-507",
+      "sbc-201-section-508",
+      "sbc-201-section-509",
+      "sbc-201-section-510",
+      "sbc-201-section-603",
+      "sbc-201-section-701",
+      "sbc-201-section-704",
+      "sbc-201-section-705",
+      "sbc-201-section-706",
+      "sbc-201-section-707",
+      "sbc-201-section-709",
+      "sbc-201-section-710",
+      "sbc-201-section-711",
+      "sbc-201-section-712",
+      "sbc-201-section-713",
+      "sbc-201-section-714",
+      "sbc-201-section-715",
+      "sbc-201-section-717",
+      "sbc-201-section-718",
+      "sbc-201-section-719",
+      "sbc-201-section-720",
+      "sbc-201-section-721",
+      "sbc-201-section-722",
+      "sbc-201-section-1001",
+      "sbc-201-section-1002",
+      "sbc-201-section-1003",
+      "sbc-201-section-1004",
+      "sbc-201-section-1005",
+      "sbc-201-section-1006",
+      "sbc-201-section-1007",
+      "sbc-201-section-1008",
+      "sbc-201-section-1009",
+      "sbc-201-section-1010",
+      "sbc-201-section-1011",
+      "sbc-201-section-1012",
+      "sbc-201-section-1013",
+      "sbc-201-section-1014",
+      "sbc-201-section-1015",
+      "sbc-201-section-1016",
+      "sbc-201-section-1017",
+      "sbc-201-section-1018",
+      "sbc-201-section-1019",
+      "sbc-201-section-1020",
+      "sbc-201-section-1021",
+      "sbc-201-section-1022",
+      "sbc-201-section-1023",
+      "sbc-201-section-1024",
+      "sbc-201-section-1025",
+      "sbc-201-section-1026",
+      "sbc-201-section-1027",
+      "sbc-201-section-1028",
+      "sbc-201-section-1029",
+      "sbc-201-section-1030",
+      "sbc-201-section-1031",
+      "sbc-201-section-901",
+      "sbc-201-section-902",
+      "sbc-201-section-903",
+      "sbc-201-section-904",
+      "sbc-201-section-905",
+      "sbc-201-section-906",
+      "sbc-201-section-907",
+      "sbc-201-section-908",
+      "sbc-201-section-909",
+      "sbc-201-section-910",
+      "sbc-201-section-911",
+      "sbc-201-section-912",
+      "sbc-201-section-914",
+      "sbc-201-section-915",
+      "sbc-201-section-916",
+      "sbc-201-section-917",
+      "sbc-201-section-802",
+      "sbc-201-section-803",
+      "sbc-201-section-804",
+      "sbc-201-section-805",
+      "sbc-201-section-806",
+      "sbc-201-section-808",
+      "sbc-801-section-902",
+      "sbc-801-section-906",
+      "sbc-801-section-908",
+      "sbc-801-section-909",
+      "sbc-801-section-910",
+      "sbc-801-section-911",
+      "sbc-801-section-912",
+      "sbc-801-section-914",
+      "sbc-801-section-915",
+      "sbc-801-section-916",
+      "sbc-801-section-917",
+      "sbc-801-section-1001",
+      "sbc-801-section-1002",
+      "sbc-801-section-1003",
+      "sbc-801-section-1005",
+      "sbc-801-section-1007",
+      "sbc-801-section-1008",
+      "sbc-801-section-1009",
+      "sbc-801-section-1010-1-2-1",
+      "sbc-801-section-1012",
+      "sbc-801-section-1013-5",
+      "sbc-801-section-1014",
+      "sbc-801-section-1015",
+      "sbc-801-section-1016",
+      "sbc-801-section-1018",
+      "sbc-801-section-1019",
+      "sbc-801-section-1021",
+      "sbc-801-section-1022",
+      "sbc-801-section-1023",
+      "sbc-801-section-1024",
+      "sbc-801-section-1025",
+      "sbc-801-section-1026",
+      "sbc-801-section-1027",
+      "sbc-801-section-1028",
+      "sbc-801-section-1029",
+      "sbc-801-section-1029",
+      "sbc-801-section-1030",
+      "sbc-801-section-1031",
+      "sbc-801-section-1032",
+      "sbc-801-section-101",
+      "sbc-801-section-102",
+      "sbc-801-section-103",
+      "sbc-801-section-104",
+      "sbc-801-section-105",
+      "sbc-801-section-106",
+      "sbc-801-section-107",
+      "sbc-801-section-108",
+      "sbc-801-section-109",
+      "sbc-801-section-110",
+      "sbc-801-section-111",
+      "sbc-801-section-112",
+      "sbc-801-section-113",
+      "sbc-801-section-114",
+      "sbc-801-section-201",
+      "sbc-801-section-202",
+      "sbc-801-section-301",
+      "sbc-801-section-302",
+      "sbc-801-section-303",
+      "sbc-801-section-304",
+      "sbc-801-section-305",
+      "sbc-801-section-306",
+      "sbc-801-section-307",
+      "sbc-801-section-308",
+      "sbc-801-section-309",
+      "sbc-801-section-310",
+      "sbc-801-section-311",
+      "sbc-801-section-312",
+      "sbc-801-section-313",
+      "sbc-801-section-314",
+      "sbc-801-section-315",
+      "sbc-801-section-316",
+      "sbc-801-section-317",
+      "sbc-801-section-318",
+      "sbc-801-section-319",
+      "sbc-801-section-320",
+      "sbc-801-section-321",
+      "sbc-801-section-401",
+      "sbc-801-section-402",
+      "sbc-801-section-403",
+      "sbc-801-section-404",
+      "sbc-801-section-405",
+      "sbc-801-section-406",
+      "sbc-801-section-407",
+      "sbc-801-section-501",
+      "sbc-801-section-502",
+      "sbc-801-section-503",
+      "sbc-801-section-504",
+      "sbc-801-section-505",
+      "sbc-801-section-506",
+      "sbc-801-section-507",
+      "sbc-801-section-508",
+      "sbc-801-section-509",
+      "sbc-801-section-510",
+      "sbc-801-section-601",
+      "sbc-801-section-602",
+      "sbc-801-section-603",
+      "sbc-801-section-604",
+      "sbc-801-section-605",
+      "sbc-801-section-606",
+      "sbc-801-section-607",
+      "sbc-801-section-608",
+      "sbc-801-section-609",
+      "sbc-801-section-610",
+      "sbc-801-section-701",
+      "sbc-801-section-702",
+      "sbc-801-section-703",
+      "sbc-801-section-704",
+      "sbc-801-section-705",
+      "sbc-801-section-706",
+      "sbc-801-section-707",
+      "sbc-801-section-708"
+    ]
+  },
+  "drift_histogram": {
+    "title_drift": 0,
+    "body_does_not_mention_ref": 0,
+    "orphan_parent": 1,
+    "duplicate_section_ref": 1,
+    "missing_source_pages": 200
+  },
+  "by_chapter_coverage": {
+    "SBC-201": {
+      "4": {
+        "complete": 1
+      },
+      "5": {
+        "complete": 10
+      },
+      "6": {
+        "complete": 3
+      },
+      "7": {
+        "complete": 22
+      },
+      "9": {
+        "complete": 17
+      },
+      "10": {
+        "complete": 31
+      },
+      "8": {
+        "complete": 6
+      }
+    },
+    "SBC-801": {
+      "9": {
+        "complete": 17
+      },
+      "10": {
+        "complete": 35
+      },
+      "11": {
+        "complete": 6
+      },
+      "1": {
+        "complete": 14
+      },
+      "2": {
+        "complete": 2
+      },
+      "3": {
+        "complete": 21
+      },
+      "4": {
+        "complete": 7
+      },
+      "5": {
+        "complete": 10
+      },
+      "6": {
+        "complete": 10
+      },
+      "7": {
+        "complete": 8
+      },
+      "8": {
+        "complete": 8
+      }
+    }
+  }
+}

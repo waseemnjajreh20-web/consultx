@@ -1,0 +1,18 @@
+{
+  "section_number": "304.1",
+  "chapter": "3",
+  "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+  "page_range": [
+    48,
+    107
+  ],
+  "extraction_method": "pdf_sweep_round2",
+  "extraction_confidence": 0.65,
+  "requires_review": true,
+  "record_id": "sbc-801-section-304-1",
+  "body_chars": 1962,
+  "extracted_at_utc": "2026-05-01T12:29:22Z",
+  "agent": "Sub-Agent B2 (round 2)",
+  "sha256_md": "f4402cdb7fb78a6d45e0e3daeaac32e68b1949c5e3ae638a6a246510284f067f",
+  "section_symbol_count": 0
+}

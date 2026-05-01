@@ -1,0 +1,15 @@
+{
+  "source_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+  "page_range": "p. 49-49 (1 pages, round2 wide-sweep)",
+  "global_page_start": 49,
+  "global_page_end": 49,
+  "pages_extracted": 1,
+  "extraction_method": "pymupdf-round2",
+  "confidence": "medium",
+  "requires_review": true,
+  "section_marker_found": true,
+  "char_count": 4394,
+  "non_letter_ratio": 0.038,
+  "extracted_at": "2026-05-01T12:20:38.014205+00:00",
+  "round": 2
+}

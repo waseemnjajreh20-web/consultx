@@ -1,0 +1,142 @@
+{
+  "audit": "d_sbc_consultx_architecture",
+  "version": 1,
+  "date": "2026-05-01",
+  "execution": {
+    "code_edits": false,
+    "db_writes": false,
+    "migrations": false,
+    "deploys": false,
+    "pdf_reextraction": false
+  },
+  "inventory": {
+    "root_total_files": 597,
+    "by_type": {
+      "section_md_sbc801": 370,
+      "section_md_sbc201": 148,
+      "table_md_sbc201": 5,
+      "raw_pdf": 18,
+      "raw_extraction_text": 13,
+      "scripts_root": 47,
+      "scripts_subdir": 82,
+      "json_root": 3
+    },
+    "ledger": {
+      "path": "wiki/architecture/canonical-build-ledger.json",
+      "lines": 4346,
+      "node_count": 550,
+      "by_type": {"section": 545, "table": 5},
+      "by_status": {
+        "EXISTS_CANONICAL": 291,
+        "PRESENT_BUT_NOT_CANONICAL": 196,
+        "QUARANTINED_UNVERIFIABLE": 63
+      }
+    },
+    "cross_code_edges": {
+      "path": "wiki/architecture/cross-code-relations.json",
+      "edge_count": 12,
+      "all_confidence": "PROVEN",
+      "edge_types": {
+        "construction_or_height_area_to_fire_requirements": 6,
+        "egress_context_to_fire_life_safety_requirements": 3,
+        "exceptions_and_special_conditions": 2,
+        "general_admin_or_scope_to_specific_fire_design_requirements": 1
+      }
+    },
+    "wiki_concepts": ["fire-alarm-systems.md", "interior-finish-requirements.md", "occupancy-classification.md"],
+    "wiki_synthesis": ["sprinkler-required-decision.md", "egress-design-checklist.md"],
+    "wiki_architecture_docs": [
+      "intelligence-stack.md",
+      "citation-rules.md",
+      "reasoning-contract.md",
+      "mode-contracts.md",
+      "output-contracts.md",
+      "project-facts-schema.md",
+      "plan-analysis-pipeline.md",
+      "improvement-model.md",
+      "evaluation-system.md"
+    ]
+  },
+  "architecture_layers": {
+    "A_canonical_pdf": "raw PDFs — read-only",
+    "B_raw_extraction": "extracted_*.txt, extracted_sections.md, ch9_sections.txt, sbc201_sections_raw.json",
+    "C_section_md": "sbc-{201,801}-section-*.md with rich frontmatter (record_id, code_family, section_id, source_pages, dependencies, related_sections, status)",
+    "D_canonical_ledger": "canonical-build-ledger.json — node table",
+    "E_cross_code_edges": "cross-code-relations.json — edge table (12 edges)",
+    "F_synthesis": "wiki/synthesis/*.md — Advisory-shaped decision trees",
+    "G_concepts": "wiki/concepts/*.md — concept pages"
+  },
+  "trace_903_907": {
+    "SBC_801_903.2.7": {
+      "verbatim_local": "extracted_sections.md:869-897",
+      "summary_local": "sbc-801-section-903.md:80-82",
+      "stub_local": "sbc-801-section-903-2.md (do-not-import)",
+      "live": "sbc_code_tables row present (Step 4.2)"
+    },
+    "SBC_801_903.2.7.1": {
+      "verbatim_local": "extracted_sections.md:885-890",
+      "live": "embedded in 903.2.7 row content_md"
+    },
+    "SBC_801_903.2.7.2": {
+      "verbatim_local": "extracted_sections.md:892-897",
+      "live": "embedded in 903.2.7 row content_md"
+    },
+    "SBC_801_907.2.7": {
+      "verbatim_local": "extracted_907_909.txt:1312-1376 (book page 514 / OCR page 144)",
+      "summary_local": "sbc-801-section-907.md (commentary table only; lacks verbatim)",
+      "stub_local": "sbc-801-section-907-2-11.md (do-not-import)",
+      "live": "sbc_code_tables row present (Step 4.2) but not surfaced for the Mercantile query — see 907_failure"
+    },
+    "SBC_801_907.2.7.1": {
+      "verbatim_local": "extracted_907_909.txt:1387-1409",
+      "live": "embedded in 907.2.7 row content_md"
+    },
+    "SBC_201_309": {
+      "local": "sbc-201-section-309.md",
+      "live": "sbc_code_tables row already existed pre-Step-4.2"
+    }
+  },
+  "907_failure": {
+    "root_cause": "SEMANTIC_ALIAS co-occurrence window of 80 chars is too narrow for the Mercantile question; Mercantile token at index 46, alarm token at index 227 → distance 181 > 80",
+    "live_state": {
+      "row_exists_in_sbc_code_tables": true,
+      "row_bytes": 1841,
+      "row_passes_content_invariants": true,
+      "fetchStructuredTables_would_return_it": "yes if extractTableIds emits 907.2.7"
+    },
+    "failure_classification": "alias_mismatch_only",
+    "smallest_safe_fix_options": [
+      "Widen [\\s\\S]{0,80} to [\\s\\S]{0,400} on the two 907.2.7 alias regexes",
+      "Drop co-occurrence; trigger 907.2.7 when query independently matches Mercantile-pattern AND alarm-pattern",
+      "Add 907.2.7 to PARENT_ALIASES['907']"
+    ],
+    "implementation_status": "NOT YET IMPLEMENTED"
+  },
+  "live_vs_local_gap_summary": {
+    "local_only_high_value_assets": [
+      "518 section-level MD with frontmatter source_pages anchors",
+      "550-node canonical-build-ledger with EXISTS_CANONICAL flags",
+      "12 PROVEN cross-code edges",
+      "Sprinkler decision tree (sprinkler-required-decision.md)",
+      "Egress design checklist (egress-design-checklist.md)",
+      "Concept pages: fire-alarm-systems, occupancy-classification, interior-finish-requirements"
+    ],
+    "live_only_assets": [
+      "sbc_code_tables (93 rows post Step 4.2) — broader for tables than local",
+      "sbc_documents (pgvector RPC currently disabled)"
+    ]
+  },
+  "integration_options": [
+    {"id": "A", "rank": 1, "name": "Surgical structured-table seeding", "risk": "low"},
+    {"id": "B", "rank": 2, "name": "Bulk import section chunks into sbc_documents + enable vector RPC", "risk": "medium"},
+    {"id": "C", "rank": 3, "name": "Import graph_edges + activate GraphRAG", "risk": "high"},
+    {"id": "D", "rank": "recommended", "name": "Hybrid A→B→C", "risk": "rolling"}
+  ],
+  "recommended_next_command": [
+    "1) Widen 907.2.7 SEMANTIC_ALIAS regex window 80→400 in fire-safety-chat/index.ts",
+    "2) Deploy fire-safety-chat",
+    "3) Live retest Mercantile question",
+    "4) Author a generator script that reads sbc-{201,801}-section-*.md frontmatter + CANONICAL_SOURCE block and emits sbc_code_tables INSERTs (next batch)"
+  ],
+  "blocked_by": "owner approval before any code edit, deploy, or further DB writes"
+}

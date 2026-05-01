@@ -1,0 +1,1161 @@
+{
+  "agent": "Sub-Agent B2 (round 2)",
+  "code_family": "SBC 801",
+  "edition": 2024,
+  "generated_at_utc": "2026-05-01T12:29:22Z",
+  "input_report": "D:/ConsultX_Clean/reports/sbc801_gap_completion_agent_report.json",
+  "manual_review_total": 161,
+  "token_budget_cap": 60,
+  "queued_for_extraction": 60,
+  "resolved": 24,
+  "quarantined": 36,
+  "manual_review_keep": 101,
+  "by_chapter_completed": {
+    "11": 1,
+    "1": 6,
+    "3": 14,
+    "4": 2,
+    "5": 1
+  },
+  "section_symbol_total": 0,
+  "output_dir": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2",
+  "resolved_items": [
+    {
+      "section_number": "1104",
+      "chapter": "11",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-1104.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-1104.meta.json",
+      "body_chars": 1091,
+      "sha256_md": "b42e09a2f4da35db791d0549e8475be65eae447b83f99f22cf675163e6dd5624",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+      "page_range": [
+        200,
+        200
+      ]
+    },
+    {
+      "section_number": "104.6",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-104-6.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-104-6.meta.json",
+      "body_chars": 2514,
+      "sha256_md": "5cf84d1d1f63f1c117308d58b7073c8076972d9421377ae6ad1144ac553fb97b",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        42,
+        101
+      ]
+    },
+    {
+      "section_number": "112.4",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-112-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-112-4.meta.json",
+      "body_chars": 2035,
+      "sha256_md": "485726e3cb5315ca0101e3218dbaa8c907caf7cce98ba7b6c71f36f408f44459",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        69,
+        128
+      ]
+    },
+    {
+      "section_number": "114.1",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-1.meta.json",
+      "body_chars": 1395,
+      "sha256_md": "6491b30a60a601af7ec8dd0e231472ea0ac745ca3408a20db3a4a30d4ccd5be9",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        70,
+        129
+      ]
+    },
+    {
+      "section_number": "114.3",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-3.meta.json",
+      "body_chars": 428,
+      "sha256_md": "cf152eca700f9df625a82b86cad9ed5d6689e84b9f130ebed78b78f97234b723",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        70,
+        129
+      ]
+    },
+    {
+      "section_number": "114.4",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-4.meta.json",
+      "body_chars": 489,
+      "sha256_md": "f5763a932f182990c7e92edf16577d4c3ce64136065f3c8ed020e3b25d906a31",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        70,
+        129
+      ]
+    },
+    {
+      "section_number": "114.1.1",
+      "chapter": "1",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-1-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-114-1-1.meta.json",
+      "body_chars": 452,
+      "sha256_md": "08749d2790a8977a013e2839f57ce454d46616d50e9163b87c0d0ddec503f9dd",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "page_range": [
+        70,
+        129
+      ]
+    },
+    {
+      "section_number": "302.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-302-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-302-1.meta.json",
+      "body_chars": 756,
+      "sha256_md": "a7069090cff4b631f2337c0de16f523c7c4fe96853311b697f8209558c10cd7b",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        46,
+        105
+      ]
+    },
+    {
+      "section_number": "303.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-303-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-303-1.meta.json",
+      "body_chars": 1476,
+      "sha256_md": "a02d695bbcef4ac0dd30ec5ee8931552adc2a3efa5de4158860582f2f184504a",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        47,
+        106
+      ]
+    },
+    {
+      "section_number": "303.4",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-303-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-303-4.meta.json",
+      "body_chars": 1021,
+      "sha256_md": "ce70f32979b7c6c0e1e473b3006c85342af750909b98309a855a0e5f11e8cf0b",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        47,
+        106
+      ]
+    },
+    {
+      "section_number": "304.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-304-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-304-1.meta.json",
+      "body_chars": 1962,
+      "sha256_md": "f4402cdb7fb78a6d45e0e3daeaac32e68b1949c5e3ae638a6a246510284f067f",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        48,
+        107
+      ]
+    },
+    {
+      "section_number": "307.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-1.meta.json",
+      "body_chars": 701,
+      "sha256_md": "24eaa3c2058ebc125ace8f9380040da471c82fb4fbfaa039b7939231da6bb328",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        52,
+        111
+      ]
+    },
+    {
+      "section_number": "307.4",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-4.meta.json",
+      "body_chars": 377,
+      "sha256_md": "11ecf0644d31e7b63256e559431799bef516328d9a47c1bdde884ab8a8c3c39f",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        54,
+        113
+      ]
+    },
+    {
+      "section_number": "308.2",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-308-2.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-308-2.meta.json",
+      "body_chars": 1160,
+      "sha256_md": "d2f302de1a6d2f1328d904ef4d3754bb74cb7234501a160ef82c6ca20117faf6",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        58,
+        117
+      ]
+    },
+    {
+      "section_number": "309.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-309-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-309-1.meta.json",
+      "body_chars": 585,
+      "sha256_md": "aa4b8beda733e2226766fe0193e9a15a4267ced9cc5bce0e88c92dc45aae1a7b",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        60,
+        119
+      ]
+    },
+    {
+      "section_number": "310.4",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-310-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-310-4.meta.json",
+      "body_chars": 231,
+      "sha256_md": "e3c947f2091e0507ca4f51debc4305dc8b2df7572421af30cf07edfaacbdf025",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        61,
+        120
+      ]
+    },
+    {
+      "section_number": "310.5",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-310-5.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-310-5.meta.json",
+      "body_chars": 494,
+      "sha256_md": "f0bb9850c135072668fd144995c56deb86e2a5696d4e00fe9619963e001ef7c2",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        62,
+        121
+      ]
+    },
+    {
+      "section_number": "314.4",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-314-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-314-4.meta.json",
+      "body_chars": 685,
+      "sha256_md": "98b4fab6c0f457ba8c8142b383c22dd42396058f4bb95ef5dbd82df2b04270dd",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        67,
+        126
+      ]
+    },
+    {
+      "section_number": "307.1.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-1-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-307-1-1.meta.json",
+      "body_chars": 202,
+      "sha256_md": "998eea2d2bd753f40c9f56d8fd6aec60743239f53212a20209e4cb6bc9315339",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        52,
+        111
+      ]
+    },
+    {
+      "section_number": "311.1.1",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-311-1-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-311-1-1.meta.json",
+      "body_chars": 1171,
+      "sha256_md": "ca381c99252416a4d66cb93892c2856acdcb611d8a8361e6ece6f2692a0d2acb",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        62,
+        121
+      ]
+    },
+    {
+      "section_number": "308.1.6.3",
+      "chapter": "3",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-308-1-6-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-308-1-6-3.meta.json",
+      "body_chars": 785,
+      "sha256_md": "99fe0eb79df0c8d2b519ad85bcec529a8f112caac4324c1eb8c98e26cbd5462b",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        57,
+        116
+      ]
+    },
+    {
+      "section_number": "406.3",
+      "chapter": "4",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-406-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-406-3.meta.json",
+      "body_chars": 1855,
+      "sha256_md": "3037d412187ed0ab464d630f33b803502a264c06c946dd73fc17c7acb079cc1d",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        122,
+        181
+      ]
+    },
+    {
+      "section_number": "404.2.3",
+      "chapter": "4",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-404-2-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-404-2-3.meta.json",
+      "body_chars": 2120,
+      "sha256_md": "da309cb1f4f8508d27cf25defebc603eb5d93deb385afc0d7d79e4f8906f48e5",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        117,
+        176
+      ]
+    },
+    {
+      "section_number": "506.1",
+      "chapter": "5",
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-506-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2\\sbc-801-section-506-1.meta.json",
+      "body_chars": 2317,
+      "sha256_md": "5621e76dac9e9eb93e9c36c95f76981f0b7b9c2a3718a01765b2759ffab336cf",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        138,
+        197
+      ]
+    }
+  ],
+  "quarantined_items": [
+    {
+      "section_number": "307.6",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "307.8",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "320.3",
+      "chapter": "3",
+      "reason": "quality_fail: body_chars=149 < 200",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        82,
+        141
+      ]
+    },
+    {
+      "section_number": "303.1.3",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "308.2.4",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "308.5.4",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "310.4.1",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "310.4.2",
+      "chapter": "3",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "417",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "423",
+      "chapter": "4",
+      "reason": "quality_fail: non_letter_ratio=0.411 >= 0.3",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "page_range": [
+        53,
+        112
+      ]
+    },
+    {
+      "section_number": "424",
+      "chapter": "4",
+      "reason": "quality_fail: non_letter_ratio=0.378 >= 0.3",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "page_range": [
+        54,
+        113
+      ]
+    },
+    {
+      "section_number": "425",
+      "chapter": "4",
+      "reason": "quality_fail: non_letter_ratio=0.356 >= 0.3",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "page_range": [
+        55,
+        114
+      ]
+    },
+    {
+      "section_number": "426",
+      "chapter": "4",
+      "reason": "quality_fail: non_letter_ratio=0.325 >= 0.3",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "page_range": [
+        56,
+        115
+      ]
+    },
+    {
+      "section_number": "427",
+      "chapter": "4",
+      "reason": "quality_fail: non_letter_ratio=0.359 >= 0.3",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "page_range": [
+        57,
+        116
+      ]
+    },
+    {
+      "section_number": "403.5",
+      "chapter": "4",
+      "reason": "quality_fail: body_chars=162 < 200",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "page_range": [
+        100,
+        159
+      ]
+    },
+    {
+      "section_number": "404.6",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.4",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.5",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.6",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.7",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.8",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "412.2",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "412.4",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "412.5",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "412.6",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "414.2",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "414.6",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "415.11",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "415.7",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "403.5.2",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "403.5.5",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.5.2",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "407.4.4",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "414.1.3",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "406.7.2.1",
+      "chapter": "4",
+      "reason": "header_not_found"
+    },
+    {
+      "section_number": "505.3",
+      "chapter": "5",
+      "reason": "header_not_found"
+    }
+  ],
+  "manual_review_keep_items": [
+    {
+      "section_number": "506.2",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "507.3",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "507.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "508.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "508.2",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "508.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "503.1.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "503.2.3",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "510.4.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "510.4.2.4",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "510.4.2.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "718",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "718.2",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "711.2.4",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "716.2.6.4",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1202",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1203",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1204",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1205",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1206",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1207",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1209",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1203.3",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1205.1",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1207.10",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1207.6.4",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5004",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5001.1",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.11",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.2.1",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.8.2",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.8.3",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.8.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.9.10",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5003.8.3.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5103",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5101.4",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5104.4",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5307.4",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5303.5.3",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5307.4.3",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5602",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5606",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5608",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5601.1",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5601.4",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5605.1",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5605.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5606.4",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5608.9",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5601.2.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5604.5.1.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5706",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5707",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5706.5",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5703.6.2",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5704.2.7",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5704.3.8",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5704.3.4.1",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5706.5.4.5",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5807",
+      "chapter": "58",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "5906",
+      "chapter": "59",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "6005",
+      "chapter": "60",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "6004.2.2.10",
+      "chapter": "60",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "6301.1",
+      "chapter": "63",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "6304.2.1.1",
+      "chapter": "63",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2308",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2301.1",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2306.8",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2404",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2405",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2406",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2404.9",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2501.1",
+      "chapter": "25",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2808",
+      "chapter": "28",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2809",
+      "chapter": "28",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2904",
+      "chapter": "29",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2906.4",
+      "chapter": "29",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3103",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3106",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3103.2",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3103.3",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3202",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3203",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3201.3",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3206.10",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3209.4",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3503",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3510",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3503.3",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "3705",
+      "chapter": "37",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1511",
+      "chapter": "15",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1511.2",
+      "chapter": "15",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1607",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1607.7",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1607.9",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "1607.14.3",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "2007",
+      "chapter": "20",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "603.5.2",
+      "chapter": "6",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    },
+    {
+      "section_number": "605.2.1.1",
+      "chapter": "6",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap"
+    }
+  ]
+}

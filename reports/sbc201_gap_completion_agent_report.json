@@ -1,0 +1,463 @@
+{
+  "audited_at": "2026-05-01T10:31:21.137363+00:00",
+  "code_family": "SBC 201",
+  "summary": {
+    "gaps_total": 64,
+    "completed": 41,
+    "reused_existing": 0,
+    "newly_extracted": 41,
+    "manual_review": 23,
+    "skipped_low_quality": 14,
+    "broad_extraction_required": false
+  },
+  "entries": [
+    {
+      "id": "sbc-201-section-102",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:too_short:51"
+    },
+    {
+      "id": "sbc-201-section-103",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-103.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-104",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:fragmented:short_line_ratio=0.63"
+    },
+    {
+      "id": "sbc-201-section-105",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-105.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-106",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-106.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-107",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-107.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-108",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-108.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-109",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.83"
+    },
+    {
+      "id": "sbc-201-section-110",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.83"
+    },
+    {
+      "id": "sbc-201-section-111",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.85"
+    },
+    {
+      "id": "sbc-201-section-112",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.82"
+    },
+    {
+      "id": "sbc-201-section-113",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.82"
+    },
+    {
+      "id": "sbc-201-section-114",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.83"
+    },
+    {
+      "id": "sbc-201-section-115",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.84"
+    },
+    {
+      "id": "sbc-201-section-116",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:non_letter_ratio:0.84"
+    },
+    {
+      "id": "sbc-201-section-201",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-201.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-202",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "section_marker_not_found_at_proposed_page; likely printed-page vs PDF-page misalignment"
+    },
+    {
+      "id": "sbc-201-section-301",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-301.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-302",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-302.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-303",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-303.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-304",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-304.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-305",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-305.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-306",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-306.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-307",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-307.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-308",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-308.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-309",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "quality_fail:too_short:94"
+    },
+    {
+      "id": "sbc-201-section-310",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-310.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-311",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-311.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-312",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-312.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-401",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "section_marker_not_found_at_proposed_page; likely printed-page vs PDF-page misalignment"
+    },
+    {
+      "id": "sbc-201-section-402",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "low",
+      "notes": "section_marker_not_found_at_proposed_page; likely printed-page vs PDF-page misalignment"
+    },
+    {
+      "id": "sbc-201-section-404",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-404.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-406",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-406.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-407",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-407.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-408",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-408.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-409",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-409.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-410",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-410.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-411",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-411.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-412",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-412.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-413",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-413.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-414",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-414.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-415",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-415.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-416",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-416.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-417",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-417.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-418",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-418.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-419",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-419.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-420",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-420.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-421",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-421.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-422",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-422.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-423",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-423.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-424",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-424.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-425",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-425.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-426",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-426.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-427",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-427.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-428",
+      "action": "targeted_extract",
+      "output_md": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\extracted_gaps\\sbc201\\sbc-201-section-428.md",
+      "extraction_confidence": "high",
+      "notes": "ok"
+    },
+    {
+      "id": "sbc-201-section-203",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-204",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-205",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-206",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-207",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-429",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=Does not exist in SBC 201-2024 PDF corpus"
+    },
+    {
+      "id": "sbc-201-section-918",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=TOC anchor only — no verbatim body"
+    },
+    {
+      "id": "sbc-201-section-801",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=TOC anchor only — no verbatim body"
+    },
+    {
+      "id": "sbc-201-section-807",
+      "action": "manual_review",
+      "output_md": null,
+      "extraction_confidence": "n/a",
+      "notes": "no_pdf_or_unknown_range; issue=TOC anchor only — no verbatim body"
+    }
+  ]
+}

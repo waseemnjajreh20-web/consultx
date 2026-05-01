@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T09:21:50.033Z",
+  "generated_files": [
+    {
+      "path": "generated/consultx_brain_v1/SBC201_Ch3_GroupM_canonical_v1_chunks.json",
+      "bytes": 2056,
+      "sha256": "fae0a075af83787dd5a05bb1c91fac05d8fbdd5b00f1e0410c6d94f714c86518"
+    },
+    {
+      "path": "generated/consultx_brain_v1/SBC801_Ch9_GroupM_canonical_v1_chunks.json",
+      "bytes": 14479,
+      "sha256": "c7ce7ac4383eed69ad38b1d146d5464657bd85eb9b6bd0197cf39d4035b527fe"
+    },
+    {
+      "path": "generated/consultx_brain_v1/group_m_relations_v1.json",
+      "bytes": 8556,
+      "sha256": "75d641486ced03120748a6faab46579eca7ffc01f19ced434731ecffa07f5e0b"
+    },
+    {
+      "path": "generated/consultx_brain_v1/group_m_facts_v1.json",
+      "bytes": 8597,
+      "sha256": "80190aeabac603759fa010dcab542db61f2b9d1c981c31e8c35e4bec9c90d5ee"
+    },
+    {
+      "path": "generated/consultx_brain_v1/group_m_advisory_decision_tree_v1.json",
+      "bytes": 7898,
+      "sha256": "8051388fcae5fbf6e82f3ef93ac257d0c277fd6f2576e15cfcdc7533494d793e"
+    }
+  ],
+  "source_files": [
+    "data/consultx_brain/v1/sources/sbc-201-section-309.md",
+    "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+    "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+    "data/consultx_brain/v1/relations/group-m-fire-protection-relations.json",
+    "data/consultx_brain/v1/facts/group-m-thresholds.json",
+    "data/consultx_brain/v1/synthesis/group-m-advisory-decision-tree.md",
+    "data/consultx_brain/v1/manifests/source_manifest.json",
+    "data/consultx_brain/v1/manifests/relation_manifest.json",
+    "data/consultx_brain/v1/validation/extraction_gap_report.json"
+  ],
+  "rollback_actions": {
+    "local": "rm -rf generated/consultx_brain_v1/ data/consultx_brain/v1/ scripts/build-consultx-brain-v1.cjs",
+    "production": "(NOT YET APPLIED) — once approved and Phase 13 ships, rollback is: delete bucket files listed in production_apply_plan.bucket_uploads from reports/brain_v1_runtime_integration_design.json, then git revert the fire-safety-chat patch, then redeploy."
+  }
+}

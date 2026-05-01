@@ -1,0 +1,590 @@
+{
+  "audited_at": "2026-05-01T09:38:58.846Z",
+  "code_family": "SBC 201",
+  "summary": {
+    "total_sections": 159,
+    "complete": 95,
+    "partial": 0,
+    "stub": 58,
+    "quarantined": 6,
+    "broad_extraction_required": false
+  },
+  "gaps": [
+    {
+      "id": "sbc-201-section-102",
+      "section_ref": "102",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 4 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-103",
+      "section_ref": "103",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 5 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-104",
+      "section_ref": "104",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 6 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-105",
+      "section_ref": "105",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 10 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-106",
+      "section_ref": "106",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 14 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-107",
+      "section_ref": "107",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 15 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-108",
+      "section_ref": "108",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 19 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-109",
+      "section_ref": "109",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 21 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-110",
+      "section_ref": "110",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 22 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-111",
+      "section_ref": "111",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 24 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-112",
+      "section_ref": "112",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 26 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-113",
+      "section_ref": "113",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 26 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-114",
+      "section_ref": "114",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 27 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-115",
+      "section_ref": "115",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 28 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-116",
+      "section_ref": "116",
+      "chapter": 1,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 28 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-201",
+      "section_ref": "201",
+      "chapter": 2,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 33 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-202",
+      "section_ref": "202",
+      "chapter": 2,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 33 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-301",
+      "section_ref": "301",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 167 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-302",
+      "section_ref": "302",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 167 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-303",
+      "section_ref": "303",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 168 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-304",
+      "section_ref": "304",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 173 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-305",
+      "section_ref": "305",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 175 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-306",
+      "section_ref": "306",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 176 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-307",
+      "section_ref": "307",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 178 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-308",
+      "section_ref": "308",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 186 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-309",
+      "section_ref": "309",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 193 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-310",
+      "section_ref": "310",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 195 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-311",
+      "section_ref": "311",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 199 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-312",
+      "section_ref": "312",
+      "chapter": 3,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 202 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-401",
+      "section_ref": "401",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 223 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-402",
+      "section_ref": "402",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "proposed_page_range": "p. 223 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-404",
+      "section_ref": "404",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 252 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-406",
+      "section_ref": "406",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 262 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-407",
+      "section_ref": "407",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 274 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-408",
+      "section_ref": "408",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 289 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-409",
+      "section_ref": "409",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 297 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-410",
+      "section_ref": "410",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 300 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-411",
+      "section_ref": "411",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 307 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-412",
+      "section_ref": "412",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 309 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-413",
+      "section_ref": "413",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 319 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-414",
+      "section_ref": "414",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 320 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-415",
+      "section_ref": "415",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 329 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-416",
+      "section_ref": "416",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 350 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-417",
+      "section_ref": "417",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 352 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-418",
+      "section_ref": "418",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 353 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-419",
+      "section_ref": "419",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 354 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-420",
+      "section_ref": "420",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 355 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-421",
+      "section_ref": "421",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 359 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-422",
+      "section_ref": "422",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 360 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-423",
+      "section_ref": "423",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 363 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-424",
+      "section_ref": "424",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 367 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-425",
+      "section_ref": "425",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 368 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-426",
+      "section_ref": "426",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 368 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-427",
+      "section_ref": "427",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 370 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-428",
+      "section_ref": "428",
+      "chapter": 4,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": "D:/sbc_consultx/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "proposed_page_range": "p. 372 (1-2 pages)",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-203",
+      "section_ref": "203",
+      "chapter": 2,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-204",
+      "section_ref": "204",
+      "chapter": 2,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-205",
+      "section_ref": "205",
+      "chapter": 2,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-206",
+      "section_ref": "206",
+      "chapter": 2,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-207",
+      "section_ref": "207",
+      "chapter": 2,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-429",
+      "section_ref": "429",
+      "chapter": 4,
+      "issue": "Does not exist in SBC 201-2024 PDF corpus",
+      "proposed_pdf": null,
+      "proposed_page_range": null,
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-918",
+      "section_ref": "918",
+      "chapter": 9,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": null,
+      "proposed_page_range": "unknown — derive from PDF chapter TOC",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-801",
+      "section_ref": "801",
+      "chapter": 8,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": null,
+      "proposed_page_range": "unknown — derive from PDF chapter TOC",
+      "verbatim_text_in_extract_files": false
+    },
+    {
+      "id": "sbc-201-section-807",
+      "section_ref": "807",
+      "chapter": 8,
+      "issue": "TOC anchor only — no verbatim body",
+      "proposed_pdf": null,
+      "proposed_page_range": "unknown — derive from PDF chapter TOC",
+      "verbatim_text_in_extract_files": false
+    }
+  ]
+}

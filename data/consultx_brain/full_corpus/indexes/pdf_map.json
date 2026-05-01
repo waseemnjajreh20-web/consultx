@@ -1,0 +1,264 @@
+{
+  "schema_version": "1.0",
+  "pdfs": {
+    "SBC 201 - The Saudi General Building Code-251-500.pdf": {
+      "section_ids": [
+        "sbc-201-section-404",
+        "sbc-201-section-405",
+        "sbc-201-section-406",
+        "sbc-201-section-407",
+        "sbc-201-section-408",
+        "sbc-201-section-409",
+        "sbc-201-section-410",
+        "sbc-201-section-411",
+        "sbc-201-section-412",
+        "sbc-201-section-413",
+        "sbc-201-section-414",
+        "sbc-201-section-415",
+        "sbc-201-section-416",
+        "sbc-201-section-417",
+        "sbc-201-section-418",
+        "sbc-201-section-419",
+        "sbc-201-section-420",
+        "sbc-201-section-421",
+        "sbc-201-section-422",
+        "sbc-201-section-423",
+        "sbc-201-section-424",
+        "sbc-201-section-425",
+        "sbc-201-section-426",
+        "sbc-201-section-427",
+        "sbc-201-section-428"
+      ],
+      "page_range": "251-500",
+      "code_family": "SBC 201"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf": {
+      "section_ids": [
+        "sbc-801-section-1101",
+        "sbc-801-section-1102",
+        "sbc-801-section-1103",
+        "sbc-801-section-805",
+        "sbc-801-section-806",
+        "sbc-801-section-807",
+        "sbc-801-section-808",
+        "sbc-801-section-901",
+        "sbc-801-section-903",
+        "sbc-801-section-904",
+        "sbc-801-section-905",
+        "sbc-801-section-907",
+        "sbc-801-section-913"
+      ],
+      "page_range": "401-600",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf": {
+      "section_ids": [
+        "sbc-801-section-1004",
+        "sbc-801-section-1006",
+        "sbc-801-section-1010",
+        "sbc-801-section-1011",
+        "sbc-801-section-1013",
+        "sbc-801-section-1017"
+      ],
+      "page_range": "601-800",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf": {
+      "section_ids": [
+        "sbc-801-section-1020"
+      ],
+      "page_range": "801-1000",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf": {
+      "section_ids": [
+        "sbc-801-section-801",
+        "sbc-801-section-802",
+        "sbc-801-section-803",
+        "sbc-801-section-804"
+      ],
+      "page_range": "201-400",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf": {
+      "section_ids": [
+        "sbc-801-section-1006-2-2-1",
+        "sbc-801-section-1007-1-1",
+        "sbc-801-section-101-2",
+        "sbc-801-section-101-4-7",
+        "sbc-801-section-1010-2-9",
+        "sbc-801-section-1017-3-1",
+        "sbc-801-section-102-3",
+        "sbc-801-section-102-4",
+        "sbc-801-section-102-7",
+        "sbc-801-section-102-7-1",
+        "sbc-801-section-102-7-2",
+        "sbc-801-section-1027-6",
+        "sbc-801-section-1029-1-1",
+        "sbc-801-section-103-1",
+        "sbc-801-section-103-3",
+        "sbc-801-section-1030-1-1",
+        "sbc-801-section-1031-3-3",
+        "sbc-801-section-104-10-2",
+        "sbc-801-section-104-12",
+        "sbc-801-section-104-3",
+        "sbc-801-section-104-4",
+        "sbc-801-section-104-7",
+        "sbc-801-section-104-7-1",
+        "sbc-801-section-104-8-2",
+        "sbc-801-section-105-1-5",
+        "sbc-801-section-105-2",
+        "sbc-801-section-105-2-1",
+        "sbc-801-section-105-2-2",
+        "sbc-801-section-105-2-4",
+        "sbc-801-section-105-3",
+        "sbc-801-section-105-3-5",
+        "sbc-801-section-105-4",
+        "sbc-801-section-105-5",
+        "sbc-801-section-105-5-16",
+        "sbc-801-section-105-5-18",
+        "sbc-801-section-105-5-9",
+        "sbc-801-section-105-6",
+        "sbc-801-section-105-7",
+        "sbc-801-section-107-2",
+        "sbc-801-section-1103-1-1",
+        "sbc-801-section-1108",
+        "sbc-801-section-112-3",
+        "sbc-801-section-120",
+        "sbc-801-section-2311",
+        "sbc-801-section-3105",
+        "sbc-801-section-3305",
+        "sbc-801-section-408",
+        "sbc-801-section-410",
+        "sbc-801-section-411",
+        "sbc-801-section-412-3",
+        "sbc-801-section-413",
+        "sbc-801-section-414",
+        "sbc-801-section-415",
+        "sbc-801-section-416",
+        "sbc-801-section-420",
+        "sbc-801-section-422",
+        "sbc-801-section-428",
+        "sbc-801-section-5604",
+        "sbc-801-section-707-3-10",
+        "sbc-801-section-711",
+        "sbc-801-section-716",
+        "sbc-801-section-803-10",
+        "sbc-801-section-804-4",
+        "sbc-801-section-901-2",
+        "sbc-801-section-901-6",
+        "sbc-801-section-901-6-2",
+        "sbc-801-section-901-7-1",
+        "sbc-801-section-903-2",
+        "sbc-801-section-903-3-1-1",
+        "sbc-801-section-903-3-1-3",
+        "sbc-801-section-904-10",
+        "sbc-801-section-904-13",
+        "sbc-801-section-904-7",
+        "sbc-801-section-907-2-11",
+        "sbc-801-section-907-3",
+        "sbc-801-section-907-5-2-1-1",
+        "sbc-801-section-907-5-2-2",
+        "sbc-801-section-914-8-3",
+        "sbc-801-section-915-5-1"
+      ],
+      "page_range": "1-200",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf": {
+      "section_ids": [],
+      "page_range": "1001-1200",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf": {
+      "section_ids": [],
+      "page_range": "1201-1400",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf": {
+      "section_ids": [],
+      "page_range": "1401-1600",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf": {
+      "section_ids": [],
+      "page_range": "1601-1800",
+      "code_family": "SBC 801"
+    },
+    "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf": {
+      "section_ids": [],
+      "page_range": "1801-2061",
+      "code_family": "SBC 801"
+    },
+    "SBC 201 - The Saudi General Building Code-1-250.pdf": {
+      "section_ids": [
+        "sbc-201-section-103",
+        "sbc-201-section-105",
+        "sbc-201-section-106",
+        "sbc-201-section-107",
+        "sbc-201-section-108",
+        "sbc-201-section-201",
+        "sbc-201-section-301",
+        "sbc-201-section-302",
+        "sbc-201-section-303",
+        "sbc-201-section-304",
+        "sbc-201-section-305",
+        "sbc-201-section-306",
+        "sbc-201-section-307",
+        "sbc-201-section-308",
+        "sbc-201-section-310",
+        "sbc-201-section-311",
+        "sbc-201-section-312"
+      ],
+      "page_range": "1-250",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-501-750.pdf": {
+      "section_ids": [],
+      "page_range": "501-750",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-751-1000.pdf": {
+      "section_ids": [],
+      "page_range": "751-1000",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-1001-1250.pdf": {
+      "section_ids": [],
+      "page_range": "1001-1250",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-1251-1500.pdf": {
+      "section_ids": [],
+      "page_range": "1251-1500",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-1501-1750.pdf": {
+      "section_ids": [],
+      "page_range": "1501-1750",
+      "code_family": "SBC 201"
+    },
+    "SBC 201 - The Saudi General Building Code-1751-2000.pdf": {
+      "section_ids": [],
+      "page_range": "1751-2000",
+      "code_family": "SBC 201"
+    },
+    "chapter8_full_text.txt": {
+      "section_ids": [
+        "sbc-801-section-409",
+        "sbc-801-section-418",
+        "sbc-801-section-419",
+        "sbc-801-section-421"
+      ],
+      "page_range": null,
+      "code_family": "SBC 801"
+    },
+    "extracted_907_909_part2.txt": {
+      "section_ids": [
+        "sbc-801-section-412"
+      ],
+      "page_range": null,
+      "code_family": "SBC 801"
+    }
+  }
+}

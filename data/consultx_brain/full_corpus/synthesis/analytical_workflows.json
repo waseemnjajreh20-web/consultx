@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T00:00:00Z",
+  "header_note": "These workflows guide Analytical (plan-review) reasoning. They are NOT legal source. Every gap finding must be paired with a verbatim citation from the original SBC 801 / SBC 201 PDF section referenced here.",
+  "workflows": [
+    {
+      "id": "analytical-plan-review-gap-matrix",
+      "domain": "plan_review_gap_matrix",
+      "use_case": "produce a gap matrix between submitted drawings and applicable SBC requirements",
+      "applicable_modes": ["analytical"],
+      "not_legal_source": true,
+      "summary_ar": "إنتاج مصفوفة الفجوات (Gap Matrix) بين الرسومات المقدمة والمتطلبات المطبقة من SBC 801/201، مع تحديد كل فجوة ومصدرها.",
+      "summary_en": "Produce a Gap Matrix between submitted drawings and applicable SBC 801 / SBC 201 requirements, identifying each gap and its source section.",
+      "required_inputs": [
+        "drawing_set",
+        "occupancy_group",
+        "occupancy_subgroup",
+        "floor_areas_m2",
+        "stories_above_grade",
+        "existing_sprinkler_yes_no",
+        "occupant_load_total",
+        "code_edition"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعة الإشغال والفئة الفرعية؟",
+          "ما مساحة كل طابق وعدد الطوابق فوق منسوب التسوية؟",
+          "هل المبنى مزود بنظام رشاشات؟",
+          "ما إصدار الكود المطلوب تطبيقه (SBC 801-CC-2024)؟"
+        ],
+        "en": [
+          "What is the occupancy group and sub-classification?",
+          "What is the area per floor and number of stories above grade?",
+          "Is the building sprinklered?",
+          "What is the code edition under review (SBC 801-CC-2024)?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Determine applicable requirement set per occupancy and height (sprinkler 903.2.x, alarm 907.2.x, standpipe 905.3, smoke control 909, egress Ch. 10).",
+        "Step 2: For each requirement, search drawings for evidence (system shown / capacity stated / location identified).",
+        "Step 3: Mark each requirement as Found / Missing / Ambiguous; cite drawing sheet + code section.",
+        "Step 4: Aggregate into gap matrix output."
+      ],
+      "source_refs": [
+        "sbc-801-section-901",
+        "sbc-801-section-903",
+        "sbc-801-section-905",
+        "sbc-801-section-907",
+        "sbc-801-section-909",
+        "sbc-801-chapter-10"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "analytical-required-systems-matrix",
+      "domain": "required_systems_matrix",
+      "use_case": "list required active and passive fire-protection systems for the project",
+      "applicable_modes": ["analytical"],
+      "not_legal_source": true,
+      "summary_ar": "حصر الأنظمة المطلوبة (رش، إنذار، تحكم بالدخان، أنابيب رأسية، تشطيبات داخلية) لكل طابق ولكل إشغال مع مصادرها.",
+      "summary_en": "Enumerate required systems (sprinkler, alarm, smoke control, standpipe, interior finish class) per floor and occupancy with their source sections.",
+      "required_inputs": [
+        "occupancy_group_per_floor",
+        "fire_area_per_floor_m2",
+        "stories_above_grade",
+        "high_rise_yes_no",
+        "atrium_present",
+        "covered_mall_yes_no",
+        "occupant_load_per_floor"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما الإشغال في كل طابق وما مساحته بالمتر المربع؟",
+          "كم حمولة الشاغلين في كل طابق؟",
+          "هل المبنى شاهق أو يحتوي بهوا متعدد الطوابق أو مجمعا تجاريا؟"
+        ],
+        "en": [
+          "What is the occupancy on each floor and its area in square metres?",
+          "What is the occupant load per floor?",
+          "Is the building a high-rise, atrium, or covered mall?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: For each floor, evaluate sprinkler triggers per Section 903.2 family.",
+        "Step 2: Evaluate alarm triggers per Section 907.2.",
+        "Step 3: Evaluate standpipe per Section 905.3.",
+        "Step 4: Evaluate smoke control per Section 909 + SBC 201 402/403/404/405/410.",
+        "Step 5: Determine interior finish class per Table 803.3 (sprinklered vs non-sprinklered column).",
+        "Step 6: Output a per-floor matrix with source citations."
+      ],
+      "source_refs": [
+        "sbc-801-section-803",
+        "sbc-801-table-803.3",
+        "sbc-801-section-903",
+        "sbc-801-section-905",
+        "sbc-801-section-907",
+        "sbc-801-section-909",
+        "sbc-201-section-402",
+        "sbc-201-section-403",
+        "sbc-201-section-404",
+        "sbc-201-section-405"
+      ],
+      "relation_refs": [
+        "rel-sbc801-803-3-table-sprinkler-vs-nonsprinkler",
+        "rel-sbc801-907-2-alarm-occupancy-trigger"
+      ]
+    },
+    {
+      "id": "analytical-drawing-evidence-to-code-section",
+      "domain": "drawing_evidence_to_code_section",
+      "use_case": "map every visible drawing element to the SBC section it satisfies (or fails to satisfy)",
+      "applicable_modes": ["analytical"],
+      "not_legal_source": true,
+      "summary_ar": "ربط كل عنصر مرئي في الرسومات (مخارج، رشاشات، كواشف، علامات، إضاءة طوارئ) بقسم الكود الذي يستوفيه.",
+      "summary_en": "Map every visible drawing element (exits, sprinklers, detectors, signage, emergency lighting) to the SBC section it satisfies.",
+      "required_inputs": [
+        "drawing_set_pdf",
+        "drawing_sheet_index",
+        "code_edition"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "هل توفر مجموعة الرسومات بصيغة قابلة للتحليل؟",
+          "ما رقم الإصدار وتاريخ الرسومات؟"
+        ],
+        "en": [
+          "Is the drawing set available in machine-readable form?",
+          "What is the revision number and date of the drawings?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: For each drawn fire-protection element, identify the code chapter that governs it (sprinkler -> 903; alarm -> 907; egress -> Ch. 10; finishes -> 803; standpipe -> 905; smoke control -> 909).",
+        "Step 2: Pin each element to a specific section (e.g. an emergency-lighting layout cites 1008).",
+        "Step 3: Mark elements lacking a clear code anchor as Unanchored and ask the designer.",
+        "Step 4: Output element-to-section map JSON."
+      ],
+      "source_refs": [
+        "sbc-801-section-803",
+        "sbc-801-section-903",
+        "sbc-801-section-905",
+        "sbc-801-section-907",
+        "sbc-801-section-909",
+        "sbc-801-section-1008",
+        "sbc-801-section-1010",
+        "sbc-801-section-1011",
+        "sbc-801-section-1013",
+        "sbc-801-section-1017",
+        "sbc-801-section-1020"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "analytical-missing-drawing-evidence",
+      "domain": "missing_drawing_evidence",
+      "use_case": "list every required drawing element that is absent or ambiguous in the submitted set",
+      "applicable_modes": ["analytical"],
+      "not_legal_source": true,
+      "summary_ar": "قائمة بكل عنصر مطلوب لم يظهر أو يظهر غامضا في مجموعة الرسومات، مع المصدر القانوني لكل عنصر.",
+      "summary_en": "List every required drawing element that is missing or ambiguous in the submitted set, with the legal source for each.",
+      "required_inputs": [
+        "required_systems_matrix_id",
+        "drawing_evidence_map_id",
+        "drawing_set_pdf"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "هل تم إنتاج مصفوفة الأنظمة المطلوبة (analytical-required-systems-matrix)؟",
+          "هل تم إنتاج خريطة الأدلة في الرسومات (analytical-drawing-evidence-to-code-section)؟"
+        ],
+        "en": [
+          "Has the required-systems matrix (analytical-required-systems-matrix) been produced?",
+          "Has the drawing-evidence map (analytical-drawing-evidence-to-code-section) been produced?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Cross-reference required-systems matrix against drawing-evidence map.",
+        "Step 2: For each required item without matching drawing evidence, emit a missing-evidence entry with code citation.",
+        "Step 3: For each ambiguous drawing reference, emit a clarification request.",
+        "Step 4: Output ranked list (critical / major / minor) with code citations."
+      ],
+      "source_refs": [
+        "sbc-801-section-901",
+        "sbc-801-section-903",
+        "sbc-801-section-907",
+        "sbc-801-chapter-10"
+      ],
+      "relation_refs": []
+    }
+  ]
+}

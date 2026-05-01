@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-05-01T12:11:10.151893+00:00",
+  "agent": "Sub-Agent B3 (round 2)",
+  "new_edge_count_post_dedup": 350,
+  "by_type": {
+    "exception_to_main_rule": 18,
+    "code_to_code": 268,
+    "parent_child": 40,
+    "analytical_check_depends_on": 24
+  },
+  "by_origin": {
+    "cross_ref_in_text": 286,
+    "frontmatter_dependencies": 40,
+    "analytical_synthetic": 24
+  },
+  "files_processed": 128,
+  "round2_source_dir_status": {
+    "sbc201_round2": "populated",
+    "sbc801_round2": "empty"
+  },
+  "fallback_source": "round2_md_files",
+  "dedup_keys_seen_total": 842,
+  "section_index_total_sections": 357,
+  "outputs": {
+    "round2_gap_relations_json": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/relations/round2_gap_relations.json",
+    "report_md": "D:/ConsultX_Clean/reports/round2_relation_expansion_report.md",
+    "report_json": "D:/ConsultX_Clean/reports/round2_relation_expansion_report.json"
+  },
+  "symbol_check": {
+    "section_symbol_in_outputs": 0,
+    "section_symbol_in_source_mds": 0
+  },
+  "sha256": {
+    "round2_gap_relations_json": "40ff2e0d07dd6120f1577eb26728d09a04bcf30523c66f12fe9ddb95a5dba250"
+  }
+}

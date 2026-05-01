@@ -1,0 +1,105 @@
+{
+  "report": "consultx-brain-full-phase-checkpoint",
+  "version": 1,
+  "date": "2026-05-01",
+  "validation": {
+    "overall": "PASS",
+    "invariants_total": 1842,
+    "passed": 1842,
+    "failed": 0,
+    "banned_symbol_audit_zero": true,
+    "files_audited_data_plus_generated": 279,
+    "files_audited_total_with_reports_and_scripts": 296
+  },
+  "domain_summary": {
+    "sbc201_chunks": "see generated/consultx_brain_full/chunks/SBC201_canonical_chunks.json (chunk_count field)",
+    "sbc801_chunks": "see generated/consultx_brain_full/chunks/SBC801_canonical_chunks.json (chunk_count field)",
+    "relations_total": 238,
+    "cross_code_relations": 13,
+    "facts_total": 128,
+    "facts_thresholds": 90,
+    "facts_exceptions": 37,
+    "facts_definitions": 0,
+    "advisory_workflows": 8,
+    "analytical_workflows": 4,
+    "main_patterns": 10,
+    "decision_trees": 3,
+    "section_index_entries": 228
+  },
+  "extraction_status": {
+    "sbc201": {
+      "ledger_nodes": 159,
+      "exists_canonical": 95,
+      "stub": 58,
+      "quarantined": 6,
+      "copied": 95,
+      "broad_extraction_required": false
+    },
+    "sbc801": {
+      "ledger_nodes": 391,
+      "exists_canonical": 138,
+      "present_but_not_canonical": 196,
+      "quarantined_unverifiable": 57,
+      "copied": 137,
+      "broad_extraction_required": false
+    }
+  },
+  "sub_agents": [
+    {"id": "A", "wave": 1, "role": "Corpus Inventory"},
+    {"id": "B", "wave": 1, "role": "SBC 201 Extraction Catalog"},
+    {"id": "C", "wave": 1, "role": "SBC 801 Extraction Catalog"},
+    {"id": "E", "wave": 1, "role": "Relationship Graph"},
+    {"id": "G", "wave": 1, "role": "Synthesis & Consultant Reasoning"},
+    {"id": "H", "wave": 1, "role": "Live Integration Design"},
+    {"id": "D", "wave": 2, "role": "Section Normalization"},
+    {"id": "F", "wave": 2, "role": "Facts & Thresholds"}
+  ],
+  "targeted_extractions_performed": 0,
+  "manual_review_items": {
+    "sbc201_gaps": 64,
+    "sbc801_gaps": 253,
+    "total": 317,
+    "broad_extraction_required": false
+  },
+  "live_integration_phases": [
+    {"phase": 1, "scope": "Bucket-only canonical chunks", "loc": 0, "risk": "LOW"},
+    {"phase": 2, "scope": "Sidecar loader (loadBrainFullSidecars)", "loc": 28, "risk": "MEDIUM"},
+    {"phase": 3, "scope": "Evidence Ledger section_number propagation", "loc": 3, "risk": "LOW"},
+    {"phase": 4, "scope": "Analytical mode hook for analytical_check_depends_on", "loc": 6, "risk": "LOW"},
+    {"phase": 5, "scope": "DB / vector / GraphRAG", "loc": null, "risk": "FUTURE"}
+  ],
+  "production_apply_plan": {
+    "applied": false,
+    "phase_1_uploads": [
+      "ssss/SBC201_canonical_chunks.json",
+      "ssss/SBC801_canonical_chunks.json"
+    ],
+    "phase_2_uploads": [
+      "ssss/brain_full/relations_full.json",
+      "ssss/brain_full/facts_full.json",
+      "ssss/brain_full/group_m_advisory_decision_tree_v1.json"
+    ],
+    "phase_2_code_change": "supabase/functions/fire-safety-chat/index.ts (~28 LOC: loadBrainFullSidecars helper + call site)",
+    "phase_2_deploy": "npx supabase functions deploy fire-safety-chat --project-ref hrnltxmwoaphgejckutk",
+    "db_writes": [],
+    "vercel_deploys": []
+  },
+  "rollback_plan": {
+    "local": "rm -rf data/consultx_brain/full_corpus/ generated/consultx_brain_full/ scripts/build-consultx-brain-full.cjs and the new reports/* (full_corpus_*, sbc{201,801}_extraction_gap_*, relationship_graph_*, synthesis_reasoning_*, full_brain_live_integration_*, section_normalization_*, facts_thresholds_*, consultx_brain_full_*)",
+    "production_after_phase1": "delete the two bucket files",
+    "production_after_phase2": "delete sidecar bucket files, git revert the fire-safety-chat patch, redeploy fire-safety-chat"
+  },
+  "expected_behavior": {
+    "main": "unchanged — sidecar gated on mode==='standard' (Phase 2)",
+    "advisory": "Mercantile / Group M plus other Group A/B/E/F/H/I/M/R-1/R-2/R-4 fire-protection questions cite canonical chunks from SBC 201 / SBC 801 in the source panel; relations and facts feed reasoning context but never become citations; expected-reference fallback should disappear for any section in the EXISTS_CANONICAL set.",
+    "analytical": "unchanged in Phases 1-2; Phase 4 adds analytical_check_depends_on relation injection into the existing buffered analytical-vision path."
+  },
+  "risks": [
+    {"id": 1, "risk": "200 chunks page_pending (no source_pages anchor)", "mitigation": "Step-4 verifier auto-caps conf:high to medium when ledger lacks high-confidence anchor"},
+    {"id": 2, "risk": "317 gap sections will yield expected-reference fallback", "mitigation": "owner-approved targeted extraction batches in a follow-up task"},
+    {"id": 3, "risk": "Sub-agent C wrapped relations in envelope object", "mitigation": "coordinator relFile() handles both shapes"},
+    {"id": 4, "risk": "Arabic-titled section headings", "mitigation": "coordinator bodyAsUmbrellaChunk recognizes Arabic + English canonical headings"},
+    {"id": 5, "risk": "1 orphan_parent + 1 duplicate_section_ref", "mitigation": "catalogued in reports/section_normalization_report.json; not blocking V1 / Phase-1 apply"}
+  ],
+  "stop_message": "STOP — Full local ConsultX Brain corpus build complete. Approval required before any production upload, DB write, or deploy."
+}

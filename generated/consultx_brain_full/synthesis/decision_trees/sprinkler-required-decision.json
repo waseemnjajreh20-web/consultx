@@ -1,0 +1,352 @@
+{
+  "id": "sprinkler-required-decision-tree",
+  "use_case": "determine sprinkler requirement",
+  "applicable_modes": [
+    "advisory"
+  ],
+  "not_legal_source": true,
+  "header_note": "This decision tree is derived from D:/sbc_consultx/wiki/synthesis/sprinkler-required-decision.md and converted to ordered steps. It is NOT legal source. Every verdict must be paired with a verbatim citation from the cited SBC 801 Section 903.2 sub-section.",
+  "required_inputs": [
+    "occupancy_group",
+    "occupancy_subgroup",
+    "building_height_first_story_m",
+    "has_basement_yes_no",
+    "stories_above_grade",
+    "fire_area_per_floor_m2",
+    "combined_fire_area_m2",
+    "occupant_load_total",
+    "dwelling_units_count",
+    "upholstered_furniture_display_area_m2"
+  ],
+  "missing_info_prompts": {
+    "ar": [
+      "ما مجموعة الإشغال والفئة الفرعية؟",
+      "ما ارتفاع أرضية الطابق الأول عن سطح الأرض الطبيعية بالأمتار؟",
+      "هل يوجد طابق تحت سطح الأرض؟",
+      "كم عدد الطوابق فوق منسوب التسوية؟",
+      "ما حيز الحريق على كل طابق وإجمالي الحيز المجمع بالمتر المربع؟",
+      "ما إجمالي حمولة الشاغلين؟",
+      "في حال السكن R-2، كم عدد الوحدات؟",
+      "في حال M، ما مساحة عرض وبيع الأثاث المنجد بالمتر المربع؟"
+    ],
+    "en": [
+      "What is the occupancy group and sub-classification?",
+      "What is the first-story floor height above natural grade in metres?",
+      "Is there a below-grade story?",
+      "How many stories above grade plane?",
+      "What is the fire area per floor and the combined fire area in square metres?",
+      "What is the total occupant load?",
+      "If R-2 residential, how many dwelling units?",
+      "If M, what is the upholstered-furniture display + sale area in square metres?"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "High-rise trigger",
+      "prompt": "Is the building a high-rise per Section 202 / 903.2.11 (highest occupied floor located more than the high-rise threshold above the lowest level of fire-department access)?",
+      "branches": [
+        {
+          "answer": "yes",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no",
+          "next_step": "step-2"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.11",
+        "sbc-801-section-202"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-11-high-rise-trigger"
+      ]
+    },
+    {
+      "id": "step-2",
+      "title": "Underground / basement trigger",
+      "prompt": "Does the building include any below-grade story or underground building condition per Section 903.2.10?",
+      "branches": [
+        {
+          "answer": "yes",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no",
+          "next_step": "step-3"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.10"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-10-underground-trigger"
+      ]
+    },
+    {
+      "id": "step-3",
+      "title": "Group A (Assembly) triggers",
+      "prompt": "If the primary occupancy is Group A, evaluate Section 903.2.1: does any sub-class A-1..A-5 trigger meet (e.g. fire area threshold, occupant load, theatrical use)?",
+      "branches": [
+        {
+          "answer": "A-1 or A-2 trigger met",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "A-3 / A-4 / A-5 fire-area threshold exceeded per 903.2.1",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "Group A but no trigger met",
+          "next_step": "step-4"
+        },
+        {
+          "answer": "not Group A",
+          "next_step": "step-4"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.1",
+        "sbc-801-section-903.2.1.1",
+        "sbc-801-section-903.2.1.2",
+        "sbc-801-section-903.2.1.3",
+        "sbc-801-section-903.2.1.4",
+        "sbc-801-section-903.2.1.5"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-1-assembly-trigger"
+      ]
+    },
+    {
+      "id": "step-4",
+      "title": "Group B / E triggers",
+      "prompt": "If Group B (Business) or E (Educational), apply Section 903.2.3 (Group E) triggers (fire area thresholds, story count); for Group B apply general 903.2 height/area triggers.",
+      "branches": [
+        {
+          "answer": "Group E trigger met per 903.2.3",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "Group B story-count trigger met per 903.2",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no trigger met",
+          "next_step": "step-5"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.3",
+        "sbc-801-section-903.2"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-3-educational-trigger"
+      ]
+    },
+    {
+      "id": "step-5",
+      "title": "Group F (Factory/Industrial) triggers",
+      "prompt": "If Group F, apply Section 903.2.4: F-1 fire area, story count, and combined area thresholds.",
+      "branches": [
+        {
+          "answer": "F-1 trigger met per 903.2.4",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no trigger met",
+          "next_step": "step-6"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.4"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-4-factory-trigger"
+      ]
+    },
+    {
+      "id": "step-6",
+      "title": "Group H (High-Hazard) triggers",
+      "prompt": "If any Group H sub-class (H-1..H-5) is present, Section 903.2.5 makes sprinkler protection mandatory regardless of size; verify with 903.2.5 sub-paragraphs.",
+      "branches": [
+        {
+          "answer": "Group H present",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no Group H",
+          "next_step": "step-7"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.5",
+        "sbc-801-section-903.2.5.1",
+        "sbc-801-section-903.2.5.2",
+        "sbc-801-section-903.2.5.3"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-5-high-hazard-trigger"
+      ]
+    },
+    {
+      "id": "step-7",
+      "title": "Group I (Institutional) triggers",
+      "prompt": "If Group I, apply Section 903.2.6: I-1 (>16 occupants), I-2/I-3/I-4 always required.",
+      "branches": [
+        {
+          "answer": "I-2 / I-3 / I-4 present",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "I-1 with > 16 occupants",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no Group I trigger",
+          "next_step": "step-8"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.6"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-6-institutional-trigger"
+      ]
+    },
+    {
+      "id": "step-8",
+      "title": "Group M (Mercantile) fire area trigger",
+      "prompt": "If Group M, is the Group M fire area on any single floor greater than 1115 m2, or located more than three stories above grade plane, or combined > 2230 m2 (Section 903.2.7)?",
+      "branches": [
+        {
+          "answer": "yes",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-9"
+        },
+        {
+          "answer": "no",
+          "next_step": "step-9"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "relation_refs": [
+        "rel-cond-fire-area-1115-to-sbc801-903-2-7",
+        "rel-cond-combined-area-2230-to-sbc801-903-2-7"
+      ]
+    },
+    {
+      "id": "step-9",
+      "title": "Group M upholstered-furniture sub-clause 903.2.7.2",
+      "prompt": "If Group M displays and offers for sale upholstered furniture or mattresses with display + sale area > 465 m2 (Section 903.2.7.2)?",
+      "branches": [
+        {
+          "answer": "yes",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-10"
+        },
+        {
+          "answer": "no",
+          "next_step": "step-10"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.7.2"
+      ],
+      "relation_refs": [
+        "rel-cond-upholstered-furniture-465-to-sbc801-903-2-7-2",
+        "rel-sbc801-903-2-7-parent-of-903-2-7-2"
+      ]
+    },
+    {
+      "id": "step-10",
+      "title": "Group R (Residential) triggers",
+      "prompt": "If Group R, apply Section 903.2.8: R-1 always required; R-2 if more than the dwelling-unit / story threshold per 903.2.8; R-3 single-family typically not required; R-4 evaluate per sub-clauses.",
+      "branches": [
+        {
+          "answer": "R-1 present",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-11"
+        },
+        {
+          "answer": "R-2 with > 4 dwelling units or > 3 stories per 903.2.8",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-11"
+        },
+        {
+          "answer": "R-3 single-family",
+          "next_step": "step-11"
+        },
+        {
+          "answer": "no Group R",
+          "next_step": "step-11"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.8"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-8-residential-trigger"
+      ]
+    },
+    {
+      "id": "step-11",
+      "title": "Group S (Storage) triggers",
+      "prompt": "If Group S, apply Section 903.2.9: S-1 always required when fire-area thresholds are exceeded; S-2 evaluate sub-clauses (parking garages have separate provisions).",
+      "branches": [
+        {
+          "answer": "S-1 trigger met",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "S-2 trigger met",
+          "effect": "set sprinkler_required = true",
+          "next_step": "step-final-verdict"
+        },
+        {
+          "answer": "no S trigger",
+          "next_step": "step-final-verdict"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-903.2.9",
+        "sbc-801-section-903.2.9.1"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-9-storage-trigger"
+      ]
+    },
+    {
+      "id": "step-final-verdict",
+      "title": "Render verdict and assumptions",
+      "prompt": "Aggregate the boolean sprinkler_required flag across all triggered steps. If true, cite the triggering Section verbatim. If false, list every checked Section and confirm none was triggered.",
+      "outputs": {
+        "sprinkler_required": "boolean",
+        "triggering_sections": "list of cited sections",
+        "conditional_flag": "true if any input was assumed",
+        "assumptions_list": "every assumption listed in plain language",
+        "missing_info_restated": "restate missing-info checklist alongside the verdict"
+      },
+      "citation_requirement": "Always cite the triggering 903.2 sub-section verbatim from SBC 801. Synthesis is not legal source.",
+      "branches": [],
+      "source_refs": [
+        "sbc-801-section-903",
+        "sbc-801-section-903.2"
+      ],
+      "relation_refs": []
+    }
+  ]
+}

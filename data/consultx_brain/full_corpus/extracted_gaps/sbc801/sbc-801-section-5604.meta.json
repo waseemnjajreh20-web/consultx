@@ -1,0 +1,16 @@
+{
+  "record_id": "sbc-801-section-5604",
+  "section_number": "5604",
+  "chapter": "56",
+  "code_family": "SBC 801",
+  "extraction_method": "reuse_existing",
+  "source_files": [
+    "D:/sbc_consultx/sbc-801-section-5604.md"
+  ],
+  "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+  "source_page": 147,
+  "body_chars": 261,
+  "garble_ratio": 0.0,
+  "sha256_md": "feef02df8322c1ce4f9caa0dcb0229de9066bd073893b28d46d3b2a984ac1e38",
+  "extracted_at_utc": "2026-05-01T10:31:10.353999Z"
+}

@@ -1,0 +1,26 @@
+{
+  "audited_at": "2026-05-01T10:30:47.932127+00:00",
+  "totals": {
+    "new_facts": 100,
+    "by_type": {
+      "threshold": 70,
+      "exception": 30
+    },
+    "by_source_code": {
+      "SBC-801": 50,
+      "SBC-201": 50
+    },
+    "by_chapter": {
+      "SBC-801 ch.10": 20,
+      "SBC-801 ch.9": 30,
+      "SBC-201 ch.5": 8,
+      "SBC-201 ch.9": 42
+    },
+    "deduplicated_against_existing": 0
+  },
+  "validation": {
+    "all_have_source_refs": true,
+    "all_have_source_quote": true,
+    "no_banned_symbol": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-05-01T09:38:52.052Z",
+  "count": 2,
+  "edges": [
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-mall-buildings-402-exception-of",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-mall-buildings-402",
+      "relation_type": "exception_of",
+      "direction": "from_to",
+      "reason": "Manual fire alarm exception in covered mall buildings governed by 402",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions (mall 402)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-903-3-1-1-exception-of",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-903.3.1.1",
+      "relation_type": "exception_of",
+      "direction": "from_to",
+      "reason": "Manual pull stations exception when sprinkler+waterflow per 903.3.1.1",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions (sprinkler+waterflow)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    }
+  ]
+}

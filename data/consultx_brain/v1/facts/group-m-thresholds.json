@@ -1,0 +1,189 @@
+{
+  "domain": "group-m-mercantile-fire-protection",
+  "code_basis": "SBC 801-CC-2024",
+  "generated_by": "sub-agent-c",
+  "schema_version": 1,
+  "notes": "All thresholds and exceptions are extracted verbatim from local source assets. The character 'section symbol' is banned in this file; use 'Section ' (EN) instead.",
+  "facts": [
+    {
+      "id": "fact-group-m-fire-area-1115",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when a Group M fire area exceeds 1115 m2.",
+      "value": 1115,
+      "unit": "m2",
+      "scope": "Group M, single fire area",
+      "conditions": [
+        {
+          "trigger": "fire_area_exceeds",
+          "value": 1115,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-903.2.7"],
+      "source_quote": "A Group M fire area exceeds 1115 m 2 .",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-stories-above-grade-3",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when a Group M fire area is located more than three stories above grade plane.",
+      "value": 3,
+      "unit": "stories",
+      "scope": "Group M, fire area above grade plane",
+      "conditions": [
+        {
+          "trigger": "stories_above_grade_plane_more_than",
+          "value": 3,
+          "unit": "stories"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-903.2.7"],
+      "source_quote": "A Group M fire area is located more than three stories above grade plane.",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-combined-area-2230",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required when the combined area of all Group M fire areas on all floors, including any mezzanines, exceeds 2230 m2.",
+      "value": 2230,
+      "unit": "m2",
+      "scope": "Group M, combined area on all floors including mezzanines",
+      "conditions": [
+        {
+          "trigger": "combined_fire_area_all_floors_including_mezzanines_exceeds",
+          "value": 2230,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-903.2.7"],
+      "source_quote": "The combined area of all Group M fire areas on all floors, including any mezzanines, exceeds 2230 m 2 .",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-upholstered-furniture-465",
+      "fact_type": "threshold",
+      "statement": "An automatic sprinkler system is required throughout a Group M fire area where the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m2.",
+      "value": 465,
+      "unit": "m2",
+      "scope": "Group M fire area, upholstered furniture or mattresses display and sale",
+      "conditions": [
+        {
+          "trigger": "display_and_sale_area_for_upholstered_furniture_or_mattresses_exceeds",
+          "value": 465,
+          "unit": "m2"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-903.2.7.2"],
+      "source_quote": "An automatic sprinkler system shall be provided throughout a Group M fire area where the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m 2 .",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-high-piled-chapter-32",
+      "fact_type": "condition",
+      "statement": "An automatic sprinkler system shall be provided as required in Chapter 32 in all buildings of Group M where storage of merchandise is in high-piled or rack storage arrays.",
+      "value": null,
+      "unit": null,
+      "scope": "Group M, high-piled or rack storage arrays",
+      "conditions": [
+        {
+          "trigger": "high_piled_or_rack_storage_arrays_present",
+          "cross_reference": "Chapter 32"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-903.2.7.1"],
+      "source_quote": "An automatic sprinkler system shall be provided as required in Chapter 32 in all buildings of Group M where storage of merchandise is in high-piled or rack storage arrays.",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-occupant-load-500",
+      "fact_type": "threshold",
+      "statement": "A manual fire alarm system is required when the combined Group M occupant load of all floors is 500 or more persons.",
+      "value": 500,
+      "unit": "persons",
+      "scope": "Group M, combined occupant load all floors",
+      "conditions": [
+        {
+          "trigger": "combined_occupant_load_all_floors_at_least",
+          "value": 500,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-907.2.7"],
+      "source_quote": "The combined Group M occupant load of all floors is 500 or more persons.",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-occupant-load-100-discharge",
+      "fact_type": "threshold",
+      "statement": "A manual fire alarm system is required when the Group M occupant load is more than 100 persons above or below the lowest level of exit discharge.",
+      "value": 100,
+      "unit": "persons",
+      "scope": "Group M, occupant load above or below the lowest level of exit discharge",
+      "conditions": [
+        {
+          "trigger": "occupant_load_above_or_below_lowest_exit_discharge_more_than",
+          "value": 100,
+          "unit": "persons"
+        }
+      ],
+      "exceptions": [],
+      "source_refs": ["sbc-801-section-907.2.7"],
+      "source_quote": "The Group M occupant load is more than 100 persons above or below the lowest level of exit discharge .",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-alarm-exception-mall",
+      "fact_type": "exception",
+      "statement": "A manual fire alarm system is not required in covered or open mall buildings complying with SBC 201 Section 402.",
+      "value": null,
+      "unit": null,
+      "scope": "Group M, covered or open mall buildings",
+      "conditions": [],
+      "exceptions": [
+        "Covered or open mall — SBC 201 Section 402"
+      ],
+      "source_refs": ["sbc-801-section-907.2.7"],
+      "source_quote": "A manual fire alarm system is not required in covered or open mall buildings complying with Section 402 of SBC 201.",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    },
+    {
+      "id": "fact-group-m-alarm-exception-sprinkler-waterflow",
+      "fact_type": "exception",
+      "statement": "Manual fire alarm boxes are not required where the building is equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 and the occupant notification appliances will automatically activate throughout the notification zones upon sprinkler waterflow.",
+      "value": null,
+      "unit": null,
+      "scope": "Group M, building fully sprinklered with auto-activating notification on waterflow",
+      "conditions": [],
+      "exceptions": [
+        "Sprinkler + waterflow notification per Section 903.3.1.1"
+      ],
+      "source_refs": ["sbc-801-section-907.2.7"],
+      "source_quote": "Manual fire alarm boxes are not required where the building is equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 and the occupant notification appliances will automatically activate throughout the notification zones upon sprinkler water flow.",
+      "applicable_modes": ["main", "advisory", "analytical"],
+      "confidence": "high",
+      "not_citable_without_source_refs": true
+    }
+  ]
+}

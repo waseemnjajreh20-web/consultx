@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "agent": "SUB-AGENT B5 (round 2)",
+  "generated_at": "2026-05-01T15:20:00+03:00",
+  "coordinator_validation": {
+    "overall": "PASS",
+    "invariants_total": 3498,
+    "invariants_passed": 3498,
+    "invariants_failed": 0,
+    "invariants_per_category": {
+      "no_banned_symbol": 22,
+      "chunk_shape": 2214,
+      "facts": 305,
+      "relations": 842,
+      "decision_trees": 32,
+      "governance": 83
+    },
+    "source": "generated/consultx_brain_full/validation_report_full.json"
+  },
+  "symbol_audit": {
+    "ban_target": "U+00A7 (U+00A7)",
+    "scopes_audited": [
+      "data/consultx_brain/full_corpus/",
+      "generated/consultx_brain_full/"
+    ],
+    "files_audited_total": 558,
+    "files_audited_by_ext": { ".md": 370, ".json": 188 },
+    "files_with_match": 0,
+    "total_match_count": 0,
+    "result": "PASS"
+  },
+  "post_merge_counts": {
+    "chunks_sbc201": 148,
+    "chunks_sbc801": 221,
+    "relations_total": 842,
+    "facts_total": 305,
+    "cross_code_edges": 13,
+    "decision_tree_count": 3
+  },
+  "round2_contribution_after_dedup": {
+    "chunks_sbc201_added": 12,
+    "chunks_sbc801_added": 0,
+    "relations_added": 350,
+    "facts_added": 77
+  },
+  "manual_review_backlog": {
+    "sbc201": 64,
+    "sbc801": 0,
+    "source": "data/consultx_brain/full_corpus/manifests/sbc{201,801}_source_manifest.json"
+  },
+  "polling_outcome": {
+    "deadline_seconds": 300,
+    "deadline_hit_local": "2026-05-01T15:13:13+03:00",
+    "state_at_deadline": {
+      "extracted_gaps_sbc201_round2_files": 24,
+      "extracted_gaps_sbc801_round2_files": 0,
+      "round2_gap_relations_present": true,
+      "round2_gap_facts_present": false
+    },
+    "post_deadline": {
+      "round2_gap_facts_arrived_local": "2026-05-01T15:17:00+03:00",
+      "coordinator_rerun_after_facts_arrival": true
+    }
+  },
+  "coordinator_extension": {
+    "file": "scripts/build-consultx-brain-full.cjs",
+    "method": "Edit tool only (no full rewrite)",
+    "edits_applied": [
+      "load and dedup relations/round2_gap_relations.json after gap_completion_relations.json",
+      "load and dedup facts/round2_gap_facts.json (existsSync-guarded) after gap_completion_facts.json",
+      "buildChunks for extracted_gaps/sbc{201,801}_round2 with round1>round2 dedup before merging into chunks{201,801}"
+    ],
+    "dedup_keys": {
+      "relations": "from_ref|to_ref|relation_type",
+      "facts": "section_ref|value|statement-prefix(80)",
+      "chunks": "id (computed from source_code + section_ref)"
+    }
+  },
+  "hard_rules": {
+    "section_symbol_banned": "PASS",
+    "local_only_no_bucket_no_db_no_deploy": "PASS",
+    "coordinator_extended_via_edit_only": "PASS",
+    "coordinator_validation_overall_pass": "PASS"
+  },
+  "checkpoint_files": {
+    "markdown": "reports/round2_gap_completion_checkpoint.md",
+    "json": "reports/round2_gap_completion_checkpoint.json"
+  },
+  "sha256_of_checkpoint_reports": {
+    "round2_gap_completion_checkpoint_md": "9da83ca6c4aceda443bc62cb9602554d579429d1ed1bfa5ae84f8bfe6a8e9770",
+    "round2_gap_completion_checkpoint_json_pre_self_embed": "8753a33942cda26740b6fe1ae702374d98c6473a537547092d8fec5fac74aac9"
+  }
+}

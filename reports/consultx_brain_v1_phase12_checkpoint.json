@@ -1,0 +1,81 @@
+{
+  "report": "consultx-brain-v1-phase12-checkpoint",
+  "version": 1,
+  "date": "2026-05-01",
+  "validation": {
+    "overall": "PASS",
+    "invariants_total": 94,
+    "passed": 94,
+    "failed": 0,
+    "banned_symbol_audit_zero": true
+  },
+  "domain_summary": {
+    "sbc_201_chunks": 1,
+    "sbc_801_chunks": 11,
+    "relations": 15,
+    "facts": 9,
+    "decision_tree_steps": 10
+  },
+  "sub_agents": [
+    {"id": "A", "role": "Source Evidence", "outputs": [
+      "data/consultx_brain/v1/sources/sbc-201-section-309.md",
+      "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "data/consultx_brain/v1/manifests/source_manifest.json"
+    ]},
+    {"id": "B", "role": "Relations", "outputs": [
+      "data/consultx_brain/v1/relations/group-m-fire-protection-relations.json",
+      "data/consultx_brain/v1/manifests/relation_manifest.json"
+    ]},
+    {"id": "C", "role": "Facts", "outputs": [
+      "data/consultx_brain/v1/facts/group-m-thresholds.json"
+    ]},
+    {"id": "D", "role": "Synthesis decision tree", "outputs": [
+      "data/consultx_brain/v1/synthesis/group-m-advisory-decision-tree.md",
+      "generated/consultx_brain_v1/group_m_advisory_decision_tree_v1.json"
+    ]},
+    {"id": "E", "role": "Extraction gap audit", "outputs": [
+      "data/consultx_brain/v1/validation/extraction_gap_report.json"
+    ]},
+    {"id": "F", "role": "Runtime integration design", "outputs": [
+      "reports/brain_v1_runtime_integration_design.md",
+      "reports/brain_v1_runtime_integration_design.json"
+    ]}
+  ],
+  "generated_files": [
+    {"path": "generated/consultx_brain_v1/SBC201_Ch3_GroupM_canonical_v1_chunks.json", "bytes": 2056, "sha256": "fae0a075af83"},
+    {"path": "generated/consultx_brain_v1/SBC801_Ch9_GroupM_canonical_v1_chunks.json", "bytes": 14479, "sha256": "c7ce7ac4383e"},
+    {"path": "generated/consultx_brain_v1/group_m_relations_v1.json", "bytes": 8556, "sha256": "75d641486ced"},
+    {"path": "generated/consultx_brain_v1/group_m_facts_v1.json", "bytes": 8597, "sha256": "80190aeabac6"},
+    {"path": "generated/consultx_brain_v1/group_m_advisory_decision_tree_v1.json", "bytes": 7898, "sha256": "8051388fcae5"},
+    {"path": "generated/consultx_brain_v1/validation_report_v1.json", "bytes": 12642, "sha256": "d6abaf303f98"},
+    {"path": "generated/consultx_brain_v1/rollback_manifest_v1.json", "bytes": 2110, "sha256": "aabaf3a29d42"}
+  ],
+  "manual_review_items": [
+    {"id": "sbc-201-section-309", "reason": "verbatim Section 309 body absent from local extracts; only TOC anchor present", "proposed_remediation": "targeted extraction from D:/sbc_consultx/SBC 201 - The Saudi General Building Code-1-250.pdf at p.193 (1-2 pages); requires owner approval"}
+  ],
+  "production_apply_plan": {
+    "bucket_uploads": [
+      "ssss/SBC201_Ch3_GroupM_canonical_v1_chunks.json",
+      "ssss/SBC801_Ch9_GroupM_canonical_v1_chunks.json",
+      "ssss/brain_v1/group_m_relations_v1.json",
+      "ssss/brain_v1/group_m_facts_v1.json",
+      "ssss/brain_v1/group_m_advisory_decision_tree_v1.json"
+    ],
+    "db_writes": [],
+    "edge_deploys": ["fire-safety-chat"],
+    "vercel_deploys": [],
+    "estimated_loc_change": "26-30 lines in supabase/functions/fire-safety-chat/index.ts",
+    "applied": false
+  },
+  "rollback_plan": {
+    "local": "rm -rf generated/consultx_brain_v1/ data/consultx_brain/v1/ scripts/build-consultx-brain-v1.cjs reports/brain_v1_* reports/consultx_brain_v1_*",
+    "production_after_phase13": "delete the five bucket files; git revert the fire-safety-chat patch; redeploy fire-safety-chat"
+  },
+  "expected_behavior": {
+    "main": "unchanged — sidecar loader gated on mode==='standard'",
+    "advisory": "Mercantile / Group M questions cite SBC 201 Section 309 + SBC 801 Section 903.2.7 + Section 907.2.7 from canonical chunks and structured rows; relations and facts feed reasoning context but never become citations; expected-reference fallback should disappear for V1 sections",
+    "analytical": "unchanged in V1; sidecar loader is gated on mode==='standard' only"
+  },
+  "stop_message": "STOP — Brain V1 local build complete. Approval required before any production upload, DB write, or deploy."
+}

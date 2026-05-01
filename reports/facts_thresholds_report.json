@@ -1,0 +1,34 @@
+{
+  "audited_at": "2026-05-01T09:54:04.466486+00:00",
+  "totals": {
+    "facts": 128,
+    "by_type": {
+      "threshold": 90,
+      "condition": 1,
+      "exception": 37,
+      "definition": 0
+    },
+    "by_source_code": {
+      "SBC-801": 67,
+      "SBC-201": 61
+    },
+    "by_chapter": {
+      "9": 70,
+      "5": 10,
+      "10": 48
+    }
+  },
+  "carry_over_from_v1": 9,
+  "new_facts_extracted": 119,
+  "low_confidence_skipped": 302,
+  "checksums": {
+    "facts_full.json": "7c43f9f34776c2fea83a318bea8cbfd5a993c5b4ac58510ddecb936b94df00ad",
+    "thresholds_full.json": "e7c9c5c3d447e6d02a97642449d32083a13bb6f50c4058a06247d9e514677573",
+    "exceptions_full.json": "58e39e06da12d5f93d4ff1f65295f30ec5d3893304123259eba1a6b498b99431",
+    "definitions_full.json": "506813972695ffaca7a491524dc4b1605302ab9019d0ec91947904b722c068c8"
+  },
+  "validation": {
+    "all_have_source_refs": true,
+    "all_quote_present": true
+  }
+}

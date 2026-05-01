@@ -1,0 +1,319 @@
+{
+  "schema_version": "1.0",
+  "source_book": "SBC 801",
+  "chapter": 9,
+  "chunk_count": 11,
+  "chunks": [
+    {
+      "id": "sbc-801-section-903.1",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "903.1",
+      "parent_section_ref": "903",
+      "paragraph_ref": "903.1",
+      "title": "General",
+      "content": "Automatic sprinkler systems shall comply with this section. Where the provisions of this code require that a building or portion thereof be equipped throughout with an automatic sprinkler system in accordance with this section, the sprinklers shall be installed throughout every story of the building, including basements.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 443-471",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-903.2",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "903.2",
+      "parent_section_ref": "903",
+      "paragraph_ref": "903.2",
+      "title": "Where required",
+      "content": "Approved automatic sprinkler systems in new and existing buildings and structures shall be provided in the locations described in Sections 903.2.1 through 903.2.12.\n\n> [CANONICAL_SOURCE — SBC 801-CC-2024, Section 903.2.7, p. 467 (verbatim from extracted_sections.md:869-897)]",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 443-471",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-903.2.7",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "903.2.7",
+      "parent_section_ref": "903",
+      "paragraph_ref": "903.2.7",
+      "title": "Group M",
+      "content": "An automatic sprinkler system shall be provided throughout buildings containing a Group M occupancy where one of the following conditions exists:\n\n1. A Group M fire area exceeds 1115 m2.\n\n2. A Group M fire area is located more than three stories above grade plane.\n\n3. The combined area of all Group M fire areas on all floors, including any mezzanines, exceeds 2230 m2.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 443-471",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-903-2-7-classification",
+        "rel-sbc801-903-2-7-parent-of-903-2-7-1",
+        "rel-sbc801-903-2-7-parent-of-903-2-7-2",
+        "rel-cond-fire-area-1115-to-sbc801-903-2-7",
+        "rel-cond-combined-area-2230-to-sbc801-903-2-7",
+        "rel-analytical-mercantile-review-depends-903-2-7"
+      ],
+      "fact_refs": [
+        "fact-group-m-fire-area-1115",
+        "fact-group-m-stories-above-grade-3",
+        "fact-group-m-combined-area-2230"
+      ],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-903.2.7.1",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "903.2.7.1",
+      "parent_section_ref": "903",
+      "paragraph_ref": "903.2.7.1",
+      "title": "High-piled storage",
+      "content": "An automatic sprinkler system shall be provided as required in Chapter 32 in all buildings of Group M where storage of merchandise is in high-piled or rack storage arrays.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 443-471",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc801-903-2-7-parent-of-903-2-7-1"
+      ],
+      "fact_refs": [
+        "fact-group-m-high-piled-chapter-32"
+      ],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-903.2.7.2",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "903.2.7.2",
+      "parent_section_ref": "903",
+      "paragraph_ref": "903.2.7.2",
+      "title": "Group M upholstered furniture or mattresses",
+      "content": "An automatic sprinkler system shall be provided throughout a Group M fire area where the area used for the display and sale of upholstered furniture or mattresses exceeds 465 m2.\n\n<!--\nextraction_status: complete\nnote: Body contains only verbatim CANONICAL_SOURCE text. Synthesis commentary, decision tables, and engineering watch points from the original source MD have been excluded.\n-->",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 443-471",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-903.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc801-903-2-7-parent-of-903-2-7-2",
+        "rel-cond-upholstered-furniture-465-to-sbc801-903-2-7-2"
+      ],
+      "fact_refs": [
+        "fact-group-m-upholstered-furniture-465"
+      ],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.1",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.1",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.1",
+      "title": "General",
+      "content": "This section covers the application, installation, performance and maintenance of fire alarm systems and their components in new and existing buildings and structures. The requirements of Section 907.2 are applicable to new buildings and structures. The requirements of Section 907.9 are applicable to existing buildings and structures.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.1.2",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.1.2",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.1.2",
+      "title": "Fire Alarm Shop Drawings",
+      "content": "Shop drawings for fire alarm systems shall be prepared in accordance with NFPA 72 and submitted for review and approval prior to system installation.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.1.3",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.1.3",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.1.3",
+      "title": "Equipment",
+      "content": "Systems and components shall be listed and approved for the purpose for which they are installed.",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.2",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.2",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.2",
+      "title": "Where Required — New Buildings and Structures",
+      "content": "An approved fire alarm system installed in accordance with the provisions of this code and NFPA 72 shall be provided in new buildings and structures in accordance with Sections 907.2.1 through 907.2.23 and provide occupant notification in accordance with Section 907.5, unless other requirements are provided by another section of this code.\n\n> [CANONICAL_SOURCE — SBC 801-CC-2024, Section 907.2.7, pp. 513–514 (verbatim from extracted_907_909.txt:1312-1331)]",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.2.7",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.2.7",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.2.7",
+      "title": "Group M",
+      "content": "A manual fire alarm system that activates the occupant notification system in accordance with Section 907.5 shall be installed in Group M occupancies where one of the following conditions exists:\n\n1. The combined Group M occupant load of all floors is 500 or more persons.\n\n2. The Group M occupant load is more than 100 persons above or below the lowest level of exit discharge.\n\nExceptions:\n\n1. A manual fire alarm system is not required in covered or open mall buildings complying with Section 402 of SBC 201.\n\n2. Manual fire alarm boxes are not required where the building is equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 and the occupant notification appliances will automatically activate throughout the notification zones upon sprinkler water flow.\n\n> [CANONICAL_SOURCE — SBC 801-CC-2024, Section 907.2.7.1, p. 514 (verbatim from extracted_907_909.txt:1387-1396)]",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-907-2-7-classification",
+        "rel-sbc801-907-2-7-parent-of-907-2-7-1",
+        "rel-cond-occupant-load-500-to-sbc801-907-2-7",
+        "rel-cond-occupant-load-100-discharge-to-sbc801-907-2-7",
+        "rel-sbc801-907-2-7-exception-mall-buildings-402",
+        "rel-sbc801-907-2-7-to-sbc201-402-code-to-code",
+        "rel-sbc801-907-2-7-exception-sprinkler-903-3-1-1",
+        "rel-analytical-mercantile-review-depends-907-2-7"
+      ],
+      "fact_refs": [
+        "fact-group-m-occupant-load-500",
+        "fact-group-m-occupant-load-100-discharge",
+        "fact-group-m-alarm-exception-mall",
+        "fact-group-m-alarm-exception-sprinkler-waterflow"
+      ],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    },
+    {
+      "id": "sbc-801-section-907.2.7.1",
+      "source_code": "SBC-801",
+      "chapter": 9,
+      "section_ref": "907.2.7.1",
+      "parent_section_ref": "907",
+      "paragraph_ref": "907.2.7.1",
+      "title": "Occupant notification",
+      "content": "During times that the building is occupied, the initiation of a signal from a manual fire alarm box or from a waterflow switch shall not be required to activate the alarm notification appliances when an alarm signal is activated at a constantly attended location from which evacuation instructions shall be initiated over an emergency voice/alarm communication system installed in accordance with Section 907.5.2.2.\n\n<!--\nextraction_status: complete\nnote: Body contains only verbatim CANONICAL_SOURCE text. Synthesis commentary tables (Group A/B/E/F/H/I/M/R-1/R-2/R-4) and engineering watch points have been excluded.\n-->",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "pp. 531-588",
+      "source_pdf_key": "SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-801-section-907.md",
+      "confidence": "high",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "complete",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc801-907-2-7-parent-of-907-2-7-1"
+      ],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "audited_at": "2026-05-01T10:29:46.092776+00:00",
+  "totals": {
+    "new_edges": 254,
+    "by_type": {
+      "parent_child": 1,
+      "code_to_code": 221,
+      "exception_to_main_rule": 28,
+      "analytical_check_depends_on": 4
+    },
+    "by_confidence": {
+      "PROVEN": 254
+    },
+    "by_origin": {
+      "frontmatter_dependencies": 50,
+      "cross_ref_in_text": 200,
+      "analytical_synthetic": 4
+    },
+    "deduplicated_against_existing": 238
+  },
+  "validation": {
+    "all_have_source_basis": true,
+    "all_have_reason": true,
+    "all_not_citable": true
+  },
+  "gap_files_seen": 44,
+  "top_cross_code_edges": [
+    {
+      "from_ref": "sbc-201-section-1002",
+      "to_ref": "sbc-801-section-401",
+      "reason": "SBC-201 Section 1002 contains verbatim cross-reference: 'Section 401.2 of SBC 801'",
+      "source_basis": "SBC-201 Section 1002 body text (verbatim cross-reference)"
+    },
+    {
+      "from_ref": "sbc-201-section-1002",
+      "to_ref": "sbc-801-section-404",
+      "reason": "SBC-201 Section 1002 contains verbatim cross-reference: 'Section 404 of SBC 801'",
+      "source_basis": "SBC-201 Section 1002 body text (verbatim cross-reference)"
+    },
+    {
+      "from_ref": "sbc-201-section-1009",
+      "to_ref": "sbc-801-section-404",
+      "reason": "SBC-201 Section 1009 contains verbatim cross-reference: 'Section 404 of SBC 801'",
+      "source_basis": "SBC-201 Section 1009 body text (verbatim cross-reference)"
+    }
+  ]
+}

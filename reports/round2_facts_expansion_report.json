@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-05-01T12:17:02.747180+00:00",
+  "agent": "sub-agent-b4-round2",
+  "new_fact_count": 77,
+  "by_type": {
+    "threshold": 71,
+    "exception": 6
+  },
+  "by_chapter": {
+    "SBC-201 ch.7": 12,
+    "SBC-201 ch.10": 61,
+    "SBC-801 ch.4": 4
+  },
+  "by_source_code": {
+    "SBC-201": 73,
+    "SBC-801": 4
+  },
+  "top5_new_thresholds": [
+    {
+      "section_ref": "1006.2.1",
+      "source_code": "SBC-201",
+      "value": 10,
+      "unit": "occupants",
+      "id": "fact-r2-1006-2-1-d5bfb1ae"
+    },
+    {
+      "section_ref": "1006.2.1",
+      "source_code": "SBC-201",
+      "value": 20,
+      "unit": "occupants",
+      "id": "fact-r2-1006-2-1-6db6ca1d"
+    },
+    {
+      "section_ref": "1006.2.1",
+      "source_code": "SBC-201",
+      "value": 3,
+      "unit": "persons",
+      "id": "fact-r2-1006-2-1-4c7e5e8d"
+    },
+    {
+      "section_ref": "1006.2.1",
+      "source_code": "SBC-201",
+      "value": 29,
+      "unit": "occupants",
+      "id": "fact-r2-1006-2-1-f97661fa"
+    },
+    {
+      "section_ref": "1006.2.1.1",
+      "source_code": "SBC-201",
+      "value": 501,
+      "unit": "occupants",
+      "id": "fact-r2-1006-2-1-1-3437e818"
+    }
+  ],
+  "validation": {
+    "all_have_source_refs": true,
+    "all_have_source_quote": true,
+    "no_banned_symbol": true,
+    "banned_symbol_count": 0,
+    "deduplicated_against_facts_full_and_gap_completion": true,
+    "cap_respected": true
+  },
+  "outputs": {
+    "facts_path": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\facts\\round2_gap_facts.json",
+    "report_md": "D:\\ConsultX_Clean\\reports\\round2_facts_expansion_report.md",
+    "report_json": "D:\\ConsultX_Clean\\reports\\round2_facts_expansion_report.json"
+  },
+  "sha256": {
+    "round2_gap_facts.json": "321b38e936ee07d36625a6db213f24fc34237c070f243e68159647f8b9f60fff"
+  }
+}

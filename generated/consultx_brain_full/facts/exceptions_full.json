@@ -1,0 +1,931 @@
+{
+  "schema_version": "1.0",
+  "fact_count": 37,
+  "facts": [
+    {
+      "id": "fact-group-m-alarm-exception-mall",
+      "fact_type": "exception",
+      "statement": "A manual fire alarm system is not required in covered or open mall buildings complying with SBC 201 Section 402.",
+      "value": null,
+      "unit": null,
+      "scope": "Group M, covered or open mall buildings",
+      "conditions": [],
+      "exceptions": [
+        "Covered or open mall — SBC 201 Section 402"
+      ],
+      "source_refs": [
+        "sbc-801-section-907.2.7"
+      ],
+      "source_quote": "A manual fire alarm system is not required in covered or open mall buildings complying with Section 402 of SBC 201.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "907.2.7"
+    },
+    {
+      "id": "fact-group-m-alarm-exception-sprinkler-waterflow",
+      "fact_type": "exception",
+      "statement": "Manual fire alarm boxes are not required where the building is equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 and the occupant notification appliances will automatically activate throughout the notification zones upon sprinkler waterflow.",
+      "value": null,
+      "unit": null,
+      "scope": "Group M, building fully sprinklered with auto-activating notification on waterflow",
+      "conditions": [],
+      "exceptions": [
+        "Sprinkler + waterflow notification per Section 903.3.1.1"
+      ],
+      "source_refs": [
+        "sbc-801-section-907.2.7"
+      ],
+      "source_quote": "Manual fire alarm boxes are not required where the building is equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 and the occupant notification appliances will automatically activate throughout the notification zones upon sprinkler water flow.",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "high",
+      "not_citable_without_source_refs": true,
+      "source_code": "SBC-801",
+      "section_ref": "907.2.7"
+    },
+    {
+      "id": "fact-sbc-801-1001.1-exception-1",
+      "source_code": "SBC-801",
+      "section_ref": "1001.1",
+      "fact_type": "exception",
+      "statement": "Detached one- and",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1001.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "Detached one- and"
+      ],
+      "source_refs": [
+        "sbc-801-section-1001.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Detached one- and"
+    },
+    {
+      "id": "fact-sbc-801-1003.2-exception-2",
+      "source_code": "SBC-801",
+      "section_ref": "1003.2",
+      "fact_type": "exception",
+      "statement": "1. Sloped ceilings in accordance with Section 1207.2 of the of SBC 201. 2. Ceilings of dwelling units and sleeping units...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Sloped ceilings in accordance with Section 1207.2 of the of SBC 201. 2. Ceilings of dwelling units and sleeping units"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Sloped ceilings in accordance with Section 1207.2 of the of SBC 201. 2. Ceilings of dwelling units and sleeping units"
+    },
+    {
+      "id": "fact-sbc-801-1003.3.1-exception-3",
+      "source_code": "SBC-801",
+      "section_ref": "1003.3.1",
+      "fact_type": "exception",
+      "statement": "Door closers and stops shall not reduce headroom to less than 2000 mm. A barrier shall be provided where the vertical cl...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.3.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "Door closers and stops shall not reduce headroom to less than 2000 mm. A barrier shall be provided where the vertical clearance is less than 2000 mm high. The leading"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.3.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Door closers and stops shall not reduce headroom to less than 2000 mm. A barrier shall be provided where the vertical clearance is less than 2000 mm high. The leading"
+    },
+    {
+      "id": "fact-sbc-801-1003.3.2-exception-4",
+      "source_code": "SBC-801",
+      "section_ref": "1003.3.2",
+      "fact_type": "exception",
+      "statement": "These requirements shall not apply to sloping portions of handrails between the top and bottom riser of stairs and above...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.3.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "These requirements shall not apply to sloping portions of handrails between the top and bottom riser of stairs and above the ramp run. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.3.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "These requirements shall not apply to sloping portions of handrails between the top and bottom riser of stairs and above the ramp run. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1003.3.3-exception-5",
+      "source_code": "SBC-801",
+      "section_ref": "1003.3.3",
+      "fact_type": "exception",
+      "statement": "Handrails are permitted to protrude 115 mm from the wall or guard. ❖ Protruding objects could slow the egress flow",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.3.3 exception",
+      "conditions": [],
+      "exceptions": [
+        "Handrails are permitted to protrude 115 mm from the wall or guard. ❖ Protruding objects could slow the egress flow"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.3.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Handrails are permitted to protrude 115 mm from the wall or guard. ❖ Protruding objects could slow the egress flow"
+    },
+    {
+      "id": "fact-sbc-801-1003.5-exception-6",
+      "source_code": "SBC-801",
+      "section_ref": "1003.5",
+      "fact_type": "exception",
+      "statement": "1. Steps at exterior doors complying with Section 1010.1.4. 2. A stair with a single riser or with two risers",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.5 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Steps at exterior doors complying with Section 1010.1.4. 2. A stair with a single riser or with two risers"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.5"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Steps at exterior doors complying with Section 1010.1.4. 2. A stair with a single riser or with two risers"
+    },
+    {
+      "id": "fact-sbc-801-1003.7-exception-7",
+      "source_code": "SBC-801",
+      "section_ref": "1003.7",
+      "fact_type": "exception",
+      "statement": "Elevators used as an accessible means of egress in accordance with Section 1009.4. ❖ Generally, the code does not allow ...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1003.7 exception",
+      "conditions": [],
+      "exceptions": [
+        "Elevators used as an accessible means of egress in accordance with Section 1009.4. ❖ Generally, the code does not allow elevators,"
+      ],
+      "source_refs": [
+        "sbc-801-section-1003.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Elevators used as an accessible means of egress in accordance with Section 1009.4. ❖ Generally, the code does not allow elevators,"
+    },
+    {
+      "id": "fact-sbc-801-1004.5-exception-8",
+      "source_code": "SBC-801",
+      "section_ref": "1004.5",
+      "fact_type": "exception",
+      "statement": "Where approved by the fire official, the actual number of occupants for whom each occupied space, floor or building is d...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1004.5 exception",
+      "conditions": [],
+      "exceptions": [
+        "Where approved by the fire official, the actual number of occupants for whom each occupied space, floor or building is designed, although less than those determined by calculation,"
+      ],
+      "source_refs": [
+        "sbc-801-section-1004.5"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Where approved by the fire official, the actual number of occupants for whom each occupied space, floor or building is designed, although less than those determined by calculation,"
+    },
+    {
+      "id": "fact-sbc-801-1004.7-exception-9",
+      "source_code": "SBC-801",
+      "section_ref": "1004.7",
+      "fact_type": "exception",
+      "statement": "1. Outdoor areas used exclusively for service of the building need only have one means of egress.",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1004.7 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Outdoor areas used exclusively for service of the building need only have one means of egress."
+      ],
+      "source_refs": [
+        "sbc-801-section-1004.7"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Outdoor areas used exclusively for service of the building need only have one means of egress."
+    },
+    {
+      "id": "fact-sbc-801-1005.1-exception-10",
+      "source_code": "SBC-801",
+      "section_ref": "1005.1",
+      "fact_type": "exception",
+      "statement": "Aisles and aisle accessways in rooms or spaces used for assembly purposes complying with Section 1030. ❖",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1005.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "Aisles and aisle accessways in rooms or spaces used for assembly purposes complying with Section 1030. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1005.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Aisles and aisle accessways in rooms or spaces used for assembly purposes complying with Section 1030. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1005.3.1-exception-11",
+      "source_code": "SBC-801",
+      "section_ref": "1005.3.1",
+      "fact_type": "exception",
+      "statement": "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress stairways shall be calcu...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1005.3.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress stairways shall be calculated by"
+      ],
+      "source_refs": [
+        "sbc-801-section-1005.3.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress stairways shall be calculated by"
+    },
+    {
+      "id": "fact-sbc-801-1005.3.2-exception-12",
+      "source_code": "SBC-801",
+      "section_ref": "1005.3.2",
+      "fact_type": "exception",
+      "statement": "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress components other than st...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1005.3.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress components other than stairways shall"
+      ],
+      "source_refs": [
+        "sbc-801-section-1005.3.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. For other than Group H and I-2 occupancies, the capacity, in millimeters, of means of egress components other than stairways shall"
+    },
+    {
+      "id": "fact-sbc-801-1005.7.1-exception-13",
+      "source_code": "SBC-801",
+      "section_ref": "1005.7.1",
+      "fact_type": "exception",
+      "statement": "1. Surface-mounted latch release hardware shall be exempt from inclusion in the 175 mm encroachment where both of the",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1005.7.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Surface-mounted latch release hardware shall be exempt from inclusion in the 175 mm encroachment where both of the"
+      ],
+      "source_refs": [
+        "sbc-801-section-1005.7.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Surface-mounted latch release hardware shall be exempt from inclusion in the 175 mm encroachment where both of the"
+    },
+    {
+      "id": "fact-sbc-801-1005.7.2-exception-14",
+      "source_code": "SBC-801",
+      "section_ref": "1005.7.2",
+      "fact_type": "exception",
+      "statement": "Projections are permitted in corridors within Group I-2 Condition 1 in accordance with Section 407.4.3 of SBC 201. ❖",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1005.7.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "Projections are permitted in corridors within Group I-2 Condition 1 in accordance with Section 407.4.3 of SBC 201. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1005.7.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Projections are permitted in corridors within Group I-2 Condition 1 in accordance with Section 407.4.3 of SBC 201. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1004.2-exception-15",
+      "source_code": "SBC-801",
+      "section_ref": "1004.2",
+      "fact_type": "exception",
+      "statement": "1. In Group R-2 and R-3 occupancies, one means of egress is permitted within and from individual dwelling units with a m...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1004.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. In Group R-2 and R-3 occupancies, one means of egress is permitted within and from individual dwelling units with a maximum"
+      ],
+      "source_refs": [
+        "sbc-801-section-1004.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. In Group R-2 and R-3 occupancies, one means of egress is permitted within and from individual dwelling units with a maximum"
+    },
+    {
+      "id": "fact-sbc-801-1006.2.2.3-exception-16",
+      "source_code": "SBC-801",
+      "section_ref": "1006.2.2.3",
+      "fact_type": "exception",
+      "statement": "Where using refrigerants in quantities limited to the amounts based on the volume set forth in SBC 501. ❖",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1006.2.2.3 exception",
+      "conditions": [],
+      "exceptions": [
+        "Where using refrigerants in quantities limited to the amounts based on the volume set forth in SBC 501. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1006.2.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Where using refrigerants in quantities limited to the amounts based on the volume set forth in SBC 501. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1006.3.2-exception-17",
+      "source_code": "SBC-801",
+      "section_ref": "1006.3.2",
+      "fact_type": "exception",
+      "statement": "The path of egress travel to an exit shall be permitted to pass through more than one adjacent story in any of the follo...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1006.3.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "The path of egress travel to an exit shall be permitted to pass through more than one adjacent story in any of the following: 1. In Group R-1, R-2 or R-3 occupancies, exit"
+      ],
+      "source_refs": [
+        "sbc-801-section-1006.3.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The path of egress travel to an exit shall be permitted to pass through more than one adjacent story in any of the following: 1. In Group R-1, R-2 or R-3 occupancies, exit"
+    },
+    {
+      "id": "fact-sbc-801-1007.1.1-exception-18",
+      "source_code": "SBC-801",
+      "section_ref": "1007.1.1",
+      "fact_type": "exception",
+      "statement": "1. Where interior exit stairways or ramps are interconnected by a 1-hour fire-resistance- rated",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1007.1.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Where interior exit stairways or ramps are interconnected by a 1-hour fire-resistance- rated"
+      ],
+      "source_refs": [
+        "sbc-801-section-1007.1.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Where interior exit stairways or ramps are interconnected by a 1-hour fire-resistance- rated"
+    },
+    {
+      "id": "fact-sbc-801-1008.2-exception-19",
+      "source_code": "SBC-801",
+      "section_ref": "1008.2",
+      "fact_type": "exception",
+      "statement": "1. Occupancies in Group U. 2. Aisle ACCESSWAYS in Group A. 3. Dwelling units and sleeping units in Groups",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1008.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Occupancies in Group U. 2. Aisle ACCESSWAYS in Group A. 3. Dwelling units and sleeping units in Groups"
+      ],
+      "source_refs": [
+        "sbc-801-section-1008.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Occupancies in Group U. 2. Aisle ACCESSWAYS in Group A. 3. Dwelling units and sleeping units in Groups"
+    },
+    {
+      "id": "fact-sbc-801-1008.2.1-exception-20",
+      "source_code": "SBC-801",
+      "section_ref": "1008.2.1",
+      "fact_type": "exception",
+      "statement": "For auditoriums, theaters, concert or opera halls and similar assembly occupancies, the illumination at the walking surf...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1008.2.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "For auditoriums, theaters, concert or opera halls and similar assembly occupancies, the illumination at the walking surface is permitted to be reduced during performances by one of the"
+      ],
+      "source_refs": [
+        "sbc-801-section-1008.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "For auditoriums, theaters, concert or opera halls and similar assembly occupancies, the illumination at the walking surface is permitted to be reduced during performances by one of the"
+    },
+    {
+      "id": "fact-sbc-801-1025.2.1-exception-21",
+      "source_code": "SBC-801",
+      "section_ref": "1025.2.1",
+      "fact_type": "exception",
+      "statement": "addresses assembly occupancies where low light level is needed for",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1025.2.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "addresses assembly occupancies where low light level is needed for"
+      ],
+      "source_refs": [
+        "sbc-801-section-1025.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "addresses assembly occupancies where low light level is needed for"
+    },
+    {
+      "id": "fact-sbc-801-1008.2.3-exception-22",
+      "source_code": "SBC-801",
+      "section_ref": "1008.2.3",
+      "fact_type": "exception",
+      "statement": "Illumination shall not be required where the path of the exit discharge meets both of the following requirements: 1. The...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1008.2.3 exception",
+      "conditions": [],
+      "exceptions": [
+        "Illumination shall not be required where the path of the exit discharge meets both of the following requirements: 1. The path of exit discharge is illuminated from"
+      ],
+      "source_refs": [
+        "sbc-801-section-1008.2.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Illumination shall not be required where the path of the exit discharge meets both of the following requirements: 1. The path of exit discharge is illuminated from"
+    },
+    {
+      "id": "fact-sbc-801-1009.1-exception-23",
+      "source_code": "SBC-801",
+      "section_ref": "1009.1",
+      "fact_type": "exception",
+      "statement": "1. One accessible means of egress is required from an accessible mezzanine level in accordance with Section 1009.3, 1009...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. One accessible means of egress is required from an accessible mezzanine level in accordance with Section 1009.3, 1009.4 or"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. One accessible means of egress is required from an accessible mezzanine level in accordance with Section 1009.3, 1009.4 or"
+    },
+    {
+      "id": "fact-sbc-801-1002.2-exception-24",
+      "source_code": "SBC-801",
+      "section_ref": "1002.2",
+      "fact_type": "exception",
+      "statement": "for accessible entrance",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1002.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "for accessible entrance"
+      ],
+      "source_refs": [
+        "sbc-801-section-1002.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "for accessible entrance"
+    },
+    {
+      "id": "fact-sbc-801-1009.3.3-exception-25",
+      "source_code": "SBC-801",
+      "section_ref": "1009.3.3",
+      "fact_type": "exception",
+      "statement": "1, in a",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.3.3 exception",
+      "conditions": [],
+      "exceptions": [
+        "1, in a"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.3.3"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1, in a"
+    },
+    {
+      "id": "fact-sbc-801-1009.2.1-exception-26",
+      "source_code": "SBC-801",
+      "section_ref": "1009.2.1",
+      "fact_type": "exception",
+      "statement": "1. In buildings equipped throughout with an automatic sprinkler system installed in accordance",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.2.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. In buildings equipped throughout with an automatic sprinkler system installed in accordance"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. In buildings equipped throughout with an automatic sprinkler system installed in accordance"
+    },
+    {
+      "id": "fact-sbc-801-1009.2.1-exception-27",
+      "source_code": "SBC-801",
+      "section_ref": "1009.2.1",
+      "fact_type": "exception",
+      "statement": "2 specifies that",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.2.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "2 specifies that"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.2.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "2 specifies that"
+    },
+    {
+      "id": "fact-sbc-801-1009.3.1-exception-28",
+      "source_code": "SBC-801",
+      "section_ref": "1009.3.1",
+      "fact_type": "exception",
+      "statement": "Exit access stairways providing means of egress from mezzanines are permitted as part of an accessible means of egress. ...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.3.1 exception",
+      "conditions": [],
+      "exceptions": [
+        "Exit access stairways providing means of egress from mezzanines are permitted as part of an accessible means of egress. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.3.1"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "Exit access stairways providing means of egress from mezzanines are permitted as part of an accessible means of egress. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1009.3.2-exception-29",
+      "source_code": "SBC-801",
+      "section_ref": "1009.3.2",
+      "fact_type": "exception",
+      "statement": "1. The clear width of 1200 mm between handrails is not required in buildings equipped throughout with an automatic",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.3.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. The clear width of 1200 mm between handrails is not required in buildings equipped throughout with an automatic"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.3.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. The clear width of 1200 mm between handrails is not required in buildings equipped throughout with an automatic"
+    },
+    {
+      "id": "fact-sbc-801-1009.6-exception-30",
+      "source_code": "SBC-801",
+      "section_ref": "1009.6",
+      "fact_type": "exception",
+      "statement": "1. Areas of refuge are not required at exit access stairways where two-way communication is provided",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.6 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Areas of refuge are not required at exit access stairways where two-way communication is provided"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.6"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Areas of refuge are not required at exit access stairways where two-way communication is provided"
+    },
+    {
+      "id": "fact-sbc-801-1009.4.2-exception-31",
+      "source_code": "SBC-801",
+      "section_ref": "1009.4.2",
+      "fact_type": "exception",
+      "statement": "1. Areas of refuge are not required at the elevator in open parking garages. 2. Areas of refuge are not required in buil...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.4.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Areas of refuge are not required at the elevator in open parking garages. 2. Areas of refuge are not required in buildings"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.4.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Areas of refuge are not required at the elevator in open parking garages. 2. Areas of refuge are not required in buildings"
+    },
+    {
+      "id": "fact-sbc-801-1009.6.2-exception-32",
+      "source_code": "SBC-801",
+      "section_ref": "1009.6.2",
+      "fact_type": "exception",
+      "statement": "An interior area of refuge at the level of exit discharge that provides direct access to an exterior exit door. ❖",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.6.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "An interior area of refuge at the level of exit discharge that provides direct access to an exterior exit door. ❖"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.6.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "An interior area of refuge at the level of exit discharge that provides direct access to an exterior exit door. ❖"
+    },
+    {
+      "id": "fact-sbc-801-1009.6.4-exception-33",
+      "source_code": "SBC-801",
+      "section_ref": "1009.6.4",
+      "fact_type": "exception",
+      "statement": "1. Areas of refuge located within an enclosure for interior exit stairways complying with Section 1023.",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.6.4 exception",
+      "conditions": [],
+      "exceptions": [
+        "1. Areas of refuge located within an enclosure for interior exit stairways complying with Section 1023."
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.6.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "1. Areas of refuge located within an enclosure for interior exit stairways complying with Section 1023."
+    },
+    {
+      "id": "fact-sbc-801-1009.7.2-exception-34",
+      "source_code": "SBC-801",
+      "section_ref": "1009.7.2",
+      "fact_type": "exception",
+      "statement": "The fire-resistance rating and opening protectives are not required in the exterior wall where the building is equipped ...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.7.2 exception",
+      "conditions": [],
+      "exceptions": [
+        "The fire-resistance rating and opening protectives are not required in the exterior wall where the building is equipped throughout with an automatic sprinkler system installed in accordance"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.7.2"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The fire-resistance rating and opening protectives are not required in the exterior wall where the building is equipped throughout with an automatic sprinkler system installed in accordance"
+    },
+    {
+      "id": "fact-sbc-801-1009.7.4-exception-35",
+      "source_code": "SBC-801",
+      "section_ref": "1009.7.4",
+      "fact_type": "exception",
+      "statement": "The minimum clear width of 1200 mm between handrails is not required at stairways serving buildings equipped throughout ...",
+      "value": null,
+      "unit": null,
+      "scope": "SBC-801 Section 1009.7.4 exception",
+      "conditions": [],
+      "exceptions": [
+        "The minimum clear width of 1200 mm between handrails is not required at stairways serving buildings equipped throughout with an -"
+      ],
+      "source_refs": [
+        "sbc-801-section-1009.7.4"
+      ],
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "confidence": "medium",
+      "not_citable_without_source_refs": true,
+      "source_quote": "The minimum clear width of 1200 mm between handrails is not required at stairways serving buildings equipped throughout with an -"
+    }
+  ]
+}

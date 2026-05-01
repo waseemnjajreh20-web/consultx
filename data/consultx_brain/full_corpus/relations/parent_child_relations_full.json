@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-05-01T09:38:52.052Z",
+  "count": 3,
+  "edges": [
+    {
+      "id": "rel-sbc-801-section-903-2-7-sbc-801-section-903-2-7-1-parent-child",
+      "from_ref": "sbc-801-section-903.2.7",
+      "to_ref": "sbc-801-section-903.2.7.1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 903.2.7 -> 903.2.7.1 sub-section (mall buildings)",
+      "source_basis": "SBC 801 903.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-903-2-7-sbc-801-section-903-2-7-2-parent-child",
+      "from_ref": "sbc-801-section-903.2.7",
+      "to_ref": "sbc-801-section-903.2.7.2",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 903.2.7 -> 903.2.7.2 sub-section (high-pile / upholstered)",
+      "source_basis": "SBC 801 903.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-907-2-7-1-parent-child",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-907.2.7.1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 907.2.7 -> 907.2.7.1 sub-section (mall buildings)",
+      "source_basis": "SBC 801 907.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    }
+  ]
+}

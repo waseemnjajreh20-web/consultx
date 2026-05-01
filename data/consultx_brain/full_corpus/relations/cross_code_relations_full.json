@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-05-01T09:38:52.051Z",
+  "count": 13,
+  "edges": [
+    {
+      "id": "rel-sbc-801-section-1020-sbc-201-section-708-cross-code-1",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 mandates fire-rated corridors complying with SBC 201 708",
+      "source_basis": "SBC 801 Section 1020.2",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-201-section-405-cross-code-2",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-201-section-405",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Accessible stairway design governed by SBC 201 405",
+      "source_basis": "SBC 801 Section 1011",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-201-section-913-cross-code-3",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-201-section-913",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Pump room separation dictated by SBC 201",
+      "source_basis": "SBC 801 Section 913.2.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-503-sbc-201-section-503-cross-code-4",
+      "from_ref": "sbc-801-section-503",
+      "to_ref": "sbc-201-section-503",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Fire apparatus access roads in SBC 801 link to SBC 201 design requirements",
+      "source_basis": "SBC 801 Section 503",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-507-sbc-201-table-506-2-cross-code-5",
+      "from_ref": "sbc-801-section-507",
+      "to_ref": "sbc-201-table-506-2",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Water supply requirements link to building area/height per Table 506.2",
+      "source_basis": "SBC 801 Section 507",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-201-section-602-cross-code-7",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-201-section-602",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Sprinkler system requirements link to construction classification",
+      "source_basis": "SBC 801 Section 903",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-1-2-1-sbc-201-section-716-cross-code-11",
+      "from_ref": "sbc-801-section-1010.1.2.1",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Fire door assembly performance linked to SBC 201 716 (Fire/Smoke Openings)",
+      "source_basis": "SBC 801 Section 1010.1.2.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-5-sbc-201-section-703-cross-code-12",
+      "from_ref": "sbc-801-section-1013.5",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Exit sign wiring protection depends on SBC 201 703 (Fire-Resistance Ratings)",
+      "source_basis": "SBC 801 Section 1013.5",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-201-table-1004-5-cross-code-13",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-201-table-1004-5",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 occupant load requirements derived from SBC 201 Table 1004.5",
+      "source_basis": "SBC 801 Section 1004.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-201-table-1006-3-3-cross-code-14",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-201-table-1006-3-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 exit requirements linked to SBC 201 Table 1006.3.3",
+      "source_basis": "SBC 801 Section 1006.2",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-903-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M (mercantile) classification triggers automatic sprinkler thresholds in 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 903.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-907-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M classification triggers manual fire alarm system requirement under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 907.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-201-section-402-code-to-code",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-201-section-402",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Mall-buildings cross-link from SBC 801 907.2.7 to SBC 201 402",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions cross-code mapping",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    }
+  ]
+}

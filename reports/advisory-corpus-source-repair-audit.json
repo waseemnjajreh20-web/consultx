@@ -1,0 +1,112 @@
+{
+  "audit": "advisory-corpus-source-repair",
+  "version": 1,
+  "date": "2026-05-01",
+  "scope": "Make SBC 801 Section 903.2.7 and 907.2.7 real retrieved sources for Advisory mode.",
+  "execution": {
+    "code_edits": false,
+    "db_writes": false,
+    "migrations": false,
+    "deploys": false
+  },
+  "constraints_observed": [
+    "no service role key in shell — live DB queries not run",
+    "no section symbol introduced",
+    "no payment / Enterprise / GraphRAG / corpus import touched"
+  ],
+  "external_assets": {
+    "path": "D:/sbc_consultx",
+    "available": true,
+    "entry_count": 625,
+    "key_files": [
+      "extracted_sections.md (lines 869-897 → SBC 201/801 Section 903.2.7 + 903.2.7.1 + 903.2.7.2 verbatim)",
+      "extracted_907_909.txt (lines 1312-1409 → SBC 801 Section 907.2.7 + 907.2.7.1 verbatim)",
+      "sbc-801-section-903.md (curated frontmatter + Section 903.x summary)",
+      "sbc-801-section-907.md (curated frontmatter + Section 907.x summary)",
+      "sbc-201-section-903.md (mirror)",
+      "sbc-201-section-907.md (mirror)",
+      "sbc801_sections_clean.json (structured JSON; not deeply inspected here)",
+      "sbc201_sections_clean.json (structured JSON; not deeply inspected here)"
+    ],
+    "section_files_total_for_801": 137,
+    "section_files_total_for_201": 95
+  },
+  "live_state_inferences": {
+    "advisory_retrieval_path": "fetchSBCContext (keyword) only; vector RPC bypassed for mode=standard",
+    "bucket_chunk_naming": "SBC <code> ... -<startPage>-<endPage>_extracted_chunks.json",
+    "sbc_documents_section_number_drift": "documented in Step 2.5; chunk_metadata never emits 'high'",
+    "sbc_code_tables_seeded_ids": ["1004.5","1006.3.3","1006.3.4","504.3","504.4","506.2"],
+    "sbc_code_tables_missing_for_failure_case": ["903.2.7","907.2.7","309"]
+  },
+  "section_status": {
+    "SBC-801_903.2.7": {
+      "exact_text_in_external_asset": true,
+      "external_asset_anchor": "D:/sbc_consultx/extracted_sections.md:869-897",
+      "exact_text_in_live_bucket_chunk": "probable_but_unverified",
+      "exact_text_in_sbc_documents_under_correct_section_number": "unknown_likely_drift",
+      "structured_table_row": "absent",
+      "graph_node": "unknown",
+      "community_summary": "unknown",
+      "current_advisory_outcome": "downgraded_to_unsupported_or_unretrieved_label_or_emits_expected_reference_phrase"
+    },
+    "SBC-801_907.2.7": {
+      "exact_text_in_external_asset": true,
+      "external_asset_anchor": "D:/sbc_consultx/extracted_907_909.txt:1312-1409",
+      "exact_text_in_live_bucket_chunk": "probable_but_unverified",
+      "exact_text_in_sbc_documents_under_correct_section_number": "unknown_likely_drift",
+      "structured_table_row": "absent",
+      "graph_node": "unknown",
+      "community_summary": "unknown",
+      "current_advisory_outcome": "downgraded_to_unsupported_or_unretrieved_label_or_emits_expected_reference_phrase"
+    },
+    "SBC-201_309": {
+      "exact_text_in_external_asset": true,
+      "external_asset_anchor": "D:/sbc_consultx/sbc-201-section-309.md",
+      "structured_table_row": "absent",
+      "current_advisory_outcome": "tableRef matched by SEMANTIC_ALIAS but no ledger row → token downgraded by Step 4"
+    }
+  },
+  "repair_options": [
+    {
+      "rank": 1,
+      "id": "D",
+      "title": "Curated structured-table rows for 903.2.7 and 907.2.7",
+      "files": [
+        "supabase/migrations/<timestamp>_sbc_tables_seed_903_2_7_907_2_7.sql (new)",
+        "supabase/functions/fire-safety-chat/index.ts (2 SEMANTIC_ALIAS lines, Mercantile+sprinkler/alarm)"
+      ],
+      "db_changes": "INSERT … ON CONFLICT DO UPDATE on sbc_code_tables; idempotent",
+      "risk": "low",
+      "rollback": "DELETE FROM sbc_code_tables WHERE table_id IN ('903.2.7','907.2.7') AND source_code IN ('SBC 801','SBC 201')",
+      "expected_improvement": "Step 4.1 surfaces structured chips and Step 4 verifier accepts conf:medium for these sections; expected-reference fallback eliminated for Mercantile fire-protection questions",
+      "validation": "live retest of the Group M / 1,200 m² question; source panel shows two new structured chips and answer text cites 903.2.7 / 907.2.7 at conf:medium"
+    },
+    {
+      "rank": 2,
+      "id": "A",
+      "title": "sbc_documents.section_number drift correction",
+      "risk": "low_medium",
+      "expected_improvement": "click-time deep-link accuracy improves; vector path becomes useful (when enabled)"
+    },
+    {
+      "rank": 3,
+      "id": "B",
+      "title": "Import Ch.9 section-level chunks into bucket ssss",
+      "risk": "medium"
+    },
+    {
+      "rank": 4,
+      "id": "C",
+      "title": "Generate new section-level chunks from D:/sbc_consultx",
+      "risk": "medium"
+    }
+  ],
+  "recommended_path": "D",
+  "next_command_outline": [
+    "Author supabase/migrations/<timestamp>_sbc_tables_seed_903_2_7_907_2_7.sql with verbatim content from D:/sbc_consultx",
+    "Add 2 SEMANTIC_ALIAS lines in fire-safety-chat/index.ts",
+    "Apply migration to project hrnltxmwoaphgejckutk and deploy fire-safety-chat",
+    "Live retest the Group M / 1,200 m² Advisory question"
+  ],
+  "blocked_by": "owner approval before any migration or deploy"
+}

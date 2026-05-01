@@ -1,0 +1,201 @@
+{
+  "id": "group-m-fire-protection-advisory-tree-v1",
+  "use_case": "group-m-fire-protection-required",
+  "applicable_modes": [
+    "advisory"
+  ],
+  "not_legal_source": true,
+  "header_note": "This decision tree guides Advisory reasoning. It is not legal source. Cite Section 903.2.7 / Section 907.2.7 verbatim from sources.",
+  "required_inputs": [
+    "floor_count",
+    "floor_area_each_floor_m2",
+    "stories_above_grade",
+    "existing_sprinkler_yes_no",
+    "is_covered_or_open_mall",
+    "upholstered_furniture_display_area_m2",
+    "occupant_load_total",
+    "occupant_load_above_or_below_exit_discharge"
+  ],
+  "missing_info_prompts": {
+    "ar": [
+      "كم عدد الطوابق في المبنى، وما هي مساحة كل طابق بالمتر المربع؟",
+      "كم عدد الطوابق الواقعة فوق منسوب التسوية؟",
+      "هل المبنى (أو حيز المجموعة M) مزود حاليا بشبكة رشاشات؟",
+      "هل المبنى مجمع تجاري مغطى أو مفتوح يتوافق مع القسم 402 من كود البناء السعودي 201؟",
+      "هل يتم عرض وبيع أثاث منجد أو مراتب، وإذا نعم فما إجمالي مساحة العرض والبيع بالمتر المربع؟",
+      "ما إجمالي حمولة الإشغال لجميع طوابق المجموعة M مجتمعة؟",
+      "ما حمولة الإشغال الواقعة فوق أو تحت أدنى مستوى لتفريغ الخروج؟"
+    ],
+    "en": [
+      "How many floors does the building have, and what is the area (in square metres) of each floor?",
+      "How many stories are located above the grade plane?",
+      "Is the building (or the Group M tenant space) currently sprinklered?",
+      "Is the building a covered mall or open mall complying with SBC 201 Section 402?",
+      "Is upholstered furniture or mattresses displayed and offered for sale, and if so, what is the total display + sale area in square metres?",
+      "What is the total occupant load for all Group M floors combined?",
+      "What is the occupant load located above, or below, the lowest level of exit discharge?"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Classify occupancy",
+      "inputs": [
+        "use_description"
+      ],
+      "check": "Is the building use Mercantile (Group M) per SBC 201 Section 309?",
+      "on_unknown_or_other_group": "ask user — what occupancy group? if not M, escalate to general decision tree",
+      "source_refs": [
+        "sbc-201-section-309"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "step-2",
+      "title": "Identify missing inputs",
+      "required_inputs": [
+        "floor_count",
+        "floor_area_each_floor_m2",
+        "stories_above_grade",
+        "existing_sprinkler_yes_no",
+        "is_covered_or_open_mall",
+        "upholstered_furniture_display_area_m2",
+        "occupant_load_total",
+        "occupant_load_above_or_below_exit_discharge"
+      ],
+      "on_missing": "emit Arabic + English clarifying questions, do not proceed",
+      "source_refs": [],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-903-2-7-classification",
+        "rel-sbc201-309-to-sbc801-907-2-7-classification"
+      ]
+    },
+    {
+      "id": "step-3",
+      "title": "Compute Group M fire area per floor",
+      "check": "Is any single Group M fire area on any floor greater than 1115 m2?",
+      "on_true": "set sprinkler_required = true",
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "relation_refs": [
+        "rel-cond-fire-area-1115-to-sbc801-903-2-7"
+      ]
+    },
+    {
+      "id": "step-4",
+      "title": "Check stories-above-grade trigger",
+      "check": "Is the Group M fire area located more than three stories above the grade plane?",
+      "on_true": "set sprinkler_required = true",
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-7-parent-of-903-2-7-1"
+      ]
+    },
+    {
+      "id": "step-5",
+      "title": "Compute combined Group M area",
+      "check": "Is the combined Group M fire area on all floors (including mezzanines) greater than 2230 m2?",
+      "on_true": "set sprinkler_required = true",
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "relation_refs": [
+        "rel-cond-combined-area-2230-to-sbc801-903-2-7"
+      ]
+    },
+    {
+      "id": "step-6",
+      "title": "Sub-clause check 903.2.7.1 — high-piled storage",
+      "check": "Is merchandise stored in high-piled or rack-storage arrays?",
+      "on_true": "Chapter 32 of SBC 801 also applies; out of V1 scope, mark as analytical follow-up for human review",
+      "source_refs": [
+        "sbc-801-section-903.2.7.1"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-2-7-parent-of-903-2-7-1"
+      ]
+    },
+    {
+      "id": "step-7",
+      "title": "Sub-clause check 903.2.7.2 — upholstered furniture",
+      "check": "Does the display + sale area for upholstered furniture or mattresses exceed 465 m2?",
+      "on_true": "set sprinkler_required = true",
+      "source_refs": [
+        "sbc-801-section-903.2.7.2"
+      ],
+      "relation_refs": [
+        "rel-cond-upholstered-furniture-465-to-sbc801-903-2-7-2",
+        "rel-sbc801-903-2-7-parent-of-903-2-7-2"
+      ]
+    },
+    {
+      "id": "step-8",
+      "title": "Group M alarm trigger 907.2.7",
+      "checks": [
+        {
+          "condition": "combined Group M occupant load on all floors >= 500",
+          "on_true": "set manual_fire_alarm_required = true"
+        },
+        {
+          "condition": "occupant load above or below the lowest level of exit discharge > 100",
+          "on_true": "set manual_fire_alarm_required = true"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-907.2.7"
+      ],
+      "relation_refs": [
+        "rel-cond-occupant-load-500-to-sbc801-907-2-7",
+        "rel-cond-occupant-load-100-discharge-to-sbc801-907-2-7",
+        "rel-sbc801-907-2-7-parent-of-907-2-7-1"
+      ]
+    },
+    {
+      "id": "step-9",
+      "title": "Apply 907.2.7 Exceptions",
+      "exceptions": [
+        {
+          "id": "exception-1-mall",
+          "condition": "covered or open mall complying with SBC 201 Section 402",
+          "effect": "set manual_fire_alarm_required = false"
+        },
+        {
+          "id": "exception-2-sprinkler-waterflow",
+          "condition": "fully sprinklered per Section 903.3.1.1 with waterflow-activated occupant notification",
+          "effect": "manual fire alarm boxes optional; underlying alarm system requirement may still apply — do not infer blanket exemption"
+        }
+      ],
+      "source_refs": [
+        "sbc-801-section-907.2.7",
+        "sbc-801-section-907.2.7.1"
+      ],
+      "relation_refs": [
+        "rel-sbc801-907-2-7-exception-mall-buildings-402",
+        "rel-sbc801-907-2-7-exception-sprinkler-903-3-1-1"
+      ]
+    },
+    {
+      "id": "step-10",
+      "title": "Render verdict and missing-info checklist",
+      "outputs": {
+        "sprinkler_required": "verdict aggregated from steps 3-7",
+        "manual_fire_alarm_required": "verdict aggregated from steps 8-9",
+        "conditional_flag": "true if any input was assumed",
+        "assumptions_list": "every assumption listed in plain language",
+        "missing_info_restated": "restate the missing-info checklist alongside the verdict"
+      },
+      "citation_requirement": "always cite Section 903.2.7 and Section 907.2.7 verbatim from the source files alongside the verdict; synthesis is not legal source",
+      "source_refs": [
+        "sbc-801-section-903.2.7",
+        "sbc-801-section-907.2.7"
+      ],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-903-2-7-classification",
+        "rel-sbc201-309-to-sbc801-907-2-7-classification"
+      ]
+    }
+  ]
+}

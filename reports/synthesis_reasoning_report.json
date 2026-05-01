@@ -1,0 +1,86 @@
+{
+  "generated_at": "2026-05-01T00:00:00Z",
+  "agent": "SUB-AGENT G",
+  "task": "Synthesis & Consultant Reasoning workflows for ConsultX Brain Full Corpus",
+  "outputs": [
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/advisory_workflows.json",
+      "sha256": "2309ce7fa18400bd587d6182dd152eff9015ece02f9e1a8e5e6f3bf6d9a757fa",
+      "section_symbol_count": 0,
+      "workflow_count": 8,
+      "workflow_ids": [
+        "advisory-sprinkler-required",
+        "advisory-fire-alarm-required",
+        "advisory-occupancy-classification",
+        "advisory-mixed-occupancy",
+        "advisory-egress-design",
+        "advisory-standpipe-required",
+        "advisory-smoke-control-required",
+        "advisory-missing-input-checklist"
+      ]
+    },
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/analytical_workflows.json",
+      "sha256": "55e69d473fb069c7120fd9273aa6d42664085d0c759ec5ae6f53e7c66c7b26a0",
+      "section_symbol_count": 0,
+      "workflow_count": 4,
+      "workflow_ids": [
+        "analytical-plan-review-gap-matrix",
+        "analytical-required-systems-matrix",
+        "analytical-drawing-evidence-to-code-section",
+        "analytical-missing-drawing-evidence"
+      ]
+    },
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/main_mode_patterns.json",
+      "sha256": "ed915c3b20d967894216032bf8103c279eea2fc9d1faf8969e8bae9570808456",
+      "section_symbol_count": 0,
+      "pattern_count": 10,
+      "pattern_ids": [
+        "main-group-m-sprinkler-summary",
+        "main-group-m-fire-alarm-summary",
+        "main-high-rise-sprinkler-summary",
+        "main-basement-sprinkler-summary",
+        "main-occupancy-classification-summary",
+        "main-egress-quick-guide",
+        "main-interior-finish-summary",
+        "main-standpipe-trigger-summary",
+        "main-smoke-control-trigger-summary",
+        "main-not-legal-source-disclaimer"
+      ]
+    },
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/decision_trees/sprinkler-required-decision.json",
+      "sha256": "caa207f22d491ed3d73bca03b4cbb80a196cbe85d88593a4ec6cab0d94ae17a6",
+      "section_symbol_count": 0,
+      "step_count": 12
+    },
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/decision_trees/egress-design-checklist.json",
+      "sha256": "fdb9829cfa7628e586ed4e63937d6efc0b60e071bb34f66421900ad1ebee330c",
+      "section_symbol_count": 0,
+      "step_count": 10
+    },
+    {
+      "path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/synthesis/decision_trees/group-m-fire-protection.json",
+      "sha256": "0376aee74213baa1d50ef5ad529da5e527c28a706c91687a2499445bec116a01",
+      "section_symbol_count": 0,
+      "step_count": 10,
+      "v1_pointer": "D:/ConsultX_Clean/generated/consultx_brain_v1/group_m_advisory_decision_tree_v1.json"
+    }
+  ],
+  "validation": {
+    "all_seven_files_written": true,
+    "section_symbol_count_total": 0,
+    "every_workflow_marked_not_legal_source": true,
+    "every_workflow_has_applicable_modes": true,
+    "every_decision_tree_step_has_source_or_relation_refs": true,
+    "json_parse_ok": true
+  },
+  "notes": [
+    "All workflows mark not_legal_source: true; the system prompt requires verbatim citation from SBC 801 / SBC 201 PDFs alongside any verdict.",
+    "Relation-ref IDs follow the placeholder convention rel-... (some IDs from V1 reused; new ones marked for coordinator reconciliation against sub-agent E's relations_full.json).",
+    "No threshold values were invented; numeric thresholds (1115 m2, 2230 m2, 465 m2, 500 occupants, 100 occupants) all originate from existing source files (V1 facts and synthesis pages cited).",
+    "D:/sbc_consultx was read-only; no modifications made there."
+  ]
+}

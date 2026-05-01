@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T00:00:00Z",
+  "source_basis_paths": [
+    "D:/sbc_consultx/wiki/architecture/cross-code-relations.json",
+    "D:/sbc_consultx/sbc-801-section-903.md",
+    "D:/sbc_consultx/sbc-801-section-907.md",
+    "D:/sbc_consultx/sbc-201-section-309.md",
+    "D:/sbc_consultx/extracted_sections.md",
+    "D:/sbc_consultx/extracted_907_909.txt"
+  ],
+  "edge_count": 15,
+  "edge_types": {
+    "classification_triggers_system": 2,
+    "parent_child": 3,
+    "condition_triggers_requirement": 5,
+    "exception_of": 2,
+    "code_to_code": 1,
+    "analytical_check_depends_on": 2
+  },
+  "confidence_distribution": {
+    "PROVEN": 15
+  },
+  "applicable_modes_distribution": {
+    "advisory": 13,
+    "analytical": 12
+  },
+  "checksum_sha256": "604cec0a8b1d77d2c1e5cbcbeeed27fcbf962826e6ea0f0393a7bc64e81c4c9c",
+  "allowed_use": ["relation"],
+  "intended_live_target": "runtime_sidecar"
+}

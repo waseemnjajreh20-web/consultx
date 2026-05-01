@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T00:00:00Z",
+  "header_note": "Concise patterns for Main mode. Each pattern is a single short answer template. Synthesis is NOT legal source. Every Main answer must end with a verbatim citation to the cited section.",
+  "patterns": [
+    {
+      "id": "main-group-m-sprinkler-summary",
+      "title": "Group M sprinkler trigger summary",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "في مجموعة M (التجارة)، الرشاشات الآلية مطلوبة عند تجاوز حيز الحريق على أي طابق 1115 م²، أو وجود الإشغال على أكثر من ثلاث طوابق فوق منسوب التسوية، أو تجاوز إجمالي حيز الحريق المجمع 2230 م². للتقييم الكامل، انتقل إلى وضع Advisory.",
+      "summary_text_en": "For Group M, automatic sprinklers are required when the fire area on any floor exceeds 1115 m2, when the Group M is located more than three stories above grade, or when the combined Group M fire area exceeds 2230 m2. For full evaluation, switch to Advisory mode.",
+      "follow_up_pointer": "advisory-sprinkler-required",
+      "source_refs": [
+        "sbc-801-section-903.2.7"
+      ],
+      "relation_refs": [
+        "rel-cond-fire-area-1115-to-sbc801-903-2-7",
+        "rel-cond-combined-area-2230-to-sbc801-903-2-7"
+      ]
+    },
+    {
+      "id": "main-group-m-fire-alarm-summary",
+      "title": "Fire alarm Group M summary",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "في مجموعة M، نظام الإنذار اليدوي مطلوب عند بلوغ إجمالي حمولة الإشغال 500 شخص أو أكثر، أو عند تجاوز حمولة الإشغال فوق أو تحت أدنى مستوى تفريغ خروج 100 شخص. توجد استثناءات للمجمعات التجارية المغطاة وللمباني المرشوشة بإشعار سريان الماء.",
+      "summary_text_en": "For Group M, a manual fire alarm system is required when the combined occupant load reaches 500 or more, or when the occupant load above or below the lowest level of exit discharge exceeds 100. Exceptions apply for covered/open malls and for buildings sprinklered with waterflow occupant notification.",
+      "follow_up_pointer": "advisory-fire-alarm-required",
+      "source_refs": [
+        "sbc-801-section-907.2.7",
+        "sbc-801-section-907.2.7.1",
+        "sbc-201-section-402"
+      ],
+      "relation_refs": [
+        "rel-cond-occupant-load-500-to-sbc801-907-2-7",
+        "rel-cond-occupant-load-100-discharge-to-sbc801-907-2-7"
+      ]
+    },
+    {
+      "id": "main-high-rise-sprinkler-summary",
+      "title": "High-rise sprinkler trigger summary",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "أي مبنى يقع طابقه المشغول الأعلى على ارتفاع يجعله شاهقا (High-Rise) وفق التعريف يستوجب نظام رشاشات آلي. التحقق النهائي من ارتفاع المبنى ومجموعة الإشغال يلزم في وضع Advisory.",
+      "summary_text_en": "Any building whose highest occupied floor meets the high-rise definition requires an automatic sprinkler system. Final verification of building height and occupancy is performed in Advisory mode.",
+      "follow_up_pointer": "advisory-sprinkler-required",
+      "source_refs": [
+        "sbc-801-section-903.2.11"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-basement-sprinkler-summary",
+      "title": "Underground / basement sprinkler trigger summary",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "وجود طابق تحت سطح الأرض يستدعي نظام رشاشات آلي وفق Section 903.2.10. للتقييم التفصيلي مع باقي العوامل، استخدم وضع Advisory.",
+      "summary_text_en": "An underground / below-grade story triggers automatic sprinkler requirements under Section 903.2.10. Use Advisory mode for full evaluation with the other factors.",
+      "follow_up_pointer": "advisory-sprinkler-required",
+      "source_refs": [
+        "sbc-801-section-903.2.10"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-occupancy-classification-summary",
+      "title": "Occupancy classification quick guide",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "تنقسم الإشغالات إلى عشر مجموعات (A تجمعات، B أعمال، E تعليمية، F مصانع، H خطرة، I مؤسسية، M تجارية، R سكنية، S تخزين، U مرافق). التصنيف الأساسي للمشروع يجب تأكيده وفق SBC 201 الفصل الثالث في وضع Advisory.",
+      "summary_text_en": "Occupancies fall into ten groups (A Assembly, B Business, E Educational, F Factory, H High-Hazard, I Institutional, M Mercantile, R Residential, S Storage, U Utility). The classification for a project must be confirmed per SBC 201 Chapter 3 in Advisory mode.",
+      "follow_up_pointer": "advisory-occupancy-classification",
+      "source_refs": [
+        "sbc-201-section-302",
+        "sbc-201-section-309",
+        "sbc-801-chapter-3"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-egress-quick-guide",
+      "title": "Egress design quick guide",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "تصميم الإخلاء يبدأ من حساب حمولة الشاغلين وفق Section 1004، ثم تحديد عدد المخارج وفق Section 1006، ثم العرض وفق 1005، ثم مسافة السفر وفق 1017، والممرات وفق 1020. للتحقق الكامل، استخدم قائمة مراجعة Advisory.",
+      "summary_text_en": "Egress design starts from occupant load (Section 1004), then number of exits (Section 1006), egress width (Section 1005), travel distance (Section 1017), and corridors (Section 1020). For full verification, use the Advisory checklist.",
+      "follow_up_pointer": "advisory-egress-design",
+      "source_refs": [
+        "sbc-801-section-1004",
+        "sbc-801-section-1005",
+        "sbc-801-section-1006",
+        "sbc-801-section-1017",
+        "sbc-801-section-1020"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-interior-finish-summary",
+      "title": "Interior finish class quick guide",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "Table 803.3 يحدد فئة التشطيب المطلوبة (A أو B أو C) لمسارات الإخلاء الرأسية والممرات والغرف، مع عمودين منفصلين للمباني المرشوشة وغير المرشوشة. الرشاشات تخفف الفئة المطلوبة. للتحقق، راجع وضع Advisory.",
+      "summary_text_en": "Table 803.3 sets the required finish class (A, B, or C) for vertical exit enclosures, corridors, and rooms, with separate columns for sprinklered vs non-sprinklered buildings. Sprinklers reduce the required class. Verify in Advisory mode.",
+      "follow_up_pointer": null,
+      "source_refs": [
+        "sbc-801-section-803",
+        "sbc-801-table-803.3"
+      ],
+      "relation_refs": [
+        "rel-sbc801-803-3-table-sprinkler-vs-nonsprinkler"
+      ]
+    },
+    {
+      "id": "main-standpipe-trigger-summary",
+      "title": "Standpipe trigger quick guide",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "نظام الأنابيب الرأسية مطلوب وفق Section 905.3 عند تجاوز ارتفاع المبنى أو عمقه عن أدنى مستوى وصول للدفاع المدني، أو في المجمعات التجارية، أو في وجود منصات تجميع، أو في المباني تحت الأرض. التحقق النهائي في وضع Advisory.",
+      "summary_text_en": "A standpipe system is required per Section 905.3 when the building rises or extends beyond the lowest level of fire-department access, in covered malls, where stages are present, or in underground buildings. Final verification in Advisory mode.",
+      "follow_up_pointer": "advisory-standpipe-required",
+      "source_refs": [
+        "sbc-801-section-905",
+        "sbc-801-section-905.3"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-smoke-control-trigger-summary",
+      "title": "Smoke control trigger quick guide",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "أنظمة التحكم بالدخان مطلوبة وفق Section 909 عندما تتطلبها أحكام أخرى من SBC 201: المجمع التجاري المغطى (402)، البهو متعدد الطوابق (404)، المباني تحت الأرض (405)، المباني الشاهقة (403)، المنصات (410). التحقق في وضع Advisory.",
+      "summary_text_en": "Smoke-control systems are required per Section 909 wherever triggered by SBC 201 covered malls (402), atriums (404), underground buildings (405), high-rises (403), or stages (410). Verify in Advisory mode.",
+      "follow_up_pointer": "advisory-smoke-control-required",
+      "source_refs": [
+        "sbc-801-section-909",
+        "sbc-201-section-402",
+        "sbc-201-section-403",
+        "sbc-201-section-404",
+        "sbc-201-section-405",
+        "sbc-201-section-410"
+      ],
+      "relation_refs": []
+    },
+    {
+      "id": "main-not-legal-source-disclaimer",
+      "title": "Synthesis not legal source disclaimer",
+      "applicable_modes": ["main"],
+      "not_legal_source": true,
+      "summary_text_ar": "ملخصات وضع Main استشارية وليست نصا قانونيا. للقرار النهائي يجب الرجوع إلى نص SBC 801 / SBC 201 الحرفي للقسم المعني.",
+      "summary_text_en": "Main-mode summaries are advisory and are NOT legal text. Final decisions must rely on the verbatim SBC 801 / SBC 201 text of the cited section.",
+      "follow_up_pointer": null,
+      "source_refs": [
+        "sbc-801-section-101",
+        "sbc-201-section-101"
+      ],
+      "relation_refs": []
+    }
+  ]
+}

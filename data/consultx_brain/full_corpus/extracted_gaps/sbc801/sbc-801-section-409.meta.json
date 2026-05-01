@@ -1,0 +1,16 @@
+{
+  "record_id": "sbc-801-section-409",
+  "section_number": "409",
+  "chapter": "4",
+  "code_family": "SBC 801",
+  "extraction_method": "reuse_existing",
+  "source_files": [
+    "D:/sbc_consultx/chapter8_full_text.txt"
+  ],
+  "source_pdf": null,
+  "source_page": null,
+  "body_chars": 1892,
+  "garble_ratio": 0.0005,
+  "sha256_md": "4eebfd60276b4847348bc88aac901e988351a5de476ef38d20b2852d78397fec",
+  "extracted_at_utc": "2026-05-01T10:31:08.301035Z"
+}

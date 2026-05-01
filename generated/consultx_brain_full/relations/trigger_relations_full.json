@@ -1,0 +1,333 @@
+{
+  "schema_version": "1.0",
+  "edge_count": 20,
+  "edges": [
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-903-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M (mercantile) classification triggers automatic sprinkler thresholds in 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 903.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-907-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M classification triggers manual fire alarm system requirement under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 907.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-fire-area-1115-sbc-801-section-903-2-7-condition-triggers-requirement",
+      "from_ref": "condition-fire-area-1115",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Fire area > 1,115 m^2 triggers sprinkler requirement under 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 1115",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-combined-area-2230-sbc-801-section-903-2-7-condition-triggers-requirement",
+      "from_ref": "condition-combined-area-2230",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Combined fire area > 2,230 m^2 triggers sprinkler requirement under 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 2230",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-upholstered-465-sbc-801-section-903-2-7-2-condition-triggers-requirement",
+      "from_ref": "condition-upholstered-465",
+      "to_ref": "sbc-801-section-903.2.7.2",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Upholstered furniture display > 465 m^2 triggers sprinkler under 903.2.7.2",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 465",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-occupant-load-500-sbc-801-section-907-2-7-condition-triggers-requirement",
+      "from_ref": "condition-occupant-load-500",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Occupant load > 500 (any floor) triggers manual fire alarm under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 500",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-occupant-load-100-sbc-801-section-907-2-7-condition-triggers-requirement",
+      "from_ref": "condition-occupant-load-100",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Occupant load > 100 above/below LED triggers manual fire alarm under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 100",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-903-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "وجود الرش يؤثر على متطلبات الخروج المرتبطة بحمولة الشاغلين",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1017-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد مسافة السفر المسموحة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد متطلبات الأبواب",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد متى يُشترط panic hardware",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد عدد السلالم المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عرض السلم",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُشغِّل متطلبات عدد المخارج المرتبطة بالمسافة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد ما إذا كان الممر مطلوباً",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-903-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد المتطلبات العامة التي تنطبق على الرش الآلي",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-907-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد المتطلبات العامة لأنظمة الإنذار",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-913-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد متطلبات الاختبار والصيانة الشاملة للمضخات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    }
+  ]
+}

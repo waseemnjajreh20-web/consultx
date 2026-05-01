@@ -1,0 +1,3819 @@
+{
+  "generated_at": "2026-05-01T09:38:52.026Z",
+  "count": 238,
+  "edges": [
+    {
+      "id": "rel-sbc-801-section-1020-sbc-201-section-708-cross-code-1",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-201-section-708",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 mandates fire-rated corridors complying with SBC 201 708",
+      "source_basis": "SBC 801 Section 1020.2",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-201-section-405-cross-code-2",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-201-section-405",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Accessible stairway design governed by SBC 201 405",
+      "source_basis": "SBC 801 Section 1011",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-201-section-913-cross-code-3",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-201-section-913",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Pump room separation dictated by SBC 201",
+      "source_basis": "SBC 801 Section 913.2.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-503-sbc-201-section-503-cross-code-4",
+      "from_ref": "sbc-801-section-503",
+      "to_ref": "sbc-201-section-503",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Fire apparatus access roads in SBC 801 link to SBC 201 design requirements",
+      "source_basis": "SBC 801 Section 503",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-507-sbc-201-table-506-2-cross-code-5",
+      "from_ref": "sbc-801-section-507",
+      "to_ref": "sbc-201-table-506-2",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Water supply requirements link to building area/height per Table 506.2",
+      "source_basis": "SBC 801 Section 507",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-201-section-601-sbc-201-table-506-2-cross-code-6",
+      "from_ref": "sbc-201-section-601",
+      "to_ref": "sbc-201-table-506-2",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Construction classification determines allowable height/area tables",
+      "source_basis": "SBC 201 Section 601",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-201-section-602-cross-code-7",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-201-section-602",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Sprinkler system requirements link to construction classification",
+      "source_basis": "SBC 801 Section 903",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-legacy-table-503-sbc-201-table-504-3-cross-code-8",
+      "from_ref": "legacy_table_503",
+      "to_ref": "sbc-201-table-504-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Legacy Table 503 maps to the 2024 tables 504.3, 504.4, 506.2",
+      "source_basis": "SBC 201-2024 Transition Mapping",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-legacy-table-503-sbc-201-table-504-4-cross-code-9",
+      "from_ref": "legacy_table_503",
+      "to_ref": "sbc-201-table-504-4",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Legacy Table 503 maps to the 2024 tables 504.3, 504.4, 506.2",
+      "source_basis": "SBC 201-2024 Transition Mapping",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-legacy-table-503-sbc-201-table-506-2-cross-code-10",
+      "from_ref": "legacy_table_503",
+      "to_ref": "sbc-201-table-506-2",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Legacy Table 503 maps to the 2024 tables 504.3, 504.4, 506.2",
+      "source_basis": "SBC 201-2024 Transition Mapping",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-1-2-1-sbc-201-section-716-cross-code-11",
+      "from_ref": "sbc-801-section-1010.1.2.1",
+      "to_ref": "sbc-201-section-716",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Fire door assembly performance linked to SBC 201 716 (Fire/Smoke Openings)",
+      "source_basis": "SBC 801 Section 1010.1.2.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-5-sbc-201-section-703-cross-code-12",
+      "from_ref": "sbc-801-section-1013.5",
+      "to_ref": "sbc-201-section-703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Exit sign wiring protection depends on SBC 201 703 (Fire-Resistance Ratings)",
+      "source_basis": "SBC 801 Section 1013.5",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-201-table-1004-5-cross-code-13",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-201-table-1004-5",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 occupant load requirements derived from SBC 201 Table 1004.5",
+      "source_basis": "SBC 801 Section 1004.1",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-201-table-1006-3-3-cross-code-14",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-201-table-1006-3-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "SBC 801 exit requirements linked to SBC 201 Table 1006.3.3",
+      "source_basis": "SBC 801 Section 1006.2",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_code_relations_json"
+    },
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-903-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M (mercantile) classification triggers automatic sprinkler thresholds in 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 903.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-201-section-309-sbc-801-section-907-2-7-classification-triggers-system",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "classification_triggers_system",
+      "direction": "from_to",
+      "reason": "Group M classification triggers manual fire alarm system requirement under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_tables (production) — section 907.2.7",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-903-2-7-sbc-801-section-903-2-7-1-parent-child",
+      "from_ref": "sbc-801-section-903.2.7",
+      "to_ref": "sbc-801-section-903.2.7.1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 903.2.7 -> 903.2.7.1 sub-section (mall buildings)",
+      "source_basis": "SBC 801 903.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-903-2-7-sbc-801-section-903-2-7-2-parent-child",
+      "from_ref": "sbc-801-section-903.2.7",
+      "to_ref": "sbc-801-section-903.2.7.2",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 903.2.7 -> 903.2.7.2 sub-section (high-pile / upholstered)",
+      "source_basis": "SBC 801 903.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-907-2-7-1-parent-child",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-907.2.7.1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "Strict parent: 907.2.7 -> 907.2.7.1 sub-section (mall buildings)",
+      "source_basis": "SBC 801 907.2.7 numbering hierarchy",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-fire-area-1115-sbc-801-section-903-2-7-condition-triggers-requirement",
+      "from_ref": "condition-fire-area-1115",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Fire area > 1,115 m^2 triggers sprinkler requirement under 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 1115",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-combined-area-2230-sbc-801-section-903-2-7-condition-triggers-requirement",
+      "from_ref": "condition-combined-area-2230",
+      "to_ref": "sbc-801-section-903.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Combined fire area > 2,230 m^2 triggers sprinkler requirement under 903.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 2230",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-upholstered-465-sbc-801-section-903-2-7-2-condition-triggers-requirement",
+      "from_ref": "condition-upholstered-465",
+      "to_ref": "sbc-801-section-903.2.7.2",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Upholstered furniture display > 465 m^2 triggers sprinkler under 903.2.7.2",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 465",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-occupant-load-500-sbc-801-section-907-2-7-condition-triggers-requirement",
+      "from_ref": "condition-occupant-load-500",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Occupant load > 500 (any floor) triggers manual fire alarm under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 500",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-condition-occupant-load-100-sbc-801-section-907-2-7-condition-triggers-requirement",
+      "from_ref": "condition-occupant-load-100",
+      "to_ref": "sbc-801-section-907.2.7",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "Occupant load > 100 above/below LED triggers manual fire alarm under 907.2.7",
+      "source_basis": "Step-4.2 seed: sbc_code_conditions row id 100",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-mall-buildings-402-exception-of",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-mall-buildings-402",
+      "relation_type": "exception_of",
+      "direction": "from_to",
+      "reason": "Manual fire alarm exception in covered mall buildings governed by 402",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions (mall 402)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-801-section-903-3-1-1-exception-of",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-801-section-903.3.1.1",
+      "relation_type": "exception_of",
+      "direction": "from_to",
+      "reason": "Manual pull stations exception when sprinkler+waterflow per 903.3.1.1",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions (sprinkler+waterflow)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-907-2-7-sbc-201-section-402-code-to-code",
+      "from_ref": "sbc-801-section-907.2.7",
+      "to_ref": "sbc-201-section-402",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "Mall-buildings cross-link from SBC 801 907.2.7 to SBC 201 402",
+      "source_basis": "Step-4.2 seed: sbc_code_section_exceptions cross-code mapping",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "advisory",
+        "analytical",
+        "main"
+      ],
+      "not_citable_as_source": true,
+      "origin": "step_4_2_seed"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-903-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "وجود الرش يؤثر على متطلبات الخروج المرتبطة بحمولة الشاغلين",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1017-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد مسافة السفر المسموحة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1004 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1017-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1004 cross-references 1017 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1005-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1005",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1004 cross-references 1005 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1010-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1004 cross-references 1010 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1004-sbc-801-section-1011-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1011",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1004 cross-references 1011 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1004.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عدد المخارج المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1017-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "مسافة السفر المشتركة (Common Path) تُشغِّل متطلبات عدد المخارج",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "وجود الرش يُعدِّل بعض عتبات المسار المشترك",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1004-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1004 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1005-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1005",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1005 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1007-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1007",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1007 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1017-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1017 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1019-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1019",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1019 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1006-sbc-801-section-1020-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1006 cross-references 1020 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1006.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد متطلبات الأبواب",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد متى يُشترط panic hardware",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1020-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الممرات تُحدِّد عرض وموقع الأبواب",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1007-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1007",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 1007 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1008-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1008",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 1008 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1015-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1015",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 1015 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-1020-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 1020 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1010-sbc-801-section-703-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-703",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1010 cross-references 703 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1010.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد عدد السلالم المطلوبة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد عرض السلم",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1023-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1023",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "سلالم المخارج تخضع لمتطلبات إضافية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1010-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1010 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1012-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1012",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1012 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1014-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1014",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1014 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1015-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1015",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1015 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1019-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1019",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1019 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1011-sbc-801-section-1023-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1023",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1011 cross-references 1023 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1011.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1006-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "كل مخرج مطلوب يحتاج لافتة واضحة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1010-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "كل باب مخرج يحتاج علامة EXIT",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1203-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1203",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "اللافتات تحتاج طاقة احتياطية عند انقطاع الكهرباء",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1010-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 1010 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1020-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 1020 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1022-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1022",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 1022 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-1024-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1024",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 1024 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1013-sbc-801-section-702-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-702",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1013 cross-references 702 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1013.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "وجود الرش يُطيل مسافة السفر المسموحة بنسبة 25-50%",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1004-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُشغِّل متطلبات عدد المخارج المرتبطة بالمسافة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1006-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يعتمد جزئياً على مسافة السفر",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1004-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1017 cross-references 1004 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1017 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1016-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1016",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1017 cross-references 1016 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-1020-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1017 cross-references 1020 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1017-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1017",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1017 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1017.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1005-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1005",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "عروض الممرات تستند إلى المتطلبات العامة لمسارات الإخلاء",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1006-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "عدد المخارج يُحدِّد ما إذا كان الممر مطلوباً",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1017-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "مسافة السفر المسموحة تمر عبر الممرات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-708-definition-supports-requirement",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-708",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "جدران الممرات المقاومة للحريق تخضع لـ SBC 201 708",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1006-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1006 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1010-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1010 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1016-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1016",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1016 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1017-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1017 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1019-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1019",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1019 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-1024-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-1024",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 1024 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-708-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-708",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 708 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1020-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1020",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1020 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1020.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1101-sbc-801-section-1102-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1101",
+      "to_ref": "sbc-801-section-1102",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1101 cross-references 1102 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1101.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1101-sbc-801-section-1103-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1101",
+      "to_ref": "sbc-801-section-1103",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1101 cross-references 1103 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1101.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1101-sbc-801-section-1104-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1101",
+      "to_ref": "sbc-801-section-1104",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1101 cross-references 1104 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1101.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1101-sbc-801-section-1105-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1101",
+      "to_ref": "sbc-801-section-1105",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1101 cross-references 1105 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1101.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1101-sbc-801-section-1106-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1101",
+      "to_ref": "sbc-801-section-1106",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1101 cross-references 1106 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1101.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1102-sbc-801-section-1101-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1102",
+      "to_ref": "sbc-801-section-1101",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1102 cross-references 1101 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1102.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1102-sbc-801-section-1103-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1102",
+      "to_ref": "sbc-801-section-1103",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1102 cross-references 1103 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1102.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1103-sbc-801-section-1101-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1103",
+      "to_ref": "sbc-801-section-1101",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1103 cross-references 1101 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1103.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1103-sbc-801-section-1102-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1103",
+      "to_ref": "sbc-801-section-1102",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1103 cross-references 1102 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1103.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1103-sbc-801-section-1104-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1103",
+      "to_ref": "sbc-801-section-1104",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1103 cross-references 1104 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1103.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1103-sbc-801-section-1105-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1103",
+      "to_ref": "sbc-801-section-1105",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1103 cross-references 1105 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1103.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1104-sbc-801-section-1101-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1104",
+      "to_ref": "sbc-801-section-1101",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1104 cross-references 1101 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1104.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1104-sbc-801-section-1103-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1104",
+      "to_ref": "sbc-801-section-1103",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1104 cross-references 1103 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1104.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1104-sbc-801-section-1105-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1104",
+      "to_ref": "sbc-801-section-1105",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1104 cross-references 1105 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1104.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1105-sbc-801-section-1101-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1105",
+      "to_ref": "sbc-801-section-1101",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1105 cross-references 1101 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1105.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1105-sbc-801-section-1103-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1105",
+      "to_ref": "sbc-801-section-1103",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1105 cross-references 1103 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1105.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1105-sbc-801-section-1104-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1105",
+      "to_ref": "sbc-801-section-1104",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1105 cross-references 1104 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1105.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1106-sbc-801-section-1101-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1106",
+      "to_ref": "sbc-801-section-1101",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1106 cross-references 1101 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1106.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1106-sbc-801-section-3405-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1106",
+      "to_ref": "sbc-801-section-3405",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1106 cross-references 3405 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1106.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-1106-sbc-801-section-3406-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-1106",
+      "to_ref": "sbc-801-section-3406",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "1106 cross-references 3406 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-1106.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-803-definition-supports-requirement",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "Existing buildings reference",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-804-definition-supports-requirement",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "New buildings reference",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-803-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 803 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-804-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 804 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-805-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-805",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 805 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-806-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-806",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 806 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-807-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-807",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 807 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-801-sbc-801-section-808-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-808",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "801 cross-references 808 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-801.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-802-sbc-801-section-202-definition-supports-requirement",
+      "from_ref": "sbc-801-section-802",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "تعريفات الفصل الثاني",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-802.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-802-sbc-801-section-202-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-802",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "802 cross-references 202 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-802.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-802-sbc-801-section-803-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-802",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "802 cross-references 803 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-802.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-802-sbc-801-section-804-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-802",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "802 cross-references 804 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-802.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "متطلبات الرش التلقائي لبعض المواد",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-804-definition-supports-requirement",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الزخارف الداخلية (trim)",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-202-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 202 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-804-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 804 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-805-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-805",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 805 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-807-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-807",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 807 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-803-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-803",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "803 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-803.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-803-definition-supports-requirement",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "معايير NFPA 286 و ASTM E84 المرجعية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الرش التلقائي يُخفّف متطلبات الأرضيات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "804 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-803-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "804 cross-references 803 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-805-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-805",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "804 cross-references 805 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-804-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-804",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "804 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-804.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-805-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-805",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الرش التلقائي يُعفي من متطلبات معدل إطلاق الحرارة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-805.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-805-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-805",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "805 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-805.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-805-sbc-801-section-808-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-805",
+      "to_ref": "sbc-801-section-808",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "805 cross-references 808 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-805.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-805-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-805",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "805 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-805.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الرش التلقائي يُسمح بالأشجار في بعض الإشغالات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-907-definition-supports-requirement",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "كاشفات الدخان",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "806 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-807-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-807",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "806 cross-references 807 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "806 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-806-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-806",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "806 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-806.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-803-definition-supports-requirement",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المواد الزخرفية تُعتبر تشطيباً داخلياً في بعض الحالات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الرش التلقائي يُخفّف النسب المئوية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-907-definition-supports-requirement",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "إنذار الحريق في Group E",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-803-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 803 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-806-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-806",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 806 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-808-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-808",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 808 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-807-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-807",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "807 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-807.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-803-definition-supports-requirement",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الخزائن القابلة للاحتراق تُعتبر تشطيباً داخلياً",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-808.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-509-definition-supports-requirement",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-509",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "غرف جمع النفايات والكتان",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-808.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-801-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-801",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "808 cross-references 801 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-808.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-803-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "808 cross-references 803 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-808.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-808-sbc-801-section-805-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-805",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "808 cross-references 805 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-808.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-903-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد المتطلبات العامة التي تنطبق على الرش الآلي",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-907-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد المتطلبات العامة لأنظمة الإنذار",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-913-condition-triggers-requirement",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "condition_triggers_requirement",
+      "direction": "from_to",
+      "reason": "901 يُحدِّد متطلبات الاختبار والصيانة الشاملة للمضخات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-902-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-902",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 902 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-904-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-904",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 904 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-909-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-909",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 909 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-913-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 913 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-901-sbc-801-section-914-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-901",
+      "to_ref": "sbc-801-section-914",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "901 cross-references 914 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-901.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-913-definition-supports-requirement",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "مضخات الحريق تُزوِّد الرش بالضغط اللازم",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-905-definition-supports-requirement",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الأنابيب الرأسية تعمل جنباً إلى جنب مع الرش",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-901-definition-supports-requirement",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المتطلبات العامة للاختبار والصيانة تنطبق على الرش",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-901-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 901 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-904-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-904",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 904 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-913-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 913 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-903-sbc-801-section-914-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-903",
+      "to_ref": "sbc-801-section-914",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "903 cross-references 914 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-903.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-901-definition-supports-requirement",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المتطلبات العامة تنطبق على الأنظمة البديلة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الأنظمة البديلة بديل أو إضافة لنظام الرش في حالات محددة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-901-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 901 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-912-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-912",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 912 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-904-sbc-801-section-913-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-904",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "904 cross-references 913 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-904.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-901-definition-supports-requirement",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المتطلبات العامة للاختبار والصيانة تنطبق على الأنابيب الرأسية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-913-definition-supports-requirement",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "مضخات الحريق تُزوِّد الأنابيب الرأسية بالضغط",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-912-definition-supports-requirement",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-912",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "وصلات الإطفاء مرتبطة بالأنابيب الرأسية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-901-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 901 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-907-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 907 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-912-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-912",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 912 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-913-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-913",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 913 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-905-sbc-801-section-1007-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-905",
+      "to_ref": "sbc-801-section-1007",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "905 cross-references 1007 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-905.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-901-definition-supports-requirement",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المتطلبات العامة للاختبار والصيانة تنطبق على أنظمة الإنذار",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "وجود الرش يؤثر على نوع الإنذار المطلوب",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-1203-definition-supports-requirement",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-1203",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "أنظمة الإنذار تحتاج طاقة احتياطية",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-901-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 901 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-906-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-906",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 906 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-908-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-908",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 908 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-909-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-909",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 909 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-907-sbc-801-section-1203-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-907",
+      "to_ref": "sbc-801-section-1203",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "907 cross-references 1203 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-907.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-903-definition-supports-requirement",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الرش يحتاج الضغط الكافي — المضخة تُوفِّره",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-905-definition-supports-requirement",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "الأنابيب الرأسية تعتمد على ضغط المضخة",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-901-definition-supports-requirement",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "definition_supports_requirement",
+      "direction": "from_to",
+      "reason": "المتطلبات العامة للاختبار والصيانة تشمل المضخات",
+      "source_basis": "Frontmatter dependencies in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_dependencies"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-901-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-901",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "913 cross-references 901 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-903-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "913 cross-references 903 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-905-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-905",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "913 cross-references 905 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-sbc-801-section-913-sbc-801-section-912-analytical-check-depends-on-rel",
+      "from_ref": "sbc-801-section-913",
+      "to_ref": "sbc-801-section-912",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "bidirectional",
+      "reason": "913 cross-references 912 per frontmatter related_sections",
+      "source_basis": "Frontmatter related_sections in sbc-801-section-913.md",
+      "confidence": "INFERRED",
+      "applicable_modes": [
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "section_frontmatter_related_sections"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1004-concept-explains",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين هي نقطة البداية",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1006-concept-explains",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "عدد المخارج يعتمد على الحمولة",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1017-concept-explains",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1017",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "مسافة السفر تُحدِّد موضع المخارج",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-903-concept-explains",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "وجود الرش يُغيِّر حدود المسافة والعرض",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1005-concept-related",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1005",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Synthesis page references 1005 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1010-concept-related",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1010",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Synthesis page references 1010 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1011-concept-related",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1011",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Synthesis page references 1011 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-egress-checklist-sbc-801-section-1020-concept-related",
+      "from_ref": "synthesis-egress-checklist",
+      "to_ref": "sbc-801-section-1020",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Synthesis page references 1020 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/synthesis/egress-design-checklist.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-sprinkler-required-sbc-801-section-903-concept-explains",
+      "from_ref": "synthesis-sprinkler-required",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "المصدر الأساسي لجميع بنود شجرة القرار",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/sprinkler-required-decision.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-synthesis-sprinkler-required-sbc-801-section-1004-concept-explains",
+      "from_ref": "synthesis-sprinkler-required",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "حمولة الشاغلين تُحدِّد بعض عتبات وجوب الرش",
+      "source_basis": "Frontmatter dependencies in wiki/synthesis/sprinkler-required-decision.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "synthesis_page"
+    },
+    {
+      "id": "rel-concept-fire-alarm-systems-sbc-801-section-907-concept-explains",
+      "from_ref": "concept-fire-alarm-systems",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "المصدر الأساسي لمتطلبات الإنذار والكشف",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/fire-alarm-systems.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-fire-alarm-systems-sbc-801-section-903-concept-explains",
+      "from_ref": "concept-fire-alarm-systems",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "الرش الآلي يؤثر على نوع الإنذار المطلوب",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/fire-alarm-systems.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-fire-alarm-systems-sbc-801-section-1203-concept-explains",
+      "from_ref": "concept-fire-alarm-systems",
+      "to_ref": "sbc-801-section-1203",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "أنظمة الإنذار تحتاج طاقة احتياطية",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/fire-alarm-systems.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-fire-alarm-systems-sbc-801-section-909-concept-related",
+      "from_ref": "concept-fire-alarm-systems",
+      "to_ref": "sbc-801-section-909",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 909 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/fire-alarm-systems.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-interior-finish-sbc-801-section-903-concept-explains",
+      "from_ref": "concept-interior-finish",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "وجود الرش الآلي يُغيِّر فئة التشطيب المطلوبة",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/interior-finish-requirements.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-interior-finish-sbc-801-section-803-concept-related",
+      "from_ref": "concept-interior-finish",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 803 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/interior-finish-requirements.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-interior-finish-sbc-801-section-804-concept-related",
+      "from_ref": "concept-interior-finish",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 804 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/interior-finish-requirements.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-occupancy-classification-sbc-801-section-903-concept-explains",
+      "from_ref": "concept-occupancy-classification",
+      "to_ref": "sbc-801-section-903",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "الإشغال يُحدِّد ما إذا كان الرش مطلوباً",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/occupancy-classification.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-occupancy-classification-sbc-801-section-1004-concept-explains",
+      "from_ref": "concept-occupancy-classification",
+      "to_ref": "sbc-801-section-1004",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "الإشغال يُحدِّد معامل الإشغال لحساب الحمولة",
+      "source_basis": "Frontmatter dependencies in wiki/concepts/occupancy-classification.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-occupancy-classification-sbc-801-section-907-concept-related",
+      "from_ref": "concept-occupancy-classification",
+      "to_ref": "sbc-801-section-907",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 907 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/occupancy-classification.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-occupancy-classification-sbc-801-section-1006-concept-related",
+      "from_ref": "concept-occupancy-classification",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 1006 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/occupancy-classification.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    },
+    {
+      "id": "rel-concept-occupancy-classification-sbc-801-section-1011-concept-related",
+      "from_ref": "concept-occupancy-classification",
+      "to_ref": "sbc-801-section-1011",
+      "relation_type": "concept_explains_section",
+      "direction": "from_to",
+      "reason": "Concept page references 1011 via related_sections",
+      "source_basis": "Frontmatter related_sections in wiki/concepts/occupancy-classification.md",
+      "confidence": "SYNTHESIS",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_citable_as_source": true,
+      "origin": "concept_page"
+    }
+  ]
+}

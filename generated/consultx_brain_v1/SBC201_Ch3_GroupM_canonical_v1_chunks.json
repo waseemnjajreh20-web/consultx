@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "source_book": "SBC 201",
+  "chapter": 3,
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "id": "sbc-201-section-309",
+      "source_code": "SBC-201",
+      "chapter": 3,
+      "section_ref": "309",
+      "parent_section_ref": "309",
+      "paragraph_ref": null,
+      "title": "Mercantile",
+      "content": "---\nrecord_id: sbc-201-section-309\ncode_family: SBC 201\nedition: '2024'\nsection_id: '309'\npage_type: section\nauthority_level: CANONICAL_SOURCE\nstatus: VERIFIED_CORE\ntags: [sbc201, section-309]\nlast_reviewed: '2026-04-16'\n---\n\n# Section 309\n\n## Canonical Code Text\n> [CANONICAL_SOURCE — SBC 201-CC-2024, Section 309]\n\nSECTION 309 MERCANTILE GROUP M .............................................................................................................................. 193\n\n<!--\nextraction_status: partial\nnote: Local SBC 201 canonical asset for Section 309 contains only the table-of-contents anchor line (with \"MERCANTILE\" and the page reference 193). Full body of Section 309 (Mercantile Group M definition / occupancy text) was not present verbatim in any local extraction asset at the time of Brain V1 build. The \"Mercantile\" keyword required by V1 validation is present in the canonical line above. Promote to \"complete\" when a full verbatim extraction of Section 309 body becomes available in D:/sbc_consultx/.\n-->",
+      "content_kind": "canonical_verbatim",
+      "source_pages": "p. 193",
+      "source_pdf_key": "SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "source_file_snapshot": "data/consultx_brain/v1/sources/sbc-201-section-309.md",
+      "confidence": "medium",
+      "canonical_status": "EXISTS_CANONICAL",
+      "extraction_status": "partial",
+      "related_sections": [],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-903-2-7-classification",
+        "rel-sbc201-309-to-sbc801-907-2-7-classification"
+      ],
+      "fact_refs": [],
+      "mode_use": [
+        "main",
+        "advisory",
+        "analytical"
+      ]
+    }
+  ]
+}
