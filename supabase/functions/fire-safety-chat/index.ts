@@ -1265,6 +1265,28 @@ function verifyAdvisoryCitations(text: string, ledger: EvidenceLedgerEntry[]): V
       }
     }
 
+    // Case 3b (Step 4.1) — table is known via structured_table only. Cap conf:high
+    // to medium because structured tables are stored at medium confidence, never
+    // high. This prevents `[SBC-201 Table 309 | conf:high]` from passing through
+    // when the only evidence is a DB row (visible to UI as a non-clickable chip).
+    if (tableRef && tableKnown && conf === "high") {
+      const tableConf = (() => {
+        let best: SectionConfidence = null;
+        const order = (c: SectionConfidence) => c === 'high' ? 3 : c === 'medium' ? 2 : c === 'low' ? 1 : c === 'ambiguous' ? 0 : -1;
+        for (const e of ledger) {
+          if (e.sourceFamily === fam && e.tableRef === tableRef) {
+            if (order(e.sectionConfidence) > order(best)) best = e.sectionConfidence;
+          }
+        }
+        return best;
+      })();
+      if (tableConf !== "high") {
+        capped += 1;
+        changes += 1;
+        return `[${rewriteFields(innerFull, { conf: "medium", addLabel: "section_label:structured_table" })}]`;
+      }
+    }
+
     // Otherwise — leave the token unchanged.
     return full;
   });
@@ -5167,6 +5189,25 @@ ABSOLUTELY FORBIDDEN:
         const summary = buildEvidenceSummaryForPrompt(advisoryLedger);
         fullSystemPrompt += summary;
         console.log(`[Ledger] Advisory ledger built: ${advisoryLedger.length} entries (${[...ledgerFamilies(advisoryLedger)].join(",") || "none"})`);
+
+        // Step 4.1 — surface structured-table evidence to the UI as non-clickable
+        // sources. Without this, the ledger family (e.g. SBC-201 from a structured
+        // table) is invisible to the frontend's source panel and the Step 3.2
+        // availableFamilies check, breaking the source-display invariant.
+        for (const t of structuredTableEntries) {
+          const fam = familyFromSourceCode(t.sourceCode);
+          if (fam === "UNKNOWN") continue;
+          const sentinel = `__sbc_table__::${fam}::${t.tableId}`;
+          if (!usedFiles.includes(sentinel)) usedFiles.push(sentinel);
+          usedSourceMeta.push({
+            file: sentinel,
+            pageStart: null,
+            pageEnd: null,
+            precision: 'unavailable',
+            sectionRef: t.tableId,
+            sectionConfidence: 'medium',
+          });
+        }
       }
     }
     

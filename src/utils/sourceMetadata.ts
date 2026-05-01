@@ -39,6 +39,8 @@ export interface ChunkPageMeta {
   sectionConfidence?: SectionConfidence;
 }
 
+export type SourceOrigin = "pdf_chunk" | "structured_table";
+
 export interface SourceMeta {
   /** Original source filename as returned by the edge function */
   sourceFile: string;
@@ -60,6 +62,10 @@ export interface SourceMeta {
   sectionRef: string | null;
   /** Confidence in `sectionRef`. Null when no section data is available. */
   sectionConfidence: SectionConfidence;
+  /** Step 4.1 — distinguish PDF-chunk sources from structured-table evidence. */
+  origin?: SourceOrigin;
+  /** Step 4.1 — table id when origin === "structured_table". */
+  tableRef?: string | null;
 }
 
 /**
@@ -67,6 +73,31 @@ export interface SourceMeta {
  * Never throws — returns a graceful fallback if filename doesn't match.
  */
 export function resolveSourceMeta(sourceFile: string): SourceMeta {
+  // ── Step 4.1 — Structured-table evidence sentinel ────────────────────────
+  // Format emitted by the edge function: `__sbc_table__::SBC-201::309`
+  // Non-clickable, no PDF, but documentCode is set so the Step 3.2 hard-stop
+  // (availableFamilies) sees the family as present in the message.
+  const tblSentinel = sourceFile.match(/^__sbc_table__::(SBC-(?:201|801))::(.+)$/);
+  if (tblSentinel) {
+    const documentCode = tblSentinel[1];
+    const tableRef = tblSentinel[2];
+    const codeLabel = documentCode.replace("-", " ");
+    return {
+      sourceFile,
+      title: `${codeLabel} — Table ${tableRef} (Structured DB Evidence)`,
+      documentCode,
+      pageStart: null,
+      pageEnd: null,
+      pdfUrl: null,
+      pdfPath: null,
+      precision: "unavailable",
+      sectionRef: tableRef,
+      sectionConfidence: "medium",
+      origin: "structured_table",
+      tableRef,
+    };
+  }
+
   // Strip _extracted_chunks.json or _extracted.json suffix → get bare base name
   const base = sourceFile
     .replace(/_extracted_chunks\.json$/i, "")
@@ -204,6 +235,14 @@ export function formatSourceLabel(meta: SourceMeta, lang: "ar" | "en" = "ar"): s
   const code = meta.documentCode === "UNKNOWN"
     ? meta.title
     : meta.documentCode.replace("-", " ");
+
+  // Step 4.1 — structured-table evidence: distinct label, no page range.
+  if (meta.origin === "structured_table") {
+    const tableLbl = meta.tableRef ?? meta.sectionRef ?? "—";
+    return lang === "en"
+      ? `🗂️ ${code} — Table ${tableLbl} (structured)`
+      : `🗂️ ${code} — جدول ${tableLbl} (دليل منظم)`;
+  }
 
   if (meta.pageStart !== null && meta.pageEnd !== null) {
     return lang === "en"
