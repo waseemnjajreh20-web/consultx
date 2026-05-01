@@ -15,6 +15,14 @@ type ChatMode = "primary" | "standard" | "analysis";
 interface ChatMarkdownRendererProps {
   content: string;
   mode?: ChatMode;
+  /**
+   * Document codes (e.g. "SBC-201", "SBC-801") whose sources are present in the
+   * current message's resolved source metadata. Inline citation tokens whose
+   * family is NOT in this set are rendered as unsupported (warning style,
+   * `data-unsupported="1"`) so the click handler can apply the Step-3.2
+   * hard-stop and never open a wrong-family PDF.
+   */
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
 }
 
 interface ParsedSection {
@@ -251,7 +259,10 @@ function getSrc(sec: string): "sbc201" | "sbc801" {
  * token itself (never from the leading-digit heuristic). data-ambiguous=1
  * tells the click handler to open SourcePanel without auto-routing to a PDF.
  */
-function renderCitationToken(match: string): string {
+function renderCitationToken(
+  match: string,
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+): string {
   const parsed = parseCitationToken(match);
   if (!parsed) return match;
 
@@ -267,21 +278,34 @@ function renderCitationToken(match: string): string {
     );
   }
 
+  // ── Step 3.2: detect tokens whose family is not represented in this answer's
+  //   retrieved sources. These tokens must NOT deep-link to a PDF — they are
+  //   rendered as warning-styled badges, and the click handler applies a hard
+  //   stop on `data-unsupported="1"`.
+  const family =
+    parsed.src === "sbc201" ? "SBC-201" :
+    parsed.src === "sbc801" ? "SBC-801" : null;
+  const isUnsupported = !!(family && availableFamilies && !availableFamilies.has(family));
+
   const sec = parsed.sectionRef ?? parsed.tableRef ?? "";
   const reftype = parsed.tableRef ? "table" : "section";
-  const color = parsed.isAmbiguous ? "#FFC107" : "#0094B3";
-  const bg = parsed.isAmbiguous ? "rgba(255,193,7,0.10)" : "rgba(0,148,179,0.08)";
-  const border = parsed.isAmbiguous ? "rgba(255,193,7,0.25)" : "rgba(0,148,179,0.20)";
-  const titleAr = parsed.isAmbiguous
-    ? "يحتاج تحقق من المصدر — انقر لفتح لوحة المصادر"
-    : (sec ? `انقر لفتح ${reftype === "table" ? "الجدول" : "القسم"} ${sec}` : "انقر لفتح المصدر");
+  const warn = parsed.isAmbiguous || isUnsupported;
+  const color = warn ? "#FFC107" : "#0094B3";
+  const bg = warn ? "rgba(255,193,7,0.10)" : "rgba(0,148,179,0.08)";
+  const border = warn ? "rgba(255,193,7,0.25)" : "rgba(0,148,179,0.20)";
+  const titleAr = isUnsupported
+    ? "المرجع مذكور في الإجابة لكنه غير موجود ضمن المصادر المسترجعة — Citation mentioned in answer but not present in retrieved sources"
+    : (parsed.isAmbiguous
+        ? "يحتاج تحقق من المصدر — انقر لفتح لوحة المصادر"
+        : (sec ? `انقر لفتح ${reftype === "table" ? "الجدول" : "القسم"} ${sec}` : "انقر لفتح المصدر"));
 
   return (
-    `<span class="cx-src cx-src-token"` +
+    `<span class="cx-src cx-src-token${isUnsupported ? " cx-src-unsupported" : ""}"` +
     ` data-src="${parsed.src}"` +
     (sec ? ` data-section="${sec}"` : "") +
     ` data-reftype="${reftype}"` +
     (parsed.isAmbiguous ? ` data-ambiguous="1"` : "") +
+    (isUnsupported ? ` data-unsupported="1"` : "") +
     ` style="color:${color};background:${bg};border:1px solid ${border};` +
     `padding:1px 6px;border-radius:4px;font-size:0.92em;font-weight:500;cursor:pointer;` +
     `text-decoration:none"` +
@@ -326,7 +350,11 @@ function replaceInTextNodes(
 }
 
 // Apply inline markdown (bold, code, badges) to an already-escaped string
-function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
+function applyInlineMarkdown(
+  escaped: string,
+  mode?: ChatMode,
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+): string {
   // ── Step 0: Structured Advisory citation tokens (Step 3.1 fix) ───────────
   // Format: [SBC-XXX | ... | Section X.Y.Z | conf:high|medium|low|ambiguous | ...]
   // The token's leading SBC code is authoritative — never use the leading-digit
@@ -337,7 +365,7 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
     /\[(?:[^\[\]\n]{0,300})\]/g,
     (m) => {
       if (/SBC[\s ‑\-]*(201|801)|community_summary|LLM_SYNTHESIS/i.test(m)) {
-        const html = renderCitationToken(m);
+        const html = renderCitationToken(m, availableFamilies);
         const idx = tokenPlaceholders.length;
         tokenPlaceholders.push(html);
         // Sentinel placeholder. Step 1 / Step 2 regexes don't match it.
@@ -428,10 +456,15 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirement 3 (Analysis) — SBC Legal Citation for blockquotes & code fences
 // ─────────────────────────────────────────────────────────────────────────────
-function renderTextLine(line: string, index: number, mode?: ChatMode) {
+function renderTextLine(
+  line: string,
+  index: number,
+  mode?: ChatMode,
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+) {
   // Blockquote
   if (line.startsWith("> ")) {
-    const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode);
+    const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode, availableFamilies);
     if (mode === "analysis") {
       return (
         <blockquote key={index} className="sbc-legal-citation leading-[1.8] my-2"
@@ -457,7 +490,7 @@ function renderTextLine(line: string, index: number, mode?: ChatMode) {
     const isChecklist = line.match(/^-\s*\[(.)]\s/);
     const checked = isChecklist?.[1] === "x" || isChecklist?.[1] === "X";
     const rawContent = line.replace(/^[-•]\s*(\[.\]\s)?/, "");
-    const inner = applyInlineMarkdown(escapeHtml(rawContent), mode);
+    const inner = applyInlineMarkdown(escapeHtml(rawContent), mode, availableFamilies);
 
     return (
       <li key={index} className="flex items-start gap-2.5 text-foreground leading-[1.8] mb-[10px] list-none">
@@ -477,7 +510,7 @@ function renderTextLine(line: string, index: number, mode?: ChatMode) {
   if (line.match(/^\d+\.\s/)) {
     const numMatch = line.match(/^(\d+)\.\s(.*)$/);
     const num = numMatch?.[1] ?? "";
-    const rest = applyInlineMarkdown(escapeHtml(numMatch?.[2] ?? ""), mode);
+    const rest = applyInlineMarkdown(escapeHtml(numMatch?.[2] ?? ""), mode, availableFamilies);
     const numColor = getNumberColor(mode);
 
     return (
@@ -494,7 +527,7 @@ function renderTextLine(line: string, index: number, mode?: ChatMode) {
   if (!line.trim()) return <div key={index} className="h-1.5" />;
 
   // Regular paragraph
-  const processed = applyInlineMarkdown(escapeHtml(line), mode);
+  const processed = applyInlineMarkdown(escapeHtml(line), mode, availableFamilies);
   return (
     <p key={index} className="text-foreground leading-[1.8] my-1"
       dangerouslySetInnerHTML={{ __html: processed }} />
@@ -504,9 +537,17 @@ function renderTextLine(line: string, index: number, mode?: ChatMode) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TextRenderer
 // ─────────────────────────────────────────────────────────────────────────────
-function TextRenderer({ content, mode }: { content: string; mode?: ChatMode }) {
+function TextRenderer({
+  content,
+  mode,
+  availableFamilies,
+}: {
+  content: string;
+  mode?: ChatMode;
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
+}) {
   const lines = content.split("\n");
-  return <>{lines.map((line, i) => renderTextLine(line, i, mode))}</>;
+  return <>{lines.map((line, i) => renderTextLine(line, i, mode, availableFamilies))}</>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -578,12 +619,13 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
 // Requirement 3 (Consultant) — Accordion Cards: professional deep-analysis UI
 // ─────────────────────────────────────────────────────────────────────────────
 function CollapsibleSection({
-  title, content, sectionKey, mode,
+  title, content, sectionKey, mode, availableFamilies,
 }: {
   title: string;
   content: string;
   sectionKey: string;
   mode?: ChatMode;
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const icon = getSectionIcon(title);
@@ -644,7 +686,7 @@ function CollapsibleSection({
           {parsedContent.map((section, i) => {
             if (section.type === "table" && section.tableData)
               return <TableRenderer key={i} tableData={section.tableData} />;
-            return <TextRenderer key={i} content={section.content} mode={mode} />;
+            return <TextRenderer key={i} content={section.content} mode={mode} availableFamilies={availableFamilies} />;
           })}
         </div>
       </div>
@@ -685,9 +727,10 @@ function groupCollapsibleHeadings(sections: ParsedSection[]): GroupedSection[] {
 }
 
 function HeadingCollapsible({
-  title, level, children, mode,
+  title, level, children, mode, availableFamilies,
 }: {
   title: string; level: 3 | 4; children: ParsedSection[]; mode?: ChatMode;
+  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
 }) {
   const accent =
     mode === "primary"  ? "rgba(0,212,255,0.06)"  :
@@ -734,7 +777,7 @@ function HeadingCollapsible({
         {children.map((sec, i) => {
           if (sec.type === "table" && sec.tableData)
             return <TableRenderer key={i} tableData={sec.tableData} />;
-          return <TextRenderer key={i} content={sec.content} mode={mode} />;
+          return <TextRenderer key={i} content={sec.content} mode={mode} availableFamilies={availableFamilies} />;
         })}
       </div>
     </details>
@@ -744,7 +787,7 @@ function HeadingCollapsible({
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirement 1 — Main Component: Typography, RTL, line-height 1.8
 // ─────────────────────────────────────────────────────────────────────────────
-const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
+const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdownRendererProps) => {
   const { filteredContent, widgets } = useMemo(() => {
     let text = content;
     const extractedWidgets: ParsedSection[] = [];
@@ -807,6 +850,7 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
               level={s.level}
               children={s.children}
               mode={mode}
+              availableFamilies={availableFamilies}
             />
           );
         }
@@ -858,6 +902,7 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
               content={section.content || ""}
               sectionKey={section.sectionKey}
               mode={mode}
+              availableFamilies={availableFamilies}
             />
           );
         }
@@ -870,7 +915,7 @@ const ChatMarkdownRenderer = ({ content, mode }: ChatMarkdownRendererProps) => {
         // ── Regular text ──────────────────────────────────────────────────────
         return (
           <div key={index} className="my-0.5">
-            <TextRenderer content={section.content} mode={mode} />
+            <TextRenderer content={section.content} mode={mode} availableFamilies={availableFamilies} />
           </div>
         );
       })}

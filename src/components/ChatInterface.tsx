@@ -37,6 +37,7 @@ import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
 import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta } from "@/utils/sourceMetadata";
+import { expectedDocCode, isFamilyMatch, findSameFamilySource, availableFamilies } from "@/utils/citationRouting";
 import { usePreferences } from "@/hooks/usePreferences";
 
 interface Message {
@@ -1700,6 +1701,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               const srcKey = srcEl.dataset.src;       // "sbc201" | "sbc801" | "ambiguous" | "synthesis"
                               const sectionNum = srcEl.dataset.section; // e.g. "1014.6" (may be absent)
                               const isAmbiguous = srcEl.dataset.ambiguous === "1";
+                              const isUnsupported = srcEl.dataset.unsupported === "1";
 
                               // Use the panel's current sources as fallback when this message has none.
                               // This allows clicking a reference in any message — even pure reasoning
@@ -1722,15 +1724,28 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                 return;
                               }
 
-                              // Find the correct document-level source IN THIS MESSAGE.
-                              // Critical: we never silently fall back to the WRONG-FAMILY source.
-                              // If the requested family isn't in this message, docMatch stays null
-                              // and we either rely on the DB lookup below or open the panel
-                              // without auto-routing.
-                              const docMatch = resolved.find(m =>
-                                (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
-                                (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
-                              ) ?? null;
+                              // ── Step 3.2 hard-stop ─────────────────────────────────────────────
+                              // If the token references a family that is NOT present in this
+                              // message's resolved sources, we MUST NOT open any PDF — even if a
+                              // DB lookup would yield a row, we cannot prove the citation is
+                              // grounded in this answer's retrieved evidence.
+                              const sameFamily = findSameFamilySource(resolved, srcKey);
+                              const expected = expectedDocCode(srcKey);
+                              if (isUnsupported || (expected && !sameFamily)) {
+                                toast({
+                                  title: language === "en"
+                                    ? "Citation needs verification"
+                                    : "يحتاج التحقق من المرجع",
+                                  description: language === "en"
+                                    ? "No matching source is available for this citation in this answer."
+                                    : "لا يوجد مصدر مطابق لهذا المرجع ضمن مصادر هذه الإجابة.",
+                                });
+                                setSourcePanel({ open: true, sources: effectiveSources, activeMeta: null });
+                                return;
+                              }
+
+                              // Same-family source guaranteed to exist at this point.
+                              const docMatch = sameFamily;
 
                               // ── Section page lookup — two-pass, span-guarded ──────────────────────
                               // Runs regardless of whether docMatch is set: the DB query below
@@ -1776,13 +1791,26 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     // Using docMatch.pdfUrl here is wrong when message.sources contains
                                     // a different chunk file — page numbers would reference the wrong PDF.
                                     const rowMeta = resolveSourceMeta(tightest.file_name);
-                                    const activeMeta = rowMeta.pdfUrl
-                                      ? { ...rowMeta,  pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
-                                      : (docMatch
-                                          ? { ...docMatch, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
-                                          : null);
-                                    setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
-                                    return;
+                                    // Step 3.2 hard-stop: if the row's resolved family does not
+                                    // match the clicked token, drop it. Never cross-open families
+                                    // even when DB rows are mislabeled.
+                                    const rowOk = isFamilyMatch(rowMeta, srcKey);
+                                    if (rowOk && rowMeta.pdfUrl) {
+                                      setSourcePanel({
+                                        open: true,
+                                        sources: effectiveSources,
+                                        activeMeta: { ...rowMeta, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
+                                      });
+                                      return;
+                                    }
+                                    if (docMatch) {
+                                      setSourcePanel({
+                                        open: true,
+                                        sources: effectiveSources,
+                                        activeMeta: { ...docMatch, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
+                                      });
+                                      return;
+                                    }
                                   }
 
                                   // Pass 2: tightest sibling in same parent (e.g. "1014" for "1014.6")
@@ -1806,13 +1834,24 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                       // Land just after the confirmed sibling block, using the sibling's file
                                       const anchor = tightSib.page_end + 1;
                                       const sibMeta = resolveSourceMeta(tightSib.file_name);
-                                      const activeMeta = sibMeta.pdfUrl
-                                        ? { ...sibMeta, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
-                                        : (docMatch
-                                            ? { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
-                                            : null);
-                                      setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
-                                      return;
+                                      // Step 3.2 hard-stop: drop sibling rows from the wrong family.
+                                      const sibOk = isFamilyMatch(sibMeta, srcKey);
+                                      if (sibOk && sibMeta.pdfUrl) {
+                                        setSourcePanel({
+                                          open: true,
+                                          sources: effectiveSources,
+                                          activeMeta: { ...sibMeta, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
+                                        });
+                                        return;
+                                      }
+                                      if (docMatch) {
+                                        setSourcePanel({
+                                          open: true,
+                                          sources: effectiveSources,
+                                          activeMeta: { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
+                                        });
+                                        return;
+                                      }
                                     }
                                   }
                                 } catch {
@@ -1821,17 +1860,24 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               }
 
                               // ── Fallback: document-level open at chunk page range ──────────────────
-                              // If docMatch is null (requested family absent in this message AND
-                              // DB lookup didn't return a row), open the panel WITHOUT auto-routing
-                              // to a PDF. Never open a wrong-family source as a fallback.
+                              // Same-family docMatch guaranteed at this point by the Step 3.2 hard-stop
+                              // above; still re-validate before opening to defend against future drift.
                               setSourcePanel({
                                 open: true,
                                 sources: effectiveSources,
-                                activeMeta: docMatch?.pdfUrl ? docMatch : null,
+                                activeMeta: (docMatch?.pdfUrl && isFamilyMatch(docMatch, srcKey)) ? docMatch : null,
                               });
                             }}
                           >
-                            <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
+                            <ChatMarkdownRenderer
+                              content={displayContent}
+                              mode={msgMode}
+                              availableFamilies={(() => {
+                                const srcs = message.sources?.length ? message.sources : sourcePanel.sources;
+                                if (!srcs?.length) return undefined;
+                                return availableFamilies(resolveAllSources(srcs));
+                              })()}
+                            />
                           </div>
                         )}
                         {/* Switch mode button */}
