@@ -1,0 +1,1012 @@
+{
+  "generated_at": "2026-05-01T01:12:17.023Z",
+  "project": "hrnltxmwoaphgejckutk",
+  "note": "READ-ONLY DRY-RUN. No DB writes were performed.",
+  "baseline": {
+    "tables": [
+      {
+        "table_schema": "public",
+        "table_name": "community_summaries"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "graph_edges"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "graph_indexing_status"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "graph_nodes"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "sbc_code_tables"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "sbc_documents"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "sbc_pages"
+      }
+    ],
+    "columns": [
+      {
+        "column_name": "id",
+        "data_type": "bigint"
+      },
+      {
+        "column_name": "content",
+        "data_type": "text"
+      },
+      {
+        "column_name": "metadata",
+        "data_type": "jsonb"
+      },
+      {
+        "column_name": "embedding",
+        "data_type": "USER-DEFINED"
+      },
+      {
+        "column_name": "code_type",
+        "data_type": "text"
+      },
+      {
+        "column_name": "section_number",
+        "data_type": "text"
+      },
+      {
+        "column_name": "chapter_number",
+        "data_type": "text"
+      },
+      {
+        "column_name": "page_start",
+        "data_type": "integer"
+      },
+      {
+        "column_name": "page_end",
+        "data_type": "integer"
+      },
+      {
+        "column_name": "file_name",
+        "data_type": "text"
+      },
+      {
+        "column_name": "chunk_index",
+        "data_type": "integer"
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column_name": "canonical_section_id",
+        "data_type": "text"
+      },
+      {
+        "column_name": "normative",
+        "data_type": "boolean"
+      },
+      {
+        "column_name": "language",
+        "data_type": "text"
+      }
+    ],
+    "totalRows": 4630,
+    "distinctFiles": 18,
+    "nullSection": 354,
+    "nonNullSection": 4276
+  },
+  "inspected_rows": 4630,
+  "classification_counts": {
+    "no_detectable_heading_and_no_label": 354,
+    "no_detectable_heading": 2121,
+    "exact_match": 1245,
+    "suspicious_cross_chapter_label": 340,
+    "body_heading_differs_from_section_number": 231,
+    "body_heading_child_of_section_number": 337,
+    "section_number_parent_only": 2
+  },
+  "classification_percentages": {
+    "no_detectable_heading_and_no_label": 7.65,
+    "no_detectable_heading": 45.81,
+    "exact_match": 26.89,
+    "suspicious_cross_chapter_label": 7.34,
+    "body_heading_differs_from_section_number": 4.99,
+    "body_heading_child_of_section_number": 7.28,
+    "section_number_parent_only": 0.04
+  },
+  "mismatch_total": 3385,
+  "mismatch_by_file_top30": [
+    {
+      "file": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+      "count": 392
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+      "count": 241
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json",
+      "count": 239
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+      "count": 224
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json",
+      "count": 221
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json",
+      "count": 207
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-1751-2000_extracted_chunks.json",
+      "count": 197
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json",
+      "count": 191
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+      "count": 183
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json",
+      "count": 168
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-1501-1750_extracted_chunks.json",
+      "count": 157
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-2001-2200_extracted_chunks.json",
+      "count": 157
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json",
+      "count": 151
+    },
+    {
+      "file": "SBC 201 - The Saudi General Building Code-1251-1500_extracted_chunks.json",
+      "count": 148
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1001-1200_extracted_chunks.json",
+      "count": 145
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600_extracted_chunks.json",
+      "count": 138
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+      "count": 124
+    },
+    {
+      "file": "SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json",
+      "count": 102
+    }
+  ],
+  "examples_by_type": {
+    "no_detectable_heading_and_no_label": [
+      {
+        "id": "1",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 1,
+        "page_end": 8,
+        "clen": 1158,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "The Saudi General Building Code Code & Commentaries SBC 201 - CC SBC - official use - رﺋﻴﺲ\u0007ﻣﺠﻠﺲ\u0007اﻟﻮزراء وﱄ\u0007اﻟﻌﻬﺪ ﺣﻔﻈﻪ\u0007اﻟﻠﻪ official use - SBC 201-CC-2024 The Saudi General Building Code (SBC 201-2024) Saudi Building Code National Committee "
+      },
+      {
+        "id": "2",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 1,
+        "page_end": 8,
+        "clen": 2944,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "King Abdulaziz University Dr. Saeed A. Asiri Advisory Committee Dr. Hani M. Zahran Vice Chairman Dr. Ibrahim O. Habiballah Chairman Prof. Ahmed B. Shuraim Chairman of the Technical Structural Committee (SBC 301 to SBC 313) Prof. Ali A. Shas"
+      },
+      {
+        "id": "3",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 1,
+        "page_end": 8,
+        "clen": 3400,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "The Saudi Building Code Suite (SBCS)-2024 Sr. No. SBC Title Sr. No. SBC Title Sr. No. SBC Title 1 201 AR The Saudi General Building Code 11 310 AR The Saudi Code for Assessment, Repair, and Rehabilitation of Existing Concrete Structures 21 "
+      },
+      {
+        "id": "4",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 1,
+        "page_end": 8,
+        "clen": 2617,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "PREFACE TO THE SAUDI BUILDING CODE (SBC 201-2024) The Saudi General Building Code (SBC 201-2024) provides minimum requirements for the public safety, health, and general welfare of occupants of new and existing buildings and structures with"
+      },
+      {
+        "id": "5",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 9,
+        "page_end": 9,
+        "clen": 3019,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "ARRANGEMENT AND FORMAT OF SBC 201-2024 SBC 201-CC-2024 ii ARRANGEMENT AND FORMAT OF SBC 201-2024 Before applying the requirements of SBC 201, it is beneficial to understand its arrangement and format. SBC 201, like other codes published by "
+      },
+      {
+        "id": "6",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 10,
+        "page_end": 10,
+        "clen": 1361,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "ARRANGEMENT AND FORMAT OF SBC 201-2024 SBC 201-CC-2024 iii SBC 501 Correlated Topics SBC 201 requirements for smoke control systems, and smoke and fire dampers are directly correlated to the requirements of SBC 501. SBC 201 Chapter 28 is a "
+      },
+      {
+        "id": "7",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 11,
+        "page_end": 31,
+        "clen": 61,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "SUMMARY OF CHAPTERS SBC 201-CC-2024 iv SUMMARY OF CHAPTERS"
+      },
+      {
+        "id": "9",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": null,
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 11,
+        "page_end": 31,
+        "clen": 8803,
+        "type": "no_detectable_heading_and_no_label",
+        "snippet": "Where the provisions of the code address uses differently, moving from one activity to another or from one level of activity to another is, by definition, a change of occupancy. The new occupancy must be in compliance with the applicable pr"
+      }
+    ],
+    "no_detectable_heading": [
+      {
+        "id": "8",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "102.4",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 11,
+        "page_end": 31,
+        "clen": 4630,
+        "type": "no_detectable_heading",
+        "snippet": "Chapter 1 Scope and Administration Chapter 1 establishes the limits of applicability of the code and describes how the code is to be applied and enforced. Chapter 1 is in two parts, Part 1— Scope and Application (Sections 101-102) and Part "
+      },
+      {
+        "id": "15",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "406.5.4",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 12,
+        "page_end": 14,
+        "clen": 4763,
+        "type": "no_detectable_heading",
+        "snippet": "Chapter 4 Special Detailed Requirements Based on Occupancy and Use Chapter 4 contains the requirements for protecting special uses and occupancies, which are supplemental to the remainder of the code. Chapter 4 contains provisions that may "
+      },
+      {
+        "id": "17",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "1103.1",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 12,
+        "page_end": 14,
+        "clen": 5103,
+        "type": "no_detectable_heading",
+        "snippet": "of fire. The fire-resistance-rated construction requirements within Chapter 7 provide passive resistance to the spread and effects of fire. Types of separations addressed include fire walls, fire barriers, fire partitions, horizontal assemb"
+      },
+      {
+        "id": "21",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "102.4",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 17,
+        "page_end": 33,
+        "clen": 4878,
+        "type": "no_detectable_heading",
+        "snippet": "SUMMARY OF CHAPTERS SBC 201-CC-2024 x Chapter 31 Special Construction Chapter 31 contains a collection of regulations for a variety of unique structures and architectural features. Pedestrian walkways and tunnels connecting two buildings ar"
+      },
+      {
+        "id": "23",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "415.9.3",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 17,
+        "page_end": 33,
+        "clen": 4259,
+        "type": "no_detectable_heading",
+        "snippet": "Appendix M Tsunami-Generated Flood Hazards Addressing a tsunami risk for all types of construction in a tsunami hazard zone through building code requirements would typically not be cost effective, making tsunami-resistant construction impr"
+      },
+      {
+        "id": "39",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "110.3",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 35,
+        "page_end": 53,
+        "clen": 4750,
+        "type": "no_detectable_heading",
+        "snippet": "❖ The first part of this section establishes the right of the building official to enter the premises in order to make permit inspections required by Section 110.3 . Permit application forms typically include a statement in the certificatio"
+      },
+      {
+        "id": "41",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "105.3.1",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 35,
+        "page_end": 53,
+        "clen": 4533,
+        "type": "no_detectable_heading",
+        "snippet": "❖ The code is not intended to inhibit innovative ideas or technological advances. A comprehensive regulatory document, such as a building code, cannot envision and then address all future innovations in the industry. As a result, a performa"
+      },
+      {
+        "id": "45",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "101.4",
+        "body_heading": null,
+        "body_heading_pattern": null,
+        "page_start": 38,
+        "page_end": 41,
+        "clen": 3568,
+        "type": "no_detectable_heading",
+        "snippet": "In general, a permit is required for all activities that are regulated by the code or its referenced codes (see Section 101.4 ), and these activities cannot begin until the permit is issued, unless the activity is specifically exempted by S"
+      }
+    ],
+    "suspicious_cross_chapter_label": [
+      {
+        "id": "24",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "105.5",
+        "body_heading": "102.6.2",
+        "body_heading_pattern": "bare",
+        "page_start": 17,
+        "page_end": 33,
+        "clen": 1986,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "❖ This section applies to any building that may have been completed but not occupied or used for its original intended purpose. The building remains a new structure in terms of code compliance until such time as it is occupied in whole or i"
+      },
+      {
+        "id": "55",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "105.3.1",
+        "body_heading": "107.3.1",
+        "body_heading_pattern": "bare",
+        "page_start": 45,
+        "page_end": 46,
+        "clen": 3100,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "❖ The requirements of this section are related to those found in Section 105.3.1 regarding the action of the building official in response to a permit application. The building official can delegate review of the construction documents to s"
+      },
+      {
+        "id": "58",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "104.7",
+        "body_heading": "108.1",
+        "body_heading_pattern": "bare",
+        "page_start": 47,
+        "page_end": 47,
+        "clen": 1272,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "❖ A set of the approved construction documents must be kept by the building official as may be required by laws, but for a period of not less than 180 days after the work is complete. Questions regarding an item shown on the approved docume"
+      },
+      {
+        "id": "241",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "412.3",
+        "body_heading": "311.2.2",
+        "body_heading_pattern": "bare",
+        "page_start": 196,
+        "page_end": 229,
+        "clen": 2337,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "❖ This is one of a series of pointers to Chapter 4 due to a concern that these items may be missed. See the commentary to Section 412.3 and the definitions for “Residential aircraft hangar” and “Transient aircraft.” 311.2.2 Motor vehicle re"
+      },
+      {
+        "id": "275",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "903.3.1",
+        "body_heading": "310.5",
+        "body_heading_pattern": "bare",
+        "page_start": 227,
+        "page_end": 227,
+        "clen": 3868,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "CHAPTER 3—USE AND OCCUPANCY CLASSIFICATION SBC 201-CC-2024 199 permitted to be constructed in accordance with SBC 1101/1102 provided an automatic sprinkler system is installed in accordance with Section 903.3.1.3 or Section 2904 of SBC 1101"
+      },
+      {
+        "id": "323",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1028.5",
+        "body_heading": "1010.5",
+        "body_heading_pattern": "bare",
+        "page_start": 34,
+        "page_end": 103,
+        "clen": 3635,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "See the commentary for Section 1028.5 for access to a safe dispersal area when access to a public way is not available. 1010.5 Turnstiles or similar devices. Turnstiles or similar devices that restrict travel to one direction shall not be p"
+      },
+      {
+        "id": "329",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1009.3.2",
+        "body_heading": "1005.3.2",
+        "body_heading_pattern": "bare",
+        "page_start": 36,
+        "page_end": 189,
+        "clen": 3686,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "Keep in mind that accessible means of egress stairways in nonsprinklered buildings require a minimum clear width of 1200 mm between handrails (Section 1009.3.2 ). 1005.3.2 Other egress components. The capacity, in millimeters, of means of e"
+      },
+      {
+        "id": "335",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1005.3",
+        "body_heading": "1030.6.2",
+        "body_heading_pattern": "bare",
+        "page_start": 36,
+        "page_end": 189,
+        "clen": 1169,
+        "type": "suspicious_cross_chapter_label",
+        "snippet": "These provisions are applicable within the seating area itself. When the occupants have left the seating bowl and have moved to stairways outside of the room or have moved to cross aisles and then stairways or ramps leaving the balcony leve"
+      }
+    ],
+    "body_heading_differs_from_section_number": [
+      {
+        "id": "36",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "104.10",
+        "body_heading": "104.2",
+        "body_heading_pattern": "bare",
+        "page_start": 34,
+        "page_end": 50,
+        "clen": 4592,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "❖ The duty of the building official is to enforce the code, and he or she is the “authority having jurisdiction” for all matters relating to the code and its enforcement. It is the duty of the building official to interpret the code and to "
+      },
+      {
+        "id": "37",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "110.3.10",
+        "body_heading": "110.3.1",
+        "body_heading_pattern": "bare",
+        "page_start": 34,
+        "page_end": 50,
+        "clen": 1463,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "❖ The building official is required to verify that the building is constructed in accordance with the approved construction documents. It is the responsibility of the permit holder to notify the building official when the item is ready for "
+      },
+      {
+        "id": "101",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "1609.2",
+        "body_heading": "1609.3",
+        "body_heading_pattern": "section_word",
+        "page_start": 73,
+        "page_end": 223,
+        "clen": 4187,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "1609.2 for information on the effects of openings in the building envelope). Note that Section 1609.3 makes Figure 1609.3(2) applicable to both Risk Category III and IV structures for obtaining the basic design wind speed. However, this def"
+      },
+      {
+        "id": "115",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "308.4.5",
+        "body_heading": "308.5",
+        "body_heading_pattern": "bare",
+        "page_start": 76,
+        "page_end": 220,
+        "clen": 4361,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "and cannot safely be handled in large groups (see Commentary Figure 308.4.5). 308.5 Institutional Group I-4, day care facilities. Institutional Group I-4 occupancy shall include buildings and structures occupied by more than five persons of"
+      },
+      {
+        "id": "259",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "307.1",
+        "body_heading": "307.3.1",
+        "body_heading_pattern": "bare",
+        "page_start": 210,
+        "page_end": 213,
+        "clen": 3167,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "❖ The contents of occupancies in Group H-1 present a detonation hazard. Examples of materials that create this hazard are listed in the section. The definitions for Group H-1 materials are provided in Chapter 2. Because of the explosion haz"
+      },
+      {
+        "id": "270",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "308.1",
+        "body_heading": "308.5.2",
+        "body_heading_pattern": "bare",
+        "page_start": 221,
+        "page_end": 222,
+        "clen": 4244,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "CHAPTER 3—USE AND OCCUPANCY CLASSIFICATION SBC 201-CC-2024 193 would need to be classified as a mixed- occupancy facility of Groups E and I-4. By permitting the facility to be classified as Group E, the building would not be required to be "
+      },
+      {
+        "id": "320",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1004.5",
+        "body_heading": "1004.6",
+        "body_heading_pattern": "bare",
+        "page_start": 34,
+        "page_end": 103,
+        "clen": 3668,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "The maximum area of 0.65 m2 per occupant should allow for sufficient occupant movement in actual fire situations. This is not a conflict with the standing space provisions of 0.46 m2 net in accordance with Table 1004.5. Standing space is ty"
+      },
+      {
+        "id": "336",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1017.1",
+        "body_heading": "1017.2",
+        "body_heading_pattern": "table_word",
+        "page_start": 44,
+        "page_end": 61,
+        "clen": 2964,
+        "type": "body_heading_differs_from_section_number",
+        "snippet": "CHAPTER 10—MEANS OF EGRESS SBC 201-CC-2024 1016 All portions of machinery rooms shall be within 45 m of an exit or exit access doorway. An increase in exit access travel distance is permitted in accordance with Section 1017.1 . Exit and exi"
+      }
+    ],
+    "body_heading_child_of_section_number": [
+      {
+        "id": "126",
+        "file_name": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "section_number": "717.5.4",
+        "body_heading": "717.5.4.1",
+        "body_heading_pattern": "section_word",
+        "page_start": 84,
+        "page_end": 93,
+        "clen": 4061,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "❖ Under certain conditions, the code allows the corridor enclosure to include a ceiling constructed as a fire-rated assembly equivalent to that required for the corridor walls (fire partitions). Under most conditions, this would allow the f"
+      },
+      {
+        "id": "303",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1006.2.2",
+        "body_heading": "1006.2.2.2",
+        "body_heading_pattern": "bare",
+        "page_start": 27,
+        "page_end": 43,
+        "clen": 895,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "❖ This section requires two exit access doorways for the specified mechanical equipment spaces because of the level of hazards in this type of space. A fixed ladder or an alternating tread device is permitted for service personnel to egress"
+      },
+      {
+        "id": "338",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1006.3",
+        "body_heading": "1006.3.1",
+        "body_heading_pattern": "bare",
+        "page_start": 44,
+        "page_end": 61,
+        "clen": 3946,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "For open exit access stairways or ramps, it is important to consider where a stairway ramp can be open (Section 1019), where that stairway/ramp is part of the required ways off the floor (Section 1006.3), and how much travel distance is all"
+      },
+      {
+        "id": "385",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1010.3.1",
+        "body_heading": "1010.3.1.1",
+        "body_heading_pattern": "bare",
+        "page_start": 64,
+        "page_end": 147,
+        "clen": 3880,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "Door speeds also directly relate to the capacity of a revolving door, which is calculated for smaller revolving doors by multiplying the number of leaves (wings) by the revolutions per minute (rpm). For example, if you have an 2.4 m diamete"
+      },
+      {
+        "id": "399",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1010.1.1",
+        "body_heading": "1010.1.1.1",
+        "body_heading_pattern": "bare",
+        "page_start": 71,
+        "page_end": 84,
+        "clen": 4089,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "Exception 11 applies to nonaccessible single- user shower compartments, sauna compartments, toilet stalls, and dressing, fitting or changing rooms. It is common for the door to a single user toilet compartment to be 600 mm in width, which p"
+      },
+      {
+        "id": "415",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1010.3.1",
+        "body_heading": "1010.3.1.2",
+        "body_heading_pattern": "bare",
+        "page_start": 99,
+        "page_end": 100,
+        "clen": 3722,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "CHAPTER 10—MEANS OF EGRESS SBC 201-CC-2024 1071 reasons as stated in Condition 1. Each revolving door is therefore limited to a 50- person capacity. Condition 3 limits the breakout force to 578 N, as opposed to the 792 N value listed in Sec"
+      },
+      {
+        "id": "439",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1011.14",
+        "body_heading": "1011.14.2",
+        "body_heading_pattern": "bare",
+        "page_start": 116,
+        "page_end": 206,
+        "clen": 3829,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "❖ For the safety of occupants, this section references the dimensional requirements for handrail locations to be used in conjunction with the special construction features of alternating tread devices provided in Section 1011.14 . Because o"
+      },
+      {
+        "id": "440",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "1011.15",
+        "body_heading": "1011.15.1",
+        "body_heading_pattern": "bare",
+        "page_start": 116,
+        "page_end": 206,
+        "clen": 3474,
+        "type": "body_heading_child_of_section_number",
+        "snippet": "❖ Ship’s ladders can be used in correctional facilities for access to small control rooms, observation stations and unoccupied roofs. Where approved by the building official, ship’s ladders could be used for access to unoccupied roofs in ot"
+      }
+    ],
+    "section_number_parent_only": [
+      {
+        "id": "727",
+        "file_name": "SBC 201 - The Saudi General Building Code-1251-1500_extracted_chunks.json",
+        "section_number": "1404.3.1",
+        "body_heading": "1404.3",
+        "body_heading_pattern": "table_word",
+        "page_start": 214,
+        "page_end": 218,
+        "clen": 3726,
+        "type": "section_number_parent_only",
+        "snippet": "❖ This Section clarifies how spray foam in a wall cavity can be used to supplement (rather than replace per Section 1404.3.1) the continuous insulation required by Table 1404.3(3). Thus, spray foam in the wall cavity and continuous insulati"
+      },
+      {
+        "id": "1869",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "721.1.1",
+        "body_heading": "721.1",
+        "body_heading_pattern": "section_word",
+        "page_start": 47,
+        "page_end": 156,
+        "clen": 3730,
+        "type": "section_number_parent_only",
+        "snippet": "An example of the minimum thickness of concrete required for a structural steel column is shown in Commentary Figure 721.1.1(1). As shown, this figure depicts Item 1-1.5 of Table 721.1(1). Commentary Figure 721.1.1(2) depicts a reinforced c"
+      }
+    ]
+  },
+  "section_number_distribution_top30": [
+    {
+      "section_number": "5003.1.1",
+      "rows": 41,
+      "files": 8
+    },
+    {
+      "section_number": "721.1",
+      "rows": 39,
+      "files": 3
+    },
+    {
+      "section_number": "903.3.1",
+      "rows": 38,
+      "files": 12
+    },
+    {
+      "section_number": "907.5.2",
+      "rows": 26,
+      "files": 8
+    },
+    {
+      "section_number": "307.1",
+      "rows": 23,
+      "files": 8
+    },
+    {
+      "section_number": "705.5",
+      "rows": 21,
+      "files": 6
+    },
+    {
+      "section_number": "722.5.1",
+      "rows": 18,
+      "files": 1
+    },
+    {
+      "section_number": "1004.5",
+      "rows": 16,
+      "files": 6
+    },
+    {
+      "section_number": "903.2.11",
+      "rows": 14,
+      "files": 4
+    },
+    {
+      "section_number": "5704.3.6",
+      "rows": 14,
+      "files": 1
+    },
+    {
+      "section_number": "907.2.11",
+      "rows": 13,
+      "files": 7
+    },
+    {
+      "section_number": "1010.2.9",
+      "rows": 13,
+      "files": 4
+    },
+    {
+      "section_number": "101.3",
+      "rows": 13,
+      "files": 4
+    },
+    {
+      "section_number": "105.5",
+      "rows": 12,
+      "files": 5
+    },
+    {
+      "section_number": "6004.2.2",
+      "rows": 12,
+      "files": 5
+    },
+    {
+      "section_number": "506.2",
+      "rows": 11,
+      "files": 6
+    },
+    {
+      "section_number": "716.1",
+      "rows": 11,
+      "files": 4
+    },
+    {
+      "section_number": "1010.3.1",
+      "rows": 11,
+      "files": 4
+    },
+    {
+      "section_number": "1607.1",
+      "rows": 11,
+      "files": 3
+    },
+    {
+      "section_number": "722.2.1",
+      "rows": 10,
+      "files": 2
+    },
+    {
+      "section_number": "101.2.1",
+      "rows": 10,
+      "files": 2
+    },
+    {
+      "section_number": "1028.2",
+      "rows": 10,
+      "files": 2
+    },
+    {
+      "section_number": "5704.2.7",
+      "rows": 10,
+      "files": 4
+    },
+    {
+      "section_number": "5704.2.9",
+      "rows": 10,
+      "files": 3
+    },
+    {
+      "section_number": "2902.1",
+      "rows": 10,
+      "files": 2
+    },
+    {
+      "section_number": "1030.1.1",
+      "rows": 10,
+      "files": 6
+    },
+    {
+      "section_number": "1010.1.1",
+      "rows": 10,
+      "files": 3
+    },
+    {
+      "section_number": "907.2",
+      "rows": 10,
+      "files": 6
+    },
+    {
+      "section_number": "1007.1.1",
+      "rows": 9,
+      "files": 5
+    },
+    {
+      "section_number": "102.4",
+      "rows": 9,
+      "files": 6
+    }
+  ],
+  "focused_known_failures": {
+    "row_508_4_1_with_group_M_threshold": [
+      {
+        "id": "1716",
+        "file_name": "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json",
+        "section_number": "508.4",
+        "page_start": 79,
+        "page_end": 224,
+        "snippet": "with Section \n903.2.7 a fire area containing a Group M \noccupancy and exceeding 1115 m2 must be \nsprinkler protected. [Fire areas (defined in \n-"
+      },
+      {
+        "id": "2208",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "903.3.1",
+        "page_start": 350,
+        "page_end": 360,
+        "snippet": " where one of the following \nconditions exists: \n1 \nA Group M fire area exceeds 1115 m2. \n2 \nA Group M fire area is located more than \nthree stories above grade plane. \n3 \nThe combined area of all Group M fire areas \non all floors, including any mezzanines, \nexceeds 2230 m2."
+      },
+      {
+        "id": "2205",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "903.2.4",
+        "page_start": 350,
+        "page_end": 360,
+        "snippet": "here one of the \nfollowing conditions exists: \n1 \nA Group F-1 fire area exceeds 1115 m2. \n2 \nA Group F-1 fire area is located more than \nthree stories above grade plane. \n3 \nThe combined area of all Group F-1 fire areas \non all floors, including any mezzanines, \nexceeds 2230 m2.\n\n❖ Group F-1 occupancies must meet sever"
+      },
+      {
+        "id": "2292",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "508.4.1",
+        "page_start": 411,
+        "page_end": 435,
+        "snippet": "\nboxes. Buildings with a fire area containing a \nGroup M occupancy in excess of 1115 m2 must \nbe equipped with an automatic sprinkler \nsystem complying with Section 903.2.7 . \n907.2.7.1  \nOccupant notification. During \ntimes that the building is occupied, the initiation of \na signal from a manual fire alarm box or from"
+      },
+      {
+        "id": "4088",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "903.2.3",
+        "page_start": 73,
+        "page_end": 85,
+        "snippet": " E occupancies as \nfollows: \n1. Throughout all Group E fire areas greater \nthan 1115 m2 in area. \n2. The Group E fire area is located on a floor \nother than a level of exit discharge serving \nsuch occupancies. \nException: In buildings where every classroom has \nnot fewer than one exterior exit door at ground \nlevel, an"
+      },
+      {
+        "id": "4089",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "707.3.10",
+        "page_start": 73,
+        "page_end": 85,
+        "snippet": "f this fire area is \nseparated into two fire areas and neither is in \nexcess of 1115 m2, an automatic fire sprinkler \nsystem is not required. To be considered \nseparate fire areas, the areas must be \nseparated by fire barriers or horizontal \nassemblies having a fire-resistance rating as \nrequired in SBC 201 Table 707.3"
+      },
+      {
+        "id": "4092",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "308.6.1",
+        "page_start": 73,
+        "page_end": 85,
+        "snippet": " where one of the following \nconditions exists: \n1. A Group M fire area exceeds 1115 m2. \n2. A Group M fire area is located more than \nthree stories above grade plane. \n3. The combined area of all Group M fire areas \non all floors, including any mezzanines, \nexceeds 2230 m2. \n-\n\nCHAPTER 9— FIRE PROTECTION AND LIFE SAFE"
+      },
+      {
+        "id": "4096",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "903.2.9",
+        "page_start": 73,
+        "page_end": 85,
+        "snippet": "enclosed parking \ngarage, in accordance with Section 406.6 of \nSBC 201, exceeds 1115 m2. \n2. Where the enclosed parking garage, in \naccordance with Section 406.6 of SBC 201, \nis located beneath other groups. \nException: Enclosed parking garages located \nbeneath Group R-3 occupancies. \n3. Where the fire area of the open"
+      },
+      {
+        "id": "4126",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "903.2.6",
+        "page_start": 89,
+        "page_end": 155,
+        "snippet": "\nboxes. Buildings with a fire area containing a \nGroup M occupancy in excess of 1115 m2 must \nbe equipped with an automatic sprinkler \nsystem complying with Section 903.2.7. \n907.2.7.1 \nOccupant notification. During \ntimes that the building is occupied, the initiation of \na signal from a manual fire alarm box or from a"
+      }
+    ],
+    "rows_labeled_903_2_7_actual_body": [
+      {
+        "id": "4093",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "903.2.7",
+        "page_start": 73,
+        "page_end": 85,
+        "head_text": "❖ Regardless of the size of the Group M fire area, \nan automatic sprinkler system may be required \nin a high-piled storage area. High-piled storage \nincludes piled, palletized, bin box, shelf or rack \nstorage of Class I through IV combustibles to a \nheight greater than 3600 mm and certain high-\nhazard commodities great"
+      }
+    ],
+    "body_contains_907_2_7_group_m_label_other": [
+      {
+        "id": "291",
+        "file_name": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+        "section_number": "904.11",
+        "page_start": 1,
+        "page_end": 23,
+        "snippet": " load of > 500; or, occupant load \nof >100 above/below level of exit discharge (907.2.7 ) \nHotels (R-1) \nAll (exceptions for < 2 stories with sleeping units having \nexit directly to exterior; sprinklers) (907.2.8.1 )\n\nMultifamily (R-2) \nIf units > 3 stories above lowest level of exit discharge; or, \n> 1 story below hig"
+      },
+      {
+        "id": "4312",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json",
+        "section_number": "907.2.1",
+        "page_start": 37,
+        "page_end": 68,
+        "snippet": " load of > 500; or, occupant load of >100 \nabove/below level of exit discharge (907.2.7) \nHotels (R-1) \nAll (exceptions for < 2 stories with sleeping units having exit directly to \nexterior; sprinklers) (907.2.8.1) \nMulti-family (R-2) \nIf units > 3 stories above lowest level of exit discharge; or, > 1 story below \nhigh"
+      },
+      {
+        "id": "2291",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "907.2.6",
+        "page_start": 411,
+        "page_end": 435,
+        "snippet": "ses, clothes, etc.) \nand the likelihood of involvement over an \nextended area. \n907.2.7  Group M. A manual fire alarm system that \nactivates the occupant notification system in \naccordance with Section 907.5 shall be installed in \nGroup M occupancies where one of the following \nconditions exists: \n1 \nThe combined Group"
+      },
+      {
+        "id": "2292",
+        "file_name": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "section_number": "508.4.1",
+        "page_start": 411,
+        "page_end": 435,
+        "snippet": " equipped with an automatic sprinkler \nsystem complying with Section 903.2.7 . \n907.2.7.1  \nOccupant notification. During \ntimes that the building is occupied, the initiation of \na signal from a manual fire alarm box or from a \nwaterflow switch shall not be required to activate \nthe alarm notification appliances when a"
+      },
+      {
+        "id": "4126",
+        "file_name": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+        "section_number": "903.2.6",
+        "page_start": 89,
+        "page_end": 155,
+        "snippet": "ses, clothes, etc.) \nand the likelihood of involvement over an \nextended area. \n907.2.7 Group M. A manual fire alarm system that \nactivates the occupant notification system in \naccordance with Section 907.5shall be installed in \nGroup M occupancies where one of the following \nconditions exists: \n1. The combined Group M"
+      }
+    ],
+    "sbc_code_tables_903_2": [
+      {
+        "table_id": "903.2",
+        "table_title": "Occupancies Requiring Automatic Sprinkler Systems — SBC 801 Section 903.2 Summary",
+        "source_code": "SBC 801",
+        "edition": "2024",
+        "content_md_head": "## Section 903.2 — Where Required: Automatic Sprinkler Systems by Occupancy\n**SBC 801 | Section 903.2 | Chapter 9 — Fire Suppression Systems**\n\n> Note: SBC 801 does not present 903.2 as a single consolidated table — requirements are in sub-sections. This structured summary covers all 903.2.x sub-sections.\n\n| SBC 801 SECTION | OCCUPANCY | SPRINKLER REQUIREMENT TRIGGER |\n|---|---|---|\n| 903.2.1.1 | A-1 (Theaters, concert halls) | Fire area > 12,000 sq ft (1,115 m²), OR fire area on any floor > 12,000 sq ft, OR building > 1 story, OR occupant load > 300 |\n| 903.2.1.2 | A-2 (Restaurants, nightclubs) | Fire area > 5,000 sq ft (465 m²), OR occupant load > 100, OR fire area on any floor below level of exit discharge > 5,000 sq ft |\n| 903.2.1.3 | A-3 (Worship, recreation, amusement) | Fire area > 12,000 sq ft (1,115 m²), OR occupant load > 300 |\n| 903.2.1.4 | A-4 (Indoor sports arenas) | Fire area > 12,000 sq ft (1,115 m²), OR occupant load > 300 |\n| 903.2.2 | E (Educational) | Fire area > 12,000 sq ft (1,115 m²), OR occupied floor below level of exit discharge, OR 12 or more rooms on floor |\n| 903.2.3 | F-1 (Moderate hazard manufacturing) | Fire area > 12,000 sq ft (1,115 m²), OR fire are",
+        "clen": 3156
+      }
+    ],
+    "community_summary_mercantile_1115": [
+      {
+        "id": "9a8e89fe-859e-4a77-9de2-1672238a3c62",
+        "level": 0,
+        "summary": "Automatic Sprinkler System Requirements — Decision Tree (SBC 801 Section 903.2)\n\nUniversal triggers (apply to any occupancy): (1) High-rise building — floor height above grade > 23 m → sprinklers required throughout (Section 903.2.11). (2) Any underground story present, regardless of size → sprinklers required throughout entire building (Section 903.2.10).\n\nBy occupancy group:\n- A-1, A-2 (Assembly — theaters, banquet halls, mosques): required regardless of area.\n- A-3, A-4, A-5: required if any floor area > 465 m².\n- B (Business): required if > 3 stories or threshold area exceeded.\n- E (Educational): required for all secondary/post-secondary; primary schools required if classroom area > 18.58 m².\n- F-1 (Factory — flammable materials): always required.\n- H (High-Hazard — all sub-types H-1 through H-5): always required; system type coordinated with Civil Defense.\n- I-1 (Care facilities): required if occupant load > 16.\n- I-2 (Hospitals/clinics), I-3 (Detention), I-4 (Day care): always required — no exceptions.\n- M (Mercantile): required if single-floor area > 1,115 m² or multi-floor with any floor > 465 m².\n- R-1 (Hotels): always required (NFPA 13 or 13R).\n- R-2 (Apartments): required if > 4 units or > 3 stories.\n- R-3 (Single-family villa): exempt (NFPA 13D optional in KSA).\n- S-1 (High-hazard storage): always required.\n- S-2: required if area > 232 m².\n\nOptional benefit: installing sprinklers even when not required allows increased travel distance (76 m → 91 m) and may reduce required exit count.\n\nAuthority: LLM_SYNTHESIS with STRUCTURED_FACT thresholds from Section 903.2 tables. Verify with original code and Civil Defense for final decisions."
+      }
+    ]
+  }
+}
