@@ -1029,7 +1029,20 @@ const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 const CACHE_MAX_SIZE = 30; // Increased from 20
 
 // Query-level cache for scored results
-type SourcePageMeta = { file: string; pageStart: number | null; pageEnd: number | null; precision: 'page_range' | 'chunk_range_only' | 'unavailable' };
+type SectionConfidence = 'high' | 'medium' | 'low' | 'ambiguous' | null;
+type SourcePageMeta = {
+  file: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  precision: 'page_range' | 'chunk_range_only' | 'unavailable';
+  // Step 3 — section_ref end-to-end. Populated only from existing pgvector
+  // chunk metadata. We do NOT infer new section numbers and do NOT repair
+  // misaligned section_number values here — Step 2.5 showed those need
+  // owner-gated curation. UI displays the badge only when a single,
+  // unambiguous section_number is available across the chunks for this file.
+  sectionRef?: string | null;
+  sectionConfidence?: SectionConfidence;
+};
 const queryCache: Map<string, { result: { context: string; files: string[]; sourceMeta: SourcePageMeta[] }; timestamp: number }> = new Map();
 const QUERY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const QUERY_CACHE_MAX = 20;
@@ -2289,26 +2302,53 @@ async function fetchSBCContextVector(
     let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
     const contextLimit = 120000;
 
-    // Build per-file page range from vector match page data
-    const vectorMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
+    // Build per-file page range + section labels from vector match page data
+    const vectorMetaMap = new Map<string, {
+      minPage: number | null;
+      maxPage: number | null;
+      sections: Set<string>;
+    }>();
     for (const match of matches) {
       const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
       if (context.length + entry.length > contextLimit) break;
       context += entry;
-      const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null };
+      const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null, sections: new Set<string>() };
       if (match.page_start != null) m.minPage = m.minPage == null ? match.page_start : Math.min(m.minPage, match.page_start);
       if (match.page_end != null) m.maxPage = m.maxPage == null ? match.page_end : Math.max(m.maxPage, match.page_end);
+      const sn = (match.section_number || '').toString().trim();
+      if (sn) m.sections.add(sn);
       vectorMetaMap.set(match.file_name, m);
     }
 
     const sourceMeta: SourcePageMeta[] = usedFiles.map(file => {
       const m = vectorMetaMap.get(file);
       const hasPages = m && (m.minPage != null || m.maxPage != null);
+      // Section ref policy (conservative): single distinct section across this
+      // file's selected chunks → confidence:medium. Multiple distinct values →
+      // ambiguous. Step 2.5 showed labels can drift, so we never emit "high"
+      // from chunk metadata alone.
+      let sectionRef: string | null = null;
+      let sectionConfidence: SectionConfidence = null;
+      if (m && m.sections.size === 1) {
+        sectionRef = [...m.sections][0];
+        sectionConfidence = 'medium';
+      } else if (m && m.sections.size > 1) {
+        // Surface the most "specific" (most dotted segments) one, marked ambiguous.
+        const sorted = [...m.sections].sort((a, b) => {
+          const da = (a.match(/\./g) || []).length;
+          const db = (b.match(/\./g) || []).length;
+          return db - da;
+        });
+        sectionRef = sorted[0];
+        sectionConfidence = 'ambiguous';
+      }
       return {
         file,
         pageStart: m?.minPage ?? null,
         pageEnd: m?.maxPage ?? null,
         precision: hasPages ? 'page_range' : 'chunk_range_only',
+        sectionRef,
+        sectionConfidence,
       };
     });
 

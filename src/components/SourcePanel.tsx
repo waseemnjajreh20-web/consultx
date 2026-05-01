@@ -257,8 +257,26 @@ function PanelBody({
                   {formatSourceLabel(meta, language)}
                 </p>
                 {meta.documentCode !== "UNKNOWN" && (
-                  <p className="text-[11px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    {meta.documentCode}
+                  <p className="text-[11px] font-mono mt-0.5 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <span>{meta.documentCode}</span>
+                    {meta.sectionRef && (meta.sectionConfidence === "high" || meta.sectionConfidence === "medium") && (
+                      <span
+                        className="text-[10px] px-1.5 py-px rounded"
+                        style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
+                        title={isRtl ? "رقم القسم المسترجع" : "Retrieved section number"}
+                      >
+                        {isRtl ? `القسم ${meta.sectionRef}` : `Section ${meta.sectionRef}`}
+                      </span>
+                    )}
+                    {meta.sectionRef && meta.sectionConfidence === "ambiguous" && (
+                      <span
+                        className="text-[10px] px-1.5 py-px rounded"
+                        style={{ background: "rgba(255,193,7,0.16)", color: "#FFC107" }}
+                        title={isRtl ? "يحتاج تحقق من المصدر" : "Needs source verification"}
+                      >
+                        {isRtl ? `القسم ${meta.sectionRef}؟` : `Section ${meta.sectionRef}?`}
+                      </span>
+                    )}
                   </p>
                 )}
                 {meta.pageStart !== null && meta.pageEnd !== null && (

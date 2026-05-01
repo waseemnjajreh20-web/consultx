@@ -17,17 +17,26 @@ const PDF_BUCKET = "source-pdfs";
 /** How precise the page number we can offer is */
 export type SourcePrecision = "page_range" | "chunk_range_only" | "unavailable";
 
+/** Confidence level emitted by the edge function for the section_ref label. */
+export type SectionConfidence = "high" | "medium" | "low" | "ambiguous" | null;
+
 /**
  * Per-file chunk page metadata as emitted by the edge function in X-SBC-Source-Meta.
  * page_range   → chunk had page_start/page_end from DB or JSON; min/max across selected chunks
  * chunk_range_only → only the filename's overall page range is known
  * unavailable  → no page data at all
+ *
+ * Step 3 added optional sectionRef / sectionConfidence; older edge function
+ * builds will omit them and the UI falls back to the filename + page-range
+ * display unchanged.
  */
 export interface ChunkPageMeta {
   file: string;
   pageStart: number | null;
   pageEnd: number | null;
   precision: SourcePrecision;
+  sectionRef?: string | null;
+  sectionConfidence?: SectionConfidence;
 }
 
 export interface SourceMeta {
@@ -47,6 +56,10 @@ export interface SourceMeta {
   pdfPath: string | null;
   /** Quality of the page data */
   precision: SourcePrecision;
+  /** SBC section number tied to this source, if known. Null when unknown. */
+  sectionRef: string | null;
+  /** Confidence in `sectionRef`. Null when no section data is available. */
+  sectionConfidence: SectionConfidence;
 }
 
 /**
@@ -76,6 +89,8 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
       pdfUrl: null,
       pdfPath: null,
       precision: "unavailable",
+      sectionRef: null,
+      sectionConfidence: null,
     };
   }
 
@@ -114,6 +129,8 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
     pdfUrl,
     pdfPath,
     precision: pageStart != null ? "chunk_range_only" : "unavailable",
+    sectionRef: null,
+    sectionConfidence: null,
   };
 }
 
@@ -157,13 +174,20 @@ export function resolveSourcesWithMeta(
     seen.add(key);
 
     const cm = chunkMap.get(sf);
+    const sectionRef = (cm && typeof cm.sectionRef === "string" && cm.sectionRef.trim()) ? cm.sectionRef.trim() : null;
+    const sectionConfidence: SectionConfidence = sectionRef ? (cm?.sectionConfidence ?? null) : null;
     if (cm && (cm.pageStart != null || cm.pageEnd != null)) {
       results.push({
         ...base,
         pageStart: cm.pageStart,
         pageEnd: cm.pageEnd,
         precision: cm.precision,
+        sectionRef,
+        sectionConfidence,
       });
+    } else if (sectionRef) {
+      // No tighter page data, but we still got a section label — preserve it.
+      results.push({ ...base, sectionRef, sectionConfidence });
     } else {
       results.push(base);
     }
