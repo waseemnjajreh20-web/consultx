@@ -1047,6 +1047,231 @@ const queryCache: Map<string, { result: { context: string; files: string[]; sour
 const QUERY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const QUERY_CACHE_MAX = 20;
 
+// ==================== ADVISORY EVIDENCE LEDGER (Step 4) ====================
+// In-memory record of what retrieval ACTUALLY produced for the current Advisory
+// turn. The ledger is the only acceptable basis for an evidence-tier-1 (conf:high)
+// citation. The server-side citation verifier (verifyAdvisoryCitations) downgrades
+// any token whose family / section is not in this ledger before the answer is
+// streamed to the frontend.
+//
+// Strict scope: built from existing data only — no DB writes, no schema migration,
+// no GraphRAG, no corpus changes.
+type LedgerOrigin = "keyword_chunk" | "structured_table" | "vector_chunk" | "unknown";
+type LedgerFamily = "SBC-201" | "SBC-801" | "UNKNOWN";
+
+interface EvidenceLedgerEntry {
+  sourceFamily: LedgerFamily;
+  sectionRef: string | null;
+  tableRef: string | null;
+  sectionConfidence: SectionConfidence;
+  fileName: string | null;
+  pageStart: number | null;
+  pageEnd: number | null;
+  precision: 'page_range' | 'chunk_range_only' | 'unavailable';
+  isClickableSource: boolean;
+  origin: LedgerOrigin;
+}
+
+/** Infer SBC family from a chunk/PDF/table source filename. */
+function familyFromFileName(name: string | null | undefined): LedgerFamily {
+  if (!name) return "UNKNOWN";
+  if (/(?:^|[\s_\-(])SBC[\s_\-]*201\b/i.test(name) || /SBC.?201/i.test(name)) return "SBC-201";
+  if (/(?:^|[\s_\-(])SBC[\s_\-]*801\b/i.test(name) || /SBC.?801/i.test(name)) return "SBC-801";
+  return "UNKNOWN";
+}
+
+/** Infer SBC family from a structured-table `source_code` column value. */
+function familyFromSourceCode(code: string | null | undefined): LedgerFamily {
+  if (!code) return "UNKNOWN";
+  if (/201/.test(code)) return "SBC-201";
+  if (/801/.test(code)) return "SBC-801";
+  return "UNKNOWN";
+}
+
+/** Build the ledger from retrieval outputs available at the response site. */
+function buildEvidenceLedger(
+  sourceMeta: SourcePageMeta[],
+  structuredTables: Array<{ tableId: string; sourceCode: string | null; sectionRef: string | null }>,
+): EvidenceLedgerEntry[] {
+  const ledger: EvidenceLedgerEntry[] = [];
+
+  for (const m of sourceMeta) {
+    ledger.push({
+      sourceFamily: familyFromFileName(m.file),
+      sectionRef: m.sectionRef ?? null,
+      tableRef: null,
+      sectionConfidence: m.sectionConfidence ?? null,
+      fileName: m.file,
+      pageStart: m.pageStart,
+      pageEnd: m.pageEnd,
+      precision: m.precision,
+      isClickableSource: true,
+      origin: "keyword_chunk",
+    });
+  }
+
+  for (const t of structuredTables) {
+    ledger.push({
+      sourceFamily: familyFromSourceCode(t.sourceCode),
+      sectionRef: t.sectionRef ?? null,
+      tableRef: t.tableId,
+      sectionConfidence: 'medium',
+      fileName: null,
+      pageStart: null,
+      pageEnd: null,
+      precision: 'unavailable',
+      // Structured tables do not currently round-trip to a clickable PDF, but
+      // they ARE valid evidence for citation verification.
+      isClickableSource: false,
+      origin: "structured_table",
+    });
+  }
+
+  return ledger;
+}
+
+/** Set of families that have at least one ledger entry. */
+function ledgerFamilies(ledger: EvidenceLedgerEntry[]): Set<LedgerFamily> {
+  const out = new Set<LedgerFamily>();
+  for (const e of ledger) if (e.sourceFamily !== "UNKNOWN") out.add(e.sourceFamily);
+  return out;
+}
+
+/** Section refs present in the ledger for a given family. */
+function ledgerSectionsFor(ledger: EvidenceLedgerEntry[], fam: LedgerFamily): Set<string> {
+  const out = new Set<string>();
+  for (const e of ledger) {
+    if (e.sourceFamily === fam && e.sectionRef) out.add(e.sectionRef);
+  }
+  return out;
+}
+
+/** Highest section confidence available for a (family, section) pair. */
+function ledgerConfidenceFor(
+  ledger: EvidenceLedgerEntry[],
+  fam: LedgerFamily,
+  sectionRef: string,
+): SectionConfidence {
+  let best: SectionConfidence = null;
+  const order = (c: SectionConfidence) => c === 'high' ? 3 : c === 'medium' ? 2 : c === 'low' ? 1 : c === 'ambiguous' ? 0 : -1;
+  for (const e of ledger) {
+    if (e.sourceFamily === fam && e.sectionRef === sectionRef) {
+      if (order(e.sectionConfidence) > order(best)) best = e.sectionConfidence;
+    }
+  }
+  return best;
+}
+
+/** Build a compact evidence summary the model can read before generating. */
+function buildEvidenceSummaryForPrompt(ledger: EvidenceLedgerEntry[]): string {
+  const fams = ledgerFamilies(ledger);
+  const sec201 = [...ledgerSectionsFor(ledger, "SBC-201")];
+  const sec801 = [...ledgerSectionsFor(ledger, "SBC-801")];
+  const tables = ledger
+    .filter(e => e.origin === "structured_table" && e.tableRef)
+    .map(e => `${e.sourceFamily}/Table ${e.tableRef}`);
+
+  return `\n\n📋 EVIDENCE LEDGER (binding — Advisory citation verifier will enforce):
+- SBC-201 retrieved: ${fams.has("SBC-201") ? "yes" : "no"}
+- SBC-801 retrieved: ${fams.has("SBC-801") ? "yes" : "no"}
+- Retrieved SBC-201 section refs: ${sec201.length ? sec201.join(", ") : "(none)"}
+- Retrieved SBC-801 section refs: ${sec801.length ? sec801.join(", ") : "(none)"}
+- Structured tables: ${tables.length ? tables.join(", ") : "(none)"}
+
+ENFORCEMENT:
+1. You may NOT emit a citation token for an SBC family marked "no" above.
+2. You may NOT emit conf:high for a (family, section) pair that is not in the lists above with a high/medium ledger confidence — the verifier will downgrade it.
+3. If you know a likely section number that is NOT in the ledger, write the phrase "مرجع متوقع يحتاج تحقق من مصدر مطابق" (or English: "expected reference — needs source verification") instead of a citation token.
+4. Bracketed citation tokens that fail the ledger check will be downgraded server-side to conf:low with section_label:unsupported or source_family:unretrieved.
+`;
+}
+
+// ==================== ADVISORY CITATION VERIFIER (Step 4) ====================
+// Scan the model's final Advisory answer for `[SBC-XXX … | conf:Y]` tokens and
+// downgrade any that the ledger cannot prove. Pure transformation on the
+// assembled text — never throws, never strips tokens, only rewrites them.
+const CITATION_TOKEN_RX =
+  /\[\s*SBC[\s\-_]*?(201|801)\b([^\[\]\n]{0,300})\]/gi;
+
+function rewriteFields(inner: string, opts: { conf?: string; addLabel?: string }): string {
+  let s = inner;
+  // Strip existing conf:... and section_label:... and source_family:... pieces
+  s = s.replace(/\|\s*conf\s*:\s*(?:high|medium|low|ambiguous)/gi, "");
+  s = s.replace(/\|\s*section_label\s*:\s*[A-Za-z_]+/gi, "");
+  s = s.replace(/\|\s*source_family\s*:\s*[A-Za-z_]+/gi, "");
+  s = s.replace(/\s+\|\s*$/g, "").trim();
+  const parts: string[] = [s];
+  if (opts.conf) parts.push(`conf:${opts.conf}`);
+  if (opts.addLabel) parts.push(opts.addLabel);
+  return parts.join(" | ");
+}
+
+interface VerifierResult {
+  text: string;
+  changes: number;
+  unsupportedFamily: number;
+  unsupportedSection: number;
+  capped: number;
+}
+
+function verifyAdvisoryCitations(text: string, ledger: EvidenceLedgerEntry[]): VerifierResult {
+  const fams = ledgerFamilies(ledger);
+  let changes = 0;
+  let unsupportedFamily = 0;
+  let unsupportedSection = 0;
+  let capped = 0;
+
+  const out = text.replace(CITATION_TOKEN_RX, (full, famDigits: string, rest: string) => {
+    const fam: LedgerFamily = famDigits === "201" ? "SBC-201" : "SBC-801";
+    const innerFull = `SBC-${famDigits}${rest}`.trim();
+
+    // Parse fields out of the rest of the token
+    const secMatch = rest.match(/Section\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i);
+    const tableMatch = rest.match(/Table\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i);
+    const confMatch = rest.match(/conf\s*:\s*(high|medium|low|ambiguous)/i);
+    const sectionRef = secMatch?.[1] ?? null;
+    const tableRef = tableMatch?.[1] ?? null;
+    const conf = (confMatch?.[1] ?? "").toLowerCase();
+
+    // Case 1 — family not in ledger at all → unretrieved
+    if (!fams.has(fam)) {
+      unsupportedFamily += 1;
+      changes += 1;
+      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "source_family:unretrieved" })}]`;
+    }
+
+    // Case 2 — family is in ledger, but specific section/table is not
+    const knownSections = ledgerSectionsFor(ledger, fam);
+    const knownTables = new Set(
+      ledger.filter(e => e.sourceFamily === fam && e.tableRef).map(e => e.tableRef as string),
+    );
+    const sectionKnown = sectionRef ? knownSections.has(sectionRef) : false;
+    const tableKnown = tableRef ? knownTables.has(tableRef) : false;
+    const familyOnly = !!(sectionRef || tableRef) && !sectionKnown && !tableKnown;
+
+    if (familyOnly) {
+      unsupportedSection += 1;
+      changes += 1;
+      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "section_label:unsupported" })}]`;
+    }
+
+    // Case 3 — section is known. Cap conf:high to ledger's actual confidence.
+    if (sectionRef && sectionKnown && conf === "high") {
+      const ledgerConf = ledgerConfidenceFor(ledger, fam, sectionRef);
+      if (ledgerConf !== "high") {
+        capped += 1;
+        changes += 1;
+        return `[${rewriteFields(innerFull, { conf: "medium", addLabel: "section_label:ambiguous" })}]`;
+      }
+    }
+
+    // Otherwise — leave the token unchanged.
+    return full;
+  });
+
+  return { text: out, changes, unsupportedFamily, unsupportedSection, capped };
+}
+
 function cleanupCache() {
   if (fileCache.size <= CACHE_MAX_SIZE) return;
   const now = Date.now();
@@ -2177,9 +2402,9 @@ function extractTableIds(query: string): string[] {
 async function fetchStructuredTables(
   query: string,
   supabaseAdmin: any,
-): Promise<{ context: string; matchedTableIds: string[] }> {
+): Promise<{ context: string; matchedTableIds: string[]; entries: Array<{ tableId: string; sourceCode: string | null; sectionRef: string | null }> }> {
   const tableIds = extractTableIds(query);
-  if (tableIds.length === 0) return { context: "", matchedTableIds: [] };
+  if (tableIds.length === 0) return { context: "", matchedTableIds: [], entries: [] };
 
   console.log(`[StructuredTable] Query references table IDs: ${tableIds.join(", ")}`);
 
@@ -2187,7 +2412,7 @@ async function fetchStructuredTables(
   const LEGACY_IDS = new Set(["503", "1004.1.2", "1004.1"]);
   const fetchIds = tableIds.filter(id => !LEGACY_IDS.has(id));
 
-  if (fetchIds.length === 0) return { context: "", matchedTableIds: [] };
+  if (fetchIds.length === 0) return { context: "", matchedTableIds: [], entries: [] };
 
   const { data: rows, error } = await supabaseAdmin
     .from("sbc_code_tables")
@@ -2197,12 +2422,12 @@ async function fetchStructuredTables(
 
   if (error) {
     console.error("[StructuredTable] DB error:", error.message);
-    return { context: "", matchedTableIds: [] };
+    return { context: "", matchedTableIds: [], entries: [] };
   }
 
   if (!rows || rows.length === 0) {
     console.log("[StructuredTable] No rows found for IDs:", fetchIds.join(", "));
-    return { context: "", matchedTableIds: [] };
+    return { context: "", matchedTableIds: [], entries: [] };
   }
 
   console.log(`[StructuredTable] Found ${rows.length} structured table(s): ${rows.map((r: any) => r.table_id).join(", ")}`);
@@ -2227,7 +2452,16 @@ async function fetchStructuredTables(
   context += "\n\n" + "=".repeat(60) + "\n";
   context += "END OF STRUCTURED TABLE DATA — Continue with retrieved document chunks below.\n";
 
-  return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
+  // Step 4 — surface table source codes so the Evidence Ledger can include
+  // structured-table evidence in citation verification.
+  const entries = (rows as any[]).map(r => ({
+    tableId: r.table_id as string,
+    sourceCode: (r.source_code ?? null) as string | null,
+    // sbc_code_tables.table_id IS the section/table ref the model cites with.
+    sectionRef: (r.table_id ?? null) as string | null,
+  }));
+
+  return { context, matchedTableIds: rows.map((r: any) => r.table_id), entries };
 }
 
 // ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
@@ -4778,6 +5012,7 @@ serve(async (req) => {
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
     let usedSourceMeta: SourcePageMeta[] = [];
+    let advisoryLedger: EvidenceLedgerEntry[] = [];
     let finalMessages = [...messages];
 
     if (resolvedImages.length > 0) {
@@ -4855,7 +5090,7 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
-      const { context: structuredTableContext, matchedTableIds } =
+      const { context: structuredTableContext, matchedTableIds, entries: structuredTableEntries } =
         await fetchStructuredTables(userQuery, supabaseAdminForTables);
 
       if (matchedTableIds.length > 0) {
@@ -4923,6 +5158,16 @@ ABSOLUTELY FORBIDDEN:
         ? `\n\n🔒 FINAL INSTRUCTION: The reference text above is for grounding only. It does NOT mean the user inputs are sufficient. If critical variables (occupancy, height, area) are missing, you MUST stop and ask 1–3 clarifying questions first. Do not produce a final A-F answer until inputs are sufficient. Do not assume missing variables.`
         : `\n\n🔒 تعليمة نهائية ملزمة: النص المرجعي أعلاه للتثبيت فقط ولا يعني أن معطيات المستخدم كافية. إذا كانت المعطيات الحرجة (التصنيف، الارتفاع، المساحة) ناقصة، يجب عليك التوقف فوراً وطرح 1 إلى 3 أسئلة توضيحية. ممنوع تقديم إجابة نهائية (A-F) قبل اكتمال المعطيات. ممنوع افتراض المتغيرات الناقصة.`;
       fullSystemPrompt += finalBindingReminder;
+
+      // ── 4. Build Evidence Ledger and inject summary (Advisory only) ────────────
+      // Step 4: feed the model an explicit, machine-derived list of what was
+      // actually retrieved. The post-stream verifier enforces it.
+      if (mode === "standard") {
+        advisoryLedger = buildEvidenceLedger(usedSourceMeta, structuredTableEntries);
+        const summary = buildEvidenceSummaryForPrompt(advisoryLedger);
+        fullSystemPrompt += summary;
+        console.log(`[Ledger] Advisory ledger built: ${advisoryLedger.length} entries (${[...ledgerFamilies(advisoryLedger)].join(",") || "none"})`);
+      }
     }
     
     // ── Inject drawing text layer (text-only analysis path) ─────────────────
@@ -5105,6 +5350,76 @@ ABSOLUTELY FORBIDDEN:
       });
 
       return new Response(response.body!.pipeThrough(bufferingStream), { headers: sseHeaders });
+    }
+
+    // ── ADVISORY (mode="standard") buffered → verify → re-stream ──────────────
+    // Step 4: every Advisory answer is buffered before it reaches the user, and
+    // server-side citation verifier rewrites unsupported tokens against the
+    // Evidence Ledger built earlier in this request.
+    if (mode === "standard") {
+      let advisoryLineBuffer = "";
+      let advisoryFullText = "";
+      const sseHeaders = {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "X-SBC-Sources": usedFiles.join(","),
+        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+      };
+
+      const advisoryStream = new TransformStream({
+        transform(chunk, _controller) {
+          advisoryLineBuffer += new TextDecoder().decode(chunk);
+          const lines = advisoryLineBuffer.split("\n");
+          advisoryLineBuffer = lines.pop() ?? "";
+          for (const raw of lines) {
+            const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (!jsonStr || jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (content) advisoryFullText += content;
+            } catch { /* ignore */ }
+          }
+        },
+        flush(controller) {
+          // Drain any remaining line
+          const remaining = advisoryLineBuffer.endsWith("\r")
+            ? advisoryLineBuffer.slice(0, -1) : advisoryLineBuffer;
+          if (remaining.startsWith("data: ")) {
+            const jsonStr = remaining.slice(6).trim();
+            if (jsonStr && jsonStr !== "[DONE]") {
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (content) advisoryFullText += content;
+              } catch { /* ignore */ }
+            }
+          }
+
+          const verified = verifyAdvisoryCitations(advisoryFullText, advisoryLedger);
+          console.log(
+            `[CitationVerifier] changes=${verified.changes} ` +
+            `unsupportedFamily=${verified.unsupportedFamily} ` +
+            `unsupportedSection=${verified.unsupportedSection} ` +
+            `capped=${verified.capped} ` +
+            `ledgerSize=${advisoryLedger.length}`,
+          );
+
+          // Re-stream verified text in 500-char chunks
+          const CHUNK = 500;
+          const finalText = verified.text;
+          for (let i = 0; i < finalText.length; i += CHUNK) {
+            controller.enqueue(new TextEncoder().encode(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: finalText.slice(i, i + CHUNK) } }] })}\n\n`
+            ));
+          }
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        },
+      });
+
+      return new Response(response.body!.pipeThrough(advisoryStream), { headers: sseHeaders });
     }
 
     // ── Standard token-by-token transform (non-analytical / non-vision modes) ─
