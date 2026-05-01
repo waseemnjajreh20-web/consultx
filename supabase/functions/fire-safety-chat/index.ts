@@ -2298,6 +2298,13 @@ function extractTableIds(query: string): string[] {
     [/institutional\s+occup\w*|\bGroup\s+I[1-4]?\b|I-[1-4]\s+(?:class|occup\w*|group)|مستشفى\s+إشغال|مجموعة\s+I\b/i, ["308"]],
     // Mercantile — retail, Group M
     [/mercantile\s+occup\w*|\bGroup\s+M\b|retail\s+(?:shop\w*|store\w*|occup\w*|space\w*)|محلات\s+تجارية|مجموعة\s+(?:M|التجزئة)\b/i, ["309"]],
+    // Step 4.2 — Group M fire-protection sub-clauses (sprinkler 903.2.7 / alarm 907.2.7).
+    // Triggered only when a Mercantile/Group-M phrase co-occurs with a sprinkler or
+    // alarm phrase in the same query — narrow co-occurrence to avoid false positives.
+    [/(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)[\s\S]{0,80}(?:sprinkler|automatic\s+sprinkler|رش|رشاش)/i, ["903.2.7"]],
+    [/(?:sprinkler|automatic\s+sprinkler|رش|رشاش)[\s\S]{0,80}(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)/i, ["903.2.7"]],
+    [/(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)[\s\S]{0,80}(?:fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|إنذار)/i, ["907.2.7"]],
+    [/(?:fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|إنذار)[\s\S]{0,80}(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)/i, ["907.2.7"]],
     // Residential — Group R, مبنى سكني
     [/residential\s+occup\w*|\bGroup\s+R[1-4]?\b|R-[1-4]\s+(?:class|occup\w*)|سكني\s+إشغال|مبنى\s+سكني|مجموعة\s+(?:R|السكني)\b/i, ["310"]],
     // Storage — Group S
