@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import WidgetRenderer, { WidgetLoading } from "@/components/widgets/WidgetRenderer";
+import { parseCitationToken } from "@/utils/inlineCitation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -240,6 +241,54 @@ function getSrc(sec: string): "sbc201" | "sbc801" {
   return (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
 }
 
+/**
+ * Render a structured Advisory citation token like:
+ *   [SBC 201 | Chapter 3 | Section 309.1 | conf:high]
+ *   [SBC-801 chunk pp.411-435 | conf:medium | section_label:ambiguous]
+ *   [community_summary | LLM_SYNTHESIS | conf:low]
+ *
+ * Produces a SINGLE span carrying authoritative data-src derived from the
+ * token itself (never from the leading-digit heuristic). data-ambiguous=1
+ * tells the click handler to open SourcePanel without auto-routing to a PDF.
+ */
+function renderCitationToken(match: string): string {
+  const parsed = parseCitationToken(match);
+  if (!parsed) return match;
+
+  if (parsed.src === "synthesis") {
+    return (
+      `<span class="cx-src cx-src-synthesis"` +
+      ` data-src="synthesis"` +
+      ` style="color:#FFC107;background:rgba(255,193,7,0.10);` +
+      `border:1px solid rgba(255,193,7,0.25);padding:1px 6px;border-radius:4px;` +
+      `font-size:0.85em;font-weight:500;cursor:help"` +
+      ` title="ملخص معرفي مساعد — يحتاج تحقق من المصدر الكودي">` +
+      `${match}</span>`
+    );
+  }
+
+  const sec = parsed.sectionRef ?? parsed.tableRef ?? "";
+  const reftype = parsed.tableRef ? "table" : "section";
+  const color = parsed.isAmbiguous ? "#FFC107" : "#0094B3";
+  const bg = parsed.isAmbiguous ? "rgba(255,193,7,0.10)" : "rgba(0,148,179,0.08)";
+  const border = parsed.isAmbiguous ? "rgba(255,193,7,0.25)" : "rgba(0,148,179,0.20)";
+  const titleAr = parsed.isAmbiguous
+    ? "يحتاج تحقق من المصدر — انقر لفتح لوحة المصادر"
+    : (sec ? `انقر لفتح ${reftype === "table" ? "الجدول" : "القسم"} ${sec}` : "انقر لفتح المصدر");
+
+  return (
+    `<span class="cx-src cx-src-token"` +
+    ` data-src="${parsed.src}"` +
+    (sec ? ` data-section="${sec}"` : "") +
+    ` data-reftype="${reftype}"` +
+    (parsed.isAmbiguous ? ` data-ambiguous="1"` : "") +
+    ` style="color:${color};background:${bg};border:1px solid ${border};` +
+    `padding:1px 6px;border-radius:4px;font-size:0.92em;font-weight:500;cursor:pointer;` +
+    `text-decoration:none"` +
+    ` title="${titleAr}">${match}</span>`
+  );
+}
+
 /** Build a clickable cx-src span with full reference metadata. */
 function refSpan(
   src: string,
@@ -278,9 +327,31 @@ function replaceInTextNodes(
 
 // Apply inline markdown (bold, code, badges) to an already-escaped string
 function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
+  // ── Step 0: Structured Advisory citation tokens (Step 3.1 fix) ───────────
+  // Format: [SBC-XXX | ... | Section X.Y.Z | conf:high|medium|low|ambiguous | ...]
+  // The token's leading SBC code is authoritative — never use the leading-digit
+  // heuristic for these. Token HTML is buffered into placeholders so Step 1 /
+  // Step 2 regexes can't double-wrap the inner "SBC 201" / "Section X.Y.Z" text.
+  const tokenPlaceholders: string[] = [];
+  const escapedWithTokens = escaped.replace(
+    /\[(?:[^\[\]\n]{0,300})\]/g,
+    (m) => {
+      if (/SBC[\s ‑\-]*(201|801)|community_summary|LLM_SYNTHESIS/i.test(m)) {
+        const html = renderCitationToken(m);
+        const idx = tokenPlaceholders.length;
+        tokenPlaceholders.push(html);
+        // Sentinel placeholder. Step 1 / Step 2 regexes don't match it.
+        return ` CXTOK${idx} `;
+      }
+      return m;
+    },
+  );
+
   // ── Step 1: All named reference patterns (keyword + number) ──────────────
-  // These run first on the escaped string so no text is yet wrapped in spans.
-  let s = escaped
+  // Bare references (outside structured tokens) still use the leading-digit
+  // heuristic. The Step-0 spans are protected because their HTML is currently
+  // replaced by CXTOK sentinels.
+  let s = escapedWithTokens
     // SBC document-level refs (no section) — clickable, open document view
     .replace(/\bSBC[\u00A0 \u2011\-]*201\b/g,
       '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 201">$&</span>')
@@ -327,7 +398,7 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
   );
 
   // ── Step 3: Badges, markers, bold, inline code ────────────────────────────
-  return s
+  const final = s
     // Compliance badges
     .replace(/✅\s*(مطابق|Compliant)/gi,
       '<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">✅ $1</span>')
@@ -349,6 +420,9 @@ function applyInlineMarkdown(escaped: string, mode?: ChatMode): string {
     // Inline code
     .replace(/`([^`]+)`/g,
       '<code class="bg-muted/80 px-1.5 py-0.5 rounded text-[0.82em] font-mono text-primary/90 border border-border/40">$1</code>');
+
+  // ── Step 4: Restore Step-0 token placeholders ────────────────────────────
+  return final.replace(/ CXTOK(\d+) /g, (_, n) => tokenPlaceholders[Number(n)] ?? "");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

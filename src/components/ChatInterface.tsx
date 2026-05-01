@@ -1697,8 +1697,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                             onClick={async (e) => {
                               const srcEl = (e.target as HTMLElement).closest('[data-src]') as HTMLElement | null;
                               if (!srcEl) return;
-                              const srcKey = srcEl.dataset.src;       // "sbc201" | "sbc801"
+                              const srcKey = srcEl.dataset.src;       // "sbc201" | "sbc801" | "ambiguous" | "synthesis"
                               const sectionNum = srcEl.dataset.section; // e.g. "1014.6" (may be absent)
+                              const isAmbiguous = srcEl.dataset.ambiguous === "1";
 
                               // Use the panel's current sources as fallback when this message has none.
                               // This allows clicking a reference in any message — even pure reasoning
@@ -1713,18 +1714,30 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                 ? resolveSourcesWithMeta(effectiveSources, effectiveMeta)
                                 : resolveAllSources(effectiveSources);
 
-                              // Find the correct document-level source
-                              const docMatch = resolved.find(m =>
-                                (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
-                                (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
-                              ) ?? resolved.find(m => m.pdfUrl) ?? resolved[0] ?? null;
-
-                              if (!docMatch) {
-                                if (resolved.length > 0) setSourcePanel({ open: true, sources: effectiveSources, activeMeta: null });
+                              // ── Step 3.1 routing fix ──────────────────────────────────────────
+                              // Synthesis / community_summary tokens never deep-link to a PDF.
+                              // Ambiguous-source tokens open the panel without auto-routing.
+                              if (srcKey === 'synthesis' || srcKey === 'ambiguous' || isAmbiguous) {
+                                setSourcePanel({ open: true, sources: effectiveSources, activeMeta: null });
                                 return;
                               }
 
+                              // Find the correct document-level source IN THIS MESSAGE.
+                              // Critical: we never silently fall back to the WRONG-FAMILY source.
+                              // If the requested family isn't in this message, docMatch stays null
+                              // and we either rely on the DB lookup below or open the panel
+                              // without auto-routing.
+                              const docMatch = resolved.find(m =>
+                                (srcKey === 'sbc201' && m.documentCode === 'SBC-201') ||
+                                (srcKey === 'sbc801' && m.documentCode === 'SBC-801')
+                              ) ?? null;
+
                               // ── Section page lookup — two-pass, span-guarded ──────────────────────
+                              // Runs regardless of whether docMatch is set: the DB query below
+                              // uses code_type=srcKey and returns the canonical chunk file for
+                              // the requested family. If found, we resolve the row's own file
+                              // into a SourceMeta — even when the requested family isn't in
+                              // this message's sources.
                               // page_start in sbc_documents is a physical chunk-PDF page index.
                               // Wide chunks (span > MAX_SPAN) start at the chunk boundary, NOT at
                               // the section — using them produces wildly wrong targets.
@@ -1764,8 +1777,10 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                     // a different chunk file — page numbers would reference the wrong PDF.
                                     const rowMeta = resolveSourceMeta(tightest.file_name);
                                     const activeMeta = rowMeta.pdfUrl
-                                      ? { ...rowMeta,    pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
-                                      : { ...docMatch,   pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const };
+                                      ? { ...rowMeta,  pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
+                                      : (docMatch
+                                          ? { ...docMatch, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const }
+                                          : null);
                                     setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
                                     return;
                                   }
@@ -1792,8 +1807,10 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                       const anchor = tightSib.page_end + 1;
                                       const sibMeta = resolveSourceMeta(tightSib.file_name);
                                       const activeMeta = sibMeta.pdfUrl
-                                        ? { ...sibMeta,  pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
-                                        : { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const };
+                                        ? { ...sibMeta, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
+                                        : (docMatch
+                                            ? { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const }
+                                            : null);
                                       setSourcePanel({ open: true, sources: effectiveSources, activeMeta });
                                       return;
                                     }
@@ -1804,7 +1821,14 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               }
 
                               // ── Fallback: document-level open at chunk page range ──────────────────
-                              setSourcePanel({ open: true, sources: effectiveSources, activeMeta: docMatch.pdfUrl ? docMatch : null });
+                              // If docMatch is null (requested family absent in this message AND
+                              // DB lookup didn't return a row), open the panel WITHOUT auto-routing
+                              // to a PDF. Never open a wrong-family source as a fallback.
+                              setSourcePanel({
+                                open: true,
+                                sources: effectiveSources,
+                                activeMeta: docMatch?.pdfUrl ? docMatch : null,
+                              });
                             }}
                           >
                             <ChatMarkdownRenderer content={displayContent} mode={msgMode} />
