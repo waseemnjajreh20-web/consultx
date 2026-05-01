@@ -1195,17 +1195,34 @@ ENFORCEMENT:
 // Verifier remains the source-grounding authority.
 const BRAIN_V1_CACHE: Record<string, { value: any; ts: number }> = {};
 const BRAIN_V1_TTL_MS = 5 * 60 * 1000;
-async function brainV1Fetch(supabaseAdmin: any, key: string): Promise<any | null> {
-  const cached = BRAIN_V1_CACHE[key];
+// Phase 3B: try the newer brain_full_v2/ corpus first, fall back to
+// brain_full_v1/ (Phase 1 baseline) on any error/miss. Sidecar names changed
+// from "*_v1.json" to "*_v2.json"; chunk names are unchanged across versions.
+async function brainV1FetchAt(supabaseAdmin: any, prefix: string, key: string): Promise<any | null> {
+  const cacheKey = `${prefix}/${key}`;
+  const cached = BRAIN_V1_CACHE[cacheKey];
   if (cached && (Date.now() - cached.ts) < BRAIN_V1_TTL_MS) return cached.value;
   try {
-    const { data, error } = await supabaseAdmin.storage.from("ssss").download(`brain_full_v1/${key}`);
+    const { data, error } = await supabaseAdmin.storage.from("ssss").download(`${prefix}/${key}`);
     if (error || !data) return null;
     const text = await data.text();
     const parsed = JSON.parse(text);
-    BRAIN_V1_CACHE[key] = { value: parsed, ts: Date.now() };
+    BRAIN_V1_CACHE[cacheKey] = { value: parsed, ts: Date.now() };
     return parsed;
   } catch { return null; }
+}
+async function brainV1Fetch(supabaseAdmin: any, key: string): Promise<any | null> {
+  const v2Aliases: Record<string, string> = {
+    "relations_v1.json": "relations_v2.json",
+    "facts_v1.json": "facts_v2.json",
+    "decision_tree_v1.json": "decision_tree_v2.json",
+  };
+  const v2Key = v2Aliases[key] ?? key;
+  // v2 attempt — aliased filename when sidecar; same filename when chunk.
+  const v2Hit = await brainV1FetchAt(supabaseAdmin, "brain_full_v2", v2Key);
+  if (v2Hit !== null) return v2Hit;
+  // v1 fallback — original filename.
+  return brainV1FetchAt(supabaseAdmin, "brain_full_v1", key);
 }
 
 async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promise<string | null> {
