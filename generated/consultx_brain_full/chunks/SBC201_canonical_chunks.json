@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "source_book": "SBC 201",
-  "chunk_count": 150,
+  "chunk_count": 148,
   "chunks": [
     {
       "id": "sbc-201-section-1001",
@@ -157,9 +157,7 @@
       "canonical_status": "VERIFIED_CORE",
       "extraction_status": "page_pending",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-202-sbc-201-section-1006-code_to_code-69"
-      ],
+      "relation_refs": [],
       "fact_refs": [
         "fact-r2-1006-2-2-1-3505a37d",
         "fact-r2-1006-2-2-1-0f5b8b8b",
@@ -251,8 +249,7 @@
       "related_sections": [],
       "relation_refs": [
         "rel-sbc-201-section-1009-sbc-801-section-404-code_to_code-gap4",
-        "rel-r2-sbc-201-section-408-sbc-201-section-1009-code_to_code-72",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1009-code_to_code-56"
+        "rel-r2-sbc-201-section-408-sbc-201-section-1009-code_to_code-72"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -321,9 +318,7 @@
       "canonical_status": "VERIFIED_CORE",
       "extraction_status": "page_pending",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-202-sbc-201-section-1011-code_to_code-70"
-      ],
+      "relation_refs": [],
       "fact_refs": [
         "fact-r2-1011-5-57fe1b0d",
         "fact-r2-1011-5-f01bfad0",
@@ -968,8 +963,7 @@
         "rel-sbc-801-section-503-sbc-201-section-503-cross-code-4",
         "rel-r2-sbc-201-section-301-sbc-201-section-503-code_to_code-11",
         "rel-r2-sbc-201-section-302-sbc-201-section-503-code_to_code-24",
-        "rel-r2-sbc-201-section-303-sbc-201-section-503-code_to_code-37",
-        "rel-r3-sbc-201-section-402-sbc-201-section-503-code_to_code-80"
+        "rel-r2-sbc-201-section-303-sbc-201-section-503-code_to_code-37"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -1086,10 +1080,7 @@
       "canonical_status": "VERIFIED_CORE",
       "extraction_status": "page_pending",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-402-sbc-201-section-507-exception_to_main_rule-78",
-        "rel-r3-sbc-201-section-402-sbc-201-section-507-code_to_code-79"
-      ],
+      "relation_refs": [],
       "fact_refs": [],
       "mode_use": [
         "main",
@@ -1121,8 +1112,7 @@
         "rel-r2-sbc-201-section-304-sbc-201-section-508-code_to_code-42",
         "rel-r2-sbc-201-section-305-sbc-201-section-508-code_to_code-47",
         "rel-r2-sbc-201-section-308-sbc-201-section-508-code_to_code-57",
-        "rel-r2-sbc-201-section-420-sbc-201-section-508-code_to_code-108",
-        "rel-r3-sbc-201-section-402-sbc-201-section-508-code_to_code-77"
+        "rel-r2-sbc-201-section-420-sbc-201-section-508-code_to_code-108"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -2345,8 +2335,7 @@
         "rel-sbc-201-section-905-sbc-801-section-317-code_to_code-gap11",
         "rel-r2-sbc-201-section-404-sbc-201-section-905-code_to_code-67",
         "rel-r2-sbc-201-section-411-sbc-201-section-905-code_to_code-86",
-        "rel-r2-sbc-201-section-413-sbc-201-section-905-code_to_code-92",
-        "rel-r3-sbc-201-section-102-sbc-201-section-905-code_to_code-2"
+        "rel-r2-sbc-201-section-413-sbc-201-section-905-code_to_code-92"
       ],
       "fact_refs": [
         "fact-gap-905-3-a7acb863",
@@ -2874,18 +2863,9 @@
       "relation_refs": [
         "rel-r2-sbc-201-section-103-sbc-201-section-415-exception_to_main_rule-1",
         "rel-r2-sbc-201-section-103-sbc-201-section-105-code_to_code-2",
-        "rel-r2-sbc-201-section-105-sbc-201-section-103-code_to_code-4",
-        "rel-r3-sbc-201-section-103-sbc-201-section-415-code_to_code-85",
-        "rel-r3-sbc-201-section-103-std-nfpa-32-code_to_standard-86",
-        "rel-r3-sbc-201-section-103-std-nfpa-5000-code_to_standard-87",
-        "rel-r3-sbc-201-section-103-sbc-501-section-101-code_to_code-88",
-        "rel-r3-sbc-201-section-103-std-nfpa-54-code_to_standard-89",
-        "rel-r3-sbc-201-section-103-sbc-901-section-101-code_to_code-90",
-        "rel-r3-sbc-201-section-103-sbc-801-section-101-code_to_code-91"
+        "rel-r2-sbc-201-section-105-sbc-201-section-103-code_to_code-4"
       ],
-      "fact_refs": [
-        "fact-r3-103-9f600189"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -2913,16 +2893,7 @@
         "rel-r2-sbc-201-section-103-sbc-201-section-105-code_to_code-2",
         "rel-r2-sbc-201-section-105-sbc-201-section-415-exception_to_main_rule-3",
         "rel-r2-sbc-201-section-105-sbc-201-section-103-code_to_code-4",
-        "rel-r2-sbc-201-section-106-sbc-201-section-105-code_to_code-5",
-        "rel-r3-sbc-201-section-104-sbc-201-section-105-code_to_code-14",
-        "rel-r3-sbc-201-section-110-sbc-201-section-105-code_to_code-16",
-        "rel-r3-sbc-201-section-105-sbc-201-section-415-code_to_code-92",
-        "rel-r3-sbc-201-section-105-std-nfpa-32-code_to_standard-93",
-        "rel-r3-sbc-201-section-105-std-nfpa-5000-code_to_standard-94",
-        "rel-r3-sbc-201-section-105-sbc-501-section-101-code_to_code-95",
-        "rel-r3-sbc-201-section-105-std-nfpa-54-code_to_standard-96",
-        "rel-r3-sbc-201-section-105-sbc-901-section-101-code_to_code-97",
-        "rel-r3-sbc-201-section-105-sbc-801-section-101-code_to_code-98"
+        "rel-r2-sbc-201-section-106-sbc-201-section-105-code_to_code-5"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -2952,15 +2923,7 @@
         "rel-r2-sbc-201-section-106-sbc-201-section-105-code_to_code-5",
         "rel-r2-sbc-201-section-107-sbc-201-section-106-code_to_code-6"
       ],
-      "fact_refs": [
-        "fact-r3-106-72730dd1",
-        "fact-r3-106-67a9e038",
-        "fact-r3-106-b6470753",
-        "fact-r3-106-71abf16e",
-        "fact-r3-106-1e021c68",
-        "fact-r3-106-c1bdcd63",
-        "fact-r3-106-35862171"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -2988,9 +2951,7 @@
         "rel-r2-sbc-201-section-107-sbc-201-section-106-code_to_code-6",
         "rel-r2-sbc-201-section-108-sbc-201-section-107-code_to_code-7"
       ],
-      "fact_refs": [
-        "fact-r3-107-d0e99258"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3015,15 +2976,9 @@
       "extraction_status": "complete",
       "related_sections": [],
       "relation_refs": [
-        "rel-r2-sbc-201-section-108-sbc-201-section-107-code_to_code-7",
-        "rel-r3-sbc-201-section-108-sbc-201-section-104-code_to_code-99",
-        "rel-r3-sbc-201-section-108-sbc-201-section-3103-code_to_code-100"
+        "rel-r2-sbc-201-section-108-sbc-201-section-107-code_to_code-7"
       ],
-      "fact_refs": [
-        "fact-r3-108-e02cedb6",
-        "fact-r3-108-d2ab2454",
-        "fact-r3-108-1c894b17"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3169,9 +3124,7 @@
         "rel-r2-sbc-201-section-411-sbc-201-section-303-code_to_code-87",
         "rel-r2-sbc-201-section-424-sbc-201-section-303-code_to_code-122"
       ],
-      "fact_refs": [
-        "fact-r3-303-66cff3a4"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3199,12 +3152,9 @@
         "rel-r2-sbc-201-section-301-sbc-201-section-304-code_to_code-13",
         "rel-r2-sbc-201-section-302-sbc-201-section-304-code_to_code-26",
         "rel-r2-sbc-201-section-304-sbc-201-section-1030-code_to_code-41",
-        "rel-r2-sbc-201-section-304-sbc-201-section-508-code_to_code-42",
-        "rel-r3-sbc-201-section-309-sbc-201-section-304-code_to_code-72"
+        "rel-r2-sbc-201-section-304-sbc-201-section-508-code_to_code-42"
       ],
-      "fact_refs": [
-        "fact-r3-304-6f1ed897"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3240,9 +3190,7 @@
         "rel-r2-sbc-201-section-305-sbc-201-section-308-code_to_code-49",
         "rel-r2-sbc-201-section-308-sbc-201-section-305-code_to_code-55"
       ],
-      "fact_refs": [
-        "fact-r3-305-fe5b4fda"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3300,9 +3248,7 @@
         "rel-r2-sbc-201-section-302-sbc-201-section-307-code_to_code-29",
         "rel-r2-sbc-201-section-307-sbc-201-section-412-code_to_code-50",
         "rel-r2-sbc-201-section-307-sbc-201-section-806-code_to_code-51",
-        "rel-r2-sbc-201-section-415-sbc-201-section-307-code_to_code-98",
-        "rel-r3-sbc-201-section-202-sbc-201-section-307-code_to_code-66",
-        "rel-r3-sbc-201-section-309-sbc-201-section-307-code_to_code-75"
+        "rel-r2-sbc-201-section-415-sbc-201-section-307-code_to_code-98"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -3373,10 +3319,7 @@
         "rel-r2-sbc-201-section-310-sbc-201-section-903-code_to_code-61",
         "rel-r2-sbc-201-section-311-sbc-201-section-310-code_to_code-63"
       ],
-      "fact_refs": [
-        "fact-r3-310-6c233d80",
-        "fact-r3-310-df376d25"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3407,12 +3350,9 @@
         "rel-r2-sbc-201-section-308-sbc-201-section-311-code_to_code-56",
         "rel-r2-sbc-201-section-311-sbc-201-section-903-code_to_code-62",
         "rel-r2-sbc-201-section-311-sbc-201-section-310-code_to_code-63",
-        "rel-r2-sbc-201-section-312-sbc-201-section-311-code_to_code-64",
-        "rel-r3-sbc-201-section-309-sbc-201-section-311-code_to_code-73"
+        "rel-r2-sbc-201-section-312-sbc-201-section-311-code_to_code-64"
       ],
-      "fact_refs": [
-        "fact-r3-311-7183a1ab"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3470,12 +3410,9 @@
       "relation_refs": [
         "rel-r2-sbc-201-section-404-sbc-201-section-905-code_to_code-67",
         "rel-r2-sbc-201-section-404-sbc-201-section-909-code_to_code-68",
-        "rel-r2-sbc-201-section-408-sbc-201-section-404-code_to_code-74",
-        "rel-r3-sbc-201-section-402-sbc-201-section-404-code_to_code-76"
+        "rel-r2-sbc-201-section-408-sbc-201-section-404-code_to_code-74"
       ],
-      "fact_refs": [
-        "fact-r3-404-901dbe0a"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3505,9 +3442,7 @@
         "rel-r2-sbc-201-section-408-sbc-201-section-406-code_to_code-78",
         "rel-r2-sbc-201-section-421-sbc-201-section-406-code_to_code-114"
       ],
-      "fact_refs": [
-        "fact-r3-406-c10e5e5b"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3573,11 +3508,7 @@
         "rel-r2-sbc-201-section-408-sbc-201-section-406-code_to_code-78",
         "rel-r2-sbc-201-section-409-sbc-201-section-408-code_to_code-79"
       ],
-      "fact_refs": [
-        "fact-r3-408-c8d1dff5",
-        "fact-r3-408-f7184ef8",
-        "fact-r3-408-b914cec3"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3608,10 +3539,7 @@
         "rel-r2-sbc-201-section-409-sbc-201-section-903-code_to_code-82",
         "rel-r2-sbc-201-section-410-sbc-201-section-409-code_to_code-83"
       ],
-      "fact_refs": [
-        "fact-r3-409-95fb04e2",
-        "fact-r3-409-fba63b67"
-      ],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -3702,8 +3630,7 @@
         "rel-r2-sbc-201-section-412-sbc-201-section-803-code_to_code-89",
         "rel-r2-sbc-201-section-412-sbc-201-section-416-code_to_code-90",
         "rel-r2-sbc-201-section-413-sbc-201-section-412-code_to_code-91",
-        "rel-r2-sbc-201-section-414-sbc-201-section-412-code_to_code-94",
-        "rel-r3-sbc-201-section-102-sbc-201-section-412-code_to_code-4"
+        "rel-r2-sbc-201-section-414-sbc-201-section-412-code_to_code-94"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -3797,10 +3724,7 @@
         "rel-r2-sbc-201-section-415-sbc-201-section-506-exception_to_main_rule-96",
         "rel-r2-sbc-201-section-415-sbc-201-section-506-code_to_code-97",
         "rel-r2-sbc-201-section-415-sbc-201-section-307-code_to_code-98",
-        "rel-r2-sbc-201-section-415-sbc-201-section-414-code_to_code-99",
-        "rel-r3-sbc-201-section-102-sbc-201-section-415-code_to_code-6",
-        "rel-r3-sbc-201-section-103-sbc-201-section-415-code_to_code-85",
-        "rel-r3-sbc-201-section-105-sbc-201-section-415-code_to_code-92"
+        "rel-r2-sbc-201-section-415-sbc-201-section-414-code_to_code-99"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -4008,8 +3932,7 @@
         "rel-r2-sbc-201-section-308-sbc-201-section-422-code_to_code-54",
         "rel-r2-sbc-201-section-422-sbc-801-section-911-code_to_code-117",
         "rel-r2-sbc-201-section-422-sbc-201-section-916-code_to_code-118",
-        "rel-r2-sbc-201-section-422-sbc-201-section-414-code_to_code-119",
-        "rel-r3-sbc-201-section-202-sbc-201-section-422-code_to_code-71"
+        "rel-r2-sbc-201-section-422-sbc-201-section-414-code_to_code-119"
       ],
       "fact_refs": [],
       "mode_use": [
@@ -4218,21 +4141,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-102-sbc-201-section-402-code_to_code-1",
-        "rel-r3-sbc-201-section-102-sbc-201-section-905-code_to_code-2",
-        "rel-r3-sbc-201-section-102-std-nfpa-14-code_to_standard-3",
-        "rel-r3-sbc-201-section-102-sbc-201-section-412-code_to_code-4",
-        "rel-r3-sbc-201-section-102-std-nfpa-409-code_to_standard-5",
-        "rel-r3-sbc-201-section-102-sbc-201-section-415-code_to_code-6",
-        "rel-r3-sbc-201-section-102-sbc-501-section-101-code_to_code-7",
-        "rel-r3-sbc-201-section-102-sbc-701-section-101-code_to_code-8",
-        "rel-r3-sbc-201-section-102-std-nfpa-32-code_to_standard-9",
-        "rel-r3-sbc-201-section-102-sbc-801-section-101-code_to_code-10"
-      ],
-      "fact_refs": [
-        "fact-r3-102-3b31d3b3"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4256,20 +4166,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-104-sbc-201-section-116-code_to_code-11",
-        "rel-r3-sbc-201-section-104-sbc-201-section-1703-code_to_code-12",
-        "rel-r3-sbc-201-section-104-sbc-201-section-1704-code_to_code-13",
-        "rel-r3-sbc-201-section-104-sbc-201-section-105-code_to_code-14",
-        "rel-r3-sbc-201-section-110-sbc-201-section-104-code_to_code-17",
-        "rel-r3-sbc-201-section-202-sbc-201-section-104-code_to_code-62",
-        "rel-r3-sbc-201-section-108-sbc-201-section-104-code_to_code-99"
-      ],
-      "fact_refs": [
-        "fact-r3-104-5ea3b3c8",
-        "fact-r3-104-36095a7b",
-        "fact-r3-104-66fb3553"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4293,9 +4191,7 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-109-sbc-201-section-114-code_to_code-15"
-      ],
+      "relation_refs": [],
       "fact_refs": [],
       "mode_use": [
         "main",
@@ -4320,15 +4216,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-110-sbc-201-section-105-code_to_code-16",
-        "rel-r3-sbc-201-section-110-sbc-201-section-104-code_to_code-17",
-        "rel-r3-sbc-201-section-115-sbc-201-section-110-code_to_code-21"
-      ],
-      "fact_refs": [
-        "fact-r3-110-c2937788",
-        "fact-r3-110-52f37668"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4352,15 +4241,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-111-sbc-901-section-101-code_to_code-18",
-        "rel-r3-sbc-201-section-111-sbc-801-section-101-code_to_code-19"
-      ],
-      "fact_refs": [
-        "fact-r3-111-fbbbb266",
-        "fact-r3-111-7e38f50b",
-        "fact-r3-111-90c8c0f0"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4384,9 +4266,7 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-112-sbc-201-section-101-code_to_code-20"
-      ],
+      "relation_refs": [],
       "fact_refs": [],
       "mode_use": [
         "main",
@@ -4436,9 +4316,7 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-109-sbc-201-section-114-code_to_code-15"
-      ],
+      "relation_refs": [],
       "fact_refs": [],
       "mode_use": [
         "main",
@@ -4463,29 +4341,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-115-sbc-201-section-110-code_to_code-21",
-        "rel-r3-sbc-201-section-115-sbc-201-section-116-code_to_code-22",
-        "rel-r3-sbc-201-section-115-sbc-301-section-101-code_to_code-23",
-        "rel-r3-sbc-201-section-115-sbc-302-section-101-code_to_code-24",
-        "rel-r3-sbc-201-section-115-sbc-303-section-101-code_to_code-25",
-        "rel-r3-sbc-201-section-115-sbc-304-section-101-code_to_code-26",
-        "rel-r3-sbc-201-section-115-sbc-305-section-101-code_to_code-27",
-        "rel-r3-sbc-201-section-115-sbc-306-section-101-code_to_code-28",
-        "rel-r3-sbc-201-section-115-sbc-307-section-101-code_to_code-29",
-        "rel-r3-sbc-201-section-115-sbc-308-section-101-code_to_code-30",
-        "rel-r3-sbc-201-section-115-sbc-309-section-101-code_to_code-31",
-        "rel-r3-sbc-201-section-115-sbc-310-section-101-code_to_code-32",
-        "rel-r3-sbc-201-section-115-sbc-311-section-101-code_to_code-33",
-        "rel-r3-sbc-201-section-115-sbc-312-section-101-code_to_code-34",
-        "rel-r3-sbc-201-section-115-sbc-313-section-101-code_to_code-35",
-        "rel-r3-sbc-201-section-115-std-astm-c94/c94m-13-code_to_standard-36",
-        "rel-r3-sbc-201-section-115-std-nfpa-14-13-code_to_standard-37",
-        "rel-r3-sbc-201-section-115-std-nfpa-409-11-code_to_standard-38"
-      ],
-      "fact_refs": [
-        "fact-r3-115-4ad7867b"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4509,26 +4366,7 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-104-sbc-201-section-116-code_to_code-11",
-        "rel-r3-sbc-201-section-115-sbc-201-section-116-code_to_code-22",
-        "rel-r3-sbc-201-section-116-sbc-301-section-101-code_to_code-39",
-        "rel-r3-sbc-201-section-116-sbc-302-section-101-code_to_code-40",
-        "rel-r3-sbc-201-section-116-sbc-303-section-101-code_to_code-41",
-        "rel-r3-sbc-201-section-116-sbc-304-section-101-code_to_code-42",
-        "rel-r3-sbc-201-section-116-sbc-305-section-101-code_to_code-43",
-        "rel-r3-sbc-201-section-116-sbc-306-section-101-code_to_code-44",
-        "rel-r3-sbc-201-section-116-sbc-307-section-101-code_to_code-45",
-        "rel-r3-sbc-201-section-116-sbc-308-section-101-code_to_code-46",
-        "rel-r3-sbc-201-section-116-sbc-309-section-101-code_to_code-47",
-        "rel-r3-sbc-201-section-116-sbc-310-section-101-code_to_code-48",
-        "rel-r3-sbc-201-section-116-sbc-311-section-101-code_to_code-49",
-        "rel-r3-sbc-201-section-116-sbc-312-section-101-code_to_code-50",
-        "rel-r3-sbc-201-section-116-sbc-313-section-101-code_to_code-51",
-        "rel-r3-sbc-201-section-116-std-astm-c94/c94m-13-code_to_standard-52",
-        "rel-r3-sbc-201-section-116-std-nfpa-14-13-code_to_standard-53",
-        "rel-r3-sbc-201-section-116-std-nfpa-409-11-code_to_standard-54"
-      ],
+      "relation_refs": [],
       "fact_refs": [],
       "mode_use": [
         "main",
@@ -4553,30 +4391,8 @@
       "canonical_status": "PARTIAL_STRUCTURED",
       "extraction_status": "complete",
       "related_sections": [],
-      "relation_refs": [
-        "rel-r3-sbc-201-section-202-std-icc-a117.1-code_to_standard-55",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1009-code_to_code-56",
-        "rel-r3-sbc-201-section-202-sbc-801-section-101-code_to_code-57",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1102-code_to_code-58",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1108-code_to_code-59",
-        "rel-r3-sbc-201-section-202-sbc-901-section-101-code_to_code-60",
-        "rel-r3-sbc-201-section-202-sbc-201-section-101-code_to_code-61",
-        "rel-r3-sbc-201-section-202-sbc-201-section-104-code_to_code-62",
-        "rel-r3-sbc-201-section-202-sbc-201-section-2109-code_to_code-63",
-        "rel-r3-sbc-201-section-202-sbc-801-section-5104-code_to_code-64",
-        "rel-r3-sbc-201-section-202-sbc-201-section-5104-code_to_code-65",
-        "rel-r3-sbc-201-section-202-sbc-201-section-307-code_to_code-66",
-        "rel-r3-sbc-201-section-202-sbc-601-section-101-code_to_code-67",
-        "rel-r3-sbc-201-section-202-sbc-602-section-101-code_to_code-68",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1006-code_to_code-69",
-        "rel-r3-sbc-201-section-202-sbc-201-section-1011-code_to_code-70",
-        "rel-r3-sbc-201-section-202-sbc-201-section-422-code_to_code-71"
-      ],
-      "fact_refs": [
-        "fact-r3-202-551b9243",
-        "fact-r3-202-2dacdc82",
-        "fact-r3-202-eddb8fc5"
-      ],
+      "relation_refs": [],
+      "fact_refs": [],
       "mode_use": [
         "main",
         "advisory",
@@ -4602,81 +4418,9 @@
       "related_sections": [],
       "relation_refs": [
         "rel-sbc-201-section-309-sbc-801-section-903-2-7-classification-triggers-system",
-        "rel-sbc-201-section-309-sbc-801-section-907-2-7-classification-triggers-system",
-        "rel-r3-sbc-201-section-309-sbc-201-section-304-code_to_code-72",
-        "rel-r3-sbc-201-section-309-sbc-201-section-311-code_to_code-73",
-        "rel-r3-sbc-201-section-309-sbc-801-section-101-code_to_code-74",
-        "rel-r3-sbc-201-section-309-sbc-201-section-307-code_to_code-75"
+        "rel-sbc-201-section-309-sbc-801-section-907-2-7-classification-triggers-system"
       ],
-      "fact_refs": [
-        "fact-r3-309-8d493d5a"
-      ],
-      "mode_use": [
-        "main",
-        "advisory",
-        "analytical"
-      ]
-    },
-    {
-      "id": "sbc-201-section-401",
-      "source_code": "SBC-201",
-      "chapter": 4,
-      "section_ref": "401",
-      "parent_section_ref": null,
-      "paragraph_ref": null,
-      "title": "sbc-201-section-401",
-      "content": "SECTION 401 SCOPE \n401.1  Detailed \noccupancy \nand \nuse \nrequirements. In addition to the occupancy and \nconstruction requirements in this code, the \nprovisions of this chapter apply to the occupancies \nand uses described herein. \n❖ \nThis section provides guidance on how \nChapter 4 is to be applied with respect to other \nsections of the code. Section 401.1 indicates \nthat all other provisions of the code apply \nexcept as modified by Chapter 4.  \n \nThe requirements contained in Chapter 4 are \nintended to apply to special uses and \noccupancies, as well as special construction \nfeatures as defined in various sections in this \nchapter. These requirements are applicable in \naddition to other chapters of the code.  \nSECTION 402 COVERED MALL AND \nOPEN MALL BUILDINGS \n402.1  Applicability. The provisions of this \nsection shall apply to buildings or structures defined \nherein as covered or open mall buildings not \n-",
-      "content_kind": "canonical_verbatim",
-      "source_pages": "p. 1-1 (1 pages, round2 wide-sweep)",
-      "source_pdf_key": null,
-      "source_file_snapshot": "data/consultx_brain/full_corpus/extracted_gaps/sbc201_round2/sbc-201-section-401.md",
-      "confidence": "high",
-      "canonical_status": "PARTIAL_STRUCTURED",
-      "extraction_status": "complete",
-      "related_sections": [],
-      "relation_refs": [],
       "fact_refs": [],
-      "mode_use": [
-        "main",
-        "advisory",
-        "analytical"
-      ]
-    },
-    {
-      "id": "sbc-201-section-402",
-      "source_code": "SBC-201",
-      "chapter": 4,
-      "section_ref": "402",
-      "parent_section_ref": null,
-      "paragraph_ref": null,
-      "title": "sbc-201-section-402",
-      "content": "SECTION 402 COVERED MALL AND \nOPEN MALL BUILDINGS \n402.1  Applicability. The provisions of this \nsection shall apply to buildings or structures defined \nherein as covered or open mall buildings not \n-\n\nCHAPTER 4—SPECIAL DETAILED REQUIREMENTS BASED ON OCCUPANCY and \nuse \n \n \nSBC 201-CC-2024 \n224 \n \nexceeding three floor levels at any point nor more \nthan three stories above grade plane. Except as \nspecifically required by this section, covered and \nopen mall buildings shall meet applicable \nprovisions of this code.  \nExceptions:  \n1 \nFoyers and lobbies of Group B, R-1 and R-2 \noccupancies are not required to comply with \nthis section.  \n2 \nBuildings need not comply with the \nprovisions of this section where they totally \ncomply with other applicable provisions of \nthis code.  \n❖ \nThis section primarily addresses shopping \ncenters with a maximum of three levels that \nconsist of one or more sizeable businesses, \ntypically department stores, known as anchor \nbuildings, and numerous smaller retail stores, \nall of which are interconnected by means of a \nmall \nor \ncommon \npedestrian \nway. \nSee \nCommentary Figure 402.1. The mall may be \ncovered, \nproviding \na \nclimate-controlled \nenvironment, or open to the sky. The complex \nmay include movie theaters, bowling lanes, ice \narenas, offices, and dining. Historically, anchor \nbuildings were large department stores, and \nmalls remain attached to department stores, \nbut under this section, anchor buildings can \ncontain any occupancy with the exception of a \nGroup H. The complex may also include single- \nor multiple-level buildings, with a vast majority \nof shopping centers being one or two levels, \nand with an occasional mezzanine. Many malls \ncontain large food courts with a variety of food \nvendors surrounding a common seating area.  \n \nThis \nsection \naddresses \nthe \nspecial \nconsiderations associated with covered or \nopen mall buildings, including construction, \negress and fire protection systems. It does not, \nin general, apply to the anchor buildings \naround the perimeter of the covered or open \nmall building. To be considered an anchor \nbuilding for purposes of applying the code, the \nbuilding must have complete egress facilities, \nincluding the required number and capacity of \nexits, independent of the covered or open mall \nbuilding.  \n \nOriginally, the provisions of this section applied \nto the typical covered mall building: a one- to \nthree-level structure consisting primarily of \nretail space and a covered pedestrian way. \nMore recently, other types of buildings, such as \nairport passenger terminals and office centers, \nhave also been constructed in accordance with \nthis section.  \n \nMalls with an unroofed common pedestrian \nway, or open malls, are becoming common in \nthe “sun belt” areas of the country and in similar \nclimates around the world. The code includes \nopen malls within the broader definition of \ncovered mall building and allows the same \nbenefits of the covered mall provisions, \nbecause an open-to-the-sky mall provides \nequivalent or better life safety and property \nprotection. The key to the open mall concept is \nto have everything a covered mall building \nwould have, except for the roof over the mall \narea. Without a roof over the mall area and with \nrequired openings from the grade level to the \nsky above, natural ventilation is provided, and \nmechanical smoke control is no longer \nnecessary in the mall area and adjoining tenant \nspaces.  \n \nThis section is not intended to apply to the \nfoyers and lobbies of business and residential \noccupancies that may contain retail spaces, \nsmall restaurants and offices unrelated to the \nuse of upper stories. Where these lobbies have \nmultiple levels open to each other, the \nprovisions of Section 404, Atriums, may apply. \nIn all such cases, the provisions for mixed \noccupancies found in Section 508 would apply. \nThis section is also not intended to apply to \nlarge-footprint retail buildings, which may \ninclude smaller retail spaces, such as banks, \nflorists or coffee stands, around the perimeter \nof a central sales area. These buildings do not \nprovide the intended concept of a central \npedestrian mall that is distinct from the \nsurrounding tenant spaces.  \n \nCovered or open mall buildings that comply \nwith all other applicable provisions of the code \nneed not comply with the provisions of this \nsection; however, covered or open mall \nbuildings that are designed and constructed to \ncomply with the provisions of this section must \nalso comply with the provisions of the code that \nare not otherwise modified in this section. For \nexample, the egress provisions in Section \n402.8 are applicable to covered or open mall \nbuildings designed in accordance with this \nsection. The provisions in Chapter 10 related to \ndoor swing and stairways are also applicable, \nsince \nSection \n402 \ncontains \nno \nsimilar \nprovisions.  \n402.1.1  Open mall building perimeter line. For \nthe purpose of this code, a perimeter line shall be \nestablished. The perimeter line shall encircle all \nbuildings and structures that comprise the open mall \nbuilding and shall encompass any open-air interior \nwalkways, open-air courtyards or similar open-air \nspaces. The perimeter line shall define the extent of \nthe open mall building. Anchor buildings and \n-\n\nCHAPTER 4—SPECIAL DETAILED REQUIREMENTS BASED ON OCCUPANCY and \nuse \n \n \nSBC 201-CC-2024 \n225 \n \nparking structures shall be outside of the perimeter \nline and are not considered as part of the open mall \nbuilding.  \n❖ \nWhere the intent is to apply the open mall \nbuilding provisions of Section 402, it is \nnecessary to establish a building perimeter line \nthat can be used for the application of various \nspecial requirements, such as those regarding \ntravel distance in Section 402.8.5 . As shown in \nCommentary Figure 402.1.1, the perimeter line \nencloses all portions of the open mall building, \nincluding open-air walkways and spaces, but \ndoes not enclose any anchor buildings or \nparking garages adjacent to the open mall \nbuilding. The designer has the discretion as to \nthe relative location of the perimeter line, \nsimilar to the discretion they have to place an \nassumed imaginary line between two buildings \nlocated on the same lot. But even with that \ndiscretion, it is anticipated that the perimeter \nline will, in essence, enclose the same space \nas exterior walls would in a covered mall \nbuilding. \n402.2  Open space. A covered mall building and \nattached anchor buildings and parking garages shall \nbe surrounded on all sides by a permanent open \nspace or not less than 18 m. An open mall building \nand anchor buildings and parking garages adjoining \nthe perimeter line shall be surrounded on all sides \nby a permanent open space of not less than 18 m.  \nException: The permanent open space of 18 m \nshall be permitted to be reduced to not less than 12 \nm, provided the following requirements are met: \n1 \nThe reduced open space shall not be allowed \nfor more than 75 percent of the perimeter of \nthe covered or open mall building and anchor \nbuildings. \n2 \nThe exterior wall facing the reduced open \nspace shall have a fire-resistance rating of not \nless than 3 hours. \n3 \nOpenings in the exterior wall facing the \nreduced open space shall have opening \nprotectives with a fire protection rating of not \nless than 3 hours.  \n4 \nGroup E, H, I or R occupancies are not \nlocated within the covered or open mall \nbuilding or anchor buildings. \n❖ \nOne fundamental aspect of the covered mall \nbuilding concept is that significant open space \nbe provided around the perimeter of the entire \nbuilding. The open space serves two key roles: \nseparation of these buildings from other \nbuildings and ample space on all sides for fire-\nfighting operations. The required minimum \nopen space of 18 m must also be provided at \nany anchor buildings and parking garages \nattached to the covered mall building. In all \ncases the open space can occur either within \npublic ways surrounding the site, or by yards \nprovided on the lot between the covered mall \nbuilding and the lot lines, or a combination of \nyards and public ways. Where a yard is used to \nachieve the open space, it must be on the \nsame lot as the building receiving the benefit. \nWith respect to the 18 m requirement, the \nentire width of the public way can be included. \nThe open space must be provided in all \ndirections around the perimeter of the building, \nnot just measured at right angles to the building \n(see Commentary Figure 507.2). A similar \ndegree of open space is required to surround \nopen mall buildings and any adjacent anchor \nbuildings and parking garages.  \n \nThe exception allows covered or open mall \nbuildings to reduce the required open space \naround the building in the same manner as \nunlimited area buildings regulated in Section \n507. Where permitted in Section 507, unlimited \narea buildings require an open space around \nthe building of 18 m to prevent exposure fire \nspread. Section 507.2.1 permits five of the nine \ncategories of unlimited area buildings to have \na reduced open space of only 12 m. This \nreduction is permitted in these locations where \nthe exterior wall in the required space area is \nrated for not less than 3 hours and does not \ninclude more than 75 percent of the building \nperimeter. A significant majority of the uses \ndescribed in Section 507 are found in the \ndefinition of a covered or open mall building. \nTherefore, it can be assumed that the fire load \nwithin a mall is similar to the fire load permitted \nin a code-compliant unlimited area building. \nSince the intent of the open space requirement \nis to prevent fire spread from one building to \nanother and the fire loads are similar, allowing \ncovered or open mall buildings to be subject to \nthe same separation requirements as other \nunlimited area buildings does not reduce the \nlevel of fire protection afforded. The fourth \nrequirement of the exception aligns this section \nwith the occupancies permitted to use the \nunlimited area provisions of Section 507.2.1. \nGroups E, H, I and R occupancies are not \nprohibited from being within a covered or open \nmall building or an anchor store, but the \nexception would prohibit the use of reduced \nopen space where one of these occupancies \nwas a part of the covered or open mall building \nor anchor building.   \n402.3  Lease plan. Each owner of a covered mall \nbuilding or of an open mall building shall provide \n-\n\nCHAPTER 4—SPECIAL DETAILED REQUIREMENTS BASED ON OCCUPANCY and \nuse \n \n \nSBC 201-CC-2024 \n226 \n \nboth the building and fire departments with a lease \nplan showing the location of each occupancy and its \nexits after the certificate of occupancy has been \nissued. Modifications or changes in occupancy or \nuse from that shown on the lease plan shall not be \nmade without prior approval of the building official.  \n❖ \nThe required lease plan can be submitted after \nthe certificate of occupancy has been issued \nbecause many times the developer does not \nhave \nthe \ninformation \nat \nthe \ntime \nof \nconstruction. \nThe \nlocation \nof \ntenant \nseparations may not be known until leases are \nnegotiated with prospective tenants. This may \noccur after the mall has opened.  \n \nDuring initial construction, it is anticipated that \nthe building department will require tenant \nimprovements to be submitted through the \nbuilding permit process. After tenant spaces \nare prepared for occupancy and the lease plan \nis developed, subsequent modifications and \nchanges must be submitted for approval prior \nto commencing construction or changing the \nuse. It is important that the fire department \nreceives copies of current lease plans, since \nnot only does this help the fire department \nwhile performing fire prevention inspections, \nthe lease plans also assist in fire department \nresponse to an emergency. \n402.4  Construction. The construction of covered \nand open mall buildings, anchor buildings and \nparking garages associated with a mall building \nshall comply with Sections 402.4.1 through 402.4.3 \n.  \n❖ \nA number of construction-related provisions \nare specific to covered and open mall \nbuildings, anchor buildings and associated \nparking garages. Such buildings are regulated \nin this section for allowable floor area and \nheight, type of construction, and fire-resistance \nrated separations. The various requirements in \nthese \ncode \nsections \nare \nillustrated \nin \nCommentary Figure 402.4.  \n402.4.1  Area and types of construction. The \nbuilding area and type of construction of covered \nmall or open mall buildings, anchor buildings and \nparking garages shall comply with this section.  \n❖ \nSpecific construction requirements and area \nallowances are provided for mall buildings, \nanchor buildings and parking garages in \nSections 402.4.1.1 , 402.4.1.2 and 402.4.1.3 , \nrespectively.  \n402.4.1.1  \nCovered \nand \nopen \nmall \nbuildings. The building area of any covered mall or \nopen mall building shall not be limited provided \nthat the covered mall or open mall building does not \nexceed three floor levels at any point nor three \nstories above grade plane, and is of Type I, II, III or \nIV construction.  \n❖ \nCovered or open mall buildings are considered \nto be special types of unlimited area buildings \nand are exempt from the allowable area \nlimitations of Section 506 where they are \nlimited to not more than three stories above \ngrade plane. It should be noted that the height \nlimitations in meter, specified in Table 504.3 \nbased on the type of construction classification, \nare applicable to covered or open mall \nbuildings. The allowance of an unlimited area \nis also based on the restriction of construction \ntypes to noncombustible (Types I and II), \nnoncombustible/combustible (Type III) and \nheavy timber (Type IV). It assumes an effective \nautomatic sprinkler system is provided in \naccordance with Section 402.5. \n402.4.1.2  \nAnchor buildings. The building \narea and building height of any anchor building \nshall be based on the type of construction as \nrequired by Section 503 as modified by Sections \n504 and 506.  \nException: The building area of any anchor \nbuilding shall not be limited provided that the \nanchor building is not more than three stories above \ngrade plane, and is of Type I, II, III or IV \nconstruction.  \n❖ \nAnchor buildings, although attached to the mall \nbuilding, can be treated as separate buildings \nwith respect to building height, building area \nand construction type. For example, where a \nmall is limited to three stories, the attached \nanchor building built of Type I-A construction \ncould be a high-rise building.  \n \nAccording to the exception, where the anchor \nbuilding is limited to the same limits as the mall \nbuilding, the anchor building can also be of \nunlimited area.  \n402.4.1.3  \nParking garage. The building area \nand building height of any parking garage, shall be \nbased on the type of construction as required by \nSections 406.5 and 406.6 , respectively.  \n❖ \nThis section provides a reminder that the \nconstruction of parking garages is regulated by \nthe general provisions found in Sections 406.5  \nand 406.6 and that they are not regulated by \nthe \ncovered \nmall \nbuilding’s \ntype \nof \nconstruction. It also clarifies that the garage is \nnot included in the unlimited area allowance \ngiven to the mall building and anchor stores.  \n402.4.2  Fire-resistance-rated separation. Fire-\nresistance rated separation is not required between \n-",
-      "content_kind": "canonical_verbatim",
-      "source_pages": "p. 1-4 (4 pages, round2 wide-sweep)",
-      "source_pdf_key": null,
-      "source_file_snapshot": "data/consultx_brain/full_corpus/extracted_gaps/sbc201_round2/sbc-201-section-402.md",
-      "confidence": "high",
-      "canonical_status": "PARTIAL_STRUCTURED",
-      "extraction_status": "complete",
-      "related_sections": [],
-      "relation_refs": [
-        "rel-sbc-801-section-907-2-7-sbc-201-section-402-code-to-code",
-        "rel-r3-sbc-201-section-102-sbc-201-section-402-code_to_code-1",
-        "rel-r3-sbc-201-section-402-sbc-201-section-404-code_to_code-76",
-        "rel-r3-sbc-201-section-402-sbc-201-section-508-code_to_code-77",
-        "rel-r3-sbc-201-section-402-sbc-201-section-507-exception_to_main_rule-78",
-        "rel-r3-sbc-201-section-402-sbc-201-section-507-code_to_code-79",
-        "rel-r3-sbc-201-section-402-sbc-201-section-503-code_to_code-80"
-      ],
-      "fact_refs": [
-        "fact-r3-402-c0281124",
-        "fact-r3-402-97c9a04c",
-        "fact-r3-402-8aff3da6",
-        "fact-r3-402-0d73197a",
-        "fact-r3-402-ba4021c8",
-        "fact-r3-402-cb99c94f",
-        "fact-r3-402-1e754233"
-      ],
       "mode_use": [
         "main",
         "advisory",
