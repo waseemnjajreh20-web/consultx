@@ -1212,7 +1212,12 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   // Domain trigger: only fire for the V1 Group M / fire-protection / egress family.
   // Conservative: false negatives are acceptable (loader silently no-ops); false
   // positives would just append modest extra context to non-Group-M Advisory turns.
-  const trigger = /(mercantile|group\s+m|محلات\s+تجارية|مجموعة\s+M|sprinkler|automatic\s+sprinkler|fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|fire\s+area|occupant\s+notification|waterflow|standpipe|smoke\s+control|egress|exit\s+discharge|رش|إنذار|مخرج|مخارج|إخلاء|تنبيه)/i.test(query);
+  // Phase 3A: trigger expanded to cover egress, occupancy, mixed-use, and the
+  // small set of related Group letters. Still narrow — false negatives are
+  // acceptable (loader silently no-ops); avoid catch-all keywords like
+  // "building" or "floor" that would fire on every Advisory turn.
+  // NOTE: single-line regex required (JS does not support /x extended mode).
+  const trigger = /(mercantile|group\s+m|محلات\s+تجارية|مجموعة\s+M|sprinkler|automatic\s+sprinkler|fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|fire\s+area|occupant\s+notification|waterflow|standpipe|smoke\s+control|egress|exit\s+discharge|exit\s+access|\bexit\b|travel\s+distance|occupant\s+load|common\s+path|\bstair\b|stairs|stairway|corridor|mixed\s+occupancy|mixed-use|residential|group\s+r|group\s+r-?[1-4]|storage|group\s+s|group\s+s-?[12]|educational|group\s+e|institutional|group\s+i|group\s+i-?[1-4]|business|group\s+b|assembly|group\s+a|group\s+a-?[1-5]|high.?hazard|group\s+h|رش|إنذار|مخرج|مخارج|خروج|إخلاء|تنبيه|مسافة\s+الانتقال|مسافة\s+السفر|حمل\s+الإشغال|مسار\s+الهروب|درج|سلم|سلالم|ممر|إشغال\s+مختلط|مختلط|سكني|مبنى\s+سكني|تخزين|مستودع|تعليمي|مدارس|مبنى\s+تعليمي|طبي|مستشفى|مؤسسي)/i.test(query);
   if (!trigger) return null;
 
   const [chunks201, chunks801, relations, facts, tree] = await Promise.all([
@@ -1228,15 +1233,39 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   // Curated relevant set covering Group M chain (Section 309 / 903.2.7 / 907.2.7
   // and immediate dependencies). The loader stays narrow on purpose to keep
   // prompt size bounded; broader sections fall back to the keyword path.
+  // Phase 3A: allowlist broadened beyond the Group M chain. Egress (1004 /
+  // 1006 / 1011 / 1014 / 1017 / 1020) and occupancy (308 / 310 / 311) added
+  // alongside the existing Group M / fire-protection set. The loader still
+  // caps total chunks/facts/relations after filtering, so prompt size stays
+  // bounded.
   const RELEVANT = new Set([
-    "309", "903", "903.2", "903.2.1", "903.2.6", "903.2.7", "903.2.7.1",
-    "903.2.7.2", "903.3", "903.3.1.1",
-    "907", "907.2", "907.2.1", "907.2.7", "907.2.7.1", "907.5", "907.5.2.2",
+    // Occupancy classification family
+    "308", "309", "310", "311",
+    // Sprinkler — Group-M-anchored chain plus parents/siblings
+    "903", "903.2", "903.2.1", "903.2.6", "903.2.7", "903.2.7.1",
+    "903.2.7.2", "903.2.8", "903.2.9", "903.2.10", "903.2.11",
+    "903.3", "903.3.1.1", "903.3.1.2", "903.3.1.3",
+    // Fire alarm — Group M chain plus key siblings
+    "907", "907.2", "907.2.1", "907.2.6", "907.2.7", "907.2.7.1",
+    "907.2.8", "907.5", "907.5.2.2",
+    // Egress core
+    "1004", "1004.5", "1006", "1006.2.1", "1006.3.3", "1006.3.4",
+    "1011", "1011.2",
+    "1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6",
+    "1017", "1017.2",
+    "1020", "1020.1",
+    // Mall / cross-code anchor
     "402",
   ]);
   const isRelevantSection = (ref: string) => {
     if (!ref) return false;
-    return RELEVANT.has(ref) || /^(903|907)\./.test(ref) || ref === "309" || ref === "402";
+    if (RELEVANT.has(ref)) return true;
+    // Whole-tree match for the Group-M-anchored sprinkler/alarm chains and
+    // the small set of egress parents we want full sub-clause access to.
+    if (/^(903|907)\./.test(ref)) return true;
+    if (/^(1006|1014)\./.test(ref)) return true;
+    if (ref === "309" || ref === "402" || ref === "308" || ref === "310" || ref === "311") return true;
+    return false;
   };
 
   const cArr201 = (chunks201 && Array.isArray(chunks201.chunks)) ? chunks201.chunks : [];

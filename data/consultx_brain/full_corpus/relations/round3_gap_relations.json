@@ -1,0 +1,1721 @@
+{
+  "generated_at": "2026-05-01T12:57:25.715338+00:00",
+  "generated_by": "sub-agent-b3-round3",
+  "additive_to": [
+    "relations_full.json",
+    "gap_completion_relations.json",
+    "round2_gap_relations.json"
+  ],
+  "round": 3,
+  "cap": 100,
+  "round3_source_dir_status": {
+    "sbc801_round3_priority": "empty/missing",
+    "sbc801_round3_hazmat": "empty/missing",
+    "sbc201_round2": "populated",
+    "sbc801_round2": "populated"
+  },
+  "fallback_source": "round2_md_files (round3 dirs empty/missing)",
+  "count": 100,
+  "edges": [
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-201-section-402-code_to_code-1",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-402",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites Section 402.8 (same code)",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...As an example, the requirements contained in Section 402.8 for means of egress in a covered mall building would govern over any differing requirements located in Chapter 10, regard...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-201-section-905-code_to_code-2",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-905",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites Section 905.2 (same code)",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...For example, Section 905.2 references NFPA 14 in its entirety for the installation of standpipe systems....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-std-nfpa-14-code_to_standard-3",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "std-nfpa-14",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites external standard NFPA 14",
+      "source_basis": "sbc-201-section-102 body text (external standard reference): \"...For example, Section 905.2 references NFPA 14 in its entirety for the installation of standpipe systems....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-201-section-412-code_to_code-4",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-412",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites Section 412.3.6 (same code)",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...For example, Section 412.3.6 requires that aircraft hangars must be provided with fire suppression systems as required in NFPA 409....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-std-nfpa-409-code_to_standard-5",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "std-nfpa-409",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites external standard NFPA 409",
+      "source_basis": "sbc-201-section-102 body text (external standard reference): \"...For example, Section 412.3.6 requires that aircraft hangars must be provided with fire suppression systems as required in NFPA 409....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-201-section-415-code_to_code-6",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-415",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites Section 415.9.3 (same code)",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...In the code, several sections illustrate this concern, such as Section 415.9.3 ....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-501-section-101-code_to_code-7",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-501-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites cross-code ref to SBC-501",
+      "source_basis": "sbc-201-section-102 body text (cross-code reference): \"...The construction and installation of dry-cleaning plants shall be in accordance with the requirements of this code, SBC 501, SBC 701 and NFPA 32....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-701-section-101-code_to_code-8",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-701-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites cross-code ref to SBC-701",
+      "source_basis": "sbc-201-section-102 body text (cross-code reference): \"...The construction and installation of dry-cleaning plants shall be in accordance with the requirements of this code, SBC 501, SBC 701 and NFPA 32....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-std-nfpa-32-code_to_standard-9",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "std-nfpa-32",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites external standard NFPA 32",
+      "source_basis": "sbc-201-section-102 body text (external standard reference): \"...The construction and installation of dry-cleaning plants shall be in accordance with the requirements of this code, SBC 501, SBC 701 and NFPA 32....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-102-sbc-801-section-101-code_to_code-10",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-102 body text (cross-code reference): \"...Dry cleaning solvents and systems shall be classified in accordance with SBC 801. -...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-104-sbc-201-section-116-code_to_code-11",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-116",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites Section 116.3 (same code)",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...Section 116.3 contains additional information for these notices. 104.4 Inspections....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-104-sbc-201-section-1703-code_to_code-12",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-1703",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites Section 1703 (same code)",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...In order to expand the available resources for inspection purposes, the building official may approve an agency that, in his or her opinion, complies with the criteria set forth in...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-104-sbc-201-section-1704-code_to_code-13",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-1704",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites Section 1704 (same code)",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...A technical report from an expert requested by the building official can be used to assist in the approval process (also see Section 1704 for special inspection requirements). 104....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-104-sbc-201-section-105-code_to_code-14",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites Section 105.3.1 (same code)",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...This is similar to when a permit is rejected in Section 105.3.1 . 104.11.1 Research reports....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-109-sbc-201-section-114-code_to_code-15",
+      "from_ref": "sbc-201-section-109",
+      "to_ref": "sbc-201-section-114",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-109 body cites Section 114.4 (same code)",
+      "source_basis": "sbc-201-section-109 body text (same-code cross-reference): \"...Note that this is not a penalty, as described in Section 114.4 , for which the person can also be liable. 109.5 Related fees....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-110-sbc-201-section-105-code_to_code-16",
+      "from_ref": "sbc-201-section-110",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-110 body cites Section 105.4 (same code)",
+      "source_basis": "sbc-201-section-110 body text (same-code cross-reference): \"...As with the issuance of permits (see Section 105.4 ), approval as a result of an inspection is not a license to violate the code and an approval in violation of the code does not r...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-110-sbc-201-section-104-code_to_code-17",
+      "from_ref": "sbc-201-section-110",
+      "to_ref": "sbc-201-section-104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-110 body cites Section 104.6 (same code)",
+      "source_basis": "sbc-201-section-110 body text (same-code cross-reference): \"...This section provides the building official with the right-of-entry authority that otherwise does not occur until after the permit is issued (see Section 104.6 ). 110.3 Required in...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-111-sbc-901-section-101-code_to_code-18",
+      "from_ref": "sbc-201-section-111",
+      "to_ref": "sbc-901-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-111 body cites cross-code ref to SBC-901",
+      "source_basis": "sbc-201-section-111 body text (cross-code reference): \"...This is important when applying SBC 901 or SBC 801 to existing buildings. 111.3 Temporary occupancy....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-111-sbc-801-section-101-code_to_code-19",
+      "from_ref": "sbc-201-section-111",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-111 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-111 body text (cross-code reference): \"...This is important when applying SBC 901 or SBC 801 to existing buildings. 111.3 Temporary occupancy....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-112-sbc-201-section-101-code_to_code-20",
+      "from_ref": "sbc-201-section-112",
+      "to_ref": "sbc-201-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-112 body cites Section 101.4 (same code)",
+      "source_basis": "sbc-201-section-112 body text (same-code cross-reference): \"...The approval of the building official is required before a connection can be made from a utility to a building system that is regulated by the code, including those referenced in S...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-201-section-110-code_to_code-21",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-201-section-110",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites Section 110.6 (same code)",
+      "source_basis": "sbc-201-section-115 body text (same-code cross-reference): \"...Normally, correction notices, issued in accordance with Section 110.6 , are used to inform the permit holder of code violations....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-201-section-116-code_to_code-22",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-201-section-116",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites Section 116.3 (same code)",
+      "source_basis": "sbc-201-section-115 body text (same-code cross-reference): \"...This report provides the basis for the notice described in Section 116.3 . 116.3 Notice....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-301-section-101-code_to_code-23",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-301-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-301",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-302-section-101-code_to_code-24",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-302-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-302",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-303-section-101-code_to_code-25",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-303-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-303",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-304-section-101-code_to_code-26",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-304-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-304",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-305-section-101-code_to_code-27",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-305-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-305",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-306-section-101-code_to_code-28",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-306-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-306",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-307-section-101-code_to_code-29",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-307-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-307",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-308-section-101-code_to_code-30",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-308-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-308",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-309-section-101-code_to_code-31",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-309-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-309",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-310-section-101-code_to_code-32",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-310-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-310",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-311-section-101-code_to_code-33",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-311-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-311",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-312-section-101-code_to_code-34",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-312-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-312",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-sbc-313-section-101-code_to_code-35",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-313-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites cross-code ref to SBC-313",
+      "source_basis": "sbc-201-section-115 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-std-astm-c94/c94m-13-code_to_standard-36",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "std-astm-c94/c94m-13",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites external standard ASTM C94/C94M-13",
+      "source_basis": "sbc-201-section-115 body text (external standard reference): \"...Country Club Hills, IL: International Code Council, 2002. 2 ASTM C94/C94M-13, Specification for Ready-Mixed Concrete, West Conshohocken, PA: ASTM International, 2013. 3 NFPA 14-13,...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-std-nfpa-14-13-code_to_standard-37",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "std-nfpa-14-13",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites external standard NFPA 14-13",
+      "source_basis": "sbc-201-section-115 body text (external standard reference): \"...Country Club Hills, IL: International Code Council, 2002. 2 ASTM C94/C94M-13, Specification for Ready-Mixed Concrete, West Conshohocken, PA: ASTM International, 2013. 3 NFPA 14-13,...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-115-std-nfpa-409-11-code_to_standard-38",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "std-nfpa-409-11",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites external standard NFPA 409-11",
+      "source_basis": "sbc-201-section-115 body text (external standard reference): \"...Quincy, MA: National Fire Protection Association, 2013. 4 NFPA 409-11, Standard for Aircraft Hangars....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-301-section-101-code_to_code-39",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-301-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-301",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-302-section-101-code_to_code-40",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-302-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-302",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-303-section-101-code_to_code-41",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-303-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-303",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-304-section-101-code_to_code-42",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-304-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-304",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-305-section-101-code_to_code-43",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-305-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-305",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-306-section-101-code_to_code-44",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-306-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-306",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-307-section-101-code_to_code-45",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-307-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-307",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-308-section-101-code_to_code-46",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-308-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-308",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-309-section-101-code_to_code-47",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-309-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-309",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-310-section-101-code_to_code-48",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-310-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-310",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-311-section-101-code_to_code-49",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-311-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-311",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-312-section-101-code_to_code-50",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-312-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-312",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-sbc-313-section-101-code_to_code-51",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-313-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites cross-code ref to SBC-313",
+      "source_basis": "sbc-201-section-116 body text (cross-code reference): \"...Any work done to eliminate the unsafe condition, as well as any change in occupancy that may occur, must comply with the code. -   TABLES OF CHAPTER 1 TABLE 1-A: Referenced Structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-std-astm-c94/c94m-13-code_to_standard-52",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "std-astm-c94/c94m-13",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites external standard ASTM C94/C94M-13",
+      "source_basis": "sbc-201-section-116 body text (external standard reference): \"...Country Club Hills, IL: International Code Council, 2002. 2 ASTM C94/C94M-13, Specification for Ready-Mixed Concrete, West Conshohocken, PA: ASTM International, 2013. 3 NFPA 14-13,...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-std-nfpa-14-13-code_to_standard-53",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "std-nfpa-14-13",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites external standard NFPA 14-13",
+      "source_basis": "sbc-201-section-116 body text (external standard reference): \"...Country Club Hills, IL: International Code Council, 2002. 2 ASTM C94/C94M-13, Specification for Ready-Mixed Concrete, West Conshohocken, PA: ASTM International, 2013. 3 NFPA 14-13,...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-116-std-nfpa-409-11-code_to_standard-54",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "std-nfpa-409-11",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites external standard NFPA 409-11",
+      "source_basis": "sbc-201-section-116 body text (external standard reference): \"...Quincy, MA: National Fire Protection Association, 2013. 4 NFPA 409-11, Standard for Aircraft Hangars....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-std-icc-a117.1-code_to_standard-55",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "std-icc-a117.1",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites external standard ICC A117.1",
+      "source_basis": "sbc-201-section-202 body text (external standard reference): \"...Accessibility is deemed to be accomplished where a building, site or facility complies with the applicable provisions of Chapter 11 and ICC A117.1....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-1009-code_to_code-56",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1009",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1009 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...See Section 1009 for requirements establishing areas where people can safely wait for assisted rescue....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-801-section-101-code_to_code-57",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-202 body text (cross-code reference): \"...Chapter 4 of SBC 801 also includes requirements in the fire safety and evacuation plans specific to occupants who may need assistance in evacuation during emergencies....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-1102-code_to_code-58",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1102",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1102 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...The technical criteria for Accessible dwelling units are identified in Section 1102 of the 2017 ICC A117.1, whereas in the 1998 ICC A117.1 they were spread throughout Chapters 1 th...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-1108-code_to_code-59",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1108",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1108.2 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Also see the commentary to the definitions of “Dwelling unit,” “Sleeping unit,” “Type A unit” and “Type B units,” and Section 1108.2....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-901-section-101-code_to_code-60",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-901-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites cross-code ref to SBC-901",
+      "source_basis": "sbc-201-section-202 body text (cross-code reference): \"...This would include additional floor area that is added within an existing building, such as adding a new mezzanine. [See Section 101.4.7 for a reference to the Saudi Existing Build...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-101-code_to_code-61",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 101.4.7 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...This would include additional floor area that is added within an existing building, such as adding a new mezzanine. [See Section 101.4.7 for a reference to the Saudi Existing Build...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-104-code_to_code-62",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 104 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...It should be noted that the term “approved” means components are subject to approval by the building official, in accordance with Section 104....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-2109-code_to_code-63",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-2109",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 2109.2 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Prescriptive design requirements for adobe masonry are contained in Section 2109.2 ....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-801-section-5104-code_to_code-64",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-801-section-5104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites cross-code ref to SBC-801 Section 5104",
+      "source_basis": "sbc-201-section-202 body text (cross-code reference): \"...Department of Transportation (DOTn 49 CFR) and addressed in Section 5104 of SBC 801....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-5104-code_to_code-65",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-5104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 5104 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Department of Transportation (DOTn 49 CFR) and addressed in Section 5104 of SBC 801....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-307-code_to_code-66",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 307.1.1 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...As stated in Item 12 in Section 307.1.1, a building or structure used for aerosol product storage is classified as Group S-1, provided the requirements of SBC 801 are satisfied....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-601-section-101-code_to_code-67",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-601-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites cross-code ref to SBC-601",
+      "source_basis": "sbc-201-section-202 body text (cross-code reference): \"...Air leakage, also known as air infiltration, is also specifically addressed for both commercial and residential buildings under the Saudi Energy Conservation Code (SBC 601 and SBC ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-602-section-101-code_to_code-68",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-602-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites cross-code ref to SBC-602",
+      "source_basis": "sbc-201-section-202 body text (cross-code reference): \"...Air leakage, also known as air infiltration, is also specifically addressed for both commercial and residential buildings under the Saudi Energy Conservation Code (SBC 601 and SBC ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-1006-code_to_code-69",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1006.2.2.1 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Where these devices are permitted is specifically listed in the code (for example, Section 1006.2.2.1)....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-1011-code_to_code-70",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1011",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1011.14 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Requirements are found with stairways in Section 1011.14....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-202-sbc-201-section-422-code_to_code-71",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-422",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 422 (same code)",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...Ambulatory care facilities, while still classified as a Group B occupancy, have additional standards above those of an outpatient clinic because its care recipients are temporarily...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-309-sbc-201-section-304-code_to_code-72",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-304",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites Section 304 (same code)",
+      "source_basis": "sbc-201-section-309 body text (same-code cross-reference): \"...The key characteristics that differentiate occupancies classified in Group M from those -   classified in Group B (see Section 304) are the larger quantity of goods or merchandise ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-309-sbc-201-section-311-code_to_code-73",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-311",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites Section 311.1.1 (same code)",
+      "source_basis": "sbc-201-section-309 body text (same-code cross-reference): \"...Section 311.1.1 allows accessory storage to be classified as part of the principal occupancy....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-309-sbc-801-section-101-code_to_code-74",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-309 body text (cross-code reference): \"...Those facilities that typically conduct automotive service and repair work are treated as a repair garage (Group S- 1, also defined in SBC 801)....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-309-sbc-201-section-307-code_to_code-75",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites Section 307.1 (same code)",
+      "source_basis": "sbc-201-section-309 body text (same-code cross-reference): \"...To correctly classify a building where products that have hazardous properties are stored and sold, the code user must also be aware of the provisions contained in Section 307.1 , ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-402-sbc-201-section-404-code_to_code-76",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-404",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 404 (same code)",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...Where these lobbies have multiple levels open to each other, the provisions of Section 404, Atriums, may apply....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-402-sbc-201-section-508-code_to_code-77",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-508",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 508 (same code)",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...In all such cases, the provisions for mixed occupancies found in Section 508 would apply....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-402-sbc-201-section-507-exception_to_main_rule-78",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-507",
+      "relation_type": "exception_to_main_rule",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 507 (same code)",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...The exception allows covered or open mall buildings to reduce the required open space around the building in the same manner as unlimited area buildings regulated in Section 507....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-402-sbc-201-section-507-code_to_code-79",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-507",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 507 (same code)",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...Where permitted in Section 507, unlimited area buildings require an open space around the building of 18 m to prevent exposure fire spread....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-402-sbc-201-section-503-code_to_code-80",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-503",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 503 (same code)",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...The building area and building height of any anchor building shall be based on the type of construction as required by Section 503 as modified by Sections 504 and 506....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-801-section-302-sbc-801-section-201-code_to_code-81",
+      "from_ref": "sbc-801-section-302",
+      "to_ref": "sbc-801-section-201",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-302 body cites Section 201.3 (same code)",
+      "source_basis": "sbc-801-section-302 body text (same-code cross-reference): \"...Terms may be defined in Chapter 2 or in another SBC as indicated in Section 201.3, or the dictionary meaning may be all that is needed (see also commentaries, Section 201 through 2...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-801-section-308-sbc-801-section-105-code_to_code-82",
+      "from_ref": "sbc-801-section-308",
+      "to_ref": "sbc-801-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-308 body cites Section 105.5 (same code)",
+      "source_basis": "sbc-801-section-308 body text (same-code cross-reference): \"...Permits shall be obtained from the Fire official in accordance with Section 105.5 prior to engaging in the following activities involving open flame, fire and burning: 1....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-801-section-311-sbc-201-section-101-code_to_code-83",
+      "from_ref": "sbc-801-section-311",
+      "to_ref": "sbc-201-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-311 body cites cross-code ref to SBC-201",
+      "source_basis": "sbc-801-section-311 body text (cross-code reference): \"...Because demolition and rehabilitation are regulated by SBC 201, International Property Maintenance Code® (IPMC®) and applicable laws, any action taken must be a carefully coordinat...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-801-section-506-std-ul-1037-code_to_standard-84",
+      "from_ref": "sbc-801-section-506",
+      "to_ref": "std-ul-1037",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-801-section-506 body cites external standard UL 1037",
+      "source_basis": "sbc-801-section-506 body text (external standard reference): \"...Security is addressed by requiring an approved key box to be listed in accordance with UL 1037....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-sbc-201-section-415-code_to_code-85",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "sbc-201-section-415",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites Section 415.9.3 (same code)",
+      "source_basis": "sbc-201-section-103 body text (same-code cross-reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-std-nfpa-32-code_to_standard-86",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "std-nfpa-32",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites external standard NFPA 32",
+      "source_basis": "sbc-201-section-103 body text (external standard reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-std-nfpa-5000-code_to_standard-87",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "std-nfpa-5000",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites external standard NFPA 5000",
+      "source_basis": "sbc-201-section-103 body text (external standard reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-sbc-501-section-101-code_to_code-88",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "sbc-501-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites cross-code ref to SBC-501",
+      "source_basis": "sbc-201-section-103 body text (cross-code reference): \"...Another example is in SBC 501, which references ASHRAE 15 in Sections 1101.6 and 1108.1....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-std-nfpa-54-code_to_standard-89",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "std-nfpa-54",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites external standard NFPA 54",
+      "source_basis": "sbc-201-section-103 body text (external standard reference): \"...ASHRAE 15 then references NFPA 54 (ANSI Z223.1), National Fuel Gas Code....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-sbc-901-section-101-code_to_code-90",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "sbc-901-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites cross-code ref to SBC-901",
+      "source_basis": "sbc-201-section-103 body text (cross-code reference): \"...The legal occupancy of any structure existing on the date of adoption of this code shall be permitted to continue without change, except as otherwise specifically provided in this ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-103-sbc-801-section-101-code_to_code-91",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-103 body text (cross-code reference): \"...The legal occupancy of any structure existing on the date of adoption of this code shall be permitted to continue without change, except as otherwise specifically provided in this ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-sbc-201-section-415-code_to_code-92",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "sbc-201-section-415",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites Section 415.9.3 (same code)",
+      "source_basis": "sbc-201-section-105 body text (same-code cross-reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-std-nfpa-32-code_to_standard-93",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "std-nfpa-32",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites external standard NFPA 32",
+      "source_basis": "sbc-201-section-105 body text (external standard reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-std-nfpa-5000-code_to_standard-94",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "std-nfpa-5000",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites external standard NFPA 5000",
+      "source_basis": "sbc-201-section-105 body text (external standard reference): \"...Based on this text, NFPA 32, Standard for Dry- cleaning Plants, 2011 edition, in Section 4.4.1.1 states, “General building and structure design and construction shall be in accorda...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-sbc-501-section-101-code_to_code-95",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "sbc-501-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites cross-code ref to SBC-501",
+      "source_basis": "sbc-201-section-105 body text (cross-code reference): \"...Another example is in SBC 501, which references ASHRAE 15 in Sections 1101.6 and 1108.1....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-std-nfpa-54-code_to_standard-96",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "std-nfpa-54",
+      "relation_type": "code_to_standard",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites external standard NFPA 54",
+      "source_basis": "sbc-201-section-105 body text (external standard reference): \"...ASHRAE 15 then references NFPA 54 (ANSI Z223.1), National Fuel Gas Code....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "external_standard_ref"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-sbc-901-section-101-code_to_code-97",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "sbc-901-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites cross-code ref to SBC-901",
+      "source_basis": "sbc-201-section-105 body text (cross-code reference): \"...The legal occupancy of any structure existing on the date of adoption of this code shall be permitted to continue without change, except as otherwise specifically provided in this ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-105-sbc-801-section-101-code_to_code-98",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "sbc-801-section-101",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites cross-code ref to SBC-801",
+      "source_basis": "sbc-201-section-105 body text (cross-code reference): \"...The legal occupancy of any structure existing on the date of adoption of this code shall be permitted to continue without change, except as otherwise specifically provided in this ...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-108-sbc-201-section-104-code_to_code-99",
+      "from_ref": "sbc-201-section-108",
+      "to_ref": "sbc-201-section-104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-108 body cites Section 104.7 (same code)",
+      "source_basis": "sbc-201-section-108 body text (same-code cross-reference): \"...See Section 104.7 for requirements to retain other records that are generated as a result of the work....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r3-sbc-201-section-108-sbc-201-section-3103-code_to_code-100",
+      "from_ref": "sbc-201-section-108",
+      "to_ref": "sbc-201-section-3103",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-108 body cites Section 3103 (same code)",
+      "source_basis": "sbc-201-section-108 body text (same-code cross-reference): \"...This section should not be confused with the scope of Section 3103, which regulates temporary structures larger than 11 m2 in area. -...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    }
+  ]
+}

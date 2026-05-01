@@ -189,13 +189,16 @@ function relFile(p) { if (!fs.existsSync(p)) return []; const o = readJson(p); r
 const relationsFullBase = relFile(path.join(SRC, "relations", "relations_full.json"));
 const gapRelations      = relFile(path.join(SRC, "relations", "gap_completion_relations.json"));
 const round2GapRelations = relFile(path.join(SRC, "relations", "round2_gap_relations.json"));
+const round3GapRelations = relFile(path.join(SRC, "relations", "round3_gap_relations.json"));
 // Dedup against base by (from_ref, to_ref, relation_type)
 function relKey(r) { return `${r.from_ref}|${r.to_ref}|${r.relation_type}`; }
 const baseRelKeys = new Set(relationsFullBase.map(relKey));
 const newGapRelations = gapRelations.filter(r => !baseRelKeys.has(relKey(r)));
 const afterGap1Keys = new Set([...baseRelKeys, ...newGapRelations.map(relKey)]);
 const newRound2GapRelations = round2GapRelations.filter(r => !afterGap1Keys.has(relKey(r)));
-const relationsFull = [...relationsFullBase, ...newGapRelations, ...newRound2GapRelations];
+const afterGap2Keys = new Set([...afterGap1Keys, ...newRound2GapRelations.map(relKey)]);
+const newRound3GapRelations = round3GapRelations.filter(r => !afterGap2Keys.has(relKey(r)));
+const relationsFull = [...relationsFullBase, ...newGapRelations, ...newRound2GapRelations, ...newRound3GapRelations];
 const crossCode      = relFile(path.join(SRC, "relations", "cross_code_relations_full.json"));
 const parentChild    = relFile(path.join(SRC, "relations", "parent_child_relations_full.json"));
 const exceptionRels  = relFile(path.join(SRC, "relations", "exception_relations_full.json"));
@@ -210,13 +213,18 @@ const factsGap  = factsArr_(gapFactsFile);
 const round2GapFactsFile = fs.existsSync(path.join(SRC, "facts", "round2_gap_facts.json"))
   ? readJson(path.join(SRC, "facts", "round2_gap_facts.json")) : null;
 const factsRound2Gap = factsArr_(round2GapFactsFile);
+const round3GapFactsFile = fs.existsSync(path.join(SRC, "facts", "round3_gap_facts.json"))
+  ? readJson(path.join(SRC, "facts", "round3_gap_facts.json")) : null;
+const factsRound3Gap = factsArr_(round3GapFactsFile);
 // Dedup by (section_ref, value, statement-prefix)
 function factKey(f) { return `${f.section_ref}|${String(f.value)}|${(f.statement || "").slice(0, 80)}`; }
 const baseFactKeys = new Set(factsBase.map(factKey));
 const newGapFacts = factsGap.filter(f => !baseFactKeys.has(factKey(f)));
 const afterGap1FactKeys = new Set([...baseFactKeys, ...newGapFacts.map(factKey)]);
 const newRound2GapFacts = factsRound2Gap.filter(f => !afterGap1FactKeys.has(factKey(f)));
-const factsFull = { facts: [...factsBase, ...newGapFacts, ...newRound2GapFacts] };
+const afterGap2FactKeys = new Set([...afterGap1FactKeys, ...newRound2GapFacts.map(factKey)]);
+const newRound3GapFacts = factsRound3Gap.filter(f => !afterGap2FactKeys.has(factKey(f)));
+const factsFull = { facts: [...factsBase, ...newGapFacts, ...newRound2GapFacts, ...newRound3GapFacts] };
 const thresholdsFull = readJson(path.join(SRC, "facts", "thresholds_full.json"));
 const exceptionsFull = readJson(path.join(SRC, "facts", "exceptions_full.json"));
 const definitionsFull= readJson(path.join(SRC, "facts", "definitions_full.json"));
@@ -287,16 +295,20 @@ const chunks201Gaps    = buildChunks(path.join(SRC, "extracted_gaps", "sbc201"),
 const chunks801Gaps    = buildChunks(path.join(SRC, "extracted_gaps", "sbc801"), "SBC 801");
 const chunks201Round2  = buildChunks(path.join(SRC, "extracted_gaps", "sbc201_round2"), "SBC 201");
 const chunks801Round2  = buildChunks(path.join(SRC, "extracted_gaps", "sbc801_round2"), "SBC 801");
+const chunks801Round3a = buildChunks(path.join(SRC, "extracted_gaps", "sbc801_round3_priority"), "SBC 801");
+const chunks801Round3b = buildChunks(path.join(SRC, "extracted_gaps", "sbc801_round3_hazmat"), "SBC 801");
 // Dedup by id: sources/ wins over extracted_gaps/ (canonical takes priority);
-// round1 gaps win over round2 (earlier wave wins)
+// round1 gaps win over round2 (earlier wave wins); round2 wins over round3
 function dedupById(primary, secondary) {
   const seen = new Set(primary.map(c => c.id));
   return [...primary, ...secondary.filter(c => !seen.has(c.id))];
 }
 const chunks201Gap1Plus2 = dedupById(chunks201Gaps, chunks201Round2);
 const chunks801Gap1Plus2 = dedupById(chunks801Gaps, chunks801Round2);
+const chunks801Round3   = dedupById(chunks801Round3a, chunks801Round3b);
+const chunks801Gap1Plus2Plus3 = dedupById(chunks801Gap1Plus2, chunks801Round3);
 const chunks201 = dedupById(chunks201Sources, chunks201Gap1Plus2);
-const chunks801 = dedupById(chunks801Sources, chunks801Gap1Plus2);
+const chunks801 = dedupById(chunks801Sources, chunks801Gap1Plus2Plus3);
 const allChunks = [...chunks201, ...chunks801];
 
 // Cross-link: relation_refs and fact_refs per chunk

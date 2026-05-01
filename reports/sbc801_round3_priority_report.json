@@ -1,0 +1,60 @@
+{
+  "agent": "SUB-AGENT B1 round 3",
+  "code_family": "SBC 801",
+  "edition": 2024,
+  "generated_at_utc": "2026-05-01T00:00:00Z",
+  "input_report": "D:/ConsultX_Clean/reports/sbc801_manual_review_resolution_report.json",
+  "input_manual_review_keep_total": 101,
+  "token_budget_cap": 30,
+  "method": {
+    "step_1": "Filter manual_review_keep items where section_number begins with 9., 10., 11., or matches integer prefix mapping to Chapter 9 (3-digit 9xx), Chapter 10 (4-digit 10xx), or Chapter 11 (4-digit 11xx).",
+    "step_2": "For each priority match, attempt extraction with pymupdf round3-priority extractor across +/- 60 page sweep.",
+    "step_3": "Apply strict quality gate (>= 200 chars, contains section ref verbatim, non-letter ratio < 30%) before write.",
+    "step_4": "Enforce zero Section symbol on every output."
+  },
+  "counts": {
+    "resolved": 0,
+    "quality_fail": 0,
+    "not_in_priority_chapters": 101
+  },
+  "by_chapter_in_input": {
+    "5": 11,
+    "6": 2,
+    "7": 4,
+    "12": 11,
+    "15": 2,
+    "16": 4,
+    "20": 1,
+    "23": 3,
+    "24": 4,
+    "25": 1,
+    "28": 2,
+    "29": 2,
+    "31": 4,
+    "32": 5,
+    "35": 3,
+    "37": 1,
+    "50": 10,
+    "51": 3,
+    "53": 3,
+    "56": 11,
+    "57": 8,
+    "58": 1,
+    "59": 1,
+    "60": 2,
+    "63": 2
+  },
+  "priority_chapter_matches": [],
+  "resolved_items": [],
+  "quality_fail_items": [],
+  "not_in_priority_chapters_count": 101,
+  "finding": "Zero of the 101 manual_review_keep items belong to Chapter 9 (Fire Protection), Chapter 10 (Egress / Life Safety), or Chapter 11 (Existing Buildings). All sections in chapters 9, 10, 11 of this dataset were already addressed by prior rounds: round 1 / round 2 resolved 1104 (Ch 11) and the existing main sbc801/ extraction directory contains complete coverage of 901-917, 1001-1032, and 1101-1108 sections. No further priority resolutions are possible from this input.",
+  "output_dir": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round3_priority/",
+  "output_dir_file_count": 0,
+  "section_symbol_total": 0,
+  "section_symbol_check_paths": [
+    "D:/ConsultX_Clean/reports/sbc801_round3_priority_report.json",
+    "D:/ConsultX_Clean/reports/sbc801_round3_priority_report.md"
+  ],
+  "round": 3
+}

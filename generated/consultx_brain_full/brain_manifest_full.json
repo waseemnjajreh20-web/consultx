@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-01T12:19:44.874Z",
+  "generated_at": "2026-05-01T12:58:34.955Z",
   "inputs": {
-    "sources_sbc201": 148,
-    "sources_sbc801": 221,
+    "sources_sbc201": 150,
+    "sources_sbc801": 244,
     "sections_in_index": 357,
-    "relations_total": 842,
+    "relations_total": 942,
     "cross_code_relations": 13,
-    "facts_total": 305,
+    "facts_total": 365,
     "thresholds": 90,
     "exceptions": 37,
     "definitions": 0,
@@ -19,18 +19,18 @@
   "outputs": [
     {
       "path": "generated/consultx_brain_full/chunks/SBC201_canonical_chunks.json",
-      "bytes": 3183248,
-      "sha256": "ce4cdc046ce0c6087fb31d3dfec308142c3a09a8f542f40e195e22af29d83830"
+      "bytes": 3212621,
+      "sha256": "cb1f1fefa8bfd7df41694c9ad5199093a102c9382051b5c6ea452e892439939f"
     },
     {
       "path": "generated/consultx_brain_full/chunks/SBC801_canonical_chunks.json",
-      "bytes": 8329658,
-      "sha256": "470ec6de81bfce9a33ede40ce12fabf5c0f63933c18f38dddec0c4cca0d7abe6"
+      "bytes": 8374673,
+      "sha256": "fd2c3dc2ec4d1211a145859346c731e098764b43e553473680f574a53d1a4d62"
     },
     {
       "path": "generated/consultx_brain_full/relations/relations_full.json",
-      "bytes": 576608,
-      "sha256": "93268a3c8c50379875f4fd03aaf80b0e32e8e0461564245fccaaae9a6ddcec37"
+      "bytes": 652445,
+      "sha256": "4816df3f3b26f962afc308343ab3952b58899118e6154279a563524d4c84676c"
     },
     {
       "path": "generated/consultx_brain_full/relations/cross_code_relations_full.json",
@@ -59,8 +59,8 @@
     },
     {
       "path": "generated/consultx_brain_full/facts/facts_full.json",
-      "bytes": 284804,
-      "sha256": "21e820bb57aa5ed5a1ac75fa03c1ffcb680978b0cf794ad0794da99e9a81ec0d"
+      "bytes": 339666,
+      "sha256": "712326e78e575a0f7ec0c7db2c637e7f426c557755d5ee7934b0a583dc989dd3"
     },
     {
       "path": "generated/consultx_brain_full/facts/thresholds_full.json",

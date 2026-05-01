@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T13:00:00Z",
+  "coordinator": {
+    "script": "scripts/build-consultx-brain-full.cjs",
+    "exit_code": 0,
+    "validation_overall": "PASS",
+    "invariants": {
+      "total": 3810,
+      "passed": 3810,
+      "failed": 0
+    },
+    "invariants_per_category": {
+      "no_banned_symbol": 22,
+      "chunk_shape": 2364,
+      "facts": 365,
+      "relations": 942,
+      "decision_trees": 32,
+      "governance": 85
+    }
+  },
+  "domain_summary": {
+    "chunks_sbc201": 150,
+    "chunks_sbc801": 244,
+    "relations": 942,
+    "cross_code_edges": 13,
+    "facts": 365,
+    "decision_tree_count": 3
+  },
+  "round3_inputs": {
+    "round3_gap_relations_count": 100,
+    "round3_gap_facts_count": 60,
+    "sbc801_round3_priority_md_files": 0,
+    "sbc801_round3_hazmat_md_files": 0,
+    "note": "B1/B2 produced no MD chunk files; relations/facts merged successfully"
+  },
+  "manual_review_all_rounds": {
+    "sbc201_manual_review": 64,
+    "sbc801_manual_review": 0,
+    "total": 64
+  },
+  "symbol_audit": {
+    "ban_target": "U+00A7",
+    "data_full_corpus_files_audited": 586,
+    "generated_full_files_audited": 25,
+    "total_files_audited": 611,
+    "files_with_violation": 0,
+    "fails": 0
+  },
+  "coordinator_edits": {
+    "method": "Edit (not Write)",
+    "edit_count": 3,
+    "edits": [
+      "relations merge: append round3_gap_relations after round2 with relKey dedup",
+      "facts merge: append round3_gap_facts after round2 with factKey dedup",
+      "chunks merge: build sbc801_round3_priority + sbc801_round3_hazmat, dedup, then merge into chunks801"
+    ]
+  },
+  "hard_rules": {
+    "no_banned_symbol": "PASS",
+    "local_only_no_deploy": "PASS",
+    "edit_not_write": "PASS"
+  }
+}
