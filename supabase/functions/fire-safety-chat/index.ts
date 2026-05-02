@@ -1765,39 +1765,30 @@ function buildQueryMeta(query: string): QueryMeta {
 
 function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta): number {
   const lower = chunkText.toLowerCase();
-
+  let score = 0;
+  
   // Penalize very short chunks
   if (chunkText.length < 100) return 0;
-
-  // Split scoring into two channels so off-topic chunks don't surface as
-  // "fallback" sources on greetings or non-code questions:
-  //   relevance — driven by the user's actual query (keywords + queryMeta).
-  //               Used as a HARD GATE: zero query overlap → drop the chunk.
-  //   bonus     — structural quality (section numbers, table mentions,
-  //               chapter headings). Tie-breaker among already-relevant
-  //               chunks; never enough on its own to emit a chunk.
-  let relevance = 0;
-  let bonus = 0;
-
+  
   for (const kw of keywords) {
     const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = lower.match(regex);
     if (matches) {
       // SBC references get 3x weight
       const weight = /^(sbc|table|section|\d{3}\.\d)/.test(kw) ? 3 : 1;
-      relevance += matches.length * weight;
+      score += matches.length * weight;
     }
   }
-
-  // Structural quality bonuses (only applied if chunk passes the relevance gate)
+  
+  // Bonus for chunks containing tables
   if (/\btable\s+\d+/i.test(lower) || /جدول\s+\d+/.test(lower)) {
-    bonus += 5;
+    score += 5;
   }
-
+  
   // Bonus for chunks with specific section numbers (e.g., 903.2.1, 1006.3.4)
   const sectionMatches = lower.match(/\d{3,4}\.\d+(\.\d+)?/g);
   if (sectionMatches && sectionMatches.length > 0) {
-    bonus += Math.min(sectionMatches.length * 2, 10);
+    score += Math.min(sectionMatches.length * 2, 10);
   }
 
   // --- QueryMeta-based precision scoring (backward compatible) ---
@@ -1806,7 +1797,7 @@ function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta
     for (const sec of queryMeta.sectionNumbers) {
       const secEscaped = sec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (new RegExp(`\\b${secEscaped}\\b`).test(lower)) {
-        relevance += 5;
+        score += 5;
       }
     }
 
@@ -1814,14 +1805,14 @@ function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta
     for (const tbl of queryMeta.tableRefs) {
       const tblEscaped = tbl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (new RegExp(tblEscaped, "i").test(lower)) {
-        relevance += 4;
+        score += 4;
       }
     }
 
     // 3. Exact Phrase Match (×3 per phrase)
     for (const phrase of queryMeta.exactPhrases) {
       if (lower.includes(phrase)) {
-        relevance += 3;
+        score += 3;
       }
     }
 
@@ -1829,7 +1820,7 @@ function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta
     for (const grp of queryMeta.occupancyGroups) {
       const grpEscaped = grp.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (new RegExp(grpEscaped, "i").test(lower)) {
-        relevance += 3;
+        score += 3;
       }
     }
 
@@ -1837,22 +1828,17 @@ function scoreChunk(chunkText: string, keywords: string[], queryMeta?: QueryMeta
     for (const typ of queryMeta.constructionTypes) {
       const typEscaped = typ.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (new RegExp(typEscaped, "i").test(lower)) {
-        relevance += 3;
+        score += 3;
       }
     }
   }
 
   // Bonus for chapter headings
   if (/\bchapter\s+\d+/i.test(lower) || /الفصل\s+\d+/.test(lower)) {
-    bonus += 3;
+    score += 3;
   }
 
-  // HARD GATE: drop chunks the user's query did not actually reference,
-  // regardless of how many structural markers they contain. This prevents
-  // default fallback chips from appearing on greetings and off-topic queries.
-  if (relevance === 0) return 0;
-
-  return relevance + bonus;
+  return score;
 }
 
 function extractAndScoreChunks(rawJson: string, fileName: string, keywords: string[], queryMeta?: QueryMeta): ScoredChunk[] {
