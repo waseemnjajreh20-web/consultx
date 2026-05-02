@@ -5309,17 +5309,21 @@ ABSOLUTELY FORBIDDEN:
 - الإجابة على أسئلة المراجع الدقيقة من الذاكرة العامة عندما لا ينجح الاسترجاع الداخلي`;
         fullSystemPrompt += warningMsg;
       } else if (!structuredTableContext) {
-        // No SBC content loaded at all (neither structured tables nor storage chunks).
-        // Return a clean 503 instead of calling Gemini with no context (which produces
-        // misleading "text not available in provided files" responses).
-        console.error("SBC context empty after retrieval — returning 503");
-        const errMsg = language === "en"
-          ? "Reference documents are temporarily unavailable. Please try again in a moment."
-          : "المستندات المرجعية غير متوفرة مؤقتاً. يرجى المحاولة مجدداً بعد لحظات.";
-        return new Response(JSON.stringify({ error: errMsg }), {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        // No SBC content loaded — proceed WITHOUT a source block instead of
+        // returning 503. The Advisory diagnostic protocol in the system prompt
+        // instructs the model to ask 1–3 clarifying questions whenever the
+        // critical inputs (occupancy, height, area) are missing or the question
+        // is non-code (greetings, vague intent). The protocol also forbids
+        // answering exact-reference questions from general model memory when
+        // retrieval fails. Together these prevent the misleading "text not
+        // available in provided files" response that the prior 503 branch was
+        // worried about, while still allowing casual / under-specified queries
+        // to receive a friendly clarifying response.
+        console.warn("[Advisory] SBC context empty after retrieval — proceeding without source block; diagnostic protocol governs response");
+        const noContextNote = language === "en"
+          ? `\n\n📋 RETRIEVAL NOTE: No SBC source content was retrieved for this query. Apply the diagnostic protocol: greet the user briefly if appropriate and ask 1–3 clarifying questions about the project (occupancy classification, height/stories, total floor area, sprinkler status). Do NOT cite any code section, table, or threshold from general memory. Do NOT claim the documents are unavailable. If the user asks an exact-reference question, state that the section is not currently indexed and offer to look it up via a more specific query.`
+          : `\n\n📋 ملاحظة استرجاع: لم يتم استرجاع أي محتوى من الكود السعودي لهذه الرسالة. طبّق بروتوكول التشخيص: حيِّ المستخدم باختصار إذا كان الأمر مناسباً، ثم اطرح 1 إلى 3 أسئلة توضيحية عن المشروع (تصنيف الإشغال، الارتفاع/عدد الطوابق، المساحة الإجمالية، حالة الرشاشات). ممنوع منعاً باتاً الاستشهاد بأي رقم قسم أو جدول أو عتبة من ذاكرة النموذج العامة. ممنوع القول إن المستندات غير متوفرة. إذا سأل المستخدم عن مرجع دقيق، صرّح أن القسم غير مفهرس حالياً واعرض البحث بسؤال أكثر تحديداً.`;
+        fullSystemPrompt += noContextNote;
       }
       // If only structuredTableContext loaded (storage failed), we still proceed —
       // the DB table data alone is sufficient to answer the specific table query.
