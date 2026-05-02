@@ -4772,6 +4772,95 @@ ${drawingTextLayer ? `\n${drawingTextLayer}\n` : ""}
   return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta };
 }
 
+// ==================== ADVISORY INTENT GATE ====================
+// Deterministic, dependency-free classifier that decides whether an Advisory
+// (mode === "standard") message warrants SBC retrieval, structured-table
+// lookup, Brain sidecar download, Evidence Ledger building, and a Gemini call.
+//
+// Returns one of:
+//   "code_domain"          — message has project / code / fire-safety intent.
+//                            Existing pipeline runs unchanged.
+//   "casual"               — greeting / chat-only message with no project terms.
+//                            Caller must bypass retrieval and emit a short
+//                            friendly canned reply (no sources, no citations).
+//   "empty_or_ambiguous"   — empty, pure punctuation, or a very short message
+//                            with no domain keywords. Caller must bypass
+//                            retrieval and emit a clarifying canned reply.
+//
+// Order of checks: domain hits win over casual hits, so a greeting that also
+// references a project term (e.g. "كيفك مع المشروع") is treated as code_domain.
+function classifyAdvisoryIntent(userText: string): "code_domain" | "casual" | "empty_or_ambiguous" {
+  const raw = (userText ?? "").trim();
+  if (!raw) return "empty_or_ambiguous";
+
+  // Strip common punctuation and whitespace (incl. Arabic question mark and
+  // Arabic comma) to detect punctuation-only messages and to measure the
+  // residual content length for the post-keyword ambiguity check.
+  const stripped = raw.replace(/[?؟.,،!\s‌‍]+/g, "").trim();
+  if (!stripped) return "empty_or_ambiguous";
+
+  const lower = raw.toLowerCase();
+
+  // Word-boundary test for ASCII keywords (so "fire" doesn't match "firefox"
+  // and "hi" doesn't match "this"/"his"). Arabic substring check is fine
+  // because Arabic words are not delimited by ASCII letters.
+  const hasWord = (kw: string): boolean =>
+    new RegExp(`(^|[^a-z0-9])${kw}([^a-z0-9]|$)`, "i").test(lower);
+
+  // 1. CODE-DOMAIN keywords (checked first so domain wins over casual).
+  const arabicDomain = [
+    "كود", "الحريق", "حريق", "رش", "إنذار", "انذار",
+    "مخارج", "مخرج", "إشغال", "اشغال",
+    "مبنى", "مبني", "مشروع", "مساحة", "مساحه",
+    "طابق", "طوابق", "بدروم",
+    "مكاتب", "مكتب", "محلات", "محل",
+    "مستودع", "مخزن", "سكني", "تحليلي",
+    "مخطط", "مخططات",
+  ];
+  for (const kw of arabicDomain) {
+    if (lower.includes(kw)) return "code_domain";
+  }
+
+  const englishDomain = [
+    "sbc", "code", "fire", "sprinkler", "alarm", "egress", "occupancy",
+    "building", "project", "floor", "area", "basement",
+    "office", "mercantile", "warehouse", "residential",
+    "plan", "drawing",
+  ];
+  for (const kw of englishDomain) {
+    if (hasWord(kw)) return "code_domain";
+  }
+
+  // 2. CASUAL — greeting / chat-only with no domain content.
+  const arabicCasual = [
+    "كيفك", "كيف الحال", "كيف حالك",
+    "مرحبا", "مرحبًا", "السلام عليكم",
+    "صباح الخير", "مساء الخير",
+    "شكرا", "شكرًا", "تمام",
+  ];
+  for (const kw of arabicCasual) {
+    if (lower.includes(kw)) return "casual";
+  }
+
+  const englishCasualPhrases = ["how are you", "good morning", "good evening", "thank you"];
+  for (const ph of englishCasualPhrases) {
+    if (lower.includes(ph)) return "casual";
+  }
+  const englishCasualWords = ["hi", "hello", "hey", "thanks"];
+  for (const w of englishCasualWords) {
+    if (hasWord(w)) return "casual";
+  }
+
+  // 3. Short text with no domain hits → ambiguous (forces clarifying reply).
+  if (stripped.length < 10) return "empty_or_ambiguous";
+
+  // 4. Default for medium/long messages: code_domain. Existing retrieval +
+  //    relevance scoring decide what (if anything) to surface. Erring toward
+  //    code_domain for substantive messages avoids silently blocking
+  //    legitimate follow-up questions that don't repeat domain keywords.
+  return "code_domain";
+}
+
 // ==================== MAIN HANDLER ====================
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -5251,6 +5340,52 @@ serve(async (req) => {
       // ===== STANDARD/ADVISORY TEXT PIPELINE =====
       const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
       const userQuery = lastUserMessage?.content || "";
+
+      // ── ADVISORY INTENT GATE ────────────────────────────────────────────────
+      // Casual greetings, single punctuation marks, and very short messages
+      // with no project/code/fire-safety intent must NOT trigger SBC retrieval,
+      // structured-table lookup, Brain sidecar download, Evidence Ledger
+      // building, or a Gemini call. Bypass everything and emit a short canned
+      // SSE response so the frontend renders nothing in the source panel.
+      // Only applied to mode === "standard" (Advisory). Analytical text mode
+      // continues unchanged so code-only analysis still retrieves sources.
+      if (mode === "standard") {
+        const intent = classifyAdvisoryIntent(userQuery);
+        if (intent !== "code_domain") {
+          const cannedText = intent === "casual"
+            ? (language === "en"
+                ? "Hi! I'm ready to help with any Saudi Building Code or fire-safety question. Describe your project or technical question and I'll start the analysis."
+                : "أهلاً بك، أنا جاهز لمساعدتك في أي سؤال عن الكود السعودي أو متطلبات الحماية من الحريق. اكتب وصف المشروع أو السؤال الفني وسأبدأ التحليل.")
+            : (language === "en"
+                ? "Please write your question or describe the project — for example, occupancy type, area, and number of floors — and I'll analyze it according to the Saudi Building Code."
+                : "اكتب سؤالك أو وصف المشروع، مثل نوع الإشغال والمساحة وعدد الطوابق، وسأحلله لك وفق الكود السعودي.");
+
+          console.log(`[IntentGate] Bypassing retrieval | intent=${intent} | query="${userQuery.slice(0, 60).replace(/\s+/g, " ")}"`);
+
+          // Single-chunk SSE in the same OpenAI-style format the Advisory
+          // re-streamer uses (see the validateAnalyticalReport / advisoryStream
+          // emitters), so the frontend's existing event parser handles it.
+          const cannedStream = new ReadableStream({
+            start(controller) {
+              const enc = new TextEncoder();
+              controller.enqueue(enc.encode(
+                `data: ${JSON.stringify({ choices: [{ delta: { content: cannedText } }] })}\n\n`
+              ));
+              controller.enqueue(enc.encode("data: [DONE]\n\n"));
+              controller.close();
+            },
+          });
+
+          return new Response(cannedStream, {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "text/event-stream",
+              "X-SBC-Sources": "",
+              "X-SBC-Source-Meta": "[]",
+            },
+          });
+        }
+      }
 
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
 
