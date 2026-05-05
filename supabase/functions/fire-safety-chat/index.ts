@@ -1218,7 +1218,10 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   // "building" or "floor" that would fire on every Advisory turn.
   // NOTE: single-line regex required (JS does not support /x extended mode).
   const trigger = /(mercantile|group\s+m|محلات\s+تجارية|مجموعة\s+M|sprinkler|automatic\s+sprinkler|fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|fire\s+area|occupant\s+notification|waterflow|standpipe|smoke\s+control|egress|exit\s+discharge|exit\s+access|\bexit\b|travel\s+distance|occupant\s+load|common\s+path|\bstair\b|stairs|stairway|corridor|mixed\s+occupancy|mixed-use|residential|group\s+r|group\s+r-?[1-4]|storage|group\s+s|group\s+s-?[12]|educational|group\s+e|institutional|group\s+i|group\s+i-?[1-4]|business|group\s+b|assembly|group\s+a|group\s+a-?[1-5]|high.?hazard|group\s+h|رش|إنذار|مخرج|مخارج|خروج|إخلاء|تنبيه|مسافة\s+الانتقال|مسافة\s+السفر|حمل\s+الإشغال|مسار\s+الهروب|درج|سلم|سلالم|ممر|إشغال\s+مختلط|مختلط|سكني|مبنى\s+سكني|تخزين|مستودع|تعليمي|مدارس|مبنى\s+تعليمي|طبي|مستشفى|مؤسسي)/i.test(query);
-  if (!trigger) return null;
+  if (!trigger) {
+    console.log("[AdvisoryBrain] sidecar=v1 result=skip reason=trigger_miss");
+    return null;
+  }
 
   const [chunks201, chunks801, relations, facts, tree] = await Promise.all([
     brainV1Fetch(supabaseAdmin, "SBC201_canonical_chunks.json"),
@@ -1228,7 +1231,11 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
     brainV1Fetch(supabaseAdmin, "decision_tree_v1.json"),
   ]);
 
-  if (!chunks201 && !chunks801 && !relations && !facts && !tree) return null;
+  const filesLoaded = [chunks201, chunks801, relations, facts, tree].filter(Boolean).length;
+  if (!chunks201 && !chunks801 && !relations && !facts && !tree) {
+    console.warn("[AdvisoryBrain] sidecar=v1 result=skip reason=all_files_null files_loaded=0/5");
+    return null;
+  }
 
   // Curated relevant set covering Group M chain (Section 309 / 903.2.7 / 907.2.7
   // and immediate dependencies). The loader stays narrow on purpose to keep
@@ -1287,6 +1294,7 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   }).slice(0, 25);
 
   if (relevantChunks.length === 0 && relevantFacts.length === 0 && relevantRels.length === 0 && !tree) {
+    console.warn(`[AdvisoryBrain] sidecar=v1 result=skip reason=filtered_to_zero files_loaded=${filesLoaded}/5`);
     return null;
   }
 
@@ -1325,6 +1333,7 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   }
 
   lines.push("\nINSTRUCTION: Use this material to ground your reasoning. Citations must still be section/table tokens that the Evidence Ledger and Citation Verifier accept; if Brain V1 reveals a section that is NOT in the Evidence Ledger, you may use the phrase \"مرجع متوقع يحتاج تحقق من مصدر مطابق\" rather than fabricating a high-confidence citation.");
+  console.log(`[AdvisoryBrain] sidecar=v1 result=ok files_loaded=${filesLoaded}/5 chunks=${relevantChunks.length} facts=${relevantFacts.length} relations=${relevantRels.length} tree=${tree ? "yes" : "no"}`);
   return lines.join("\n");
 }
 
