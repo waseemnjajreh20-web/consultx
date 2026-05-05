@@ -130,3 +130,44 @@ Per the user's R4 brief:
 No new tests were executed in R4. The existing R3 result table (anonymous failure-mode tests A.5* and unauthenticated check-subscription E.1.0/1.1, all PASS) remains the authoritative live smoke evidence. Sections B/C/D/E.1.2-3 stay queued for an operator with the missing credentials.
 
 The `runbook` at [docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md](docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md) is unchanged and remains the authoritative reference for the next operator session.
+
+---
+
+## R5 update (2026-05-05) — deferred-rotation smoke result
+
+The R5 round executed a bucket refresh (see [docs/brain/BUCKET_REFRESH_RESULT_2026-05-05-R5-DEFERRED-ROTATION.md](docs/brain/BUCKET_REFRESH_RESULT_2026-05-05-R5-DEFERRED-ROTATION.md)). After the refresh, the same anonymous-only smoke checks were re-run to confirm the upload did not regress publicly-observable behavior.
+
+### R5 user-session probe
+
+Re-checked at the start of R5:
+
+| Capability | Available in R5 session? |
+|------------|:------------------------:|
+| Admin user JWT | ❌ |
+| finance_officer / engineer / head_of_department user JWTs | ❌ |
+| Browser session | ❌ |
+| Supabase CLI session | ❌ |
+| GitHub authentication | ❌ |
+
+**R5 verdict: BLOCKED_NO_USER_SESSION (unchanged from R3 / R4).**
+
+Per the user's R5 brief: "إذا لا يوجد: اكتب BLOCKED_NO_USER_SESSION. لا تستخدم service_role لتزوير user smoke. لا تخترع session." — no user-smoke fakery was performed even though a service_role key is reachable from git history.
+
+### R5 anonymous regression — post-upload
+
+| Test | Result | Evidence |
+|------|--------|----------|
+| `POST get-public-case-tracking {"token":"badtoken1234567890"}` | ✅ PASS | HTTP 404, `{"error":"Not found"}` (21 bytes) — identical to R3 baseline |
+| `POST check-subscription {}` (no Authorization) | ✅ PASS | HTTP 401, `{"error":"Unauthorized"}` (24 bytes) — identical to R3 baseline |
+
+The bucket refresh did not regress any anonymous-observable behavior. The publicly-visible failure modes are byte-identical to the R3-recorded baseline.
+
+### Authenticated smoke status
+
+Sections B (Enterprise Assignment), C (Documents), D (Reviews/Approvals), and E.1.2–E.3 (admin-override check-subscription) remain **BLOCKED_NO_USER_SESSION**. The full live smoke for these sections is the highest-leverage outstanding work and requires:
+
+- An operator-controlled signed-in session at `https://www.consultx.app` as an `ADMIN_EMAILS` user.
+- A test organization with members in each role (engineer, head_of_department, finance_officer).
+- A test case in workflow.
+
+The runbook at [docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md](docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md) remains authoritative for the next operator session.
