@@ -1,4 +1,11 @@
-const API_KEY = process.argv[2] || "AIzaSyAdlXUrZea2d-e_Wp1RW53WjFoVHQ59HHM";
+// Security: accept the key as argv[2] (per-run override) or fall back to env.
+// The previously hardcoded fallback is removed; rotate the leaked key from the
+// Google Cloud Console before relying on this script again.
+const API_KEY = process.argv[2] || process.env.GEMINI_API_KEY;
+if (!API_KEY) {
+  console.error("ERROR: provide GEMINI_API_KEY as argv[2] or via the GEMINI_API_KEY env var.");
+  process.exit(1);
+}
 
 const MODELS = [
   "text-embedding-004",

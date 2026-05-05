@@ -7,9 +7,23 @@
 
 const { createClient } = require("@supabase/supabase-js");
 
-const SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhybmx0eG13b2FwaGdlamNrdXRrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDEyMjUwNiwiZXhwIjoyMDg1Njk4NTA2fQ.RQWe-ZbIKR6wAnWb7Ag1vzMXBJsSiN4v2NSb4uZ5c3o";
+// Security: secrets must be provided via environment variables. The previous
+// hardcoded service_role key is removed. The leaked key remains valid in any
+// clone of this repo's history until a manual rotation is performed in the
+// Supabase Dashboard. See docs/security/SECRET_REMEDIATION_RESULT_2026-05-05.md.
+//
+// NOTE: The ADMINS array below still contains hardcoded reset passwords, which
+// is a separate concern flagged in docs/security/SECRET_EXPOSURE_AUDIT_2026-05-05.md
+// and should be addressed in a follow-up task.
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://hrnltxmwoaphgejckutk.supabase.co";
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SERVICE_ROLE_KEY) {
+  console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY environment variable is required.");
+  console.error("       Provide it via your shell, a .env loader, or the runtime secret store.");
+  console.error("       Do NOT hardcode it in this file.");
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
