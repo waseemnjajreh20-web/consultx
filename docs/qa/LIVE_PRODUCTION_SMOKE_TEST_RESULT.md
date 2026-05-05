@@ -1,6 +1,6 @@
-# Live Production Smoke Test — Result (R3 partial)
+# Live Production Smoke Test — Result (R3 partial → R4 unchanged)
 
-Date: 2026-05-05 (R3)
+Date: 2026-05-05 (R3, updated R4)
 Companion plan: [docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md](docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md)
 Production endpoints exercised:
 - `https://www.consultx.app/track/...` (frontend SPA)
@@ -106,3 +106,27 @@ The full happy-path validation of B/C/D/E sections requires an operator with:
 - A test case in workflow
 
 Per the brief's "لا تخترع. لا تنفذ smoke. اكتب BLOCKED_NO_CREDENTIALS في التقرير" rule, the rest is deferred to a session where those credentials are present.
+
+---
+
+## R4 update (2026-05-05) — full smoke check
+
+Status of the BLOCKED items above re-checked at the start of R4:
+
+| Capability | Available in R4 session? |
+|------------|:------------------------:|
+| Admin user JWT (`waseemnjajreh20@gmail.com` etc.) | ❌ |
+| finance_officer / engineer / head_of_department user JWTs | ❌ |
+| Browser session at `https://www.consultx.app` | ❌ |
+| Supabase CLI session | ❌ — no `~/.config/supabase/` directory |
+| GitHub authentication (could grant Vercel access) | ❌ — `gh auth status` reports "not logged in" |
+| Test org id / test case id | ❌ — none recorded in env or session |
+
+**R4 verdict: BLOCKED_NO_USER_SESSION (unchanged from R3).**
+
+Per the user's R4 brief:
+> "إذا لا: اكتب BLOCKED_NO_USER_SESSION. لا تخترع session. لا تستخدم service_role لتزوير user smoke. اترك runbook كما هو."
+
+No new tests were executed in R4. The existing R3 result table (anonymous failure-mode tests A.5* and unauthenticated check-subscription E.1.0/1.1, all PASS) remains the authoritative live smoke evidence. Sections B/C/D/E.1.2-3 stay queued for an operator with the missing credentials.
+
+The `runbook` at [docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md](docs/qa/LIVE_PRODUCTION_SMOKE_TEST_PLAN.md) is unchanged and remains the authoritative reference for the next operator session.
