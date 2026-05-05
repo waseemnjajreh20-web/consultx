@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
   "overall": "PASS",
-  "generated_at": "2026-05-01T12:19:44.984Z",
+  "generated_at": "2026-05-05T13:55:45.924Z",
   "counts": {
-    "invariants": 3498,
-    "passed": 3498,
+    "invariants": 3420,
+    "passed": 3420,
     "failed": 0
   },
   "domain_summary": {
-    "chunks_sbc201": 148,
-    "chunks_sbc801": 221,
+    "chunks_sbc201": 136,
+    "chunks_sbc801": 222,
     "relations": 842,
     "cross_code_edges": 13,
     "facts": 305,
@@ -17,11 +17,18 @@
   },
   "invariants_per_category": {
     "no_banned_symbol": 22,
-    "chunk_shape": 2214,
+    "chunk_shape": 2148,
     "facts": 305,
     "relations": 842,
     "decision_trees": 32,
-    "governance": 83
+    "governance": 71
+  },
+  "policy_gate": {
+    "skipped_requires_review_total": 37,
+    "skipped_by_dir": {
+      "data/consultx_brain/full_corpus/extracted_gaps/sbc201_round2": 14,
+      "data/consultx_brain/full_corpus/extracted_gaps/sbc801_round2": 23
+    }
   },
   "failures": []
 }

@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-01T12:19:44.874Z",
+  "generated_at": "2026-05-05T13:55:45.869Z",
   "inputs": {
-    "sources_sbc201": 148,
-    "sources_sbc801": 221,
+    "sources_sbc201": 136,
+    "sources_sbc801": 222,
     "sections_in_index": 357,
     "relations_total": 842,
     "cross_code_relations": 13,
@@ -19,13 +19,13 @@
   "outputs": [
     {
       "path": "generated/consultx_brain_full/chunks/SBC201_canonical_chunks.json",
-      "bytes": 3183248,
-      "sha256": "ce4cdc046ce0c6087fb31d3dfec308142c3a09a8f542f40e195e22af29d83830"
+      "bytes": 3080694,
+      "sha256": "69ac45a35a32e37e4faeb787b09728927cc6a71b1b3c97c49b938089d69964c1"
     },
     {
       "path": "generated/consultx_brain_full/chunks/SBC801_canonical_chunks.json",
-      "bytes": 8329658,
-      "sha256": "470ec6de81bfce9a33ede40ce12fabf5c0f63933c18f38dddec0c4cca0d7abe6"
+      "bytes": 8330887,
+      "sha256": "ea50dcbf493a5fb3f3afc8349b48468864eef50d49df64882b2dc2f1d74f7208"
     },
     {
       "path": "generated/consultx_brain_full/relations/relations_full.json",

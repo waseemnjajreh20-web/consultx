@@ -241,10 +241,34 @@ const exceptionsArr = envelopeArray(exceptionsFull, "facts");
 const definitionsArr= envelopeArray(definitionsFull, "facts");
 
 // ── 2. Build per-book canonical_verbatim chunks from copied source MDs ──────
+// Round-2 policy gate: any .md file whose sibling <basename>.meta.json has
+// `requires_review: true` is SKIPPED. These files exist on disk but have not
+// passed human review; per project policy they must not be promoted into the
+// canonical chunks file. Counts of skips are surfaced in the build summary
+// (skippedRequiresReview) and will be checked in a downstream invariant.
+const skipDiagnostics = { skippedRequiresReview: 0, skippedDirs: {} };
+function shouldSkipForReview(srcDir, mdPath) {
+  // Only enforce review-gating on the gap directories. The canonical
+  // sources/sbc{201,801}/ tree is human-curated already and has no .meta.json
+  // siblings to consult — leave that path untouched so the existing 232 source
+  // .md files keep their behavior.
+  if (!/extracted_gaps[\\/]/i.test(srcDir)) return false;
+  const metaPath = mdPath.replace(/\.md$/i, ".meta.json");
+  if (!fs.existsSync(metaPath)) return false;
+  let meta;
+  try { meta = JSON.parse(fs.readFileSync(metaPath, "utf8")); } catch { return false; }
+  if (meta && meta.requires_review === true) {
+    skipDiagnostics.skippedRequiresReview++;
+    skipDiagnostics.skippedDirs[srcDir] = (skipDiagnostics.skippedDirs[srcDir] || 0) + 1;
+    return true;
+  }
+  return false;
+}
 function buildChunks(srcDir, sourceCode) {
   const out = [];
   const files = listFiles(srcDir).filter(f => f.endsWith(".md"));
   for (const f of files) {
+    if (shouldSkipForReview(srcDir, f)) continue;
     const md = readText(f);
     const { fm, body } = stripFrontmatter(md);
     let parts = splitSections(body);
@@ -506,6 +530,12 @@ const report = {
     decision_trees: inv.filter(i => i.name.startsWith("tree-")).length,
     governance: inv.filter(i => /^(no-destructive|extraction-gaps|manual-review|high-confidence)/.test(i.name)).length,
   },
+  policy_gate: {
+    skipped_requires_review_total: skipDiagnostics.skippedRequiresReview,
+    skipped_by_dir: Object.fromEntries(
+      Object.entries(skipDiagnostics.skippedDirs).map(([k, v]) => [path.relative(REPO, k).replace(/\\/g, "/"), v])
+    ),
+  },
   failures: failed,
 };
 const oVal = writeJson(path.join(OUT, "validation_report_full.json"), report);
@@ -514,6 +544,10 @@ console.log("\n=== ConsultX Brain Full Corpus build ===");
 console.log("Generated outputs:");
 for (const f of [...allOutputFiles, oManifest, oRollback, oVal]) {
   console.log("  " + path.relative(REPO, f.path).replace(/\\/g, "/") + "  bytes=" + f.bytes + "  sha=" + f.sha256.slice(0, 12) + "...");
+}
+console.log("\nPolicy gate: skipped " + skipDiagnostics.skippedRequiresReview + " round-2 chunks with requires_review=true");
+for (const [dir, n] of Object.entries(skipDiagnostics.skippedDirs)) {
+  console.log("  " + path.relative(REPO, dir).replace(/\\/g, "/") + " — " + n + " skipped");
 }
 console.log("\nValidation: " + overall + "  (" + passed.length + " passed, " + failed.length + " failed)");
 if (failed.length > 0) {
