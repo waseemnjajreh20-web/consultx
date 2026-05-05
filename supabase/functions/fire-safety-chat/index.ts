@@ -1337,6 +1337,342 @@ async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promi
   return lines.join("\n");
 }
 
+// ==================== LIVE PDF SOURCE LOOKUP V1 (Phase 1B, Advisory-only, flag-gated) ====================
+// Reads pre-extracted text-page artifacts from the private bucket sbc_pdfs_private/
+// and returns a verbatim source excerpt when the Advisory pipeline cannot find a
+// canonical chunk for an explicit section/table reference. The helper:
+//   - is gated on env ADVISORY_PDF_LOOKUP_ENABLED === "1" (defaults OFF)
+//   - is Advisory-only (mode === "standard")
+//   - never invokes a model and never uses OCR
+//   - returns a verbatim excerpt OR a not_found result
+//   - never returns a public PDF URL or signed URL to the user
+//   - never gives a compliance answer on its own — caller adds an excerpt block
+//     to the system prompt with strict guardrails
+//
+// In-memory cache lives for the lifetime of an Edge Function instance. Index is
+// cached once; text artifacts are LRU-bounded (max 5 cached). No persistent cache.
+
+interface PdfLookupInput {
+  code: "SBC201" | "SBC801";
+  ref_type: "section" | "table" | "figure";
+  ref: string;
+  query: string;
+  max_excerpt_chars?: number;
+  mode: string;
+}
+
+interface PdfLookupOutput {
+  found: boolean;
+  confidence: "exact" | "likely" | "not_found";
+  code: "SBC201" | "SBC801";
+  ref: string;
+  ref_type: "section" | "table" | "figure";
+  pdf_file: string | null;
+  page_start: number | null;
+  page_end: number | null;
+  excerpt: string | null;
+  citation_label: string | null;
+  limitations: string | null;
+  should_answer_compliance: boolean;
+  diagnostic: string;
+}
+
+interface PdfIndexEntry {
+  code: string;
+  ref_type: string;
+  ref: string;
+  normalized_ref: string;
+  pdf_path: string | null;
+  page_start: number | null;
+  page_end: number | null;
+  confidence: string;
+  source_method: string;
+  notes?: string;
+}
+
+interface PdfIndexDoc {
+  entries: PdfIndexEntry[];
+  pdf_parts?: Record<string, Array<{ path: string; start: number; end: number }>>;
+}
+
+interface TextArtifact {
+  code: string;
+  pdf_file: string;
+  source_pdf_sha256?: string;
+  page_count: number;
+  pages: Array<{ page: number; char_count: number; text: string }>;
+}
+
+const PDF_LOOKUP_BUCKET = "sbc_pdfs_private";
+const PDF_LOOKUP_INDEX_KEY = "index/pdf_source_lookup_index.json";
+let PDF_LOOKUP_INDEX_CACHE: PdfIndexDoc | null = null;
+const PDF_LOOKUP_ARTIFACT_CACHE = new Map<string, TextArtifact>();
+const PDF_LOOKUP_ARTIFACT_CACHE_MAX = 5;
+
+function pdfLookupNormalizeRef(s: string): string {
+  return String(s || "").replace(/-/g, ".").trim();
+}
+
+function pdfLookupArtifactPath(pdfPath: string): string {
+  // pdfPath like "SBC201/pp_0001-0250.pdf" → "text_pages/SBC201/pp_0001-0250.json"
+  return "text_pages/" + pdfPath.replace(/\.pdf$/i, ".json");
+}
+
+async function loadPdfLookupIndex(supabaseAdmin: any): Promise<PdfIndexDoc | null> {
+  if (PDF_LOOKUP_INDEX_CACHE) return PDF_LOOKUP_INDEX_CACHE;
+  try {
+    const { data, error } = await supabaseAdmin.storage
+      .from(PDF_LOOKUP_BUCKET).download(PDF_LOOKUP_INDEX_KEY);
+    if (error || !data) {
+      console.warn("[PdfLookup] index_download_failed:", error?.message || "no data");
+      return null;
+    }
+    const txt = await data.text();
+    const parsed = JSON.parse(txt) as PdfIndexDoc;
+    PDF_LOOKUP_INDEX_CACHE = parsed;
+    console.log(`[PdfLookup] index_loaded entries=${(parsed.entries || []).length}`);
+    return parsed;
+  } catch (e) {
+    console.warn("[PdfLookup] index_load_exception:", e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+async function loadTextArtifact(supabaseAdmin: any, pdfPath: string): Promise<TextArtifact | null> {
+  const cacheKey = pdfPath;
+  const cached = PDF_LOOKUP_ARTIFACT_CACHE.get(cacheKey);
+  if (cached) {
+    // refresh LRU position
+    PDF_LOOKUP_ARTIFACT_CACHE.delete(cacheKey);
+    PDF_LOOKUP_ARTIFACT_CACHE.set(cacheKey, cached);
+    return cached;
+  }
+  const artifactPath = pdfLookupArtifactPath(pdfPath);
+  try {
+    const { data, error } = await supabaseAdmin.storage
+      .from(PDF_LOOKUP_BUCKET).download(artifactPath);
+    if (error || !data) {
+      console.warn(`[PdfLookup] artifact_download_failed path=${artifactPath} err=${error?.message || "no data"}`);
+      return null;
+    }
+    const txt = await data.text();
+    const parsed = JSON.parse(txt) as TextArtifact;
+    // LRU eviction
+    if (PDF_LOOKUP_ARTIFACT_CACHE.size >= PDF_LOOKUP_ARTIFACT_CACHE_MAX) {
+      const firstKey = PDF_LOOKUP_ARTIFACT_CACHE.keys().next().value;
+      if (firstKey) PDF_LOOKUP_ARTIFACT_CACHE.delete(firstKey);
+    }
+    PDF_LOOKUP_ARTIFACT_CACHE.set(cacheKey, parsed);
+    return parsed;
+  } catch (e) {
+    console.warn(`[PdfLookup] artifact_load_exception path=${artifactPath} err=${e instanceof Error ? e.message : e}`);
+    return null;
+  }
+}
+
+function findIndexEntry(idx: PdfIndexDoc, code: string, refType: string, ref: string): PdfIndexEntry | null {
+  const norm = pdfLookupNormalizeRef(ref);
+  const entries = idx.entries || [];
+  // Try exact match on normalized_ref + code + ref_type first
+  for (const e of entries) {
+    if (e.code === code && e.ref_type === refType) {
+      const eNorm = pdfLookupNormalizeRef(e.ref);
+      const eIdxNorm = e.normalized_ref ? pdfLookupNormalizeRef(e.normalized_ref) : eNorm;
+      if (eNorm === norm || eIdxNorm === norm) return e;
+    }
+  }
+  return null;
+}
+
+function findSectionInPages(
+  pages: TextArtifact["pages"],
+  ref: string,
+  refType: string,
+  pageHintStart: number | null,
+  pageHintEnd: number | null,
+): { page: number; matchStart: number; method: "exact" | "page_only" } | null {
+  // Build a regex that matches "Section X.Y.Z" or "Table X.Y" or "Figure X-Y"
+  // The PDF text typically has the section number on its own line, like
+  //   "903.2.7 Group M."
+  // or
+  //   "Section 903.2.7"
+  const escapedRef = ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const refForMatch = ref.replace(/-/g, "[\\-.]"); // tolerate either separator
+  let markerRx: RegExp;
+  if (refType === "section") {
+    // e.g. "903.2.7 Group M" — number followed by space + capital letter
+    // OR "Section 903.2.7"
+    markerRx = new RegExp(`(?:^|\\n|\\s)(?:Section\\s+)?${refForMatch}(?:\\s+[A-Z\\u0600-\\u06FF]|\\s*\\.|\\s*$)`, "m");
+  } else if (refType === "table") {
+    markerRx = new RegExp(`Table\\s+${refForMatch}\\b`, "i");
+  } else {
+    markerRx = new RegExp(`Figure\\s+${refForMatch}\\b`, "i");
+  }
+
+  // Restrict search to hinted page range (with ±2 page tolerance) if provided
+  const hintStart = pageHintStart || 1;
+  const hintEnd = pageHintEnd || hintStart;
+  const winStart = Math.max(1, hintStart - 2);
+  const winEnd = hintEnd + 2;
+
+  // Phase 1: search within hinted window
+  for (const p of pages) {
+    if (p.page < winStart || p.page > winEnd) continue;
+    const m = markerRx.exec(p.text);
+    if (m) {
+      return { page: p.page, matchStart: m.index, method: "exact" };
+    }
+  }
+
+  // Phase 2: page-only match — return the first page in window that has any text
+  for (const p of pages) {
+    if (p.page < winStart || p.page > winEnd) continue;
+    if (p.text && p.text.length > 100) {
+      return { page: p.page, matchStart: 0, method: "page_only" };
+    }
+  }
+
+  return null;
+}
+
+function extractExcerptAroundMatch(
+  pageText: string,
+  matchStart: number,
+  maxChars: number,
+): string {
+  // From matchStart, take up to maxChars. Try to break on a sentence/paragraph boundary.
+  if (matchStart >= pageText.length) return "";
+  const end = Math.min(pageText.length, matchStart + maxChars);
+  let slice = pageText.slice(matchStart, end);
+  // Strip leading whitespace
+  slice = slice.replace(/^\s+/, "");
+  // Trim trailing partial word if we cut mid-word
+  if (end < pageText.length) {
+    const lastSpace = slice.lastIndexOf("\n\n");
+    if (lastSpace > maxChars * 0.5) slice = slice.slice(0, lastSpace);
+    else {
+      const lastDot = slice.lastIndexOf(". ");
+      if (lastDot > maxChars * 0.5) slice = slice.slice(0, lastDot + 1);
+    }
+    slice += " …[truncated]";
+  }
+  return slice.trim();
+}
+
+function buildPdfLookupNotFound(input: PdfLookupInput, diagnostic: string): PdfLookupOutput {
+  return {
+    found: false,
+    confidence: "not_found",
+    code: input.code,
+    ref: input.ref,
+    ref_type: input.ref_type,
+    pdf_file: null,
+    page_start: null,
+    page_end: null,
+    excerpt: null,
+    citation_label: null,
+    limitations: null,
+    should_answer_compliance: false,
+    diagnostic,
+  };
+}
+
+async function lookupPdfSourceTextV1(
+  supabaseAdmin: any,
+  input: PdfLookupInput,
+): Promise<PdfLookupOutput> {
+  // Hard gate 1: feature flag
+  const flag = Deno.env.get("ADVISORY_PDF_LOOKUP_ENABLED");
+  if (flag !== "1") {
+    return buildPdfLookupNotFound(input, "disabled_by_flag");
+  }
+  // Hard gate 2: Advisory mode only
+  if (input.mode !== "standard") {
+    return buildPdfLookupNotFound(input, "wrong_mode_" + input.mode);
+  }
+  // Hard gate 3: figure refs not supported in V1
+  if (input.ref_type === "figure") {
+    return buildPdfLookupNotFound(input, "figure_not_supported_v1");
+  }
+
+  const startTs = Date.now();
+  const maxChars = input.max_excerpt_chars && input.max_excerpt_chars > 0
+    ? Math.min(input.max_excerpt_chars, 1500)
+    : 1200;
+
+  // 1. Resolve via index
+  const idx = await loadPdfLookupIndex(supabaseAdmin);
+  if (!idx) return buildPdfLookupNotFound(input, "index_unavailable");
+
+  const entry = findIndexEntry(idx, input.code, input.ref_type, input.ref);
+  if (!entry) {
+    console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=not_found diag=index_miss latency_ms=${Date.now()-startTs}`);
+    return buildPdfLookupNotFound(input, "index_miss");
+  }
+  if (!entry.pdf_path) {
+    console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=not_found diag=no_pdf_path_in_index latency_ms=${Date.now()-startTs}`);
+    return buildPdfLookupNotFound(input, "no_pdf_path_in_index");
+  }
+
+  // 2. Load text artifact
+  const artifact = await loadTextArtifact(supabaseAdmin, entry.pdf_path);
+  if (!artifact) {
+    console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=not_found diag=artifact_unavailable latency_ms=${Date.now()-startTs}`);
+    return buildPdfLookupNotFound(input, "artifact_unavailable");
+  }
+
+  // 3. Find marker in pages
+  const refIdForMatch = entry.normalized_ref || entry.ref;
+  const match = findSectionInPages(
+    artifact.pages,
+    refIdForMatch,
+    input.ref_type,
+    entry.page_start,
+    entry.page_end,
+  );
+
+  if (!match) {
+    console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=not_found diag=marker_not_found_in_window latency_ms=${Date.now()-startTs}`);
+    return buildPdfLookupNotFound(input, "marker_not_found_in_window");
+  }
+
+  const matchedPage = artifact.pages.find(p => p.page === match.page);
+  if (!matchedPage) return buildPdfLookupNotFound(input, "page_not_in_artifact");
+
+  // 4. Extract excerpt
+  const excerpt = extractExcerptAroundMatch(matchedPage.text, match.matchStart, maxChars);
+  if (!excerpt || excerpt.length < 30) {
+    console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=not_found diag=excerpt_too_thin latency_ms=${Date.now()-startTs}`);
+    return buildPdfLookupNotFound(input, "excerpt_too_thin");
+  }
+
+  // 5. Build output
+  const confidence: "exact" | "likely" = match.method === "exact" ? "exact" : "likely";
+  const refKindLabel = input.ref_type === "table" ? "Table" : "Section";
+  const familyLabel = input.code === "SBC201" ? "SBC-201" : "SBC-801";
+  const citationLabel = `${familyLabel} ${refKindLabel} ${refIdForMatch} (p. ${match.page}, live PDF)`;
+
+  console.log(`[PdfLookup] code=${input.code} kind=${input.ref_type} ref=${input.ref} confidence=${confidence} page=${match.page} method=${match.method} latency_ms=${Date.now()-startTs}`);
+
+  return {
+    found: true,
+    confidence,
+    code: input.code,
+    ref: input.ref,
+    ref_type: input.ref_type,
+    pdf_file: entry.pdf_path,
+    page_start: match.page,
+    page_end: match.page,
+    excerpt,
+    citation_label: citationLabel,
+    limitations: confidence === "likely"
+      ? "Section anchor not located precisely; excerpt is from the page-level neighborhood and may include adjacent content."
+      : null,
+    should_answer_compliance: confidence === "exact",
+    diagnostic: `method=${match.method} index_method=${entry.source_method}`,
+  };
+}
+
 // ==================== ADVISORY CITATION VERIFIER (Step 4) ====================
 // Scan the model's final Advisory answer for `[SBC-XXX … | conf:Y]` tokens and
 // downgrade any that the ledger cannot prove. Pure transformation on the
@@ -5502,6 +5838,127 @@ ABSOLUTELY FORBIDDEN:
           }
         } catch (e) {
           console.warn("[BrainFullV1] Sidecar load failed; continuing without enrichment:", e instanceof Error ? e.message : e);
+        }
+
+        // ── Phase 1B Live PDF Source Lookup (Advisory-only, flag-gated) ────────
+        // When the Advisory query has an explicit section/table reference and the
+        // existing ledger does NOT already cover that reference, attempt a
+        // verbatim text lookup from the private bucket sbc_pdfs_private/.
+        // Gated on env ADVISORY_PDF_LOOKUP_ENABLED === "1" (defaults OFF).
+        // Caps: max 3 lookups per query, 5 s total budget. Failures are
+        // best-effort — the existing retrieval result remains the floor.
+        try {
+          const pdfLookupFlag = Deno.env.get("ADVISORY_PDF_LOOKUP_ENABLED");
+          if (pdfLookupFlag === "1") {
+            const queryMeta = buildQueryMeta(userQuery);
+            const explicitRefs: Array<{ ref: string; refType: "section" | "table" }> = [];
+            for (const sec of queryMeta.sectionNumbers) {
+              explicitRefs.push({ ref: sec, refType: "section" });
+            }
+            for (const tbl of queryMeta.tableRefs) {
+              // queryMeta.tableRefs format: "table 903.2"
+              const m = String(tbl).match(/(\d{3,4}(?:\.\d+)*)/);
+              if (m) explicitRefs.push({ ref: m[1], refType: "table" });
+            }
+
+            if (explicitRefs.length > 0) {
+              // Compute coverage set from existing ledger
+              const ledgerRefs = new Set<string>();
+              for (const e of advisoryLedger) {
+                if (e.sectionRef) ledgerRefs.add(e.sectionRef);
+                if (e.tableRef) ledgerRefs.add(e.tableRef);
+              }
+
+              // Family inference: SBC-201 vs SBC-801 by section-number heuristic
+              // Sections 9xx and 10xx fire in BOTH codes; we attempt SBC-801 first
+              // for fire-protection ranges (9xx, 10xx), SBC-201 for occupancy/admin.
+              function inferCode(ref: string): "SBC201" | "SBC801" {
+                const num = parseInt(ref.split(".")[0], 10);
+                // Fire alarm/sprinkler/egress 9xx/10xx land in SBC-801 fire code
+                if (num >= 900 && num < 1100) return "SBC801";
+                // SBC-201 for general building 1xx-8xx, 11xx-12xx
+                if (num >= 100 && num < 900) return "SBC201";
+                if (num >= 1100 && num < 1300) return "SBC201";
+                // SBC-801 specialty hazmat ranges 12xx+
+                return "SBC801";
+              }
+
+              const uncovered = explicitRefs.filter(r => !ledgerRefs.has(r.ref));
+              const MAX_LOOKUPS = 3;
+              const TOTAL_BUDGET_MS = 5000;
+              const startBudget = Date.now();
+              let lookupsRun = 0;
+              let lookupsAdded = 0;
+
+              for (const r of uncovered) {
+                if (lookupsRun >= MAX_LOOKUPS) break;
+                if ((Date.now() - startBudget) > TOTAL_BUDGET_MS) break;
+                lookupsRun++;
+                const code = inferCode(r.ref);
+                const out = await lookupPdfSourceTextV1(supabaseAdminForTables, {
+                  code,
+                  ref_type: r.refType,
+                  ref: r.ref,
+                  query: userQuery,
+                  mode: "standard",
+                });
+                if (!out.found || !out.excerpt) continue;
+
+                lookupsAdded++;
+                // Use sentinel filename to prevent frontend URL construction
+                const familyDisplay = out.code === "SBC201" ? "SBC-201" : "SBC-801";
+                const sentinel = `__live_pdf__::${familyDisplay}::${out.ref}`;
+                if (!usedFiles.includes(sentinel)) usedFiles.push(sentinel);
+                usedSourceMeta.push({
+                  file: sentinel,
+                  pageStart: out.page_start,
+                  pageEnd: out.page_end,
+                  precision: 'page_range',
+                  sectionRef: out.ref,
+                  sectionConfidence: out.confidence === "exact" ? 'high' : 'medium',
+                });
+                advisoryLedger.push({
+                  sourceFamily: familyDisplay as LedgerFamily,
+                  sectionRef: out.ref_type === "section" ? out.ref : null,
+                  tableRef: out.ref_type === "table" ? out.ref : null,
+                  sectionConfidence: out.confidence === "exact" ? 'high' : 'medium',
+                  fileName: sentinel,
+                  pageStart: out.page_start,
+                  pageEnd: out.page_end,
+                  precision: 'page_range',
+                  isClickableSource: false,
+                  origin: "keyword_chunk",
+                });
+
+                // Append the verbatim excerpt as a guarded prompt block
+                const guardLanguage = language === "en"
+                  ? `\n\n📄 LIVE PDF SOURCE EXCERPT — ${out.citation_label}\n` +
+                    `${out.excerpt}\n` +
+                    `\nSTRICT INSTRUCTION: This excerpt is verbatim from the source PDF. ` +
+                    `Quote and analyze ONLY this excerpt for the cited section. ` +
+                    `Do NOT extrapolate to other sections. ` +
+                    (out.confidence === "exact"
+                      ? `Cite as [${familyDisplay} Section ${out.ref}].`
+                      : `Confidence is "likely" — note this in your answer; do NOT give a binding compliance answer based on this excerpt alone.`) +
+                    (out.limitations ? `\nLimitation: ${out.limitations}` : "")
+                  : `\n\n📄 مقتطف مصدر مباشر — ${out.citation_label}\n` +
+                    `${out.excerpt}\n` +
+                    `\nتعليمة صارمة: هذا المقتطف نص حرفي من ملف المصدر. اقتبس وحلّل هذا المقتطف فقط للقسم المذكور. ` +
+                    `ممنوع التعميم على أقسام أخرى. ` +
+                    (out.confidence === "exact"
+                      ? `استشهد بصيغة [${familyDisplay} Section ${out.ref}].`
+                      : `الثقة "محتملة" — اذكر ذلك في إجابتك ولا تقدّم إجابة امتثالية ملزمة استناداً لهذا المقتطف وحده.`) +
+                    (out.limitations ? `\nقيد: ${out.limitations}` : "");
+                fullSystemPrompt += guardLanguage;
+              }
+
+              if (lookupsAdded > 0) {
+                console.log(`[PdfLookup] integration_summary explicit_refs=${explicitRefs.length} uncovered=${uncovered.length} lookups_run=${lookupsRun} lookups_added=${lookupsAdded} budget_ms_used=${Date.now() - startBudget}`);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("[PdfLookup] integration error (continuing without lookup):", e instanceof Error ? e.message : e);
         }
 
         // Step 4.1 — surface structured-table evidence to the UI as non-clickable

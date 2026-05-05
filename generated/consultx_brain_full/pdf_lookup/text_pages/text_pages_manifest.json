@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-05T17:22:04.753Z",
+  "generator": "pdftotext + node v24.11.1",
+  "artifacts": [
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_0001-0250.pdf",
+      "artifact_path": "SBC201/pp_0001-0250.json",
+      "source_pdf_sha256": "8c7e973785f711cd7d832b1b4c31686a769657cf173696090111ae0077aa72c9",
+      "artifact_sha256": "af4a3108822a0f39200a40097f6a558e397bd5adab4ac4f8c1fc9ce25a643fa1",
+      "page_count": 250,
+      "char_count": 994509,
+      "artifact_bytes": 1027670
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_1001-1250.pdf",
+      "artifact_path": "SBC201/pp_1001-1250.json",
+      "source_pdf_sha256": "9d7a88900567409f284b198fa07366bf6992f22c7342aadc75d1e16c2aaf1e0f",
+      "artifact_sha256": "722a9ea2d9deba2461180b0b1f883db753ab858902a79c0ac7fac2bb8d9d716a",
+      "page_count": 250,
+      "char_count": 935317,
+      "artifact_bytes": 967333
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_1251-1500.pdf",
+      "artifact_path": "SBC201/pp_1251-1500.json",
+      "source_pdf_sha256": "a5e571f196831836542b06d2c5c024c9501d5c3b47ab95cb9d9b235f93f64d4a",
+      "artifact_sha256": "6649a20b56dd2ccd72f2637aaf8b9a5cbce5859cf6610f490aea4513f7e1e72e",
+      "page_count": 250,
+      "char_count": 634984,
+      "artifact_bytes": 665626
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_1501-1750.pdf",
+      "artifact_path": "SBC201/pp_1501-1750.json",
+      "source_pdf_sha256": "8c38c41728c15a81a9bb43304076ea4f4b39e6918d7e029fc3ee1bd33d61e66e",
+      "artifact_sha256": "db60d4ce6a15bc53c75e83f8f1443764dee27ec1f2f44cba20bc81639273eb8a",
+      "page_count": 250,
+      "char_count": 837115,
+      "artifact_bytes": 879043
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_1751-2000.pdf",
+      "artifact_path": "SBC201/pp_1751-2000.json",
+      "source_pdf_sha256": "5b5e9227400b5f882c1a3e513491aa6b324863d197c60315c26fc3e3bcf08e4c",
+      "artifact_sha256": "c93fdff351d56ed8602628b7271dcf8bb324c562362af92e37af97d06c2e21d4",
+      "page_count": 250,
+      "char_count": 853160,
+      "artifact_bytes": 893594
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_2001-2200.pdf",
+      "artifact_path": "SBC201/pp_2001-2200.json",
+      "source_pdf_sha256": "642e5663b41a31271b3cbdd65136990231791af28f345a96198d35e0164a9c78",
+      "artifact_sha256": "4a766613ff987accdae3e531b203d0986ee8e33ae9d028db7527c19740129e01",
+      "page_count": 200,
+      "char_count": 510344,
+      "artifact_bytes": 539317
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_0251-0500.pdf",
+      "artifact_path": "SBC201/pp_0251-0500.json",
+      "source_pdf_sha256": "b39677bd4cd026e9aee0e9ce7b03ba13dafa70df0301676ae811d43c5ed771bd",
+      "artifact_sha256": "ad2b0960bd15c666e7ea5506bb66cd37642b9af7e15c1246ab36d57930ac4403",
+      "page_count": 250,
+      "char_count": 1025364,
+      "artifact_bytes": 1059574
+    },
+    {
+      "code": "SBC201",
+      "pdf_path": "SBC201/pp_0501-1000.pdf",
+      "artifact_path": "SBC201/pp_0501-1000.json",
+      "source_pdf_sha256": "0b1aab3a9087c8fe91ede829763b1022e74af80fe1c6e411f9fdf7ddcc0502a0",
+      "artifact_sha256": "36151994a78496ba4600eda2baa411a58a89338d21b9bea57d2b6d58774e30ca",
+      "page_count": 500,
+      "char_count": 1746575,
+      "artifact_bytes": 1827283
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_0001-0200.pdf",
+      "artifact_path": "SBC801/pp_0001-0200.json",
+      "source_pdf_sha256": "75bd5c553fb4695ac05f52a03031ecd3f0656d470c227e45b5969d9392cec1f5",
+      "artifact_sha256": "3b9fc70504e712179e9620a364c3af1cb835e3b9b68da0dcff0ad91d4365d6e8",
+      "page_count": 200,
+      "char_count": 918294,
+      "artifact_bytes": 945419
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_1001-1200.pdf",
+      "artifact_path": "SBC801/pp_1001-1200.json",
+      "source_pdf_sha256": "ef17f645c861666b186e97b282c6e16eae5d72dc2436d9413b48de93120e6c8e",
+      "artifact_sha256": "acf9aaefa2f6618340f891717f2591d50cd9567ea16444c65ecb65f64384cb05",
+      "page_count": 200,
+      "char_count": 760487,
+      "artifact_bytes": 796495
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_1201-1400.pdf",
+      "artifact_path": "SBC801/pp_1201-1400.json",
+      "source_pdf_sha256": "fc4f7e459996046bca6c19f801955108dc23657f622771819a8403d2b6f8c06b",
+      "artifact_sha256": "e22437ebfc5157408fa2e24a87b6b403ac9054795c221c3379bd5f7e4d977053",
+      "page_count": 200,
+      "char_count": 659774,
+      "artifact_bytes": 688610
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_1401-1600.pdf",
+      "artifact_path": "SBC801/pp_1401-1600.json",
+      "source_pdf_sha256": "abb3d9feb9d58eac74fcbc3013f51a191ca5075ce13faa107f7e0923787131d6",
+      "artifact_sha256": "bc3e79bed01ee8e761c801ca914b6a117dc6ec6f2f32380b03a8ea977e8b4a43",
+      "page_count": 200,
+      "char_count": 725487,
+      "artifact_bytes": 758971
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_1601-1800.pdf",
+      "artifact_path": "SBC801/pp_1601-1800.json",
+      "source_pdf_sha256": "0a495b3efa32cd24d0441c2369872d47e0f86624de4f5fce4354f8a595f33167",
+      "artifact_sha256": "89c3d186c74fc5fca1b8113706e66f7554e41afa98531e3bc10ecb0a0f62845b",
+      "page_count": 200,
+      "char_count": 812418,
+      "artifact_bytes": 852739
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_1801-2061.pdf",
+      "artifact_path": "SBC801/pp_1801-2061.json",
+      "source_pdf_sha256": "61e1f46a59462c0a6e07b8673efade2a97f3328c4ee8504e2c87e4084de62cc9",
+      "artifact_sha256": "0079a49f867557ce38844e4dba76a54c3de9fbe6ea71633a97494adf0a0247dd",
+      "page_count": 261,
+      "char_count": 810454,
+      "artifact_bytes": 867783
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_0201-0400.pdf",
+      "artifact_path": "SBC801/pp_0201-0400.json",
+      "source_pdf_sha256": "637212f75ce35611688a5c80e7cc6a0357dc6f2ff046150661fab19f89a2bb55",
+      "artifact_sha256": "ec97bcefc3962108380ea65c084307b91bc387ea70ecb3a073051874e2d18a66",
+      "page_count": 200,
+      "char_count": 727447,
+      "artifact_bytes": 753559
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_0401-0600.pdf",
+      "artifact_path": "SBC801/pp_0401-0600.json",
+      "source_pdf_sha256": "6332e245e9c49a5f65985d9ddc57d9e29f060efc97d21f390693491139aab588",
+      "artifact_sha256": "ac3dba2b6d219c5b874f40aa30d3ef97f70b825b8cfd583e0f5e7352849298f1",
+      "page_count": 200,
+      "char_count": 859556,
+      "artifact_bytes": 887061
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_0601-0800.pdf",
+      "artifact_path": "SBC801/pp_0601-0800.json",
+      "source_pdf_sha256": "757030685b7b9edf1088f7a1e8851946b77ebe2d24ef2f5a9443562d869ce298",
+      "artifact_sha256": "6969ff65cd538b92cd8977d7447de6d2759cf3b51d4aeb1640e18de2bdbb458a",
+      "page_count": 200,
+      "char_count": 827890,
+      "artifact_bytes": 855351
+    },
+    {
+      "code": "SBC801",
+      "pdf_path": "SBC801/pp_0801-1000.pdf",
+      "artifact_path": "SBC801/pp_0801-1000.json",
+      "source_pdf_sha256": "0480a5158961c5ebcce0cee24e7cde0e0d40d14a56efe2eb726785872b76f001",
+      "artifact_sha256": "53d1b2881f49a3cfc536696a3219e60121535bcfa45b9d82881b9f53c62cd83d",
+      "page_count": 200,
+      "char_count": 427526,
+      "artifact_bytes": 447733
+    }
+  ]
+}
