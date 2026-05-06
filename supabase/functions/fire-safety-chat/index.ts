@@ -5841,7 +5841,51 @@ ABSOLUTELY FORBIDDEN:
         },
       });
 
-      return new Response(response.body!.pipeThrough(advisoryStream), { headers: sseHeaders });
+      // ── B2 Dynamic Thinking SSE pre-emission ──────────────────────────────
+      // When ADVISORY_DYNAMIC_THINKING_ENABLED=1 and thinking events were built,
+      // prepend thinking_status SSE frames before the Gemini response body.
+      // Safe: any emit error is swallowed; the advisory pipe always follows.
+      const advisoryPiped = response.body!.pipeThrough(advisoryStream);
+      if (isDynamicThinkingEnabled() && _thinkingEventsB2.length > 0) {
+        const enc = new TextEncoder();
+        const thinkingChunks: Uint8Array[] = [];
+        for (const evt of _thinkingEventsB2) {
+          try {
+            const msg = formatThinkingEvent(evt, language as "ar" | "en");
+            const payload = JSON.stringify({
+              type: "thinking_status",
+              stage: evt.phase,
+              message: msg,
+              workflow: _routerResultB2?.workflow_id ?? null,
+            });
+            thinkingChunks.push(enc.encode(`data: ${payload}\n\n`));
+          } catch { /* skip malformed event — never break the answer stream */ }
+        }
+        if (thinkingChunks.length > 0) {
+          const combinedStream = new ReadableStream({
+            async start(controller) {
+              try {
+                for (const chunk of thinkingChunks) controller.enqueue(chunk);
+                const reader = advisoryPiped.getReader();
+                try {
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    controller.enqueue(value);
+                  }
+                } finally {
+                  reader.releaseLock();
+                }
+              } finally {
+                controller.close();
+              }
+            },
+          });
+          console.log(`[ThinkingB2] Emitting ${thinkingChunks.length} thinking_status events before advisory response`);
+          return new Response(combinedStream, { headers: sseHeaders });
+        }
+      }
+      return new Response(advisoryPiped, { headers: sseHeaders });
     }
 
     // ── Standard token-by-token transform (non-analytical / non-vision modes) ─

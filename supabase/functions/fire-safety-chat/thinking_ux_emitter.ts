@@ -111,7 +111,7 @@ const MESSAGES: Record<WorkflowDomain | "non_code" | "general_code_lookup", Part
   sprinkler: {
     routing: {
       ar: "أفصل بين نوع الإشغال ومساحة منطقة الحريق قبل تطبيق عتبات الرش...",
-      en: "Separating occupancy type from fire-area size before applying sprinkler thresholds...",
+      en: "Separating occupancy type from fire-area size before applying thresholds...",
     },
     inputs_check: {
       ar: "أتحقق هل السؤال عن fire area أم مساحة إجمالية...",
@@ -119,11 +119,11 @@ const MESSAGES: Record<WorkflowDomain | "non_code" | "general_code_lookup", Part
     },
     parking_lot_notice: {
       ar: "متطلبات الرشاشات قيد المراجعة — أتحقق من المصدر قبل الجواب...",
-      en: "Sprinkler requirements under review — verifying source bounds before answering...",
+      en: "Sprinkler requirements under review — verifying source bounds...",
     },
     composition: {
       ar: "أوجّه إلى الـ PDF الرسمي للفقرة 903 لأن النص لم يُرفَع بعد...",
-      en: "Pointing to official PDF for Section 903 since the text is not in the V4 corpus...",
+      en: "Pointing to official PDF for Section 903 — text not in V4 corpus...",
     },
   },
 
@@ -195,7 +195,7 @@ const MESSAGES: Record<WorkflowDomain | "non_code" | "general_code_lookup", Part
     },
     parking_lot_notice: {
       ar: "متطلبات التحكم بالدخان قيد المراجعة — لا أنشر تقدير غير مدعوم...",
-      en: "Smoke-control requirements under review — not publishing unsupported estimates...",
+      en: "Smoke-control requirements under review — no unsupported estimates...",
     },
     composition: {
       ar: "أوجّه إلى الـ PDF الرسمي لأن الفقرة 909 ليست في V4...",
