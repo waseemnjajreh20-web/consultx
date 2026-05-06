@@ -244,7 +244,7 @@ export function formatSourceLabel(meta: SourceMeta, lang: "ar" | "en" = "ar"): s
       : `🗂️ ${code} — جدول ${tableLbl} (دليل منظم)`;
   }
 
-  if (meta.pageStart !== null && meta.pageEnd !== null) {
+  if (meta.pageStart !== null && meta.pageEnd !== null && meta.precision === "page_range") {
     return lang === "en"
       ? `📖 ${code} — Pages ${meta.pageStart}–${meta.pageEnd}`
       : `📖 ${code} — صفحات ${meta.pageStart}–${meta.pageEnd}`;

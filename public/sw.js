@@ -1,4 +1,4 @@
-const CACHE_NAME = 'consultx-v2';
+const CACHE_NAME = 'consultx-v3';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

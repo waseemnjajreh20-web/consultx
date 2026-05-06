@@ -2284,11 +2284,12 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       const sourceMeta: SourcePageMeta[] = [...sourcesUsed].map(file => {
         const m = sourceMetaMap.get(file);
         const hasPages = m && (m.minPage != null || m.maxPage != null);
+        const span = (m && m.minPage != null && m.maxPage != null) ? m.maxPage - m.minPage : 0;
         return {
           file,
           pageStart: m?.minPage ?? null,
           pageEnd: m?.maxPage ?? null,
-          precision: hasPages ? 'page_range' : 'chunk_range_only',
+          precision: (hasPages && span <= 100) ? 'page_range' : 'chunk_range_only',
         };
       });
 
