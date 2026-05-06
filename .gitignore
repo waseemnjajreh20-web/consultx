@@ -5,6 +5,7 @@
 
 # Supabase local
 .supabase/
+supabase/.temp/
 
 # Logs
 logs

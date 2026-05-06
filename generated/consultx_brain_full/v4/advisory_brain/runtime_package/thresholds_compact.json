@@ -1,0 +1,1802 @@
+[
+  {
+    "node_id": "sbc-201-threshold-106-1",
+    "code": "SBC 201",
+    "ref": "106",
+    "node_type": "threshold",
+    "value": "106",
+    "unit": "floor",
+    "condition": null,
+    "section_ref": "106",
+    "source_pdf": null,
+    "confidence": "low",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-floor",
+      "suspicious-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-112-2",
+    "code": "SBC 201",
+    "ref": "112",
+    "node_type": "threshold",
+    "value": "101.4",
+    "unit": "in",
+    "condition": null,
+    "section_ref": "112",
+    "source_pdf": null,
+    "confidence": "low",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-in",
+      "suspicious-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-202-3",
+    "code": "SBC 201",
+    "ref": "202",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "202",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-202-4",
+    "code": "SBC 201",
+    "ref": "202",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "202",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-304-5",
+    "code": "SBC 201",
+    "ref": "304",
+    "node_type": "threshold",
+    "value": "230",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "304",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-308-6",
+    "code": "SBC 201",
+    "ref": "308",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "308",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-308-7",
+    "code": "SBC 201",
+    "ref": "308",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "308",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-308-8",
+    "code": "SBC 201",
+    "ref": "308",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "308",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-308-9",
+    "code": "SBC 201",
+    "ref": "308",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "308",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-308-10",
+    "code": "SBC 201",
+    "ref": "308",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "308",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-310-11",
+    "code": "SBC 201",
+    "ref": "310",
+    "node_type": "threshold",
+    "value": "80",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "310",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-310-12",
+    "code": "SBC 201",
+    "ref": "310",
+    "node_type": "threshold",
+    "value": "80",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "310",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-312-13",
+    "code": "SBC 201",
+    "ref": "312",
+    "node_type": "threshold",
+    "value": "140",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "312",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-312-14",
+    "code": "SBC 201",
+    "ref": "312",
+    "node_type": "threshold",
+    "value": "2.1",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "312",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-419-15",
+    "code": "SBC 201",
+    "ref": "419",
+    "node_type": "threshold",
+    "value": "1.8",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "419",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-419-16",
+    "code": "SBC 201",
+    "ref": "419",
+    "node_type": "threshold",
+    "value": "1.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "419",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-17",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "3",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-18",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "14",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-19",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "6",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-20",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "900",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-21",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "900",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-424-22",
+    "code": "SBC 201",
+    "ref": "424",
+    "node_type": "threshold",
+    "value": "500",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "424",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-201-threshold-427-23",
+    "code": "SBC 201",
+    "ref": "427",
+    "node_type": "threshold",
+    "value": "2.3",
+    "unit": "in",
+    "condition": null,
+    "section_ref": "427",
+    "source_pdf": null,
+    "confidence": "low",
+    "tags": [
+      "sbc201",
+      "threshold",
+      "unit-in",
+      "suspicious-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1027-6-24",
+    "code": "SBC 801",
+    "ref": "1027.6",
+    "node_type": "threshold",
+    "value": "50",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "1027.6",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1027-6-25",
+    "code": "SBC 801",
+    "ref": "1027.6",
+    "node_type": "threshold",
+    "value": "50",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "1027.6",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1027-6-26",
+    "code": "SBC 801",
+    "ref": "1027.6",
+    "node_type": "threshold",
+    "value": "2.1",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "1027.6",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-303-4-27",
+    "code": "SBC 801",
+    "ref": "303.4",
+    "node_type": "threshold",
+    "value": "30",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "303.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-28",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "15",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-29",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "15",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-30",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "4.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-31",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-32",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "900",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-33",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "600",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-307-4-34",
+    "code": "SBC 801",
+    "ref": "307.4",
+    "node_type": "threshold",
+    "value": "4.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-503-1-1-35",
+    "code": "SBC 801",
+    "ref": "503.1.1",
+    "node_type": "threshold",
+    "value": "45",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "503.1.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-503-1-1-36",
+    "code": "SBC 801",
+    "ref": "503.1.1",
+    "node_type": "threshold",
+    "value": "45",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "503.1.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-507-5-37",
+    "code": "SBC 801",
+    "ref": "507.5",
+    "node_type": "threshold",
+    "value": "120",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "507.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-507-5-38",
+    "code": "SBC 801",
+    "ref": "507.5",
+    "node_type": "threshold",
+    "value": "180",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "507.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-507-5-39",
+    "code": "SBC 801",
+    "ref": "507.5",
+    "node_type": "threshold",
+    "value": "120",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "507.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-507-5-40",
+    "code": "SBC 801",
+    "ref": "507.5",
+    "node_type": "threshold",
+    "value": "180",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "507.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-507-5-41",
+    "code": "SBC 801",
+    "ref": "507.5",
+    "node_type": "threshold",
+    "value": "30",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "507.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-510-4-1-42",
+    "code": "SBC 801",
+    "ref": "510.4.1",
+    "node_type": "threshold",
+    "value": "95",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "510.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-510-4-1-43",
+    "code": "SBC 801",
+    "ref": "510.4.1",
+    "node_type": "threshold",
+    "value": "99",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "510.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1203-3-44",
+    "code": "SBC 801",
+    "ref": "1203.3",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "1203.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1203-3-45",
+    "code": "SBC 801",
+    "ref": "1203.3",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "1203.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1203-3-46",
+    "code": "SBC 801",
+    "ref": "1203.3",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "1203.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1203-3-47",
+    "code": "SBC 801",
+    "ref": "1203.3",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "1203.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-1203-3-48",
+    "code": "SBC 801",
+    "ref": "1203.3",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "1203.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2007-49",
+    "code": "SBC 801",
+    "ref": "2007",
+    "node_type": "threshold",
+    "value": "2007.4",
+    "unit": "exit",
+    "condition": null,
+    "section_ref": "2007",
+    "source_pdf": null,
+    "confidence": "low",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-exit",
+      "suspicious-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2404-9-50",
+    "code": "SBC 801",
+    "ref": "2404.9",
+    "node_type": "threshold",
+    "value": "0.84",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "2404.9",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2405-51",
+    "code": "SBC 801",
+    "ref": "2405",
+    "node_type": "threshold",
+    "value": "1",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "2405",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2405-52",
+    "code": "SBC 801",
+    "ref": "2405",
+    "node_type": "threshold",
+    "value": "150",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "2405",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2501-1-53",
+    "code": "SBC 801",
+    "ref": "2501.1",
+    "node_type": "threshold",
+    "value": "25",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "2501.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-54",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-55",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "45",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-56",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "75",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-57",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-58",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "24",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2808-59",
+    "code": "SBC 801",
+    "ref": "2808",
+    "node_type": "threshold",
+    "value": "75",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2808",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2809-60",
+    "code": "SBC 801",
+    "ref": "2809",
+    "node_type": "threshold",
+    "value": "1.8",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2809",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2904-61",
+    "code": "SBC 801",
+    "ref": "2904",
+    "node_type": "threshold",
+    "value": "1.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "2904",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-2904-62",
+    "code": "SBC 801",
+    "ref": "2904",
+    "node_type": "threshold",
+    "value": "900",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "2904",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3103-2-63",
+    "code": "SBC 801",
+    "ref": "3103.2",
+    "node_type": "threshold",
+    "value": "37",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "3103.2",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3103-2-64",
+    "code": "SBC 801",
+    "ref": "3103.2",
+    "node_type": "threshold",
+    "value": "65",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "3103.2",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3103-2-65",
+    "code": "SBC 801",
+    "ref": "3103.2",
+    "node_type": "threshold",
+    "value": "3.6",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "3103.2",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3103-2-66",
+    "code": "SBC 801",
+    "ref": "3103.2",
+    "node_type": "threshold",
+    "value": "65",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "3103.2",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3103-2-67",
+    "code": "SBC 801",
+    "ref": "3103.2",
+    "node_type": "threshold",
+    "value": "3.6",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "3103.2",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3503-3-68",
+    "code": "SBC 801",
+    "ref": "3503.3",
+    "node_type": "threshold",
+    "value": "48",
+    "unit": "hour",
+    "condition": null,
+    "section_ref": "3503.3",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-hour",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3705-69",
+    "code": "SBC 801",
+    "ref": "3705",
+    "node_type": "threshold",
+    "value": "1.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "3705",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3705-70",
+    "code": "SBC 801",
+    "ref": "3705",
+    "node_type": "threshold",
+    "value": "300",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "3705",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3705-71",
+    "code": "SBC 801",
+    "ref": "3705",
+    "node_type": "threshold",
+    "value": "300",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "3705",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3705-72",
+    "code": "SBC 801",
+    "ref": "3705",
+    "node_type": "threshold",
+    "value": "300",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "3705",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-3705-73",
+    "code": "SBC 801",
+    "ref": "3705",
+    "node_type": "threshold",
+    "value": "1.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "3705",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5001-1-74",
+    "code": "SBC 801",
+    "ref": "5001.1",
+    "node_type": "threshold",
+    "value": "50",
+    "unit": "percent",
+    "condition": null,
+    "section_ref": "5001.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-percent",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5103-75",
+    "code": "SBC 801",
+    "ref": "5103",
+    "node_type": "threshold",
+    "value": "3",
+    "unit": "in",
+    "condition": null,
+    "section_ref": "5103",
+    "source_pdf": null,
+    "confidence": "low",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-in",
+      "suspicious-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-76",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "60",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-77",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-78",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "1.2",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-79",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "2.4",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-80",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "1.2",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-81",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "2.4",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-82",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "2.4",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5104-4-83",
+    "code": "SBC 801",
+    "ref": "5104.4",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5104.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5307-4-84",
+    "code": "SBC 801",
+    "ref": "5307.4",
+    "node_type": "threshold",
+    "value": "300",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5307.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-85",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "21325",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-86",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "25",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-87",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "42650",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-88",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "25",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-89",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5601-4-90",
+    "code": "SBC 801",
+    "ref": "5601.4",
+    "node_type": "threshold",
+    "value": "30",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5601.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5606-4-91",
+    "code": "SBC 801",
+    "ref": "5606.4",
+    "node_type": "threshold",
+    "value": "25",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5606.4",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5608-9-92",
+    "code": "SBC 801",
+    "ref": "5608.9",
+    "node_type": "threshold",
+    "value": "10",
+    "unit": "minute",
+    "condition": null,
+    "section_ref": "5608.9",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-minute",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5608-9-93",
+    "code": "SBC 801",
+    "ref": "5608.9",
+    "node_type": "threshold",
+    "value": "15",
+    "unit": "minute",
+    "condition": null,
+    "section_ref": "5608.9",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-minute",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5704-3-4-1-94",
+    "code": "SBC 801",
+    "ref": "5704.3.4.1",
+    "node_type": "threshold",
+    "value": "1.8",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5704.3.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5704-3-4-1-95",
+    "code": "SBC 801",
+    "ref": "5704.3.4.1",
+    "node_type": "threshold",
+    "value": "140",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "5704.3.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5704-3-4-1-96",
+    "code": "SBC 801",
+    "ref": "5704.3.4.1",
+    "node_type": "threshold",
+    "value": "140",
+    "unit": "m2",
+    "condition": null,
+    "section_ref": "5704.3.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m2",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5704-3-4-1-97",
+    "code": "SBC 801",
+    "ref": "5704.3.4.1",
+    "node_type": "threshold",
+    "value": "1400",
+    "unit": "mm",
+    "condition": null,
+    "section_ref": "5704.3.4.1",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-mm",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5706-98",
+    "code": "SBC 801",
+    "ref": "5706",
+    "node_type": "threshold",
+    "value": "15",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5706",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5706-5-99",
+    "code": "SBC 801",
+    "ref": "5706.5",
+    "node_type": "threshold",
+    "value": "7.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5706.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  },
+  {
+    "node_id": "sbc-801-threshold-5706-5-100",
+    "code": "SBC 801",
+    "ref": "5706.5",
+    "node_type": "threshold",
+    "value": "4.5",
+    "unit": "m",
+    "condition": null,
+    "section_ref": "5706.5",
+    "source_pdf": null,
+    "confidence": "candidate",
+    "tags": [
+      "sbc801",
+      "threshold",
+      "unit-m",
+      "clean-unit"
+    ]
+  }
+]

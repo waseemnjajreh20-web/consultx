@@ -618,7 +618,7 @@ async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
   documentTexts, pageManifests,
   output_format, preferred_standards,
-  onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, signal
+  onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, onThinkingStatus, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
   documentTexts?: { name: string; content: string }[];
@@ -631,6 +631,7 @@ async function streamChat({
   onError: (error: string) => void;
   onSources?: (sources: string[]) => void;
   onSourceMeta?: (meta: ChunkPageMeta[]) => void;
+  onThinkingStatus?: (msg: string) => void;
   signal?: AbortSignal;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -691,10 +692,14 @@ async function streamChat({
       if (jsonStr === "[DONE]") { streamDone = true; break; }
       try {
         const parsed = JSON.parse(jsonStr);
-        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-        if (content) {
-          if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
-          fullContent += content; onDelta(content);
+        if (parsed.type === "thinking_status" && typeof parsed.message === "string") {
+          onThinkingStatus?.(parsed.message);
+        } else {
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
+            fullContent += content; onDelta(content);
+          }
         }
       } catch { textBuffer = line + "\n" + textBuffer; break; }
     }
@@ -709,10 +714,14 @@ async function streamChat({
       if (jsonStr === "[DONE]") continue;
       try {
         const parsed = JSON.parse(jsonStr);
-        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-        if (content) {
-          if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
-          fullContent += content; onDelta(content);
+        if (parsed.type === "thinking_status" && typeof parsed.message === "string") {
+          onThinkingStatus?.(parsed.message);
+        } else {
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            if (!firstChunkFired) { firstChunkFired = true; onFirstChunk?.(); }
+            fullContent += content; onDelta(content);
+          }
         }
       } catch { /* ignore */ }
     }
@@ -815,6 +824,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [retryCount, setRetryCount] = useState(0);
   const [autoRetrying, setAutoRetrying] = useState(false);
   const [loadingStage, setLoadingStage] = useState<"connecting" | "thinking" | "writing" | "vision_1" | "vision_2" | "vision_3" | "vision_4" | "vision_5">("connecting");
+  const [dynamicThinkingMsg, setDynamicThinkingMsg] = useState<string>("");
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [chatMode, setChatMode] = useState<ChatMode>("primary");
   const [prevMode, setPrevMode] = useState<ChatMode>("primary");
@@ -904,6 +914,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const isTextStage = !isVisionStage && isLoading;
 
   const getLoadingMessage = () => {
+    // Use backend dynamic thinking message when available (B2 Stage 4).
+    // Suppress only for "connecting" — the first stage before any events arrive.
+    if (dynamicThinkingMsg && loadingStage !== "connecting") return dynamicThinkingMsg;
     switch (loadingStage) {
       case "connecting": return t("connecting");
       case "thinking": return t("thinking");
@@ -929,6 +942,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     setAutoRetrying(false);
     setInputEnabled(true);
     setWaitingLevel(0);
+    setDynamicThinkingMsg("");
     waitingTimersRef.current.forEach(clearTimeout);
     waitingTimersRef.current = [];
   }, []);
@@ -1081,6 +1095,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         preferred_standards: preferences.preferred_standards,
         signal: controller.signal,
         onDelta: upsertAssistant,
+        onThinkingStatus: (msg) => setDynamicThinkingMsg(msg),
         onFirstChunk: () => {
           // Re-enable input on first streaming chunk (optimistic)
           setInputEnabled(true);
@@ -1949,7 +1964,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                       {waitingLevel > 0 ? (
                         <span className="text-sm font-medium animate-pulse" style={{ color: getModeDotColor(chatMode) }}>{getWaitingMessage()}</span>
                       ) : (
-                        <span className="text-muted-foreground text-sm animate-fade-in" key={loadingStage}>{getLoadingMessage()}</span>
+                        <span className="text-muted-foreground text-sm animate-fade-in" key={dynamicThinkingMsg || loadingStage}>{getLoadingMessage()}</span>
                       )}
                     </div>
                     {/* Progress bar — vision stages (5 steps) or text stages (4 steps) */}

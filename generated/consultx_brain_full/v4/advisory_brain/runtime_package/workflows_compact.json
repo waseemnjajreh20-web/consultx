@@ -1,0 +1,755 @@
+{
+  "workflows": [
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_egress",
+      "domain": "egress",
+      "description": "Means-of-egress sizing and arrangement per SBC 201 Chapter 10.",
+      "required_inputs": [
+        "occupant_load",
+        "occupancy_group",
+        "number_of_stories",
+        "sprinkler_protected (boolean)",
+        "story_layout (single-exit / multi-exit configuration)"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [
+        {
+          "node_id": "sbc-201-table-1004-5",
+          "ref": "1004.5",
+          "title": "MAXIMUM FLOOR AREA ALLOWANCES PER OCCUPANT",
+          "page_start": 213,
+          "page_end": 213,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-2-1",
+          "ref": "1006.2.1",
+          "title": "SPACES WITH ONE EXIT OR EXIT ACCESS DOORWAY",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-3",
+          "ref": "1006.3.3",
+          "title": "MINIMUM NUMBER OF EXITS OR ACCESS TO EXITS PER STORY",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-4(1)",
+          "ref": "1006.3.4(1)",
+          "title": "STORIES WITH ONE EXIT OR ACCESS TO ONE EXIT FOR R-2 OCCUPANCIES",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-4(2)",
+          "ref": "1006.3.4(2)",
+          "title": "STORIES WITH ONE EXIT OR ACCESS TO ONE EXIT FOR OTHER OCCUPANCIES",
+          "page_start": 215,
+          "page_end": 215,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1010-3-1(1)",
+          "ref": "1010.3.1(1)",
+          "title": "MAXIMUM DOOR SPEED MANUAL REVOLVING DOORS",
+          "page_start": 215,
+          "page_end": 215,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1010-3-1(2)",
+          "ref": "1010.3.1(2)",
+          "title": "MAXIMUM DOOR SPEED AUTOMATIC OR POWER- OPERATED REVOLVING DOORS",
+          "page_start": 215,
+          "page_end": 215,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1020-2",
+          "ref": "1020.2",
+          "title": "CORRIDOR FIRE-RESISTANCE RATING",
+          "page_start": 216,
+          "page_end": 216,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1030-6-2",
+          "ref": "1030.6.2",
+          "title": "CAPACITY FOR AISLES FOR SMOKE-PROTECTED ASSEMBLY",
+          "page_start": 217,
+          "page_end": 217,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1030-13-2-1",
+          "ref": "1030.13.2.1",
+          "title": "SMOKE-PROTECTED OR OPEN-AIR ASSEMBLY AISLE ACCESS-WAYS",
+          "page_start": 217,
+          "page_end": 217,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        }
+      ],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "1010.2.9 (orphan parent)",
+          "code": "SBC 801",
+          "reason": "orphan_classified in V4 — has children 1010.2.9.1-4 but no standalone body. Use orphan node to surface children list, do not invent parent body."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "If sprinkler_protected is required for a calculation but not provided, ASK.",
+        "Use Table 1006.2.1 for 'spaces with one exit' decisions; Table 1006.3.3 for 'minimum number of exits per story' decisions.",
+        "Travel-distance values must come from the cited table row, not inferred from text."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim that an exit is 'sufficient' without citing the specific table row that supports the claim."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Means of Egress",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        },
+        {
+          "term": "Exit",
+          "parking_lot_reason": "same"
+        },
+        {
+          "term": "Exit Access",
+          "parking_lot_reason": "same"
+        },
+        {
+          "term": "Exit Discharge",
+          "parking_lot_reason": "same"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_fire_alarm",
+      "domain": "fire_alarm",
+      "description": "Fire alarm and detection systems per SBC 801 Section 907.",
+      "required_inputs": [
+        "occupancy_group",
+        "occupant_load",
+        "building_layout"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "907 (Section)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — review_first track. NOT in V4 corpus."
+        },
+        {
+          "ref": "907.2 (and all 907.2.x)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — out of V4 scope."
+        },
+        {
+          "ref": "907.2.11",
+          "code": "SBC 801",
+          "reason": "QUARANTINED in R8 ledger; orphan handling envisioned but not promoted."
+        },
+        {
+          "ref": "915 / 915.5.1 (CO alarm)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — out of V4 scope."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "Fire alarm requirements are NOT covered by V4. Always surface this and direct to PDF."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim 'manual pull stations required' or 'audible/visible alarm thresholds' for any occupancy without a cited V4 chunk — none exist."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Fire Alarm System",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        },
+        {
+          "term": "Manual Fire Alarm Box",
+          "parking_lot_reason": "same"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_fire_pump",
+      "domain": "fire_pump",
+      "description": "Fire-pump requirements per SBC 801 Section 913.",
+      "required_inputs": [
+        "building_height_m",
+        "static_pressure_at_supply",
+        "demand_flow_l_per_min"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "913 (Section)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — review_first. NOT in V4."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "Fire-pump requirements are NOT covered by V4. Direct user to official PDF or NFPA 20."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim pump sizing or pressure requirements — V4 has no chunks in this range."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Fire Pump",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_occupancy_classification",
+      "domain": "occupancy_classification",
+      "description": "Determine the SBC 201 occupancy group (A through U) for a given building / use.",
+      "required_inputs": [
+        "building_use_description (free-text or dropdown)",
+        "primary_function (assembly | business | educational | factory | high_hazard | institutional | mercantile | residential | storage | utility)",
+        "occupant_load_estimate (optional)",
+        "presence_of_hazardous_materials (boolean)"
+      ],
+      "primary_sections": [
+        {
+          "node_id": "sbc-201-section-301",
+          "ref": "301",
+          "title": "SCOPE.",
+          "page_start": 195,
+          "page_end": 195,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-302",
+          "ref": "302",
+          "title": "OCCUPANCY CLASSIFICATION AND USE DESIGNATION",
+          "page_start": 195,
+          "page_end": 195,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-303",
+          "ref": "303",
+          "title": "ASSEMBLY GROUP A",
+          "page_start": 196,
+          "page_end": 196,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-304",
+          "ref": "304",
+          "title": "BUSINESS GROUP B",
+          "page_start": 201,
+          "page_end": 201,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-305",
+          "ref": "305",
+          "title": "EDUCATIONAL GROUP E",
+          "page_start": 203,
+          "page_end": 203,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-306",
+          "ref": "306",
+          "title": "FACTORY GROUP F",
+          "page_start": 204,
+          "page_end": 204,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-307",
+          "ref": "307",
+          "title": "HIGH-HAZARD GROUP H",
+          "page_start": 206,
+          "page_end": 206,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-308",
+          "ref": "308",
+          "title": "INSTITUTIONAL GROUP I",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-309",
+          "ref": "309",
+          "title": "MERCANTILE GROUP M",
+          "page_start": 221,
+          "page_end": 221,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-310",
+          "ref": "310",
+          "title": "RESIDENTIAL GROUP R",
+          "page_start": 223,
+          "page_end": 223,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-311",
+          "ref": "311",
+          "title": "STORAGE GROUP S",
+          "page_start": 227,
+          "page_end": 227,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        },
+        {
+          "node_id": "sbc-201-section-312",
+          "ref": "312",
+          "title": "UTILITY AND MISCELLANEOUS GROUP U",
+          "page_start": 230,
+          "page_end": 230,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        }
+      ],
+      "supporting_tables": [],
+      "threshold_candidates": [
+        {
+          "node_id": "sbc-201-threshold-304-5",
+          "ref": "304",
+          "value": "230",
+          "unit": "m2",
+          "content_excerpt": ", cafeterias and similar. • Dining facilities not more than 230 m2 in area. • Laboratories: testing and research • Motor vehicle showrooms •"
+        },
+        {
+          "node_id": "sbc-201-threshold-308-6",
+          "ref": "308",
+          "value": "24",
+          "unit": "hour",
+          "content_excerpt": "ies is when care is provided for a length of time exceeding 24 hours. The intent is that these criteria are not specific to the hours of ope"
+        },
+        {
+          "node_id": "sbc-201-threshold-308-7",
+          "ref": "308",
+          "value": "24",
+          "unit": "hour",
+          "content_excerpt": "in day care. For example, an outpatient clinic that is open 24 hours a day is a Group B occupancy, provided care recipients are treated as o"
+        },
+        {
+          "node_id": "sbc-201-threshold-308-8",
+          "ref": "308",
+          "value": "24",
+          "unit": "hour",
+          "content_excerpt": "and there are no inpatients who would stay at the facility 24 hours or longer. In the Group I-2 setting, care recipients are in for several"
+        },
+        {
+          "node_id": "sbc-201-threshold-308-9",
+          "ref": "308",
+          "value": "24",
+          "unit": "hour",
+          "content_excerpt": "Another example would be a “day care” facility that is open 24 hours to serve workers who work any shift and need to have children in “day c"
+        },
+        {
+          "node_id": "sbc-201-threshold-308-10",
+          "ref": "308",
+          "value": "24",
+          "unit": "hour",
+          "content_excerpt": "rovided that individual children receive care for less than 24 hours, the occupancy would be classified as Group I-4 or possibly Group E. Ea"
+        },
+        {
+          "node_id": "sbc-201-threshold-310-11",
+          "ref": "310",
+          "value": "80",
+          "unit": "percent",
+          "content_excerpt": "ticular, one- and twofamily dwellings account for more than 80 percent of all deaths from fire in residential occupancies and about two-thir"
+        },
+        {
+          "node_id": "sbc-201-threshold-310-12",
+          "ref": "310",
+          "value": "80",
+          "unit": "percent",
+          "content_excerpt": "es. One- and twofamily dwellings also account for more than 80 percent of residential property losses from fire and more than one-half of al"
+        },
+        {
+          "node_id": "sbc-201-threshold-312-13",
+          "ref": "312",
+          "value": "140",
+          "unit": "m2",
+          "content_excerpt": "n equipment structures with a gross floor area of less than 140 m2 • Fences more than 2.1 m in height • Grain silos, accessory to a resident"
+        },
+        {
+          "node_id": "sbc-201-threshold-312-14",
+          "ref": "312",
+          "value": "2.1",
+          "unit": "m",
+          "content_excerpt": "h a gross floor area of less than 140 m2 • Fences more than 2.1 m in height • Grain silos, accessory to a residential occupancy • Livestock"
+        }
+      ],
+      "missing_or_parking_lot_refs": [],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Occupancy",
+          "parking_lot_reason": "definition_candidates is empty in V4 (regex limitation, v1.2 task)"
+        },
+        {
+          "term": "Occupant Load",
+          "parking_lot_reason": "same — definition_candidates empty"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_occupant_load",
+      "domain": "occupant_load",
+      "description": "Compute occupant load for a space using SBC 201 Table 1004.5 and Section 1004 / 1006.",
+      "required_inputs": [
+        "space_function (e.g., classroom, business, mercantile)",
+        "floor_area_m2",
+        "fixed_seating_count (if applicable)"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [
+        {
+          "node_id": "sbc-201-table-1004-5",
+          "ref": "1004.5",
+          "title": "MAXIMUM FLOOR AREA ALLOWANCES PER OCCUPANT",
+          "page_start": 213,
+          "page_end": 213,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-2-1",
+          "ref": "1006.2.1",
+          "title": "SPACES WITH ONE EXIT OR EXIT ACCESS DOORWAY",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-3",
+          "ref": "1006.3.3",
+          "title": "MINIMUM NUMBER OF EXITS OR ACCESS TO EXITS PER STORY",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-4(1)",
+          "ref": "1006.3.4(1)",
+          "title": "STORIES WITH ONE EXIT OR ACCESS TO ONE EXIT FOR R-2 OCCUPANCIES",
+          "page_start": 214,
+          "page_end": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        },
+        {
+          "node_id": "sbc-201-table-1006-3-4(2)",
+          "ref": "1006.3.4(2)",
+          "title": "STORIES WITH ONE EXIT OR ACCESS TO ONE EXIT FOR OTHER OCCUPANCIES",
+          "page_start": 215,
+          "page_end": 215,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        }
+      ],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "1004 (Section)",
+          "code": "SBC 201",
+          "reason": "section body in PROD chunks of bucket; not a V4 native node. Can still be retrieved by runtime via merged bucket."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "If user does not provide floor_area_m2, ASK before computing — never guess.",
+        "When citing Table 1004.5, quote the relevant row verbatim (e.g., 'Mercantile / Areas on other floors: 5.6 gross').",
+        "Specify whether the computation uses 'gross' or 'net' floor area — the table column is explicit."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Occupant Load",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_smoke_control",
+      "domain": "smoke_control",
+      "description": "Smoke-control systems per SBC 801 Section 909.",
+      "required_inputs": [
+        "occupancy_group",
+        "high_rise_status",
+        "atrium_present"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "909 (Section)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — review_first. NOT in V4."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "Smoke-control requirements are NOT covered by V4. Direct user to official PDF."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim smoke-control method, design pressures, or fan capacities — V4 has no chunks in this range."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Smoke-Control System",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_sprinkler",
+      "domain": "sprinkler",
+      "description": "Sprinkler-system requirements per SBC 801 Section 903.",
+      "required_inputs": [
+        "occupancy_group",
+        "building_area_m2",
+        "number_of_stories",
+        "hazard_class (light / ordinary / extra)"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [
+        {
+          "node_id": "sbc-801-table-903-2-11-6",
+          "ref": "903.2.11.6",
+          "title": "ADDITIONAL REQUIRED FIRE PROTECTION SYSTEMS",
+          "page_start": 40,
+          "page_end": 40,
+          "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf"
+        }
+      ],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "903 (Section)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED in R8 ledger — review_first track. NOT in V4 corpus."
+        },
+        {
+          "ref": "903.2.7",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — explicitly out of V4 scope."
+        },
+        {
+          "ref": "903.2.8",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — explicitly out of V4 scope."
+        },
+        {
+          "ref": "903.2.9 / 903.2.10 / 903.2.11",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — explicitly out of V4 scope."
+        },
+        {
+          "ref": "903.3.1.1 / 903.3.1.2",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — explicitly out of V4 scope."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "Sprinkler requirements are NOT covered by V4. The brain MUST surface this fact and direct the user to the official PDF or human review.",
+        "If a user asks about sprinkler in the context of an egress question, cite the egress section but explicitly note 'sprinkler requirement under review — see SBC 801 Section 903 in the official PDF'."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim 'sprinklers required' or 'sprinklers not required' for any occupancy without an explicit cited V4 chunk — none exist in V4.",
+        "Do not infer sprinkler requirements from cross-references in egress sections."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Automatic Sprinkler System",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "workflow_id": "wf_standpipe",
+      "domain": "standpipe",
+      "description": "Standpipe-system requirements per SBC 801 Section 905.",
+      "required_inputs": [
+        "building_height_m",
+        "occupancy_group",
+        "fire_department_access"
+      ],
+      "primary_sections": [],
+      "supporting_tables": [],
+      "threshold_candidates": [],
+      "missing_or_parking_lot_refs": [
+        {
+          "ref": "905 (Section)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — review_first. NOT in V4."
+        }
+      ],
+      "safe_answer_rules": [
+        "Cite only V4 nodes (sections, subsections, tables) that this workflow lists in primary_sections / supporting_tables.",
+        "If user input is missing for a required_input, ask the user instead of fabricating an assumption.",
+        "If a referenced section/table is in missing_or_parking_lot_refs, state that the source is not currently in the V4 brain and either point to PDF or surface adjacent available content with explicit caveat.",
+        "Never invent a numeric threshold; only quote thresholds from threshold_candidates with confidence not equal to 'low'.",
+        "When asked about an orphan parent, surface the children list and parent_link only — never invent a parent body.",
+        "Always include source_pdf + page_start in citation lines.",
+        "Standpipe requirements are NOT covered by V4. Direct user to official PDF."
+      ],
+      "must_not_claim_rules": [
+        "Do not claim coverage of refs in missing_or_parking_lot_refs.",
+        "Do not assert engineering conclusions (e.g., 'sprinkler X requires alarm Y') unless an explicit cross-reference edge exists in relationships.json.",
+        "Do not paraphrase code text; quote verbatim from V4 chunk content.",
+        "Do not produce model-generated body for orphan / unadopted refs.",
+        "Do not generate decision trees that combine SBC 201 and SBC 801 requirements unless an explicit cross-reference (xref) edge ties them.",
+        "Do not claim standpipe class or location requirements — V4 has no chunks in this range."
+      ],
+      "citation_requirements": [
+        "Every cited section/table must include: code, ref, title, page_start, source_pdf",
+        "Every threshold quoted must include: value + unit + section_ref + page_start",
+        "If parking-lot ref is referenced, citation must say 'not in V4 corpus — see PDF page X' (page derived from PDF table of contents only, not invented)."
+      ],
+      "definitions_needed": [
+        {
+          "term": "Standpipe",
+          "parking_lot_reason": "definition_candidates empty in V4"
+        },
+        {
+          "term": "Class I/II/III Standpipe",
+          "parking_lot_reason": "same"
+        }
+      ]
+    }
+  ]
+}
