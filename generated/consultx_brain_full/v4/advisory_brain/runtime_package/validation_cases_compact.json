@@ -1,0 +1,236 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-06T00:23:11.387Z",
+  "case_count": 10,
+  "cases": [
+    {
+      "case_id": "vc_01_table_1004_5_occupant_load",
+      "query": "اعطني قيمة Maximum floor area allowance per occupant لـ Mercantile Areas on other floors في SBC 201",
+      "domain": "occupant_load",
+      "expected_tables": [
+        {
+          "node_id": "sbc-201-table-1004-5",
+          "ref": "1004.5",
+          "title": "MAXIMUM FLOOR AREA ALLOWANCES PER OCCUPANT",
+          "page_start": 213,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        }
+      ],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response cites Table 1004.5 with page anchor.",
+        "Response quotes verbatim row '5.6 gross' for 'Mercantile - Areas on other floors'."
+      ],
+      "forbidden_claims": [
+        "Do not infer values not present in the table row.",
+        "Do not omit the 'gross' / 'net' suffix when quoting a value."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_02_table_1006_3_3_min_exits",
+      "query": "ما الحد الأدنى لعدد المخارج لطابق فيه 700 شخص في SBC 201؟",
+      "domain": "egress",
+      "expected_tables": [
+        {
+          "node_id": "sbc-201-table-1006-3-3",
+          "ref": "1006.3.3",
+          "title": "MINIMUM NUMBER OF EXITS OR ACCESS TO EXITS PER STORY",
+          "page_start": 214,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1001-1250.pdf"
+        }
+      ],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response cites Table 1006.3.3 with page anchor.",
+        "Response identifies '501-1,000 occupants requires 3 exits' from the table row."
+      ],
+      "forbidden_claims": [
+        "Do not invent a numeric threshold not present in Table 1006.3.3."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_03_group_m_occupancy",
+      "query": "ما متطلبات Group M في SBC 201؟",
+      "domain": "occupancy_classification",
+      "expected_tables": [],
+      "expected_nodes": [
+        {
+          "node_id": "sbc-201-section-309",
+          "ref": "309",
+          "title": "MERCANTILE GROUP M",
+          "page_start": 221,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        }
+      ],
+      "pass_criteria": [
+        "Response cites Section 309 'MERCANTILE GROUP M' with page anchor.",
+        "Response surfaces subsections of 309 if present, or notes their absence."
+      ],
+      "forbidden_claims": [
+        "Do not paraphrase Section 309 prose; quote verbatim.",
+        "Do not extend Group M scope beyond what 309 explicitly lists."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_04_sprinkler_903_2_7_parking_lot",
+      "query": "ما متطلبات الرشاشات حسب SBC 801 Section 903.2.7؟",
+      "domain": "sprinkler",
+      "expected_tables": [],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response explicitly states 903.2.7 is not in the V4 corpus / under review.",
+        "Response directs user to the official PDF.",
+        "Response does NOT include any made-up sprinkler text."
+      ],
+      "forbidden_claims": [
+        "Do not claim ANY specific sprinkler requirement.",
+        "Do not fabricate a 903.2.7 body.",
+        "Do not infer requirements from adjacent sections in the bucket."
+      ],
+      "expected_missing_refs": [
+        {
+          "ref": "903.2.7",
+          "code": "SBC 801",
+          "reason": "QUARANTINED in R8 ledger; not in V4 corpus"
+        }
+      ]
+    },
+    {
+      "case_id": "vc_05_co_alarm_915_5_1_parking_lot",
+      "query": "ما متطلبات إنذار CO حسب SBC 801 Section 915.5.1؟",
+      "domain": "fire_alarm",
+      "expected_tables": [],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response explicitly states 915.5.1 is not in V4 corpus.",
+        "Response directs user to PDF."
+      ],
+      "forbidden_claims": [
+        "Do not claim CO alarm placement or threshold.",
+        "Do not fabricate body for 915.5.1."
+      ],
+      "expected_missing_refs": [
+        {
+          "ref": "915.5.1",
+          "code": "SBC 801",
+          "reason": "QUARANTINED in R8 ledger; not in V4 corpus"
+        }
+      ]
+    },
+    {
+      "case_id": "vc_06_orphan_1010_2_9_handling",
+      "query": "ما القسم 1010.2.9 من SBC 801؟",
+      "domain": "egress",
+      "expected_tables": [],
+      "expected_nodes": [
+        {
+          "node_id": "sbc-801-section-1010-2-9",
+          "ref": "1010.2.9",
+          "title": null,
+          "page_start": 125,
+          "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf"
+        }
+      ],
+      "pass_criteria": [
+        "Response surfaces the orphan record with parent_link to 1010.2 and children list 1010.2.9.1-4.",
+        "Response states clearly that the parent itself has no standalone body in the source PDF."
+      ],
+      "forbidden_claims": [
+        "Do not fabricate a body for 1010.2.9 — V4 classified it as an orphan.",
+        "Do not pick one of the children (1010.2.9.1-4) and claim its content as the parent's content."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_07_egress_missing_inputs",
+      "query": "كم مخرج أحتاج؟",
+      "domain": "egress",
+      "expected_tables": [],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response asks for occupant_load AND occupancy_group AND number_of_stories before answering.",
+        "Response cites the egress workflow's required_inputs as the source of the question list."
+      ],
+      "forbidden_claims": [
+        "Do not assume an occupant load.",
+        "Do not assume an occupancy group.",
+        "Do not return an answer for an empty / under-specified query."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_08_non_code_greeting",
+      "query": "مرحبا، كيف الحال؟",
+      "domain": "(none)",
+      "expected_tables": [],
+      "expected_nodes": [],
+      "pass_criteria": [
+        "Response is a brief greeting with no code citation.",
+        "Response does NOT trigger a chunk retrieval pass."
+      ],
+      "forbidden_claims": [
+        "Do not retrieve any code chunk in response to a greeting.",
+        "Do not produce code citations for non-code intent."
+      ],
+      "expected_missing_refs": []
+    },
+    {
+      "case_id": "vc_09_mixed_201_801_keep_separate",
+      "query": "اشرح Group M من SBC 201 ومتطلبات الرشاشات من SBC 801",
+      "domain": "occupancy_classification + sprinkler",
+      "expected_tables": [],
+      "expected_nodes": [
+        {
+          "node_id": "sbc-201-section-309",
+          "ref": "309",
+          "title": "MERCANTILE GROUP M",
+          "page_start": 221,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        }
+      ],
+      "pass_criteria": [
+        "Response answers the SBC 201 Group M part using Section 309 verbatim.",
+        "Response answers the sprinkler part by stating SBC 801 Section 903 is not in V4 / direct to PDF.",
+        "Response keeps the two code families separate in citations."
+      ],
+      "forbidden_claims": [
+        "Do not blend SBC 201 occupancy text with fabricated SBC 801 sprinkler text.",
+        "Do not claim sprinkler is 'required for Group M' without a cited xref edge in relationships.json."
+      ],
+      "expected_missing_refs": [
+        {
+          "ref": "903 (sprinkler family)",
+          "code": "SBC 801",
+          "reason": "QUARANTINED — not in V4 corpus"
+        }
+      ]
+    },
+    {
+      "case_id": "vc_10_threshold_extraction_sanity",
+      "query": "ما الحد الأدنى للمساحة لـ Dining facility ضمن Group B في SBC 201؟",
+      "domain": "occupancy_classification",
+      "expected_tables": [],
+      "expected_nodes": [
+        {
+          "node_id": "sbc-201-section-304",
+          "ref": "304",
+          "title": "BUSINESS GROUP B",
+          "page_start": 201,
+          "source_pdf": "SBC 201 - The Saudi General Building Code-1-250.pdf"
+        }
+      ],
+      "pass_criteria": [
+        "Response cites a threshold value from threshold_candidates filtered to confidence != 'low'.",
+        "Response cites the exact value+unit (e.g., '230 m²') with section_ref + page_start."
+      ],
+      "forbidden_claims": [
+        "Do not invent a threshold value.",
+        "Do not quote a threshold marked confidence='low'."
+      ],
+      "expected_missing_refs": []
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+[
+  {
+    "node_id": "sbc-801-section-1010-2-9",
+    "code": "SBC 801",
+    "ref": "1010.2.9",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 125,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-10",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-1030-1-1",
+    "code": "SBC 801",
+    "ref": "1030.1.1",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 31,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-10",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-1207-10",
+    "code": "SBC 801",
+    "ref": "1207.10",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 45,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-12",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-3206-10",
+    "code": "SBC 801",
+    "ref": "3206.10",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 154,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-32",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5003-8-3",
+    "code": "SBC 801",
+    "ref": "5003.8.3",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 98,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-50",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5003-8-5",
+    "code": "SBC 801",
+    "ref": "5003.8.5",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 98,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-50",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5003-11",
+    "code": "SBC 801",
+    "ref": "5003.11",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 85,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-50",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5307-4-3",
+    "code": "SBC 801",
+    "ref": "5307.4.3",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 186,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-53",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5703-6-2",
+    "code": "SBC 801",
+    "ref": "5703.6.2",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 63,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-57",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5704-2-7",
+    "code": "SBC 801",
+    "ref": "5704.2.7",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 67,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-57",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  },
+  {
+    "node_id": "sbc-801-section-5704-3-8",
+    "code": "SBC 801",
+    "ref": "5704.3.8",
+    "node_type": "orphan",
+    "title": null,
+    "page_start": 90,
+    "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+    "confidence": "low",
+    "orphan_reason": "not_extracted_v4",
+    "tags": [
+      "sbc801",
+      "chapter-57",
+      "orphan",
+      "do-not-promote"
+    ],
+    "do_not_promote": true
+  }
+]

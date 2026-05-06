@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-06T03:58:09.136Z",
+  "brain_version": "B1",
+  "v4_corpus_version": "v4",
+  "v4_corpus_chunks_total": 612,
+  "node_counts": {
+    "sections": 94,
+    "subsections": 90,
+    "sections_total": 184,
+    "tables": 145,
+    "orphans": 11,
+    "thresholds": 100,
+    "total": 440
+  },
+  "edge_counts": {
+    "in_graph": 278,
+    "external_xrefs": 405
+  },
+  "workflow_count": 8,
+  "workflow_ids": [
+    "wf_egress",
+    "wf_fire_alarm",
+    "wf_fire_pump",
+    "wf_occupancy_classification",
+    "wf_occupant_load",
+    "wf_smoke_control",
+    "wf_sprinkler",
+    "wf_standpipe"
+  ],
+  "validation_case_count": 10,
+  "files": [
+    {
+      "key": "nodes_compact.json",
+      "sha256": "1e21bfd9d97b366e2649a4a218f84ef1bbd6a1b47ef69ba4b37e23f1741ded68",
+      "bytes": 164171
+    },
+    {
+      "key": "orphans_compact.json",
+      "sha256": "357b96c48c2e2de9c2fa944644d3b58a4c82ccbce81b6434438953e273e650b7",
+      "bytes": 4781
+    },
+    {
+      "key": "thresholds_compact.json",
+      "sha256": "da0a136fd6220871afc26f927328e4d38c3e5899ecb83d4dbb445e267207aee0",
+      "bytes": 36214
+    },
+    {
+      "key": "edges_compact.json",
+      "sha256": "8dac88d5ea7446b91ff895d405dc0bf493a42d1e3c8000ea3d5a5a8eec493d7b",
+      "bytes": 223192
+    },
+    {
+      "key": "workflows_compact.json",
+      "sha256": "3c5a03c20cd3c5851bfe6e4fec9a1a999585b7b3acd292b1e2ad1f6fccfe89d3",
+      "bytes": 36155
+    },
+    {
+      "key": "validation_cases_compact.json",
+      "sha256": "c9f166ba69fe73f2cdc07c3c797b344007e4f3c3cc6a9d9265db5d7573a3e2b0",
+      "bytes": 8690
+    }
+  ],
+  "invariants": {
+    "no_orphan_promoted": true,
+    "no_unadopted_promoted": true,
+    "banned_char_u00a7": 0,
+    "no_secrets": true,
+    "no_dangling_edges": true,
+    "no_duplicate_node_ids": true
+  },
+  "validation_result": "PASS",
+  "validation_errors": 0,
+  "validation_warnings": 0
+}

@@ -1,6 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ── Advisory Brain B2 modules (flag-gated, Advisory-only) ────────────────────
+import { isB2Enabled, loadAdvisoryBrainB1 } from "./brain_b1_loader.ts";
+import { isRouterEnabled, routeAdvisoryQuery } from "./workflow_router.ts";
+import {
+  isEvidenceEnabled, augmentWithWorkflow, buildEvidenceOverlay, filterHintsByFamily,
+} from "./workflow_constraints.ts";
+import {
+  isDynamicThinkingEnabled, buildThinkingSequence,
+  formatThinkingEvent, type ThinkingEvent,
+} from "./thinking_ux_emitter.ts";
+import type { AdvisoryBrainB1, RouterResult, AugmentationResult } from "./brain_b1_types.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
@@ -5389,6 +5401,12 @@ serve(async (req) => {
 
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
 
+      // ── B2 state vars (declared early; populated after admin client is ready) ─
+      let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
+      let _routerResultB2: RouterResult | null = null;
+      let _augmentationB2: AugmentationResult | null = null;
+      let _thinkingEventsB2: ThinkingEvent[] = [];
+
       // ── 1. Structured Table Path (DB-first, highest priority) ─────────────
       // If the query references a known SBC table ID, fetch its exact structured
       // row from sbc_code_tables before running any storage/vector retrieval.
@@ -5396,6 +5414,20 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
+
+      // ── B2.1 Brain bootstrap + B2.2 Router (right after admin client, before retrieval) ─
+      // B2.1: When ADVISORY_BRAIN_B2_ENABLED=1: loads B1 brain into memory cache.
+      // B2.2: When ADVISORY_BRAIN_B2_ROUTER_ENABLED=1: classifies query; diagnostics only.
+      // Advisory-only (mode === "standard"). Never changes Main or Analytical paths.
+      // Both flags default OFF → no-op; no retrieval/prompt/answer change.
+      if (mode === "standard") {
+        try {
+          _advisoryBrainB2 = await loadAdvisoryBrainB1(supabaseAdminForTables);
+        } catch (e) {
+          console.warn("[AdvisoryBrainB2] Load error (non-fatal):", e instanceof Error ? e.message : e);
+        }
+        _routerResultB2 = routeAdvisoryQuery(userQuery, _advisoryBrainB2);
+      }
       const { context: structuredTableContext, matchedTableIds, entries: structuredTableEntries } =
         await fetchStructuredTables(userQuery, supabaseAdminForTables);
 
@@ -5493,6 +5525,50 @@ ABSOLUTELY FORBIDDEN:
           }
         } catch (e) {
           console.warn("[BrainFullV1] Sidecar load failed; continuing without enrichment:", e instanceof Error ? e.message : e);
+        }
+
+        // ── B2.3 Evidence augmentation (flag ADVISORY_BRAIN_B2_EVIDENCE_ENABLED) ──
+        // When ON: adds workflow-specific semantic hints, parking-lot warnings,
+        // safe-answer rules, and missing-inputs check into the system prompt.
+        // Never replaces existing retrieval — augments only.
+        // Advisory-only; never changes Main or Analytical paths.
+        try {
+          const conversationContext = messages
+            .filter((m: any) => m.role === "user")
+            .slice(-3)
+            .map((m: any) => m.content ?? "");
+
+          _augmentationB2 = augmentWithWorkflow(
+            _routerResultB2, _advisoryBrainB2, userQuery, conversationContext
+          );
+
+          if (_augmentationB2) {
+            const overlay = buildEvidenceOverlay(_augmentationB2, language as "ar" | "en");
+            if (overlay) {
+              fullSystemPrompt += overlay;
+              console.log(
+                `[EvidenceB2] Overlay injected: hints=${_augmentationB2.hints.length} ` +
+                `parking_lot=${_augmentationB2.parking_lot_warnings.length} ` +
+                `missing_inputs=${_augmentationB2.missing_inputs.length}`
+              );
+            }
+          }
+        } catch (e) {
+          console.warn("[EvidenceB2] Augmentation error (non-fatal):", e instanceof Error ? e.message : e);
+        }
+
+        // ── B2.4 Dynamic Thinking UX (flag ADVISORY_DYNAMIC_THINKING_ENABLED) ─
+        // When ON: builds workflow-aware status message sequence for frontend.
+        // Flag-off: returns empty array; frontend uses existing static strings.
+        if (isDynamicThinkingEnabled() && _routerResultB2) {
+          const hasMissingInputs = (_augmentationB2?.missing_inputs.length ?? 0) > 0;
+          const hasParkingLotHit = (_augmentationB2?.parking_lot_warnings.length ?? 0) > 0;
+          _thinkingEventsB2 = buildThinkingSequence(
+            _routerResultB2, hasMissingInputs, hasParkingLotHit, language as "ar" | "en"
+          );
+          if (_thinkingEventsB2.length > 0) {
+            console.log(`[ThinkingB2] ${_thinkingEventsB2.length} thinking events built for workflow=${_routerResultB2.workflow_id}`);
+          }
         }
 
         // Step 4.1 — surface structured-table evidence to the UI as non-clickable
