@@ -5287,6 +5287,11 @@ serve(async (req) => {
     let usedSourceMeta: SourcePageMeta[] = [];
     let advisoryLedger: EvidenceLedgerEntry[] = [];
     let finalMessages = [...messages];
+    // ── B2 state vars (outer scope; populated in advisory branch, read in SSE branch) ─
+    let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
+    let _routerResultB2: RouterResult | null = null;
+    let _augmentationB2: AugmentationResult | null = null;
+    let _thinkingEventsB2: ThinkingEvent[] = [];
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -5401,12 +5406,6 @@ serve(async (req) => {
       }
 
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
-
-      // ── B2 state vars (declared early; populated after admin client is ready) ─
-      let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
-      let _routerResultB2: RouterResult | null = null;
-      let _augmentationB2: AugmentationResult | null = null;
-      let _thinkingEventsB2: ThinkingEvent[] = [];
 
       // ── 1. Structured Table Path (DB-first, highest priority) ─────────────
       // If the query references a known SBC table ID, fetch its exact structured
