@@ -1962,8 +1962,11 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
     }
   }
   
-  // Cross-referencing: always include both codes for fire/egress
-  if (sbc201Chapters.has(9) || sbc201Chapters.has(10)) {
+  // Cross-referencing: include SBC801 for fire/egress queries alongside chapter 10.
+  // R26: Do NOT cross-ref SBC801 for pure occupant_load queries (Table 1004.5 is SBC201-only).
+  // Only add SBC801 chapters if egress/fire/alarm/sprinkler intent is also present.
+  const hasFireOrEgressIntent = /مخرج|egress|exit|sprinkler|رشاش|إنذار|alarm|حماية\s*حريق|fire\s*protection|standpipe|smoke\s*control/i.test(lower);
+  if (sbc201Chapters.has(9) || (sbc201Chapters.has(10) && hasFireOrEgressIntent)) {
     sbc801Chapters.add(6);
     sbc801Chapters.add(7);
   }
@@ -1997,12 +2000,13 @@ function selectTargetPageRanges(
   return matched.size > 0 ? [...matched] : index.slice(0, 2).map(i => i.pageRange);
 }
 
-async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
+async function fetchSBCContext(query: string, extraKeywords?: string[], restrictToSBC201: boolean = false): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   const startTime = Date.now();
   const usedFiles: string[] = [];
-  
+
   // Check query cache first
-  const cacheKey = query.slice(0, 200).toLowerCase();
+  // R26: include restrictToSBC201 in cache key to avoid returning contaminated results
+  const cacheKey = `${restrictToSBC201 ? "sbc201only:" : ""}${query.slice(0, 200).toLowerCase()}`;
   const cached = queryCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < QUERY_CACHE_TTL) {
     console.log(`⚡ Query cache hit! Returning cached result (${cached.result.context.length} chars)`);
@@ -2056,6 +2060,13 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       sbc201Chapters = [...sbc201Set];
       sbc801Chapters = [...sbc801Set];
       if (sbc201Chapters.length > 0) console.log("🔄 Secondary keyword-based chapter detection used");
+    }
+
+    // R26: SBC201-only restriction — strip ALL SBC801 chapters when caller enforces it.
+    // Applied for occupant_load workflow: Table 1004.5 is SBC201-only; SBC801 is contamination.
+    if (restrictToSBC201) {
+      sbc801Chapters = [];
+      console.log("[R26] restrictToSBC201=true — SBC801 chapters cleared, SBC801 files excluded");
     }
 
     console.log(`🎯 Target chapters - SBC 201: [${sbc201Chapters.join(",")}], SBC 801: [${sbc801Chapters.join(",")}]`);
@@ -2123,9 +2134,12 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     // Sort and select files with smart targeting
     const scored201 = sbc201Files.map(f => ({ file: f, score: scoreFile(f, sbc201Ranges) }))
       .sort((a, b) => b.score - a.score);
-    const scored801 = sbc801Files.map(f => ({ file: f, score: scoreFile(f, sbc801Ranges) }))
-      .sort((a, b) => b.score - a.score);
-    
+    // R26: when restrictToSBC201, skip SBC801 file scoring entirely (zero candidates)
+    const scored801 = restrictToSBC201
+      ? []
+      : sbc801Files.map(f => ({ file: f, score: scoreFile(f, sbc801Ranges) }))
+          .sort((a, b) => b.score - a.score);
+
     // Select top files: when chapters are targeted, prefer only the scored files
     // (score > 0 = overlaps target ranges). Zero-score files dilute the context budget.
     const targeted201 = scored201.filter(s => s.score > 0);
@@ -2133,18 +2147,22 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     const max201 = targeted201.length > 0
       ? Math.min(targeted201.length, 4)  // only use files that actually cover the target chapters
       : Math.min(scored201.length, 3);   // fallback: first 3
-    const max801 = targeted801.length > 0
-      ? Math.min(targeted801.length, 4)
-      : Math.min(scored801.length, 3);
+    // R26: restrictToSBC201 forces max801 = 0 — no SBC801 files selected under any fallback
+    const max801 = restrictToSBC201 ? 0 :
+      (targeted801.length > 0
+        ? Math.min(targeted801.length, 4)
+        : Math.min(scored801.length, 3));
 
     let selectedFiles = [
       ...scored201.slice(0, max201).map(s => s.file),
       ...scored801.slice(0, max801).map(s => s.file),
     ];
-    
-    // Ensure at least some files
+
+    // Ensure at least some files (only from SBC201 side when restricted)
     if (selectedFiles.length < 3) {
-      const remaining = candidateFiles.filter(f => !selectedFiles.includes(f));
+      const remaining = candidateFiles
+        .filter(f => !selectedFiles.includes(f))
+        .filter(f => !restrictToSBC201 || !f.name.toLowerCase().includes("801"));
       selectedFiles = [...selectedFiles, ...remaining.slice(0, 5 - selectedFiles.length)];
     }
 
@@ -5443,7 +5461,9 @@ serve(async (req) => {
 
       // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
       // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
-      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery);
+      // R26: restrict to SBC201 for occupant_load — prevents SBC801_Ch10 contamination
+      const _restrictToSBC201 = _routerResultB2?.workflow_id === "wf_occupant_load";
+      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
       usedFiles = files;
       usedSourceMeta = keywordMeta;
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
@@ -5549,7 +5569,8 @@ ABSOLUTELY FORBIDDEN:
           );
 
           if (_augmentationB2) {
-            const overlay = buildEvidenceOverlay(_augmentationB2, language as "ar" | "en");
+            // R26: pass workflowId so occupant_load gets mandatory protocol override first
+            const overlay = buildEvidenceOverlay(_augmentationB2, language as "ar" | "en", _routerResultB2?.workflow_id ?? null);
             if (overlay) {
               fullSystemPrompt += overlay;
               console.log(

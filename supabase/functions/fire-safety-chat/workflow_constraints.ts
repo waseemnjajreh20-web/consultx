@@ -211,8 +211,46 @@ function detectMissingInputs(
 export function buildEvidenceOverlay(
   aug: AugmentationResult,
   language: "ar" | "en",
+  workflowId: string | null = null,
 ): string {
   const lines: string[] = [];
+
+  // ── R26: Occupant-load mandatory protocol ─────────────────────────────────────
+  // MUST be first — overrides the FINAL BINDING REMINDER ("stop if inputs missing")
+  // for occupant_load only. Stating reference table values is required advisory
+  // orientation, NOT a final calculation answer.
+  if (workflowId === "wf_occupant_load") {
+    lines.push(language === "ar"
+      ? "\n\n🏗️ بروتوكول حمل الإشغال الإلزامي (يعلو على قاعدة 'أوقف واسأل'):"
+      : "\n\n🏗️ OCCUPANT LOAD MANDATORY PROTOCOL (OVERRIDES 'missing inputs → stop and ask'):");
+    lines.push(language === "ar"
+      ? "⚠️ هذا البروتوكول يعلو على تعليمة 'المعطيات الحرجة ناقصة → أوقف واسأل' لهذا الوورك فلو فقط."
+      : "⚠️ This protocol SUPERSEDES the 'critical variables missing → stop and ask' rule for this workflow only.");
+    lines.push(language === "ar"
+      ? "الخطوة 1 — ابدأ بـ: 'المرجع الحاكم هو SBC 201 Table 1004.5' (إلزامي في كل إجابة)"
+      : "STEP 1 — Begin with: 'The governing reference is SBC 201 Table 1004.5' (mandatory in every response)");
+    lines.push(language === "ar"
+      ? "الخطوة 2 — اذكر القيم الثلاث فوراً (إلزامي حتى بدون مساحة):"
+      : "STEP 2 — State ALL three factors immediately (mandatory even without area input):");
+    lines.push(language === "ar"
+      ? "  • مناطق البيع التجارية في البدروم أو الطابق الأرضي: 2.8 م²/شخص — GROSS area"
+      : "  • Mercantile sales areas on ground floor or basement: 2.8 m²/person — GROSS area");
+    lines.push(language === "ar"
+      ? "  • مناطق البيع التجارية في الطوابق الأخرى: 5.6 م²/شخص — GROSS area"
+      : "  • Mercantile sales areas on other floors: 5.6 m²/person — GROSS area");
+    lines.push(language === "ar"
+      ? "  • مناطق التخزين/المخزون/الشحن: 28 م²/شخص"
+      : "  • Storage, stock, and shipping areas: 28 m²/person");
+    lines.push(language === "ar"
+      ? "الخطوة 3 — بعد ذكر القيم فقط، اطلب: مساحة البيع الإجمالية (gross m²) + الطابق + مساحة التخزين"
+      : "STEP 3 — ONLY AFTER stating the above, ask for: gross sales area (m²) + floor level + storage area");
+    lines.push(language === "ar"
+      ? "ممنوع: البدء بالأسئلة. ممنوع: 'net area' لمناطق Mercantile. ممنوع: خلط SBC801. ممنوع: حساب نهائي بدون مساحة."
+      : "FORBIDDEN: Starting with questions. FORBIDDEN: 'net area' for Mercantile. FORBIDDEN: SBC801 sources. FORBIDDEN: final calc without area.");
+    lines.push(language === "ar"
+      ? "ملاحظة: ذكر قيم الجدول المرجعي ليس إجابة نهائية — هو توجيه استشاري إلزامي يسبق الحساب."
+      : "NOTE: Stating reference table values is NOT a final answer — it is required advisory orientation before calculation.");
+  }
 
   // Parking-lot warnings
   if (aug.parking_lot_warnings.length > 0) {

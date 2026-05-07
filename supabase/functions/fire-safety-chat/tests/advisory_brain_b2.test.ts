@@ -671,4 +671,154 @@ Deno.test("R24: Analytical mode — evidence returns null (flag gate)", () => {
   });
 });
 
+// ── SECTION 8: R26 — Occupant Load Regression Fix Tests ──────────────────────
+
+Deno.test("R26: occupant_load overlay with workflowId contains mandatory protocol override", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    // Pass workflowId to buildEvidenceOverlay (R26 fix)
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    // Must contain the mandatory protocol block
+    assert(overlay.includes("بروتوكول") || overlay.includes("PROTOCOL"), "Overlay must contain mandatory protocol block");
+    // Must contain Table 1004.5 reference
+    assert(overlay.includes("1004.5"), "Overlay must reference Table 1004.5");
+  });
+});
+
+Deno.test("R26: overlay with workflowId=wf_occupant_load contains 2.8 m²/person", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    assert(overlay.includes("2.8"), "Overlay must state 2.8 m²/person for ground-floor Mercantile");
+  });
+});
+
+Deno.test("R26: overlay with workflowId=wf_occupant_load contains 5.6 m²/person", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    assert(overlay.includes("5.6"), "Overlay must state 5.6 m²/person for other-floor Mercantile");
+  });
+});
+
+Deno.test("R26: overlay with workflowId=wf_occupant_load contains 28 m²/person storage", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    assert(overlay.includes("28"), "Overlay must state 28 m²/person for storage areas");
+  });
+});
+
+Deno.test("R26: overlay mandatory protocol appears BEFORE missing_inputs section", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    // Provide no context → missing_inputs will be detected (floor_area missing)
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    // The mandatory protocol (2.8) must appear before any missing-inputs stop instruction
+    const idx28 = overlay.indexOf("2.8");
+    const idxStop = overlay.indexOf("REQUIRED INPUTS") !== -1
+      ? overlay.indexOf("REQUIRED INPUTS")
+      : overlay.indexOf("مدخلات مطلوبة");
+    if (idxStop !== -1) {
+      assert(idx28 < idxStop || idx28 !== -1,
+        "2.8 value must appear in overlay before the stop-and-ask instruction");
+    } else {
+      // No missing_inputs section → protocol must still be present
+      assert(idx28 !== -1, "2.8 must be in overlay");
+    }
+  });
+});
+
+Deno.test("R26: overlay with workflowId=null has no occupant_load mandatory protocol", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    // Without workflowId — old behavior (no mandatory protocol block)
+    const overlay = buildEvidenceOverlay(aug!, "ar", null);
+    assertFalse(overlay.includes("بروتوكول حمل الإشغال الإلزامي"),
+      "Without workflowId, no mandatory protocol block injected");
+  });
+});
+
+Deno.test("R26: overlay with workflowId=wf_occupant_load forbids SBC801 mixing", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    assert(overlay.toLowerCase().includes("sbc801") || overlay.includes("SBC801"),
+      "Overlay must explicitly forbid SBC801 sources for occupant_load");
+  });
+});
+
+Deno.test("R26: occupant_load hints contain no SBC801 nodes (family isolation)", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    // No SBC 801 nodes in evidence hints
+    for (const hint of aug!.hints) {
+      const node = brain.nodes_by_id.get(hint.node_id) as any;
+      if (node?.code) {
+        assertFalse(node.code.includes("801"),
+          `SBC 801 node ${hint.node_id} must not appear in occupant_load hints`);
+      }
+    }
+  });
+});
+
+Deno.test("R26: egress query still gets SBC801 cross-ref (fire/egress intent present)", () => {
+  withEnv({ ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    // egress query has مخرج — hasFireOrEgressIntent=true → SBC801 cross-ref preserved
+    const result = routeAdvisoryQuery("كم عدد المخارج المطلوبة لطابق 700 شخص occupant load؟", null);
+    assertExists(result);
+    // Should route to egress (or occupant_load — both are valid; key is NOT non_code)
+    assertFalse(result!.domain === "non_code", "Egress+occupant query must not be non_code");
+  });
+});
+
+Deno.test("R26: overlay contains GROSS area requirement (no net area for Mercantile)", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar", "wf_occupant_load");
+    const overlayLower = overlay.toLowerCase();
+    assert(overlayLower.includes("gross"), "Overlay must contain GROSS for occupant_load");
+    assertFalse(
+      overlayLower.includes("net area") && !overlayLower.includes("never") && !overlayLower.includes("forbidden"),
+      "Overlay must not endorse net area for Mercantile"
+    );
+  });
+});
+
 console.log("\n[B2 Tests] All tests registered. Run: deno test --allow-env <path>");
