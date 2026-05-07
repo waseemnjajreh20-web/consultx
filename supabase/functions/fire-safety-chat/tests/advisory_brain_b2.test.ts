@@ -506,4 +506,169 @@ Deno.test("validation cases: greeting case → non_code", async () => {
   });
 });
 
+// ── SECTION 7: R24 — Occupant load answer quality + dynamic thinking polish ──
+
+Deno.test("R24: محل تجاري query routes to occupant_load", () => {
+  withEnv({ ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const result = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", null);
+    assertExists(result);
+    assertEquals(result!.domain, "occupant_load");
+    assertEquals(result!.workflow_id, "wf_occupant_load");
+  });
+});
+
+Deno.test("R24: occupant_load safe_answer_rules contain Table 1004.5", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما متطلبات الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما متطلبات الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const rulesText = aug!.safe_answer_rules.join(" ");
+    assert(rulesText.includes("1004.5"), "safe_answer_rules must reference Table 1004.5");
+  });
+});
+
+Deno.test("R24: occupant_load safe_answer_rules include 2.8 gross factor", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري في الطابق الأرضي؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري في الطابق الأرضي؟");
+    assertExists(aug);
+    const rulesText = aug!.safe_answer_rules.join(" ");
+    assert(rulesText.includes("2.8"), "Rules must include 2.8 m²/person for ground-floor Mercantile");
+  });
+});
+
+Deno.test("R24: occupant_load safe_answer_rules include 5.6 gross factor", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري في الطابق الثاني؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري في الطابق الثاني؟");
+    assertExists(aug);
+    const rulesText = aug!.safe_answer_rules.join(" ");
+    assert(rulesText.includes("5.6"), "Rules must include 5.6 m²/person for other-floor Mercantile");
+  });
+});
+
+Deno.test("R24: occupant_load safe_answer_rules include 28 storage factor", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const rulesText = aug!.safe_answer_rules.join(" ");
+    assert(rulesText.includes("28"), "Rules must include 28 m²/person for storage areas");
+  });
+});
+
+Deno.test("R24: occupant_load safe_answer_rules forbid net area for Mercantile", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const rulesText = aug!.safe_answer_rules.join(" ").toLowerCase();
+    assert(
+      rulesText.includes("never say 'net area'") || rulesText.includes("gross"),
+      "Rules must forbid net area for Mercantile and enforce GROSS"
+    );
+  });
+});
+
+Deno.test("R24: occupant_load overlay contains GROSS keyword", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    const overlay = buildEvidenceOverlay(aug!, "ar");
+    assert(overlay.includes("GROSS"), "Evidence overlay must contain GROSS for occupant_load");
+  });
+});
+
+Deno.test("R24: occupant_load overlay does NOT include SBC801 sources", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const brain = makeMockBrain();
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", brain);
+    assertExists(router);
+    const aug = augmentWithWorkflow(router, brain, "ما الحمل الإشغالي لمحل تجاري؟");
+    assertExists(aug);
+    // No SBC 801 nodes should appear in hints for occupant_load
+    const sbc801Hints = aug!.hints.filter(h => {
+      const node = brain.nodes_by_id.get(h.node_id) as any;
+      return node?.code?.includes("801");
+    });
+    assertEquals(sbc801Hints.length, 0, "No SBC 801 hints for occupant_load query");
+  });
+});
+
+Deno.test("R24: dynamic thinking event exists for occupant_load", () => {
+  withEnv({ ADVISORY_DYNAMIC_THINKING_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", null);
+    assertExists(router);
+    assertEquals(router!.domain, "occupant_load");
+    const events = buildThinkingSequence(router, true, false, "ar");
+    assert(events.length >= 2, "Should have at least routing + retrieval events for occupant_load");
+    // routing event specific to occupant_load
+    const routingEvent = events.find(e => e.phase === "routing");
+    assertExists(routingEvent, "Must have routing thinking event for occupant_load");
+    assert(routingEvent!.ar.includes("جدول") || routingEvent!.ar.includes("مساحة"),
+      "Routing event must reference table or area for occupant_load");
+  });
+});
+
+Deno.test("R24: no CoT or private diagnostics in thinking events", () => {
+  withEnv({ ADVISORY_DYNAMIC_THINKING_ENABLED: "1", ADVISORY_BRAIN_B2_ROUTER_ENABLED: "1" }, () => {
+    const router = routeAdvisoryQuery("ما الحمل الإشغالي لمحل تجاري؟", null);
+    assertExists(router);
+    const events = buildThinkingSequence(router, true, false, "ar");
+    const FORBIDDEN_PATTERNS = ["CoT", "chain-of-thought", "scoring", "diagnostic", "[DEBUG]", "confidence="];
+    for (const evt of events) {
+      for (const pattern of FORBIDDEN_PATTERNS) {
+        assertFalse(evt.ar.includes(pattern), `AR event contains forbidden: "${pattern}"`);
+        assertFalse(evt.en.includes(pattern), `EN event contains forbidden: "${pattern}"`);
+      }
+    }
+  });
+});
+
+Deno.test("R24: Main (primary) mode — occupant_load rules NOT injected (no router call)", () => {
+  // Main mode never calls augmentWithWorkflow — verify evidence flag gate
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "0" }, () => {
+    const mockRouter: RouterResult = {
+      workflow_id: "wf_occupant_load",
+      domain: "occupant_load",
+      confidence: "high",
+      matched_by: [],
+      parking_lot_pre_check: [],
+      required_inputs: [],
+      workflow: null,
+    };
+    const aug = augmentWithWorkflow(mockRouter, null, "any query");
+    assertEquals(aug, null, "Evidence must return null when flag is OFF (Main mode path)");
+  });
+});
+
+Deno.test("R24: Analytical mode — evidence returns null (flag gate)", () => {
+  withEnv({ ADVISORY_BRAIN_B2_EVIDENCE_ENABLED: "0" }, () => {
+    const mockRouter: RouterResult = {
+      workflow_id: "wf_occupant_load",
+      domain: "occupant_load",
+      confidence: "high",
+      matched_by: [],
+      parking_lot_pre_check: [],
+      required_inputs: [],
+      workflow: null,
+    };
+    const aug = augmentWithWorkflow(mockRouter, null, "قراءة مخطط");
+    assertEquals(aug, null, "Evidence must return null when flag is OFF (Analytical mode path)");
+  });
+});
+
 console.log("\n[B2 Tests] All tests registered. Run: deno test --allow-env <path>");

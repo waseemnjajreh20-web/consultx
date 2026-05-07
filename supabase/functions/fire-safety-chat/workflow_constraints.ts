@@ -143,10 +143,27 @@ export function augmentWithWorkflow(
     citation_requirements: wf?.citation_requirements ?? [],
   };
 
+  // ── R24: Occupant-load Mercantile gross/net enforcement ─────────────────────
+  // Injected at code level (independent of bucket B1 package) so that the
+  // correct SBC 201 Table 1004.5 Mercantile gross factors are always stated
+  // first and the model never substitutes "net area" for a gross-specified row.
+  if (routerResult.workflow_id === "wf_occupant_load") {
+    const r24Rules = [
+      "Reference: SBC 201 Table 1004.5 — cite by full name.",
+      "Mercantile (Group M) ground-floor / basement sales areas: 2.8 m²/person — GROSS area.",
+      "Mercantile (Group M) sales areas on other floors: 5.6 m²/person — GROSS area.",
+      "Storage, stock, and shipping areas (any occupancy): 28 m²/person.",
+      "NEVER say 'net area' for Mercantile — Table 1004.5 explicitly specifies gross for all Mercantile rows.",
+      "State the table values first; then ask for: gross sales-area m², floor level, storage area if any.",
+    ];
+    result.safe_answer_rules = [...r24Rules, ...result.safe_answer_rules];
+  }
+
   console.log(
     `[EvidenceB2] workflow=${routerResult.workflow_id} ` +
     `hints=${hints.length} parking_lot=${parking_lot_warnings.length} ` +
-    `missing_inputs=${missing_inputs.length}`
+    `missing_inputs=${missing_inputs.length} ` +
+    `safe_answer_rules=${result.safe_answer_rules.length}`
   );
 
   return result;
@@ -232,7 +249,7 @@ export function buildEvidenceOverlay(
       ? "\n\n📐 قواعد الإجابة الآمنة للوورك فلو الحالي (ملزمة):"
       : "\n\n📐 WORKFLOW SAFE-ANSWER RULES (binding):";
     lines.push(header);
-    for (const rule of aug.safe_answer_rules.slice(0, 6)) {
+    for (const rule of aug.safe_answer_rules.slice(0, 10)) {
       lines.push(`- ${rule}`);
     }
   }
