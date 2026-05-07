@@ -26,15 +26,20 @@ SW v3 is live. This file is from our `95a9034` push (R18 introduced v3 in `b0374
 
 ---
 
-## JS Bundle State (at time of writing)
+## JS Bundle State (verified after 10+ min)
 
 | Check | Value |
 |-------|-------|
 | Current bundle | `assets/index-W5b-0r0S.js` |
-| Contains `thinking_status` | ❌ Not yet — old bundle |
-| Vercel build status | ⏳ Building from `95a9034` |
+| Contains `thinking_status` | ❌ Stale bundle — predates R17 |
+| Vercel build status | ❌ NOT auto-deploying from main |
 
-The JS bundle will update when the Vercel build completes (~2-3 min total). `index.html` will then reference the new bundle filename with all R17-R22 changes.
+Production bundle is from a deploy before R17 (no `thinking_status`, no `dynamicThinkingMsg`). The push to `origin/main` did NOT trigger a Vercel redeploy — likely because:
+- Vercel GitHub integration may be disconnected, or
+- Vercel is deploying from a different branch than `main`, or
+- The Vercel project needs a manual redeploy trigger
+
+**Owner action required: trigger Vercel redeploy (see below).**
 
 ---
 
@@ -62,10 +67,24 @@ BLOCKED_NO_VERCEL_API for detailed deployment status.
 
 ---
 
-## Post-Build Verification Steps (Owner)
+## ⚠️ OWNER ACTION REQUIRED — Manual Vercel Redeploy
 
-After ~2-3 min from push:
-1. Hard refresh on consultx.app (or wait for SW v3 to activate)
-2. Open DevTools → Network → filter `index-*.js`
-3. Confirm new bundle filename (different from `W5b-0r0S`)
-4. Search bundle for `thinking_status` → expect 2+ matches
+GitHub push to `main` did not trigger Vercel. The owner must trigger manually:
+
+**Option A — Vercel Dashboard (easiest):**
+1. Go to https://vercel.com/dashboard
+2. Open the ConsultX project
+3. Click **"Redeploy"** on the latest deployment, or go to **Settings → Git** and confirm it's pointing to `main`
+4. If disconnected: reconnect the GitHub repo → `main` branch
+
+**Option B — Vercel CLI:**
+```bash
+cd D:\ConsultX_Clean
+npx vercel --prod
+```
+(requires `vercel login` first)
+
+**After deploy completes (~2-3 min):**
+1. Check `consultx.app/index.html` — bundle filename will change from `W5b-0r0S`
+2. New bundle will contain `thinking_status` (2 matches)
+3. Test Advisory mode → dynamic thinking message visible

@@ -26,24 +26,27 @@ Branch `claude/jolly-haibt-602657` تم دمجه في `main` كـ merge commit `
 
 ### 3. هل Vercel production محدث؟
 
-**جزئياً ⏳ (بناء جارٍ)**
+**لا ❌ — يتطلب تدخل المالك**
 
 | الملف | الحالة |
 |-------|--------|
-| `public/sw.js` (`consultx-v3`) | ✅ مُحدَّث على production |
-| JS bundle (`assets/index-*.js`) | ⏳ Vercel لا يزال يبني — الملف القديم يُخدم مؤقتاً |
+| `public/sw.js` (`consultx-v3`) | ✅ مُحدَّث (مصدر غير محدد) |
+| JS bundle (`assets/index-W5b-0r0S.js`) | ❌ قديم — لا يحتوي R17/R18/R22 |
+| Vercel auto-deploy من main | ❌ لم يُفعَّل — الـ push لم يُطلق build |
 
-Vercel يبني من `95a9034`. الـ static files تُنشر أولاً (sw.js ظهر v3 على الفور)، ثم الـ JS bundle عند اكتمال البناء (~2-3 دقائق من وقت push).
+GitHub push إلى `origin/main` نجح (`95a9034`) لكن Vercel لم يبنِ تلقائياً. المالك يحتاج:
+- الذهاب إلى Vercel Dashboard → إعادة نشر يدوية
+- أو التحقق من ربط GitHub integration مع branch `main`
 
 ### 4. هل user-visible dynamic thinking should now work؟
 
-**نعم — بعد اكتمال Vercel build ✅**
+**بعد Vercel redeploy يدوي ✅**
 
-بمجرد اكتمال build:
-- `thinking_status` SSE handler موجود في bundle ✅
+الكود صحيح في main (`95a9034`). بعد أن يُشغّل المالك Vercel redeploy:
+- `thinking_status` SSE handler سيكون في bundle ✅
 - `dynamicThinkingMsg` state موجود ✅
 - Timing fix: بلا guard يمنع العرض في مرحلة "connecting" ✅
-- رسائل التفكير تظهر فوراً (~200-500ms من استقبال الـ SSE event)
+- رسائل التفكير ستظهر فوراً (~200-500ms من استقبال الـ SSE event)
 
 ### 5. هل smoke تم أم blocked؟
 
@@ -69,17 +72,19 @@ Pushed: origin/advisory-brain-v1-operational ✅
 
 ### 7. ما الذي يمنع 100% operational إن وجد؟
 
-شيء واحد فقط، غير blockers تقنية:
+شيء واحد فقط، ليس تقنياً:
 
-**Vercel JS bundle build** — جارٍ (ليس blocked). يكتمل تلقائياً خلال دقائق.
+**Vercel لا يعيد النشر تلقائياً** — GitHub push نجح لكن Vercel لم يُفعَّل. يحتاج المالك لإعادة نشر يدوية من Vercel Dashboard.
 
-بعد اكتمال build لا يوجد أي معوّق.
+الكود في main صحيح 100%. بمجرد Vercel redeploy لا يوجد أي معوّق.
 
 ### 8. أول 3 مهام فقط
 
-1. **انتظر ~3 دقائق** من الآن → افتح `consultx.app` على الهاتف → تأكد أن الـ bundle تغير:
-   - DevTools → Network → ابحث عن `index-*.js`
-   - إذا رأيت ملفًا جديدًا (hash مختلف عن `W5b-0r0S`) → Vercel اكتمل
+1. **اعد نشر من Vercel Dashboard** (GitHub push لم يُطلق auto-deploy):
+   - اذهب إلى https://vercel.com/dashboard
+   - افتح ConsultX → اضغط **Redeploy** على آخر deployment
+   - أو: Settings → Git → تأكد أن connected branch = `main`
+   - انتظر ~2-3 دقائق حتى يكتمل الـ build
 
 2. **اختبر في Advisory mode:**
    ```
@@ -107,7 +112,7 @@ Pushed: origin/advisory-brain-v1-operational ✅
 | B2 flags (4 × ON) | ✅ LIVE |
 | Dynamic thinking SSE — backend | ✅ LIVE |
 | Dynamic thinking SSE — frontend (code) | ✅ in `95a9034` |
-| Dynamic thinking SSE — frontend (Vercel) | ⏳ building |
+| Dynamic thinking SSE — frontend (Vercel) | ❌ needs manual redeploy |
 | Source precision (edge + frontend) | ✅ in `95a9034` |
 | SW cache v3 | ✅ LIVE on production |
 | Tests: 64/64 PASS | ✅ |
