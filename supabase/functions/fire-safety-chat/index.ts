@@ -2284,11 +2284,12 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       const sourceMeta: SourcePageMeta[] = [...sourcesUsed].map(file => {
         const m = sourceMetaMap.get(file);
         const hasPages = m && (m.minPage != null || m.maxPage != null);
+        const span = (m && m.minPage != null && m.maxPage != null) ? m.maxPage - m.minPage : 0;
         return {
           file,
           pageStart: m?.minPage ?? null,
           pageEnd: m?.maxPage ?? null,
-          precision: hasPages ? 'page_range' : 'chunk_range_only',
+          precision: (hasPages && span <= 100) ? 'page_range' : 'chunk_range_only',
         };
       });
 
@@ -5286,6 +5287,11 @@ serve(async (req) => {
     let usedSourceMeta: SourcePageMeta[] = [];
     let advisoryLedger: EvidenceLedgerEntry[] = [];
     let finalMessages = [...messages];
+    // ── B2 state vars (outer scope; populated in advisory branch, read in SSE branch) ─
+    let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
+    let _routerResultB2: RouterResult | null = null;
+    let _augmentationB2: AugmentationResult | null = null;
+    let _thinkingEventsB2: ThinkingEvent[] = [];
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====

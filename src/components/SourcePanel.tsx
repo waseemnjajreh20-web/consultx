@@ -228,7 +228,9 @@ function PanelBody({
             {isRtl ? "لا توجد مصادر" : "No sources available"}
           </p>
         ) : (
-          resolvedSources.map((meta) => (
+          resolvedSources.map((meta) => {
+            const isStructuredTable = meta.origin === "structured_table";
+            return (
             <button
               key={meta.pdfPath ?? meta.sourceFile}
               onClick={() => (meta.pdfUrl ? onSelectSource(meta) : undefined)}
@@ -237,7 +239,9 @@ function PanelBody({
                 "border-b border-white/5 last:border-0",
                 meta.pdfUrl
                   ? "hover:bg-white/[0.06] active:bg-white/10 cursor-pointer"
-                  : "cursor-default opacity-50",
+                  : isStructuredTable
+                  ? "cursor-default"
+                  : "cursor-default opacity-40",
               ].join(" ")}
               disabled={!meta.pdfUrl}
             >
@@ -250,7 +254,7 @@ function PanelBody({
               )}
               <BookOpen
                 className="w-4 h-4 mt-0.5 flex-shrink-0"
-                style={{ color: meta.pdfUrl ? ACCENT : "rgba(255,255,255,0.2)" }}
+                style={{ color: meta.pdfUrl ? ACCENT : isStructuredTable ? "#FFC107" : "rgba(255,255,255,0.2)" }}
               />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-white/90 leading-snug">
@@ -279,21 +283,19 @@ function PanelBody({
                     )}
                   </p>
                 )}
-                {meta.pageStart !== null && meta.pageEnd !== null && (
+                {meta.pageStart !== null && meta.pageEnd !== null && meta.precision === "page_range" && (
                   <p className="text-[11px] mt-0.5 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                     <span>
                       {isRtl
                         ? `صفحات ${meta.pageStart}–${meta.pageEnd}`
                         : `pp. ${meta.pageStart}–${meta.pageEnd}`}
                     </span>
-                    {meta.precision === "page_range" && (
-                      <span
-                        className="text-[10px] px-1 py-px rounded"
-                        style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
-                      >
-                        {isRtl ? "دقيق" : "exact"}
-                      </span>
-                    )}
+                    <span
+                      className="text-[10px] px-1 py-px rounded"
+                      style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
+                    >
+                      {isRtl ? "دقيق" : "exact"}
+                    </span>
                   </p>
                 )}
               </div>
@@ -301,7 +303,8 @@ function PanelBody({
                 <ExternalLink className="w-3 h-3 mt-1 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }} />
               )}
             </button>
-          ))
+            );
+          })
         )}
       </div>
     );

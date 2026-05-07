@@ -915,8 +915,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
 
   const getLoadingMessage = () => {
     // Use backend dynamic thinking message when available (B2 Stage 4).
-    // Suppress only for "connecting" — the first stage before any events arrive.
-    if (dynamicThinkingMsg && loadingStage !== "connecting") return dynamicThinkingMsg;
+    if (dynamicThinkingMsg) return dynamicThinkingMsg;
     switch (loadingStage) {
       case "connecting": return t("connecting");
       case "thinking": return t("thinking");
