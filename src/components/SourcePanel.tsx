@@ -510,7 +510,8 @@ export default function SourcePanel({
           onPrevSource={navigatePrev}
           onNextSource={navigateNext}
         />
-        <div className="flex-1 overflow-hidden">
+        {/* R19: iOS safe-area-inset-bottom so content isn't clipped behind home indicator */}
+        <div className="flex-1 overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
           <PanelBody
             isListView={isListView}
             resolvedSources={resolvedSources}

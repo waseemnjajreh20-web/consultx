@@ -552,12 +552,18 @@ function TextRenderer({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirement 2 — Table: rounded corners, zebra rows, scrollable, dark header
+// R19: added scroll-shadow affordance for mobile
 // ─────────────────────────────────────────────────────────────────────────────
 function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: string[][] } }) {
   return (
     <div
-      className="my-4 rounded-lg border border-border/40 shadow-sm"
-      style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}
+      className="my-4 rounded-lg border border-border/40 shadow-sm relative"
+      style={{
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+        // Subtle right-edge fade as scroll affordance on mobile
+        background: "linear-gradient(to right, transparent 85%, rgba(0,212,255,0.04) 100%)",
+      }}
     >
       <table
         className="w-full text-sm"
@@ -568,7 +574,7 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
             {tableData.headers.map((header, i) => (
               <th
                 key={i}
-                className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap"
+                className="px-3 py-2 sm:px-4 sm:py-3 text-right font-semibold text-foreground whitespace-nowrap text-xs sm:text-sm"
                 style={{
                   fontWeight: 600,
                   background: "hsl(var(--muted) / 0.7)",
@@ -597,7 +603,7 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
                 {row.map((cell, cellIndex) => (
                   <td
                     key={cellIndex}
-                    className="px-4 py-2.5 text-foreground align-top leading-[1.8]"
+                    className="px-3 py-2 sm:px-4 sm:py-2.5 text-foreground align-top leading-[1.7] text-xs sm:text-sm"
                     style={{
                       borderBottom: rowIndex < tableData.rows.length - 1 ? "1px solid hsl(var(--border) / 0.25)" : undefined,
                       borderRight: cellIndex > 0 ? "1px solid hsl(var(--border) / 0.2)" : undefined,

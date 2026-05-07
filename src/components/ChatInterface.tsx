@@ -36,7 +36,7 @@ import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
-import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta } from "@/utils/sourceMetadata";
+import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta, type SourceMeta } from "@/utils/sourceMetadata";
 import { expectedDocCode, isFamilyMatch, findSameFamilySource, availableFamilies } from "@/utils/citationRouting";
 import { usePreferences } from "@/hooks/usePreferences";
 
@@ -117,11 +117,12 @@ function UtilityBar({ content, mode, messageId, userName }: {
     mode === "primary"  ? "#00D4FF" :
     mode === "standard" ? "#FF8C00" : "#DC143C";
 
+  // R19: increased padding for 44px touch target compliance; flex-wrap on container
   const BASE: React.CSSProperties = {
     display:        "inline-flex",
     alignItems:     "center",
     gap:            "5px",
-    padding:        "3px 11px",
+    padding:        "6px 11px",
     borderRadius:   "6px",
     fontSize:       "0.71rem",
     fontWeight:     500,
@@ -134,6 +135,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
     letterSpacing:  "0.02em",
     transition:     "color 0.15s, border-color 0.15s, background 0.15s",
     lineHeight:     1,
+    minHeight:      "32px",
   };
 
   const hover = (e: React.MouseEvent<HTMLButtonElement>, on: boolean) => {
@@ -415,6 +417,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
     <div style={{
       display:     "flex",
       alignItems:  "center",
+      flexWrap:    "wrap",        // R19: wrap buttons on narrow screens
       gap:         "6px",
       paddingTop:  "10px",
       marginTop:   "6px",
@@ -658,6 +661,13 @@ async function streamChat({
       onError(errorData.error || "Daily message limit exceeded");
       return;
     }
+    // R19: friendly 503 message — overrides bilingual edge-function string
+    if (resp.status === 503) {
+      onError(language === "en"
+        ? "Service temporarily busy, please try again in a moment."
+        : "الخدمة مشغولة مؤقتًا، حاول مرة أخرى بعد لحظات.");
+      return;
+    }
     onError(errorData.error || (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
     return;
   }
@@ -776,6 +786,57 @@ function ModeDivider({ mode, t }: { mode: ChatMode; t: (key: string) => string }
         {text}
       </span>
       <div className="flex-1 h-px" style={{ background: `${color}40` }} />
+    </div>
+  );
+}
+
+// ── R19: Source chips row with 3-chip cap + "more" toggle ────────────────────
+function SourceChipsRow({
+  resolved,
+  language,
+  onOpenSource,
+  sourcesLabel,
+}: {
+  resolved: SourceMeta[];
+  language: "ar" | "en";
+  onOpenSource: (meta: SourceMeta) => void;
+  sourcesLabel: string;
+}) {
+  const [showAll, setShowAll] = React.useState(false);
+  const MAX_VISIBLE = 3;
+  // Sort: structured table sources first
+  const sorted = React.useMemo(
+    () => [...resolved].sort((a, b) =>
+      (a.origin === "structured_table" ? 0 : 1) - (b.origin === "structured_table" ? 0 : 1)
+    ),
+    [resolved]
+  );
+  const visible = showAll ? sorted : sorted.slice(0, MAX_VISIBLE);
+  const hiddenCount = sorted.length - MAX_VISIBLE;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-3 border-t border-border/30">
+      <span className="text-xs text-muted-foreground flex-shrink-0">{sourcesLabel}</span>
+      {visible.map((meta) => (
+        <button
+          key={meta.pdfPath ?? meta.sourceFile}
+          onClick={() => onOpenSource(meta)}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors hover:opacity-80 active:opacity-70"
+          style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)", minHeight: "28px" }}
+          title={meta.title}
+        >
+          {formatSourceLabel(meta, language)}
+        </button>
+      ))}
+      {!showAll && hiddenCount > 0 && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium transition-colors hover:opacity-80 active:opacity-70"
+          style={{ background: "rgba(0,212,255,0.05)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.15)", minHeight: "28px" }}
+        >
+          {language === "ar" ? `+${hiddenCount} أخرى` : `+${hiddenCount} more`}
+        </button>
+      )}
     </div>
   );
 }
@@ -1365,13 +1426,13 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         </div>
       )}
 
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card/30 backdrop-blur-xl">
-        <div className="flex items-center gap-4">
-          <img src={consultxIcon} alt="ConsultX" className="w-10 h-10 object-contain" />
+      {/* Header — R19: reduced padding on mobile */}
+      <header className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-4 border-b border-border/50 bg-card/30 backdrop-blur-xl">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <img src={consultxIcon} alt="ConsultX" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
           <div>
-            <h1 className="text-lg font-bold text-gradient">{t("appName")}</h1>
-            <p className="text-xs text-muted-foreground">{t("appTagline")}</p>
+            <h1 className="text-base sm:text-lg font-bold text-gradient">{t("appName")}</h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">{t("appTagline")}</p>
           </div>
           {/* E7.2: Admin test-mode badge — visible only to allowed admins with active override. */}
           {adminOverrideActive && (
@@ -1519,7 +1580,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       {/* Chat Area — drag/drop zone (desktop only) */}
       <div
         className={cn(
-          "flex-1 overflow-y-auto px-4 py-6 relative",
+          "flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 relative",
           isDragOver && "ring-2 ring-inset ring-primary/50"
         )}
         onDragOver={handleDragOver}
@@ -1902,33 +1963,25 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                             language={language}
                           />
                         )}
-                        {message.sources && message.sources.length > 0 && (() => {
-                          const resolved = message.sourceMeta
-                            ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
-                            : resolveAllSources(message.sources);
-                          return (
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 border-t border-border/30">
-                              <span className="text-xs text-muted-foreground flex-shrink-0">{t("sourcesLabel")}</span>
-                              {resolved.map((meta) => (
-                                <button
-                                  key={meta.pdfPath ?? meta.sourceFile}
-                                  onClick={() => {
-                                    if (meta.pdfUrl) {
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: meta });
-                                    } else {
-                                      setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
-                                    }
-                                  }}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
-                                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)" }}
-                                  title={meta.title}
-                                >
-                                  {formatSourceLabel(meta, language as "ar" | "en")}
-                                </button>
-                              ))}
-                            </div>
-                          );
-                        })()}
+                        {/* R19: Source chips — capped at 3, structured_table sorted first */}
+                        {message.sources && message.sources.length > 0 && (
+                          <SourceChipsRow
+                            resolved={
+                              message.sourceMeta
+                                ? resolveSourcesWithMeta(message.sources, message.sourceMeta)
+                                : resolveAllSources(message.sources)
+                            }
+                            language={language as "ar" | "en"}
+                            onOpenSource={(meta) => {
+                              if (meta.pdfUrl) {
+                                setSourcePanel({ open: true, sources: message.sources!, activeMeta: meta });
+                              } else {
+                                setSourcePanel({ open: true, sources: message.sources!, activeMeta: null });
+                              }
+                            }}
+                            sourcesLabel={t("sourcesLabel")}
+                          />
+                        )}
                         {/* Requirement 4 — Utility Bar */}
                         <UtilityBar
                           content={displayContent}
@@ -1954,16 +2007,18 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                 {retryCount > 0 ? (
                   <div className="flex items-center gap-3">
                     <RefreshCw className="w-5 h-5 text-destructive animate-spin" />
-                    <span className="text-muted-foreground">{t("retrying")} ({retryCount}/{MAX_RETRIES})...</span>
+                    {/* R19: quiet retry — hide count, show calm message */}
+                    <span className="text-muted-foreground text-sm">{language === "ar" ? "الرجاء الانتظار..." : "Please wait..."}</span>
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-3">
+                    {/* R19: flex-wrap + min-w-0 prevent overflow on narrow screens */}
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
                       <TypingIndicator mode={chatMode} label={t("typingIndicator")} />
                       {waitingLevel > 0 ? (
-                        <span className="text-sm font-medium animate-pulse" style={{ color: getModeDotColor(chatMode) }}>{getWaitingMessage()}</span>
+                        <span className="text-sm font-medium animate-pulse break-words min-w-0" style={{ color: getModeDotColor(chatMode) }}>{getWaitingMessage()}</span>
                       ) : (
-                        <span className="text-muted-foreground text-sm animate-fade-in" key={dynamicThinkingMsg || loadingStage}>{getLoadingMessage()}</span>
+                        <span className="text-muted-foreground text-sm animate-fade-in break-words min-w-0" key={dynamicThinkingMsg || loadingStage}>{getLoadingMessage()}</span>
                       )}
                     </div>
                     {/* Progress bar — vision stages (5 steps) or text stages (4 steps) */}
@@ -1991,8 +2046,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-border/50 bg-card/30 backdrop-blur-xl p-4">
+      {/* Input Area — R19: p-3 on mobile, p-4 on sm+ */}
+      <div className="border-t border-border/50 bg-card/30 backdrop-blur-xl p-3 sm:p-4">
         <div className="max-w-4xl mx-auto">
           {/* Mode-aware file-type hint — shown only when no files pending, advisory/analytical modes */}
           {!hasFiles && !isProcessing && chatMode !== "primary" && (
