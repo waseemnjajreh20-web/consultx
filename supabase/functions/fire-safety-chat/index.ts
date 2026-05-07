@@ -5684,8 +5684,8 @@ ABSOLUTELY FORBIDDEN:
       }
     );
 
-    // Auto-fallback: if preferred model fails with 429 (quota) or 404 (deprecated), try fallback
-    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404)) {
+    // Auto-fallback: if preferred model fails with 429 (quota), 404 (deprecated), or 503 (overloaded), try fallback
+    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404 || response.status === 503)) {
       console.log(`[Gemini] ${geminiModel} returned ${response.status}, falling back to ${fallbackModel}`);
       geminiModel = fallbackModel;
       response = await fetch(
@@ -5702,12 +5702,38 @@ ABSOLUTELY FORBIDDEN:
       );
     }
 
+    // ── R25: 503 retry-with-backoff ──────────────────────────────────────────────
+    // If the current model (after any fallback above) still returns 503, wait 1500ms
+    // and retry once. Gemini 503 = transient overload; a single retry clears most cases.
+    if (!response.ok && response.status === 503) {
+      console.warn(`[Gemini] 503 from ${geminiModel} — waiting 1500ms then retrying once (R25)`);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction,
+            contents,
+            generationConfig: { temperature: 0.7 },
+          }),
+        }
+      );
+      console.log(`[Gemini] 503 retry result: ${response.status} | Model: ${geminiModel}`);
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[Gemini] API error: ${response.status} | Model: ${geminiModel} | Error: ${errorText.slice(0, 500)}`);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later" }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 503) {
+        return new Response(JSON.stringify({ error: "الخدمة مشغولة مؤقتًا، حاول مرة أخرى بعد لحظات. / Service temporarily busy, please try again in a moment." }), {
+          status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       return new Response(JSON.stringify({ error: `Service error: ${response.status}` }), {
