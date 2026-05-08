@@ -117,10 +117,11 @@ function UtilityBar({ content, mode, messageId, userName }: {
     mode === "primary"  ? "#00D4FF" :
     mode === "standard" ? "#FF8C00" : "#DC143C";
 
-  // R19: increased padding for 44px touch target compliance; flex-wrap on container
+  // R19: flex-wrap on container; R19B: minHeight 44px for proper touch-target compliance
   const BASE: React.CSSProperties = {
     display:        "inline-flex",
     alignItems:     "center",
+    justifyContent: "center",
     gap:            "5px",
     padding:        "6px 11px",
     borderRadius:   "6px",
@@ -135,7 +136,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
     letterSpacing:  "0.02em",
     transition:     "color 0.15s, border-color 0.15s, background 0.15s",
     lineHeight:     1,
-    minHeight:      "32px",
+    minHeight:      "44px",
   };
 
   const hover = (e: React.MouseEvent<HTMLButtonElement>, on: boolean) => {
@@ -804,13 +805,37 @@ function SourceChipsRow({
 }) {
   const [showAll, setShowAll] = React.useState(false);
   const MAX_VISIBLE = 3;
-  // Sort: structured table sources first
-  const sorted = React.useMemo(
-    () => [...resolved].sort((a, b) =>
+  // Sort: structured table sources first, then dedup.
+  // R19B: (a) label-based dedup so identical chip text never shows twice,
+  //        (b) hide bare generic "📖 SBC 201" chips when the same document
+  //            family already has a more specific chip (table ref or page range).
+  const sorted = React.useMemo(() => {
+    const rawSorted = [...resolved].sort((a, b) =>
       (a.origin === "structured_table" ? 0 : 1) - (b.origin === "structured_table" ? 0 : 1)
-    ),
-    [resolved]
-  );
+    );
+    // Pass 1 — find which document families already have a specific (non-bare) chip
+    const coveredFamilies = new Set<string>();
+    for (const meta of rawSorted) {
+      const lbl = formatSourceLabel(meta, language);
+      const rawCode = meta.documentCode === "UNKNOWN" ? "" : meta.documentCode;
+      const bareLabel = `📖 ${rawCode.replace("-", " ")}`;
+      if (lbl !== bareLabel) coveredFamilies.add(rawCode);
+    }
+    // Pass 2 — label dedup + hide bare generic chips that are already covered
+    const seenLabels = new Set<string>();
+    return rawSorted.filter(meta => {
+      const lbl = formatSourceLabel(meta, language);
+      if (seenLabels.has(lbl)) return false;
+      seenLabels.add(lbl);
+      // Suppress a bare "📖 SBC 201" chip if a richer chip covers that family
+      const rawCode = meta.documentCode === "UNKNOWN" ? "" : meta.documentCode;
+      const bareLabel = `📖 ${rawCode.replace("-", " ")}`;
+      if (lbl === bareLabel && meta.origin !== "structured_table" && coveredFamilies.has(rawCode)) {
+        return false;
+      }
+      return true;
+    });
+  }, [resolved, language]);
   const visible = showAll ? sorted : sorted.slice(0, MAX_VISIBLE);
   const hiddenCount = sorted.length - MAX_VISIBLE;
 

@@ -283,19 +283,21 @@ function PanelBody({
                     )}
                   </p>
                 )}
-                {meta.pageStart !== null && meta.pageEnd !== null && meta.precision === "page_range" && (
+                {meta.pageStart !== null && meta.pageEnd !== null && (
                   <p className="text-[11px] mt-0.5 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                     <span>
                       {isRtl
                         ? `صفحات ${meta.pageStart}–${meta.pageEnd}`
                         : `pp. ${meta.pageStart}–${meta.pageEnd}`}
                     </span>
-                    <span
-                      className="text-[10px] px-1 py-px rounded"
-                      style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
-                    >
-                      {isRtl ? "دقيق" : "exact"}
-                    </span>
+                    {meta.precision === "page_range" && (
+                      <span
+                        className="text-[10px] px-1 py-px rounded"
+                        style={{ background: "rgba(0,212,255,0.12)", color: ACCENT }}
+                      >
+                        {isRtl ? "دقيق" : "exact"}
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
@@ -314,17 +316,40 @@ function PanelBody({
     return <PdfFrame meta={activeMeta} isRtl={isRtl} />;
   }
 
-  // Fallback: no PDF URL
+  // R19B: Structured-table sources — dedicated informational view
+  if (activeMeta?.origin === "structured_table") {
+    const tableRef = activeMeta.tableRef ?? activeMeta.sectionRef ?? "—";
+    const codeLabel = activeMeta.documentCode.replace("-", " ");
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
+        <div
+          className="flex items-center justify-center w-14 h-14 rounded-full"
+          style={{ background: "rgba(255,193,7,0.1)", border: "1px solid rgba(255,193,7,0.25)" }}
+        >
+          <BookOpen className="w-6 h-6" style={{ color: "#FFC107" }} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-white/90">
+            {isRtl ? `${codeLabel} — جدول ${tableRef}` : `${codeLabel} — Table ${tableRef}`}
+          </p>
+          <p className="text-xs text-white/45 leading-relaxed max-w-[260px]">
+            {isRtl
+              ? "هذا المصدر مستخرج من قاعدة بيانات الجداول المنظمة — لا يوجد PDF مرتبط."
+              : "This source is extracted from the structured tables database — no linked PDF."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback: regular source with no PDF URL — no raw filename exposed
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 p-6">
       <BookOpen className="w-10 h-10 text-muted-foreground/40" />
       <p className="text-sm text-muted-foreground text-center">
         {isRtl
-          ? "ملف PDF لهذا المصدر غير متوفر."
-          : "The PDF for this source is not available."}
-      </p>
-      <p className="text-xs text-muted-foreground/60 text-center font-mono break-all">
-        {activeMeta?.sourceFile}
+          ? "ملف PDF لهذا المصدر غير متوفر حالياً."
+          : "The PDF for this source is not currently available."}
       </p>
     </div>
   );

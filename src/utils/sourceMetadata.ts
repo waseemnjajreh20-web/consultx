@@ -244,10 +244,13 @@ export function formatSourceLabel(meta: SourceMeta, lang: "ar" | "en" = "ar"): s
       : `🗂️ ${code} — جدول ${tableLbl} (دليل منظم)`;
   }
 
-  if (meta.pageStart !== null && meta.pageEnd !== null && meta.precision === "page_range") {
+  // R19B: show page range for ALL precisions (not just "page_range") so that
+  // chunk-range-only files (e.g. SBC201-1001-1250) get a distinct label instead
+  // of collapsing to the same bare "📖 SBC 201" as other chunk files.
+  if (meta.pageStart !== null && meta.pageEnd !== null) {
     return lang === "en"
-      ? `📖 ${code} — Pages ${meta.pageStart}–${meta.pageEnd}`
-      : `📖 ${code} — صفحات ${meta.pageStart}–${meta.pageEnd}`;
+      ? `📖 ${code} · pp. ${meta.pageStart}–${meta.pageEnd}`
+      : `📖 ${code} · صفحات ${meta.pageStart}–${meta.pageEnd}`;
   }
   return `📖 ${code}`;
 }
