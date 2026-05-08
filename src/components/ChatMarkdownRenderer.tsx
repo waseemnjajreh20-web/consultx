@@ -473,7 +473,7 @@ function renderTextLine(
     }
     return (
       <blockquote key={index}
-        className="border-r-2 border-primary/40 pr-4 my-2 text-muted-foreground italic leading-[1.8]"
+        className="border-s-2 border-primary/40 ps-4 my-3 text-muted-foreground italic leading-[1.8]"
         dangerouslySetInnerHTML={{ __html: inner }} />
     );
   }
@@ -523,13 +523,13 @@ function renderTextLine(
     );
   }
 
-  // Empty line → breathing space (not a full <br>)
-  if (!line.trim()) return <div key={index} className="h-1.5" />;
+  // Empty line → real breathing space between paragraphs
+  if (!line.trim()) return <div key={index} className="h-4" />;
 
   // Regular paragraph
   const processed = applyInlineMarkdown(escapeHtml(line), mode, availableFamilies);
   return (
-    <p key={index} className="text-foreground leading-[1.8] my-1"
+    <p key={index} className="text-foreground leading-[1.8] my-2"
       dangerouslySetInnerHTML={{ __html: processed }} />
   );
 }
@@ -567,7 +567,7 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
     >
       <table
         className="w-full text-sm"
-        style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: "480px" }}
+        style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: "400px" }}
       >
         <thead>
           <tr>
@@ -826,9 +826,19 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
   const sections = useMemo(() => [...parsedSections, ...widgets] as ParsedSection[], [parsedSections, widgets]);
   const isArabic = /[\u0600-\u06FF]/.test(content.slice(0, 300));
 
+  // R19C: mode-adaptive heading accent colors
+  const headingAccent =
+    mode === "standard" ? "rgba(255,140,0,0.5)"  :   // advisory = amber
+    mode === "analysis" ? "rgba(220,20,60,0.5)"  :   // analysis = crimson
+    "rgba(0,212,255,0.5)";                            // primary   = cyan
+  const headingAccentSoft =
+    mode === "standard" ? "rgba(255,140,0,0.25)" :
+    mode === "analysis" ? "rgba(220,20,60,0.25)" :
+    "rgba(0,212,255,0.25)";
+
   return (
     <div
-      className="prose prose-invert prose-sm max-w-none space-y-1"
+      className="prose prose-invert prose-sm max-w-none space-y-3"
       style={{
         lineHeight: 1.8,
         fontFamily: isArabic
@@ -869,13 +879,17 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
             return (
               <h2 key={index}
                 className={cn(
-                  "mt-5 mb-3 first:mt-0 leading-[1.8] pb-2",
-                  "border-b-2 border-primary/40",
+                  "mt-6 mb-3 first:mt-0 leading-[1.6] pb-2",
                   isExecutive
-                    ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20 text-lg"
+                    ? "px-3 py-2 rounded-lg border text-lg"
                     : "text-foreground text-lg",
                 )}
-                style={{ fontWeight: 700 }}
+                style={{
+                  fontWeight: 700,
+                  borderBottom: `2px solid ${headingAccent}`,
+                  ...(isExecutive ? { background: `${headingAccent}10`, borderColor: headingAccentSoft } : {}),
+                  ...(isExecutive ? { color: mode === "standard" ? "#FF8C00" : mode === "analysis" ? "#DC143C" : undefined } : {}),
+                }}
               >
                 {section.content}
               </h2>
@@ -886,13 +900,17 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
           return (
             <h2 key={index}
               className={cn(
-                "mt-4 mb-2.5 first:mt-0 leading-[1.8] pb-1.5",
-                "border-b border-primary/25 text-base",
+                "mt-5 mb-3 first:mt-0 leading-[1.6] pb-1.5",
                 isExecutive
-                  ? "text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/20"
-                  : "text-foreground",
+                  ? "px-3 py-2 rounded-lg border text-base"
+                  : "text-foreground text-base",
               )}
-              style={{ fontWeight: 600 }}
+              style={{
+                fontWeight: 600,
+                borderBottom: `1px solid ${headingAccentSoft}`,
+                ...(isExecutive ? { background: `${headingAccent}10`, borderColor: headingAccentSoft } : {}),
+                ...(isExecutive ? { color: mode === "standard" ? "#FF8C00" : mode === "analysis" ? "#DC143C" : undefined } : {}),
+              }}
             >
               {section.content}
             </h2>
@@ -920,7 +938,7 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
 
         // ── Regular text ──────────────────────────────────────────────────────
         return (
-          <div key={index} className="my-0.5">
+          <div key={index} className="my-2">
             <TextRenderer content={section.content} mode={mode} availableFamilies={availableFamilies} />
           </div>
         );

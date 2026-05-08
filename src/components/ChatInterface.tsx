@@ -842,17 +842,24 @@ function SourceChipsRow({
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 pt-3 border-t border-border/30">
       <span className="text-xs text-muted-foreground flex-shrink-0">{sourcesLabel}</span>
-      {visible.map((meta) => (
-        <button
-          key={meta.pdfPath ?? meta.sourceFile}
-          onClick={() => onOpenSource(meta)}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors hover:opacity-80 active:opacity-70"
-          style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)", minHeight: "28px" }}
-          title={meta.title}
-        >
-          {formatSourceLabel(meta, language)}
-        </button>
-      ))}
+      {visible.map((meta) => {
+        // R19C: structured_table chips use amber to match SourcePanel indicator
+        const isTable = meta.origin === "structured_table";
+        const chipStyle = isTable
+          ? { background: "rgba(255,193,7,0.1)", color: "#FFC107", border: "1px solid rgba(255,193,7,0.3)", minHeight: "28px" }
+          : { background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)", minHeight: "28px" };
+        return (
+          <button
+            key={meta.pdfPath ?? meta.sourceFile}
+            onClick={() => onOpenSource(meta)}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors hover:opacity-80 active:opacity-70"
+            style={chipStyle}
+            title={meta.title}
+          >
+            {formatSourceLabel(meta, language)}
+          </button>
+        );
+      })}
       {!showAll && hiddenCount > 0 && (
         <button
           onClick={() => setShowAll(true)}
