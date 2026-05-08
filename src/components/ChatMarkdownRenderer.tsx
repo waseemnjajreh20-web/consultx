@@ -823,7 +823,7 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
 
   const rawSections = useMemo(() => parseDetailsBlocks(filteredContent), [filteredContent]);
   const parsedSections = useMemo(() => groupCollapsibleHeadings(rawSections), [rawSections]);
-  const sections = useMemo(() => [...parsedSections, ...widgets] as ParsedSection[], [parsedSections, widgets]);
+  const sections = useMemo(() => [...parsedSections, ...widgets] as GroupedSection[], [parsedSections, widgets]);
   const isArabic = /[\u0600-\u06FF]/.test(content.slice(0, 300));
 
   // R19C: mode-adaptive heading accent colors
