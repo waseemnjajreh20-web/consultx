@@ -1,0 +1,45 @@
+{
+  "name": "Missing Fields Scene",
+  "nodes": [
+    {
+      "type": "Level",
+      "id": "lvl-1",
+      "name": "First"
+    },
+    {
+      "type": "Wall",
+      "levelId": "lvl-1",
+      "points": [[0, 0], [3, 0]]
+    },
+    {
+      "type": "Wall",
+      "id": "w-bad",
+      "levelId": "lvl-1",
+      "points": [[0, 0]]
+    },
+    {
+      "type": "Door",
+      "id": "d-no-pos",
+      "levelId": "lvl-1"
+    },
+    {
+      "type": "Zone",
+      "id": "z-tri",
+      "levelId": "lvl-1",
+      "polygon": [[0, 0], [1, 0]]
+    },
+    {
+      "type": "Item",
+      "id": "i-no-kind",
+      "levelId": "lvl-1",
+      "position": [1, 1]
+    },
+    {
+      "type": "Item",
+      "id": "i-unknown-kind",
+      "levelId": "lvl-1",
+      "kind": "BananaStand",
+      "position": [2, 2]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "proj-min-001",
+  "name": "Minimal Pascal Scene",
+  "nodes": [
+    {
+      "type": "Level",
+      "id": "lvl-ground",
+      "name": "Ground Floor",
+      "index": 0,
+      "elevation": 0
+    },
+    {
+      "type": "Wall",
+      "id": "w-001",
+      "levelId": "lvl-ground",
+      "points": [[0, 0, 0], [5.0, 0, 0]],
+      "thickness": 0.2,
+      "rating": "1HR"
+    },
+    {
+      "type": "Door",
+      "id": "d-001",
+      "levelId": "lvl-ground",
+      "position": [2.5, 0, 0],
+      "width": 0.9,
+      "swing": 90,
+      "isExit": true
+    },
+    {
+      "type": "Zone",
+      "id": "z-001",
+      "levelId": "lvl-ground",
+      "name": "Reception",
+      "kind": "lobby",
+      "polygon": [[0, 0], [5, 0], [5, 4], [0, 4]],
+      "area": 20
+    },
+    {
+      "type": "Item",
+      "id": "i-001",
+      "levelId": "lvl-ground",
+      "kind": "FireExtinguisher",
+      "position": [1.0, 3.5, 0],
+      "spec": "ABC 6kg"
+    }
+  ]
+}
