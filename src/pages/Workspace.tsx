@@ -7,6 +7,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 import AppShell from "@/components/AppShell";
+import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import { CLOSED_PANEL } from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
 import type { SourceMeta } from "@/utils/sourceMetadata";
@@ -73,6 +74,9 @@ const Workspace = () => {
 
   return (
     <>
+      {/* Founding Engineers Offer — visible to free/trial/expired users only */}
+      <Founding10Banner />
+
       {/* Past-due grace banner — fixed top, non-blocking, dismissible per session */}
       {isPastDueInGrace && !bannerDismissed && (
         <div

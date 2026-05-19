@@ -27,6 +27,11 @@ const corsHeaders = {
 //   RESEND_API_KEY, FROM_EMAIL — for dunning emails on failure
 // ============================================================
 
+// ── FOUNDING10 campaign constants ────────────────────────────────────────────
+// Keep in lockstep with src/lib/campaigns/founding10.ts.
+const FOUNDING10_CODE = "FOUNDING10";
+const FOUNDING10_FIRST_CHARGE_HALALAS = 1000; // 10 SAR
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -346,7 +351,18 @@ serve(async (req) => {
         });
       }
     } else {
-      if (verifiedPayment?.amount !== 100) {
+      // Default verification amount is 100 halalas (1 SAR card auth).
+      // FOUNDING10 "first month" payments are 1000 halalas (10 SAR) and carry
+      // metadata.promo_code === "FOUNDING10" — accept either, reject everything
+      // else.
+      const verifiedAmountNum = verifiedPayment?.amount;
+      const promoMeta = verifiedPayment?.metadata?.promo_code;
+      const isFounding10Verification =
+        verifiedAmountNum === FOUNDING10_FIRST_CHARGE_HALALAS &&
+        typeof promoMeta === "string" &&
+        promoMeta.trim().toUpperCase() === FOUNDING10_CODE;
+      const isStandardVerification = verifiedAmountNum === 100;
+      if (!isStandardVerification && !isFounding10Verification) {
         console.error("Re-verification mismatch: verification amount");
         await insertDeadLetter(adminClient, {
           paymentId,
