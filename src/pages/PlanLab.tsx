@@ -294,10 +294,11 @@ function PlanLabIframe({ src, origin }: { src: string; origin: string }) {
       <iframe
         src={src}
         title="Plan Lab editor"
-        sandbox="allow-scripts allow-forms"
+        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
         referrerPolicy="no-referrer"
         loading="lazy"
-        className="block w-full h-[calc(100vh-160px)] bg-background"
+        allow="clipboard-read; clipboard-write; fullscreen"
+        className="block w-full h-[calc(100vh-120px)] bg-background"
       />
       <div className="px-3 py-2 text-[11px] text-muted-foreground font-mono break-all" dir="ltr">
         origin: {origin}
