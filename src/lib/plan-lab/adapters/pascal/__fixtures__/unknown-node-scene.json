@@ -1,0 +1,38 @@
+{
+  "id": "proj-unknown-001",
+  "name": "Unknown Nodes Scene",
+  "nodes": [
+    {
+      "type": "Level",
+      "id": "lvl-0",
+      "name": "Ground"
+    },
+    {
+      "type": "MysteryNode",
+      "id": "m-001",
+      "data": { "hello": "world" }
+    },
+    {
+      "type": "Slab",
+      "id": "s-001",
+      "levelId": "lvl-0",
+      "polygon": [[0, 0], [10, 0], [10, 10], [0, 10]]
+    },
+    {
+      "type": "Roof",
+      "id": "r-001",
+      "polygon": [[0, 0], [10, 0], [10, 10], [0, 10]],
+      "pitch": 30
+    },
+    {
+      "type": "Ceiling",
+      "id": "c-001",
+      "levelId": "lvl-0",
+      "height": 3.2
+    },
+    {
+      "type": "AnotherMystery",
+      "id": "am-001"
+    }
+  ]
+}

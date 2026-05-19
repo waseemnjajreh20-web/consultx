@@ -28,6 +28,7 @@ const Workspace = lazy(() => import("./pages/Workspace"));
 const EnterpriseWorkspace = lazy(() => import("./pages/EnterpriseWorkspace"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const PublicCaseTracking = lazy(() => import("./pages/PublicCaseTracking"));
+const PlanLab = lazy(() => import("./pages/PlanLab"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -62,6 +63,7 @@ const AnimatedRoutes = () => {
           <Route path="/enterprise" element={<PageTransition><EnterpriseWorkspace /></PageTransition>} />
           <Route path="/accept-invite" element={<PageTransition><AcceptInvite /></PageTransition>} />
           <Route path="/track/:token" element={<PageTransition><PublicCaseTracking /></PageTransition>} />
+          <Route path="/plan-lab" element={<PageTransition><PlanLab /></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
