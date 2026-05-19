@@ -94,8 +94,27 @@ export const FOUNDING10_COPY = {
   },
 } as const;
 
-/** Is the campaign currently within its active window? */
+/**
+ * Frontend kill-switch.
+ *
+ * Defaults to OFF so the campaign UI stays hidden until the matching
+ * Supabase Edge Function deploy has landed. Owner flips this in the
+ * Vercel project environment (VITE_FOUNDING10_LIVE=true) once the
+ * three Moyasar functions and send-founding10-campaign are deployed.
+ *
+ * This guards against a window where the frontend promises a 10 SAR
+ * charge but the old edge functions still bill 1 SAR.
+ */
+const FOUNDING10_FRONTEND_FLAG =
+  (typeof import.meta !== "undefined"
+    ? (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_FOUNDING10_LIVE
+    : undefined) ?? "false";
+
+const FOUNDING10_FRONTEND_ENABLED = String(FOUNDING10_FRONTEND_FLAG).toLowerCase() === "true";
+
+/** Is the campaign currently within its active window AND enabled in this build? */
 export function isFounding10Active(now: Date = new Date()): boolean {
+  if (!FOUNDING10_FRONTEND_ENABLED) return false;
   const start = new Date(FOUNDING10_STARTS_AT).getTime();
   const end = new Date(FOUNDING10_ENDS_AT).getTime();
   const t = now.getTime();
