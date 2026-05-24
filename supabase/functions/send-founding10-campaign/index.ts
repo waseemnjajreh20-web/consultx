@@ -26,7 +26,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Required secrets:
 //   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
 //   RESEND_API_KEY  (only needed for non-dry-run sends)
-//   FROM_EMAIL      (optional; defaults to "ConsultX <info@consultx.app>")
+//   FROM_EMAIL      (optional; defaults to "ConsultX <noreply@consultx.app>")
+//   REPLY_TO        (optional; defaults to "ConsultX <support@consultx.app>")
 // ============================================================
 
 const corsHeaders = {
@@ -37,8 +38,8 @@ const corsHeaders = {
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 const CAMPAIGN_CODE = "FOUNDING10";
 const CAMPAIGN_FIRST_CHARGE_SAR = 10;
-const SUBJECT = "Founding Engineers Offer: Try ConsultX Pro for 10 SAR";
-const LOGO_URL = "https://www.consultx.app/consultx-icon.png";
+const SUBJECT = "Founding Engineers Offer: ConsultX Pro for 10 SAR";
+const LOGO_URL = "https://www.consultx.app/assets/consultx-email-logo.png";
 const PROD_ORIGIN = "https://www.consultx.app";
 
 const HARD_SEND_CAP = 500;        // safety: never send more than this in one call
@@ -73,72 +74,268 @@ function buildHtml(recipient: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ConsultX — Founding Engineers Offer</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Founding Engineers Offer — ConsultX Pro for 10 SAR</title>
+<!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+<style>
+body{margin:0;padding:0;background-color:#070b15;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
+img{border:0;outline:none;text-decoration:none;display:block}
+@-ms-viewport{width:device-width}
+@viewport{width:device-width}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 18px rgba(0,212,255,0.35),0 0 40px rgba(0,212,255,0.12)}50%{box-shadow:0 0 30px rgba(0,212,255,0.55),0 0 60px rgba(0,212,255,0.20)}}
+.glow-pulse{animation:pulse-glow 3s ease-in-out infinite}
+@media only screen and (max-width:640px){
+  .sec{padding-left:26px!important;padding-right:26px!important}
+  .hero{padding-left:22px!important;padding-right:22px!important}
+  .head{font-size:24px!important}
+}
+@media only screen and (max-width:480px){
+  .sec{padding-left:22px!important;padding-right:22px!important}
+  .hero{padding-left:18px!important;padding-right:18px!important}
+  .head{font-size:22px!important}
+}
+</style>
 </head>
-<body style="margin:0;padding:0;background:#06090e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#dfe9f2">
-<center style="width:100%;background:#06090e;padding:32px 12px">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;background:#0a0f15;border:1px solid rgba(0,212,255,0.15);border-radius:14px;overflow:hidden">
-    <tr>
-      <td style="padding:28px 32px 8px;text-align:center;background:linear-gradient(135deg,rgba(0,212,255,0.10) 0%,rgba(10,15,21,0) 60%)">
-        <img src="${LOGO_URL}" alt="ConsultX" width="48" height="48" style="display:inline-block;border:0;border-radius:8px">
-        <div style="margin-top:14px;color:#00D4FF;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase">Founding Engineers Offer</div>
-        <h1 style="margin:8px 0 0;color:#e8f4fb;font-size:22px;font-weight:700;line-height:1.35">ConsultX Pro — first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR</h1>
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:18px 32px 8px;color:#cdd9e4;font-size:15px;line-height:1.7" dir="ltr">
-        <p style="margin:14px 0 0">Hi Engineer,</p>
-        <p style="margin:14px 0 0">You created a ConsultX account, but you may not have seen what the platform can really do yet.</p>
-        <p style="margin:14px 0 0">ConsultX is built for engineers who deal with fire safety, Saudi Building Code, NFPA references, compliance reviews, and technical reports — the work that usually takes time, focus, and repeated checking.</p>
-        <p style="margin:14px 0 0;color:#e8f4fb">For a limited launch period, you can activate your first month of <strong style="color:#e8f4fb">ConsultX Pro for only ${CAMPAIGN_FIRST_CHARGE_SAR} SAR</strong>.</p>
-        <p style="margin:18px 0 0;font-weight:600;color:#e8f4fb">Use ConsultX Pro to:</p>
-        <ul style="margin:8px 0 0;padding-left:20px;color:#cdd9e4">
-          <li>Review fire and life safety requirements faster.</li>
-          <li>Ask deeper SBC / NFPA questions in Advisory Mode.</li>
-          <li>Analyze drawings and compliance notes in Analytical Mode.</li>
-          <li>Generate clearer engineering reasoning with source-based answers.</li>
-          <li>Save time before preparing reports, reviews, or client responses.</li>
-        </ul>
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:22px 32px 6px;text-align:center">
-        <a href="${cta}" style="display:inline-block;padding:14px 30px;border-radius:8px;background:#00D4FF;color:#06090e;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 4px 16px rgba(0,212,255,0.28)">Activate for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR</a>
-        <div style="margin-top:10px;color:#7c8a99;font-size:12px">No long-term commitment. Cancel anytime. Promo code: <span style="color:#00D4FF;font-weight:700;letter-spacing:0.5px">${CAMPAIGN_CODE}</span></div>
-      </td>
-    </tr>
-    <tr><td style="padding:6px 32px 0"><hr style="border:0;border-top:1px solid rgba(0,212,255,0.12);margin:22px 0 14px"></td></tr>
-    <tr>
-      <td dir="rtl" lang="ar" style="padding:6px 32px 14px;color:#cdd9e4;font-size:15px;line-height:1.85;text-align:right">
-        <div style="color:#00D4FF;font-size:11px;font-weight:700;letter-spacing:0.6px">عرض خاص للمهندسين الأوائل</div>
-        <h2 style="margin:8px 0 6px;color:#e8f4fb;font-size:18px;font-weight:700;line-height:1.5">ConsultX Pro — أول شهر بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال</h2>
-        <p style="margin:10px 0 0">مرحبًا مهندسنا العزيز،</p>
-        <p style="margin:10px 0 0">قمت بإنشاء حساب في ConsultX، لكن ربما لم تجرّب بعد القيمة الحقيقية للمنصة.</p>
-        <p style="margin:10px 0 0">تم بناء ConsultX للمهندسين الذين يتعاملون مع متطلبات السلامة والوقاية من الحريق، كود البناء السعودي، مراجع NFPA، مراجعة الامتثال، والتقارير الفنية — وهي أعمال تحتاج وقتًا وتركيزًا وتحققًا متكررًا.</p>
-        <p style="margin:12px 0 0;color:#e8f4fb">لفترة إطلاق محدودة، يمكنك تفعيل أول شهر من <strong style="color:#e8f4fb">ConsultX Pro مقابل ${CAMPAIGN_FIRST_CHARGE_SAR} ريال فقط</strong>.</p>
-        <p style="margin:14px 0 0;font-weight:600;color:#e8f4fb">مع ConsultX Pro يمكنك:</p>
-        <ul style="margin:6px 22px 0 0;padding:0;list-style-position:inside;color:#cdd9e4">
-          <li>مراجعة متطلبات السلامة والحماية من الحريق بسرعة أكبر.</li>
-          <li>طرح أسئلة أعمق في وضع Advisory.</li>
-          <li>تحليل المخططات وملاحظات الامتثال في وضع Analytical.</li>
-          <li>الحصول على إجابات هندسية أوضح ومدعومة بالمصادر.</li>
-          <li>توفير الوقت قبل إعداد التقارير أو الردود الفنية أو مراجعات العملاء.</li>
-        </ul>
-        <div style="margin-top:18px;text-align:center">
-          <a href="${cta}" style="display:inline-block;padding:12px 28px;border-radius:8px;background:#00D4FF;color:#06090e;font-size:14px;font-weight:700;text-decoration:none">فعّل بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال</a>
-        </div>
-        <p style="margin:10px 0 0;color:#7c8a99;font-size:12px;text-align:center">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</p>
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:18px 32px 26px;background:rgba(0,212,255,0.04);border-top:1px solid rgba(0,212,255,0.10)" dir="ltr">
-        <p style="margin:0;color:#7c8a99;font-size:12px;text-align:center">You are receiving this email at <span style="color:#a4b3c1">${safeRecipient}</span> because you created a ConsultX account.</p>
-        <p style="margin:8px 0 0;color:#7c8a99;font-size:12px;text-align:center">If you do not want to receive product updates, reply with "unsubscribe" or email <a href="mailto:info@consultx.app" style="color:#7c8a99">info@consultx.app</a>.</p>
-        <p style="margin:14px 0 0;color:#536273;font-size:11px;text-align:center">ConsultX · <a href="mailto:info@consultx.app" style="color:#536273;text-decoration:none">info@consultx.app</a></p>
-      </td>
-    </tr>
-  </table>
-</center>
+<body style="margin:0;padding:0;background-color:#070b15;font-family:'Helvetica Neue',Arial,sans-serif">
+<div style="display:none;font-size:1px;color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">ConsultX Pro first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR — limited launch offer for early engineers. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#070b15;min-width:100%">
+
+<tr><td align="center" style="padding:24px 0 48px">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" width="640" align="center"><tr><td><![endif]-->
+
+<!-- MAIN CARD -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background-color:#0d1425;border-radius:16px;border:1px solid #1a2744">
+
+<!-- HERO -->
+<tr><td style="background:linear-gradient(180deg,#0d1425 0%,#0a0e1a 100%);border-radius:16px 16px 0 0" bgcolor="#0d1425">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+
+<tr><td align="center" style="padding:40px 22px 0" class="hero">
+<table role="presentation" cellpadding="0" cellspacing="0">
+<tr>
+<td align="center" style="padding:18px 36px;border-radius:16px;background:linear-gradient(135deg,#00d4ff08,#00d4ff03);background-color:#0d1425;border:1px solid #00d4ff22" class="glow-pulse">
+<img src="${LOGO_URL}" alt="ConsultX" width="100" height="116" style="display:block;border:0;outline:none;margin:0 auto" />
+</td>
+</tr>
+</table>
+</td></tr>
+
+<tr><td align="center" style="padding:20px 22px 4px" class="hero">
+<table role="presentation" cellpadding="0" cellspacing="0">
+<tr>
+<td bgcolor="#f59e0b11" style="background:linear-gradient(135deg,#f59e0b22,#f59e0b11);background-color:#f59e0b11;border:1.5px solid #f59e0b44;border-radius:30px;padding:8px 24px">
+<span style="font-size:12px;font-weight:800;color:#fbbf24;letter-spacing:1px;text-transform:uppercase">✦&nbsp; First Month — ${CAMPAIGN_FIRST_CHARGE_SAR} SAR &nbsp;✦</span>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<tr><td dir="ltr" align="center" style="padding:18px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.2;letter-spacing:-0.3px" class="head">Founding Engineers Offer</h1>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.5">Activate your first month of ConsultX Pro for only <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} SAR</strong>.</p>
+<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Limited launch offer for early engineers.</p>
+</td></tr>
+
+<tr><td align="center" style="padding:20px 44px 0" class="sec">
+<!--[if mso]>
+<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
+<w:anchorlock/>
+<center style="color:#0a0e1a;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px">Activate for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR →</center>
+</v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-- -->
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr>
+<td align="center" bgcolor="#0098b8" style="border-radius:12px">
+<a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all">Activate for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR →</a>
+</td>
+</tr>
+</table>
+<!--<![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr><td align="center" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr>
+<td align="center" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
+<a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">Open offer in browser</a>
+</td>
+</tr>
+</table>
+</td></tr>
+</table>
+</td></tr>
+
+<!-- ENGLISH VALUE SECTION -->
+<tr><td dir="ltr" style="padding:28px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#94a3b8">
+ConsultX is built for engineers who review fire and life safety, Saudi Building Code, NFPA references, compliance notes, and technical reports. You may not have seen what it can really do yet.
+</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">With ConsultX Pro, you can:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">Review fire and life safety requirements faster.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">Use Advisory Mode for deeper SBC / NFPA questions.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">Use Analytical Mode for drawing and compliance review.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">Generate clearer engineering reasoning with source-based answers.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">Save time before reports, reviews, and client responses.</td>
+</tr></table>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<tr><td dir="ltr" style="padding:8px 44px 24px" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.5;color:#64748b;font-style:italic">After the first month, your subscription renews at the normal Pro price unless canceled.</p>
+</td></tr>
+
+<tr><td style="padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
+
+<tr><td align="center" style="padding:18px 44px 12px" class="sec">
+<p style="margin:0;font-size:11px;line-height:1.5;color:#475569">Built for SBC 201, SBC 801, NFPA, fire &amp; life safety reviews, and engineering decision support.</p>
+</td></tr>
+
+<tr><td style="padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
+
+<!-- ARABIC SECTION -->
+<tr><td dir="rtl" style="padding:28px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.3;letter-spacing:-0.2px" class="head">عرض خاص للمهندسين الأوائل</h1>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.7">أول شهر في ConsultX Pro مقابل <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} ريال</strong> فقط.</p>
+<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.6">عرض إطلاق محدود للمهندسين الأوائل.</p>
+</td></tr>
+
+<tr><td dir="rtl" style="padding:20px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#94a3b8">
+تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.
+</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">مع ConsultX Pro يمكنك:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">مراجعة متطلبات السلامة والحماية من الحريق بسرعة أكبر.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">استخدام الوضع الاستشاري للأسئلة الكودية العميقة.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">استخدام الوضع التحليلي لمراجعة المخططات والامتثال.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">الحصول على إجابات هندسية أوضح ومدعومة بالمصادر.</td>
+</tr></table>
+</td>
+</tr>
+<tr>
+<td style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td style="font-size:15px;line-height:1.55;color:#cbd5e1">توفير الوقت قبل إعداد التقارير والمراجعات والردود الفنية.</td>
+</tr></table>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<tr><td dir="rtl" style="padding:8px 44px 20px" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.6;color:#64748b;font-style:italic">بعد الشهر الأول، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.</p>
+</td></tr>
+
+<tr><td align="center" style="padding:4px 44px 28px" class="sec">
+<!--[if mso]>
+<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
+<w:anchorlock/>
+<center style="color:#0a0e1a;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px">← فعّل بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال</center>
+</v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-- -->
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr>
+<td align="center" bgcolor="#0098b8" style="border-radius:12px">
+<a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all">← فعّل بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال</a>
+</td>
+</tr>
+</table>
+<!--<![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr><td align="center" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+<tr>
+<td align="center" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
+<a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">فتح العرض في المتصفح</a>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<!-- FOOTER -->
+<tr><td style="padding:8px 44px 28px" class="sec">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table>
+
+<p style="margin:16px 0 0;font-size:11px;color:#475569;line-height:1.6;direction:ltr;text-align:center">
+ConsultX &middot; Fire Safety Engineering &middot; Engineering Decision Support<br>
+You are receiving this email at <span style="color:#64748b">${safeRecipient}</span> because you created a ConsultX account.<br>
+If you do not want to receive product updates, email <a href="mailto:support@consultx.app" style="color:#475569;text-decoration:underline">support@consultx.app</a>.
+</p>
+</td></tr>
+
+</table>
+<!-- END MAIN CARD -->
+
+<!--[if mso]></td></tr></table><![endif]-->
+
+</td></tr>
+</table>
 </body>
 </html>`;
 }
@@ -148,44 +345,50 @@ function buildText(recipient: string): string {
   return [
     "ConsultX — Founding Engineers Offer",
     "",
-    "Hi Engineer,",
+    `Activate your first month of ConsultX Pro for only ${CAMPAIGN_FIRST_CHARGE_SAR} SAR.`,
     "",
-    "You created a ConsultX account, but you may not have seen what the platform can really do yet.",
+    "Limited launch offer for early engineers.",
     "",
-    "ConsultX is built for engineers who deal with fire safety, Saudi Building Code, NFPA references,",
-    "compliance reviews, and technical reports — the work that usually takes time, focus, and repeated checking.",
+    "ConsultX is built for engineers who review fire and life safety, Saudi Building Code, NFPA references, compliance notes, and technical reports. You may not have seen what it can really do yet.",
     "",
-    `For a limited launch period, you can activate your first month of ConsultX Pro for only ${CAMPAIGN_FIRST_CHARGE_SAR} SAR.`,
-    "",
-    "Use ConsultX Pro to:",
+    "With ConsultX Pro, you can:",
     "  - Review fire and life safety requirements faster.",
-    "  - Ask deeper SBC / NFPA questions in Advisory Mode.",
-    "  - Analyze drawings and compliance notes in Analytical Mode.",
+    "  - Use Advisory Mode for deeper SBC / NFPA questions.",
+    "  - Use Analytical Mode for drawing and compliance review.",
     "  - Generate clearer engineering reasoning with source-based answers.",
-    "  - Save time before preparing reports, reviews, or client responses.",
+    "  - Save time before reports, reviews, and client responses.",
     "",
-    `Activate your first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR:`,
+    `Activate for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR:`,
     cta,
     "",
-    "No long-term commitment. You can cancel anytime.",
+    "No long-term commitment. Cancel anytime.",
     "",
     "------------------------------------------------------------",
     "",
-    "مرحبًا مهندسنا العزيز،",
+    "عرض خاص للمهندسين الأوائل",
     "",
-    "قمت بإنشاء حساب في ConsultX، لكن ربما لم تجرّب بعد القيمة الحقيقية للمنصة.",
+    `أول شهر في ConsultX Pro مقابل ${CAMPAIGN_FIRST_CHARGE_SAR} ريال فقط.`,
     "",
-    `لفترة إطلاق محدودة، يمكنك تفعيل أول شهر من ConsultX Pro مقابل ${CAMPAIGN_FIRST_CHARGE_SAR} ريال فقط.`,
+    "عرض إطلاق محدود للمهندسين الأوائل.",
     "",
-    `فعّل أول شهر مقابل ${CAMPAIGN_FIRST_CHARGE_SAR} ريال:`,
+    "تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.",
+    "",
+    "مع ConsultX Pro يمكنك:",
+    "  - مراجعة متطلبات السلامة والحماية من الحريق بسرعة أكبر.",
+    "  - استخدام الوضع الاستشاري للأسئلة الكودية العميقة.",
+    "  - استخدام الوضع التحليلي لمراجعة المخططات والامتثال.",
+    "  - الحصول على إجابات هندسية أوضح ومدعومة بالمصادر.",
+    "  - توفير الوقت قبل إعداد التقارير والمراجعات والردود الفنية.",
+    "",
+    `فعّل بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال:`,
     cta,
     "",
     "بدون التزام طويل. يمكنك الإلغاء في أي وقت.",
     "",
     "------------------------------------------------------------",
     `You are receiving this email at ${recipient} because you created a ConsultX account.`,
-    "If you don't want product updates, email info@consultx.app to opt out.",
-    "ConsultX · info@consultx.app",
+    "If you do not want to receive product updates, email support@consultx.app to opt out.",
+    "ConsultX · Fire Safety Engineering · Engineering Decision Support",
   ].join("\n");
 }
 
@@ -252,11 +455,21 @@ async function surveyUsers(
         skipped.push({ user_id: userId, email: "", reason: "no_email" });
         continue;
       }
-      if (ADMIN_EMAILS.includes(email)) {
-        skipped.push({ user_id: userId, email, reason: "admin" });
+      const isAdmin = ADMIN_EMAILS.includes(email);
+      if (statuses.includes("active") || statuses.includes("past_due")) {
+        if (isAdmin) {
+          // Admin with active subscription — still eligible for campaign
+          eligible.push({ user_id: userId, email, reason: "eligible" });
+          continue;
+        }
+        skipped.push({ user_id: userId, email, reason: "paid_active" });
         continue;
       }
-      if (statuses.includes("active") || statuses.includes("past_due")) {
+      if (isAdmin) {
+        // Admins always eligible even if previously sent
+        eligible.push({ user_id: userId, email, reason: "eligible" });
+        continue;
+      }
         skipped.push({ user_id: userId, email, reason: "paid_active" });
         continue;
       }
@@ -311,6 +524,7 @@ async function markSent(
 async function sendOne(
   resendApiKey: string,
   fromEmail: string,
+  replyToEmail: string,
   email: string,
 ): Promise<{ ok: boolean; id: string | null; error: string | null }> {
   try {
@@ -322,6 +536,7 @@ async function sendOne(
       },
       body: JSON.stringify({
         from: fromEmail,
+        reply_to: replyToEmail,
         to: [email],
         subject: SUBJECT,
         html: buildHtml(email),
@@ -473,14 +688,15 @@ serve(async (req) => {
           },
         );
       }
-      const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <info@consultx.app>";
+      const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
+      const replyToEmail = Deno.env.get("REPLY_TO") ?? "support@consultx.app";
 
       let sent = 0;
       let failed = 0;
       const failures: Array<{ email: string; error: string }> = [];
 
       for (const t of targets) {
-        const r = await sendOne(resendApiKey, fromEmail, t.email);
+        const r = await sendOne(resendApiKey, fromEmail, replyToEmail, t.email);
         if (r.ok) {
           sent += 1;
           await markSent(admin, t.user_id, "sent", r.id, null);

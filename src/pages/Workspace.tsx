@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/hooks/useLanguage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
+import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import AppShell from "@/components/AppShell";
 import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import { CLOSED_PANEL } from "@/components/SourcePanel";
@@ -112,6 +113,8 @@ const Workspace = () => {
           </div>
         </div>
       )}
+
+      <Founding10Banner />
 
       {welcomeTrialEnd && (
         <WelcomeEngineerModal

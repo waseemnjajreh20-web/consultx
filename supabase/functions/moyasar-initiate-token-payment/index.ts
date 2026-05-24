@@ -14,37 +14,16 @@ const corsHeaders = {
 // directly with https://api.moyasar.com/v1/tokens. Card details
 // never reach this function — only the resulting opaque token.
 //
-// Creates a verification payment using the token. The default
-// amount is 100 halalas (1 SAR card verification). When the caller
-// passes a valid FOUNDING10 promo and the subscription is bound to
-// the flat Pro plan, the amount becomes 1000 halalas (10 SAR) — the
-// "Founding Engineers first month" charge. Moyasar returns either
-// a 'paid' status (no 3DS) or 'initiated' with a transaction_url
-// for 3DS redirect; the webhook (moyasar-webhook) is the source of
-// truth for activation.
+// Creates a 1 SAR verification payment using the token. Moyasar
+// returns either a 'paid' status (no 3DS) or 'initiated' with a
+// transaction_url for 3DS redirect. The frontend redirects there.
+// The webhook (moyasar-webhook) is the source of truth for
+// activation; this function only kicks off the payment.
 //
 // Required secrets:
 //   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
 //   MOYASAR_SECRET_KEY  (Basic-auth credential for /v1/payments)
 // ============================================================
-
-// ── FOUNDING10 campaign constants ────────────────────────────────────────────
-// Keep in lockstep with src/lib/campaigns/founding10.ts.
-const FOUNDING10_CODE = "FOUNDING10";
-const FOUNDING10_FIRST_CHARGE_HALALAS = 1000; // 10 SAR
-const FOUNDING10_PLAN_SLUG = "pro";
-const FOUNDING10_STARTS_AT_MS = Date.parse("2026-05-19T00:00:00Z");
-const FOUNDING10_ENDS_AT_MS   = Date.parse("2026-05-26T23:59:59Z");
-
-function isFounding10Active(): boolean {
-  const t = Date.now();
-  return t >= FOUNDING10_STARTS_AT_MS && t <= FOUNDING10_ENDS_AT_MS;
-}
-
-function isFounding10Code(raw: unknown): boolean {
-  if (typeof raw !== "string") return false;
-  return raw.trim().toUpperCase() === FOUNDING10_CODE;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -88,7 +67,7 @@ serve(async (req) => {
     const token = typeof body?.token === "string" ? body.token.trim() : "";
     const subscriptionId = typeof body?.subscription_id === "string" ? body.subscription_id : "";
     const givenId = typeof body?.given_id === "string" ? body.given_id : "";
-    const rawPromoCode = typeof body?.promo_code === "string" ? body.promo_code : "";
+    const promoCode = typeof body?.promo_code === "string" ? body.promo_code.trim() : null;
 
     if (!token || !subscriptionId || !givenId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -111,7 +90,7 @@ serve(async (req) => {
     // ── Subscription ownership + state validation ─────────────────────────────
     const { data: sub, error: subError } = await adminClient
       .from("user_subscriptions")
-      .select("id, user_id, status, plan_id, moyasar_given_id, moyasar_payment_id, moyasar_card_token, subscription_plans(slug, price_amount, price_per_seat)")
+      .select("id, user_id, status, plan_id, moyasar_given_id, moyasar_payment_id, moyasar_card_token")
       .eq("id", subscriptionId)
       .maybeSingle();
 
@@ -152,26 +131,17 @@ serve(async (req) => {
       });
     }
 
-    // ── FOUNDING10 promo re-validation (server-side authority) ───────────────
-    // Promo is honored only when: code matches, campaign window open,
-    // subscription's plan is the flat Pro plan (price_per_seat is NULL).
-    const planRow = (sub as any)?.subscription_plans;
-    const planIsPro = planRow?.slug === FOUNDING10_PLAN_SLUG;
-    const planIsFlat = planRow?.price_per_seat == null;
-    const founding10Active =
-      isFounding10Code(rawPromoCode) &&
-      isFounding10Active() &&
-      planIsPro &&
-      planIsFlat;
-    const chargeAmount = founding10Active ? FOUNDING10_FIRST_CHARGE_HALALAS : 100;
-    const chargeDescription = founding10Active
-      ? "ConsultX Pro — Founding Engineers first month"
-      : "ConsultX card verification";
-
     // ── Origin for callback_url ──────────────────────────────────────────────
     // Trust only configured app URL; fall back to request origin for dev.
     const appUrl = Deno.env.get("APP_URL") || req.headers.get("origin") || "https://www.consultx.app";
     const callbackUrl = `${appUrl.replace(/\/+$/, "")}/payment-callback`;
+
+    // ── Promo-aware charge amount ────────────────────────────────────────────
+    const isFounding10 = promoCode === "FOUNDING10";
+    const chargeAmount = isFounding10 ? 1000 : 100;
+    const chargeDescription = isFounding10
+      ? "ConsultX Founding Engineers Offer — First Month"
+      : "ConsultX card verification";
 
     // ── Create Moyasar payment from token ────────────────────────────────────
     let chargeData: any;
@@ -195,8 +165,8 @@ serve(async (req) => {
             given_id: givenId,
             plan_id: sub.plan_id,
             user_id: user.id,
-            purpose: founding10Active ? "founding10_first_month" : "card_verification",
-            ...(founding10Active ? { promo_code: FOUNDING10_CODE } : {}),
+            purpose: isFounding10 ? "founding10_first_month" : "card_verification",
+            ...(promoCode ? { promo_code: promoCode } : {}),
           },
         }),
       });
@@ -241,6 +211,8 @@ serve(async (req) => {
       payment_id: paymentId,
       status: paymentStatus,
       has_transaction_url: !!transactionUrl,
+      promo_code: promoCode,
+      amount: chargeAmount,
     });
 
     return new Response(

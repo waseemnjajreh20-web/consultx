@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles, Lock } from "lucide-react";
+import { Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles, Lock, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,14 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
-import {
-  FOUNDING10_CODE,
-  FOUNDING10_COPY,
-  FOUNDING10_FIRST_CHARGE_SAR,
-  FOUNDING10_PLAN_SLUG,
-  isFounding10Active,
-  isFounding10Code,
-} from "@/lib/campaigns/founding10";
+import { isFounding10Active, FOUNDING10_CODE, FOUNDING10_CAMPAIGN } from "@/lib/campaigns/founding10";
 
 const MOYASAR_PUBLISHABLE_KEY = (import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string)?.trim();
 const MOYASAR_TOKENS_ENDPOINT = "https://api.moyasar.com/v1/tokens";
@@ -103,20 +96,15 @@ const Subscribe = () => {
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
 
+  const promoCode = searchParams.get("promo");
+  const founding10Active = promoCode === FOUNDING10_CODE && isFounding10Active();
+
   const [card, setCard] = useState<CardForm>(EMPTY_CARD);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof CardForm, true>>>({});
 
   const debugMode = searchParams.get("debugPayment") === "1" || searchParams.get("debugPayment") === "true";
-
-  // FOUNDING10 promo — first month at 10 SAR for non-paying users.
-  // The promo is bound to the Pro plan and the campaign date window;
-  // the client only surfaces UI when both conditions hold, the server
-  // enforces both again before charging.
-  const rawPromo = (searchParams.get("promo") ?? "").trim();
-  const isFounding10Promo =
-    isFounding10Code(rawPromo) && isFounding10Active();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -146,16 +134,10 @@ const Subscribe = () => {
         }
         setSeatCounts(initialSeats);
         const urlPlan = searchParams.get("plan");
-        const urlPromo = (searchParams.get("promo") ?? "").trim();
-        const promoLocksPlan =
-          isFounding10Code(urlPromo) && isFounding10Active();
-        const matchedPlan = urlPlan
-          ? visible.find((p) => p.id === urlPlan || p.slug === urlPlan)
-          : null;
-        if (promoLocksPlan) {
-          // FOUNDING10 only applies to the Pro plan — force-select it.
-          const proPlan = visible.find((p) => p.slug === FOUNDING10_PLAN_SLUG);
-          setSelectedPlan(proPlan?.id || matchedPlan?.id || visible[0].id);
+        const matchedPlan = urlPlan ? visible.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
+        if (founding10Active) {
+          const proPlan = visible.find((p) => p.slug === "pro");
+          setSelectedPlan(proPlan?.id || visible[0].id);
         } else if (matchedPlan) {
           setSelectedPlan(matchedPlan.id);
         } else {
@@ -193,16 +175,10 @@ const Subscribe = () => {
     }
     setProcessing(true);
     try {
-      // Pass FOUNDING10 promo through. Server validates the code, the
-      // plan binding, and the active campaign window before honoring.
-      const promoForBackend =
-        isFounding10Promo && plan?.slug === FOUNDING10_PLAN_SLUG && !isPerSeat
-          ? FOUNDING10_CODE
-          : undefined;
-      const body: Record<string, unknown> = isPerSeat
-        ? { plan_id: selectedPlan, seat_count: seatCount }
-        : { plan_id: selectedPlan };
-      if (promoForBackend) body.promo_code = promoForBackend;
+      const body: Record<string, unknown> = isPerSeat ? { plan_id: selectedPlan, seat_count: seatCount } : { plan_id: selectedPlan };
+      if (founding10Active) {
+        body.promo_code = FOUNDING10_CODE;
+      }
       const { data, error } = await supabase.functions.invoke("moyasar-create-subscription", {
         body,
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -329,13 +305,16 @@ const Subscribe = () => {
     }
 
     try {
+      const initiateBody: Record<string, unknown> = {
+        token,
+        subscription_id: pendingSubscriptionId,
+        given_id: pendingGivenId,
+      };
+      if (founding10Active) {
+        initiateBody.promo_code = FOUNDING10_CODE;
+      }
       const { data, error } = await supabase.functions.invoke("moyasar-initiate-token-payment", {
-        body: {
-          token,
-          subscription_id: pendingSubscriptionId,
-          given_id: pendingGivenId,
-          ...(isFounding10Promo ? { promo_code: FOUNDING10_CODE } : {}),
-        },
+        body: initiateBody,
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
@@ -423,47 +402,18 @@ const Subscribe = () => {
             </div>
           )}
 
-          {isFounding10Promo && (
-            <div
-              className="max-w-2xl mx-auto mb-8 rounded-lg border px-5 py-4 text-sm"
-              style={{
-                background:
-                  "linear-gradient(120deg, rgba(0,212,255,0.10) 0%, rgba(10,14,20,0.0) 70%)",
-                borderColor: "rgba(0,212,255,0.35)",
-                color: "#dff5fb",
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 mt-0.5 text-primary shrink-0" />
-                <div className="flex-1">
-                  <div
-                    style={{
-                      color: "#00D4FF",
-                      fontWeight: 600,
-                      letterSpacing: 0.3,
-                      fontSize: "0.74rem",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {language === "ar"
-                      ? FOUNDING10_COPY.ar.promoCardTitle
-                      : FOUNDING10_COPY.en.promoCardTitle}
-                  </div>
-                  <div className="font-semibold text-foreground mt-1">
-                    {language === "ar"
-                      ? `أول شهر في ConsultX Pro مقابل ${FOUNDING10_FIRST_CHARGE_SAR} ريال فقط.`
-                      : `Your first month of ConsultX Pro is available for ${FOUNDING10_FIRST_CHARGE_SAR} SAR.`}
-                  </div>
-                  <p className="text-xs mt-1.5" style={{ color: "rgba(200,220,240,0.75)" }}>
-                    {language === "ar"
-                      ? FOUNDING10_COPY.ar.promoCardBody
-                      : FOUNDING10_COPY.en.promoCardBody}
-                  </p>
-                </div>
-                <Badge className="bg-primary/15 text-primary border border-primary/30 text-xs font-medium shrink-0">
-                  {FOUNDING10_CODE}
-                </Badge>
-              </div>
+          {founding10Active && (
+            <div className="max-w-lg mx-auto mb-6 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border border-primary/40 rounded-xl px-5 py-4 text-center">
+              <Gift className="w-6 h-6 text-primary mx-auto mb-2" />
+              <h3 className="text-base font-bold text-foreground mb-1">
+                {language === "ar" ? FOUNDING10_CAMPAIGN.title.ar : FOUNDING10_CAMPAIGN.title.en}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-1">
+                {language === "ar" ? FOUNDING10_CAMPAIGN.offer.ar : FOUNDING10_CAMPAIGN.offer.en}
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                {language === "ar" ? FOUNDING10_CAMPAIGN.afterFirstMonth.ar : FOUNDING10_CAMPAIGN.afterFirstMonth.en}
+              </p>
             </div>
           )}
 
@@ -487,7 +437,10 @@ const Subscribe = () => {
                       : "border-border/50 bg-card/50 hover:border-primary/30"
                   }`}
                   style={{ animationDelay: `${i * 0.1}s` }}
-                  onClick={() => setSelectedPlan(plan.id)}
+                  onClick={() => {
+                    if (founding10Active && plan.slug !== "pro") return;
+                    setSelectedPlan(plan.id);
+                  }}
                 >
                   <CardHeader className="pb-2 relative">
                     {popular && (
@@ -670,13 +623,9 @@ const Subscribe = () => {
               <DialogHeader>
                 <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
                 <DialogDescription>
-                  {isFounding10Promo
-                    ? (language === "ar"
-                        ? `سيتم خصم ${FOUNDING10_FIRST_CHARGE_SAR} ريال كرسوم أول شهر لعرض المهندسين الأوائل. التجديد بسعر Pro الطبيعي ما لم يتم الإلغاء.`
-                        : `${FOUNDING10_FIRST_CHARGE_SAR} SAR will be charged for your Founding Engineers first month. Renews at the normal Pro price unless canceled.`)
-                    : (language === "ar"
-                        ? "سيتم خصم 1 ريال للتحقق من البطاقة ثم استرداده تلقائيًا."
-                        : "1 SAR will be charged for card verification, then refunded automatically.")}
+                  {language === "ar"
+                    ? "سيتم خصم 1 ريال للتحقق من البطاقة ثم استرداده تلقائيًا."
+                    : "1 SAR will be charged for card verification, then refunded automatically."}
                 </DialogDescription>
               </DialogHeader>
 

@@ -1,458 +1,176 @@
-/**
- * Admin Campaign Preview — Founding Engineers Offer.
- *
- * Admin-only page (route /admin/campaigns/founding10). Reuses the same
- * email-list admin gate as Admin.tsx and admin-stats.
- *
- * Shows the campaign summary, the HTML email preview in an iframe,
- * a plain-text preview, eligibility counts, and Send Center actions
- * (dry run, send, CSV export).
- */
-
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft, Loader2, Send, Eye, Download, ShieldCheck,
-  AlertTriangle, CheckCircle, RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { isAllowedAdminEmail } from "@/lib/adminEntitlementOverride";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
+  FOUNDING10_CAMPAIGN,
   FOUNDING10_CODE,
-  FOUNDING10_ENDS_AT,
-  FOUNDING10_OWNER_TEST_UTM,
-  FOUNDING10_STARTS_AT,
-  buildFounding10Url,
+  isFounding10Active,
+  getFounding10SubscribeUrl,
 } from "@/lib/campaigns/founding10";
-import {
-  FOUNDING10_EMAIL_DEFAULT_SUBJECT,
-  buildFounding10HtmlEmail,
-  buildFounding10TextEmail,
-} from "@/lib/emailTemplates/founding10";
+import { buildFounding10HtmlEmail, buildFounding10TextEmail } from "@/lib/emailTemplates/founding10";
 
-interface PreviewTotals {
-  total_users: number;
-  eligible: number;
-  skipped: number;
-  skipped_breakdown: Record<string, number>;
-}
-
-interface PreviewResponse {
-  mode: "preview";
-  campaign_code: string;
-  subject: string;
-  totals: PreviewTotals;
-  eligible_sample: string[];
-}
-
-interface DryRunResponse {
-  mode: "send";
-  dry_run: true;
-  campaign_code: string;
-  subject: string;
-  would_send: number;
-  eligible_total: number;
-  skipped_total: number;
-  limit: number;
-  sample: string[];
-}
-
-interface SendResponse {
-  mode: "send";
-  dry_run: false;
-  campaign_code: string;
-  subject: string;
-  sent: number;
-  failed: number;
-  attempted: number;
-  eligible_total: number;
-  skipped_total: number;
-  failures: Array<{ email: string; error: string }>;
-}
-
-type ActionResult = DryRunResponse | SendResponse | null;
+const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 
 export default function CampaignFounding10() {
   const navigate = useNavigate();
-  const { user, session, loading: authLoading } = useAuth();
-  const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const { language } = useLanguage();
 
-  const isAdmin = isAllowedAdminEmail(user?.email);
+  const [htmlPreview, setHtmlPreview] = useState("");
+  const [textPreview, setTextPreview] = useState("");
 
-  const [preview, setPreview] = useState<PreviewResponse | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [lastAction, setLastAction] = useState<ActionResult>(null);
-
-  const ownerTestUrl = useMemo(() => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://www.consultx.app";
-    return buildFounding10Url(origin, FOUNDING10_OWNER_TEST_UTM);
-  }, []);
-
-  const htmlEmail = useMemo(
-    () => buildFounding10HtmlEmail({ recipientEmail: user?.email ?? "engineer@example.com" }),
-    [user?.email],
-  );
-  const textEmail = useMemo(
-    () => buildFounding10TextEmail({ recipientEmail: user?.email ?? "engineer@example.com" }),
-    [user?.email],
-  );
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
     if (!authLoading && user && !isAdmin) navigate("/");
   }, [user, authLoading, isAdmin, navigate]);
 
-  const runPreview = useCallback(async () => {
-    if (!session) return;
-    setPreviewLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
-        body: { mode: "preview" },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error) throw new Error(error.message);
-      setPreview(data as PreviewResponse);
-    } catch (err) {
-      toast({
-        title: "Preview failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setPreviewLoading(false);
-    }
-  }, [session, toast]);
-
   useEffect(() => {
-    if (isAdmin && session) runPreview();
-  }, [isAdmin, session, runPreview]);
+    setHtmlPreview(buildFounding10HtmlEmail());
+    setTextPreview(buildFounding10TextEmail());
+  }, []);
 
-  const runDryRun = useCallback(
-    async (limit: number) => {
-      if (!session) return;
-      setActionLoading(true);
-      setLastAction(null);
-      try {
-        const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
-          body: { mode: "send", dryRun: true, limit },
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        if (error) throw new Error(error.message);
-        setLastAction(data as DryRunResponse);
-        toast({
-          title: "Dry run complete",
-          description: `${(data as DryRunResponse).would_send} email(s) would be sent.`,
-        });
-      } catch (err) {
-        toast({
-          title: "Dry run failed",
-          description: err instanceof Error ? err.message : "Unknown error",
-          variant: "destructive",
-        });
-      } finally {
-        setActionLoading(false);
-      }
-    },
-    [session, toast],
-  );
-
-  const runRealSend = useCallback(
-    async (limit: number) => {
-      if (!session) return;
-      const confirmed = window.confirm(
-        `Send up to ${limit} emails NOW to eligible users for FOUNDING10?\n\n` +
-          `This is a real send and cannot be undone.`,
-      );
-      if (!confirmed) return;
-
-      setActionLoading(true);
-      setLastAction(null);
-      try {
-        const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
-          body: { mode: "send", dryRun: false, limit },
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        if (error) throw new Error(error.message);
-        setLastAction(data as SendResponse);
-        const r = data as SendResponse;
-        toast({
-          title: r.failed === 0 ? "Send complete" : "Send finished with failures",
-          description: `Sent ${r.sent}, failed ${r.failed} (of ${r.attempted} attempted)`,
-          variant: r.failed > 0 ? "destructive" : "default",
-        });
-        runPreview(); // refresh skipped/already_sent totals
-      } catch (err) {
-        toast({
-          title: "Send failed",
-          description: err instanceof Error ? err.message : "Unknown error",
-          variant: "destructive",
-        });
-      } finally {
-        setActionLoading(false);
-      }
-    },
-    [session, toast, runPreview],
-  );
-
-  const downloadCsv = useCallback(async () => {
-    if (!session) return;
-    setActionLoading(true);
-    try {
-      const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
-      const url = `${supabaseUrl.replace(/\/+$/, "")}/functions/v1/send-founding10-campaign`;
-      const resp = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mode: "export" }),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const blob = await resp.blob();
-      const downloadUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = "founding10-eligible.csv";
-      a.click();
-      URL.revokeObjectURL(downloadUrl);
-    } catch (err) {
-      toast({
-        title: "CSV export failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  }, [session, toast]);
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (authLoading) return null;
   if (!isAdmin) return null;
 
+  const isAr = language !== "en";
+  const active = isFounding10Active();
+  const ctaUrl = getFounding10SubscribeUrl("email", "reactivation");
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-border/30">
-        <Button variant="ghost" onClick={() => navigate("/admin")}>
-          <ArrowLeft className="me-2 w-4 h-4" />
-          Back to Admin
-        </Button>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <ShieldCheck className="w-4 h-4 text-primary" />
-          Admin · Campaigns
+    <div className="min-h-screen bg-background" dir={isAr ? "rtl" : "ltr"}>
+      <div className="fixed inset-0 blueprint-grid opacity-20 pointer-events-none" />
+
+      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-border/40 bg-card/60 backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-lg font-bold text-gradient">{FOUNDING10_CAMPAIGN.title.en}</h1>
+            <p className="text-xs text-muted-foreground">Campaign Code: {FOUNDING10_CODE}</p>
+          </div>
         </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-muted-foreground">
+          <ArrowLeft className="w-4 h-4 me-1" />
+          {isAr ? "العودة للوحة التحكم" : "Back to Admin"}
+        </Button>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <div>
-          <Badge className="bg-primary/15 text-primary border border-primary/30 text-xs font-medium mb-2">
-            FOUNDING10 · Founding Engineers Offer
-          </Badge>
-          <h1 className="text-2xl font-bold">Founding Engineers Offer — Campaign Preview</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Active window {new Date(FOUNDING10_STARTS_AT).toLocaleDateString()} → {" "}
-            {new Date(FOUNDING10_ENDS_AT).toLocaleDateString()}. Promo charges first month at 10 SAR for the Pro plan.
-            Renewals fall back to the standard Pro price.
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Audience</CardTitle>
+      <div className="relative z-10 p-6 pb-24 md:pb-6 max-w-4xl mx-auto space-y-6">
+        {/* Status */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              {active ? (
+                <CheckCircle className="w-4 h-4 text-green-400" />
+              ) : (
+                <XCircle className="w-4 h-4 text-muted-foreground" />
+              )}
+              {isAr ? "حالة الحملة" : "Campaign Status"}
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {previewLoading && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" /> Counting eligible recipients…
-              </div>
-            )}
-            {!previewLoading && preview && (
-              <>
-                <div className="grid grid-cols-3 gap-3">
-                  <Stat label="Total users" value={preview.totals.total_users} />
-                  <Stat label="Eligible" value={preview.totals.eligible} highlight />
-                  <Stat label="Skipped" value={preview.totals.skipped} />
-                </div>
-                {preview.totals.skipped_breakdown && (
-                  <div className="text-xs text-muted-foreground">
-                    Skipped breakdown:&nbsp;
-                    {Object.entries(preview.totals.skipped_breakdown).map(([k, v]) => (
-                      <span key={k} className="me-3">
-                        <span className="text-foreground/80">{k}</span>: {v}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {preview.eligible_sample.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    First eligible: <span className="text-foreground/80 font-mono">{preview.eligible_sample.join(", ")}</span>
-                  </div>
-                )}
-              </>
-            )}
-            <div className="pt-2 flex flex-wrap gap-2">
-              <Button onClick={runPreview} variant="outline" size="sm" disabled={previewLoading || actionLoading}>
-                <RefreshCw className={`me-2 w-4 h-4 ${previewLoading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => runDryRun(preview?.totals.eligible ?? 0)}
-                variant="outline"
-                size="sm"
-                disabled={!preview?.totals.eligible || actionLoading}
-              >
-                <Eye className="me-2 w-4 h-4" /> Dry run (all eligible)
-              </Button>
-              <Button
-                onClick={() => runDryRun(5)}
-                variant="outline"
-                size="sm"
-                disabled={!preview?.totals.eligible || actionLoading}
-              >
-                <Eye className="me-2 w-4 h-4" /> Dry run (5)
-              </Button>
-              <Button
-                onClick={() => runRealSend(5)}
-                size="sm"
-                disabled={!preview?.totals.eligible || actionLoading}
-              >
-                <Send className="me-2 w-4 h-4" /> Real send (first 5)
-              </Button>
-              <Button
-                onClick={() => runRealSend(preview?.totals.eligible ?? 0)}
-                size="sm"
-                variant="destructive"
-                disabled={!preview?.totals.eligible || actionLoading}
-              >
-                <Send className="me-2 w-4 h-4" /> Real send (all eligible)
-              </Button>
-              <Button onClick={downloadCsv} variant="ghost" size="sm" disabled={actionLoading}>
-                <Download className="me-2 w-4 h-4" /> Export CSV
-              </Button>
-            </div>
-            {actionLoading && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-                <Loader2 className="w-3 h-3 animate-spin" /> Working…
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {lastAction && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                {"dry_run" in lastAction && lastAction.dry_run ? (
-                  <>
-                    <Eye className="w-4 h-4 text-primary" /> Last dry run
-                  </>
-                ) : (lastAction as SendResponse).failed > 0 ? (
-                  <>
-                    <AlertTriangle className="w-4 h-4 text-yellow-500" /> Send finished (with failures)
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 text-primary" /> Send complete
-                  </>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm font-mono text-muted-foreground whitespace-pre-wrap break-all">
-              {JSON.stringify(lastAction, null, 2)}
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Email subject</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <div className="font-mono p-2 rounded bg-muted/40 text-foreground/90">
-              {FOUNDING10_EMAIL_DEFAULT_SUBJECT}
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <Badge variant={active ? "default" : "outline"}>
+                {active
+                  ? isAr ? "نشطة" : "Active"
+                  : isAr ? "غير نشطة" : "Inactive"}
+              </Badge>
+              <span className="text-muted-foreground">
+                {isAr
+                  ? `VITE_FOUNDING10_LIVE = ${active ? '"true"' : 'غير "true"'}`
+                  : `VITE_FOUNDING10_LIVE = ${active ? '"true"' : 'not "true"'}`}
+              </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">CTA URL (owner test)</CardTitle>
+        {/* Campaign Details */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {isAr ? "تفاصيل الحملة" : "Campaign Details"}
+            </CardTitle>
           </CardHeader>
-          <CardContent className="text-xs font-mono break-all">
-            <a href={ownerTestUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-              {ownerTestUrl}
-            </a>
+          <CardContent className="space-y-2 text-sm">
+            <div><span className="text-muted-foreground">{isAr ? "الكود:" : "Code:"}</span> <span className="font-mono">{FOUNDING10_CODE}</span></div>
+            <div><span className="text-muted-foreground">{isAr ? "العنوان (EN):" : "Title (EN):"}</span> {FOUNDING10_CAMPAIGN.title.en}</div>
+            <div><span className="text-muted-foreground">{isAr ? "العنوان (AR):" : "Title (AR):"}</span> {FOUNDING10_CAMPAIGN.title.ar}</div>
+            <div><span className="text-muted-foreground">{isAr ? "العرض (EN):" : "Offer (EN):"}</span> {FOUNDING10_CAMPAIGN.offer.en}</div>
+            <div><span className="text-muted-foreground">{isAr ? "العرض (AR):" : "Offer (AR):"}</span> {FOUNDING10_CAMPAIGN.offer.ar}</div>
+            <div><span className="text-muted-foreground">{isAr ? "المدة:" : "Duration:"}</span> {FOUNDING10_CAMPAIGN.durationDays} {isAr ? "أيام" : "days"}</div>
+            <div><span className="text-muted-foreground">CTA URL:</span> <a href={ctaUrl} className="text-primary underline break-all" target="_blank" rel="noopener noreferrer">{ctaUrl}</a></div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">HTML preview</CardTitle>
+        {/* Eligibility Rules */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {isAr ? "قواعد الأهلية" : "Eligibility Rules"}
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <iframe
-              title="Founding10 email HTML preview"
-              srcDoc={htmlEmail}
-              sandbox="allow-same-origin"
-              style={{
-                width: "100%",
-                height: 720,
-                border: "1px solid rgba(0,212,255,0.18)",
-                borderRadius: 10,
-                background: "#06090e",
-              }}
-            />
+          <CardContent className="space-y-1 text-sm">
+            <div className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> {isAr ? "مستخدم مصادق عليه" : "Authenticated user"}</div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> {isAr ? "ليس لديه اشتراك نشط" : "No active paid subscription"}</div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> {isAr ? "ليس لديه اشتراك تجريبي نشط" : "No active trial"}</div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> {isAr ? "ليس من مستخدمي المؤسسات (Enterprise)" : "Not an enterprise user"}</div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> {isAr ? "ليس مشرفاً" : "Not an admin"}</div>
+            <div className="flex items-center gap-2"><XCircle className="w-3.5 h-3.5 text-muted-foreground" /> {isAr ? "يمكن إغلاق البانر" : "Banner is dismissible"}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Plain-text preview</CardTitle>
+        {/* Email Preview - HTML */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {isAr ? "معاينة البريد الإلكتروني (HTML)" : "Email Preview (HTML)"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="text-xs whitespace-pre-wrap font-mono p-3 rounded bg-muted/30 text-foreground/85">
-              {textEmail}
+            <div className="bg-white rounded-lg overflow-hidden max-h-[600px] overflow-y-auto border border-border/30">
+              <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Email Preview - Plain Text */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {isAr ? "معاينة البريد الإلكتروني (نص)" : "Email Preview (Plain Text)"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono text-foreground/80 whitespace-pre-wrap border border-border/30 max-h-[400px] overflow-y-auto">
+              {textPreview}
             </pre>
           </CardContent>
         </Card>
 
-        <p className="text-xs text-muted-foreground">
-          Eligibility = registered user with no active paid subscription, no admin gate, and
-          no prior FOUNDING10 send marker on app_metadata.
-          Promo code: <span className="font-mono text-primary">{FOUNDING10_CODE}</span>.
-        </p>
-      </main>
-    </div>
-  );
-}
-
-function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
-  return (
-    <div
-      className="rounded-lg border px-4 py-3"
-      style={{
-        background: highlight ? "rgba(0,212,255,0.06)" : "rgba(255,255,255,0.02)",
-        borderColor: highlight ? "rgba(0,212,255,0.35)" : "rgba(255,255,255,0.08)",
-      }}
-    >
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div
-        className="text-2xl font-bold mt-1"
-        style={{ color: highlight ? "#00D4FF" : undefined }}
-      >
-        {value}
+        {/* Send Status */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50 border-yellow-500/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2 text-yellow-400">
+              <CheckCircle className="w-4 h-4" />
+              {isAr ? "حالة الإرسال" : "Send Status"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <Badge variant="outline" className="border-yellow-500/30 text-yellow-400">
+              {isAr ? "مُعدّ فقط" : "PREPARED ONLY"}
+            </Badge>
+            <p className="text-muted-foreground mt-2">
+              {isAr
+                ? "⚠️ إرسال البريد الإلكتروني معطل في هذه المرحلة التنفيذية."
+                : "⚠️ Email sending is disabled in this implementation pass."}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
