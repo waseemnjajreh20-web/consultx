@@ -1,0 +1,77 @@
+{
+  "agent": "sub-agent-a4-round4-facts",
+  "generated_at": "2026-05-01T18:48:44Z",
+  "round": 4,
+  "cap": 80,
+  "fact_count": 60,
+  "skipped_duplicates": 1,
+  "skipped_missing_source_refs_or_quote": 0,
+  "histograms": {
+    "by_type": {
+      "threshold": 30,
+      "requirement": 28,
+      "exception": 2
+    },
+    "by_chapter": {
+      "503": 2,
+      "506": 1,
+      "507": 4,
+      "510": 19,
+      "905": 4,
+      "906": 6,
+      "907": 2,
+      "912": 2,
+      "913": 4,
+      "909": 2,
+      "803": 10,
+      "2808": 1,
+      "904": 1,
+      "707": 1,
+      "508": 1
+    },
+    "by_source_code": {
+      "SBC-801": 59,
+      "SBC-201": 1
+    }
+  },
+  "top5_thresholds": [
+    {
+      "section_ref": "503.1.1",
+      "value": 45,
+      "unit": "m",
+      "scope": "SBC-801 Section 503.1.1 — fire apparatus access road maximum reach"
+    },
+    {
+      "section_ref": "507.3",
+      "value": 138,
+      "unit": "kPa",
+      "scope": "SBC-801 Appendix B105.1 — fire flow residual pressure basis"
+    },
+    {
+      "section_ref": "507.5.1",
+      "value": 120,
+      "unit": "m",
+      "scope": "SBC-801 Section 507.5.1 — on-site hydrant trigger distance"
+    },
+    {
+      "section_ref": "507.5.1",
+      "value": 180,
+      "unit": "m",
+      "scope": "SBC-801 Section 507.5.1 Exception 1 — R-3/U hydrant distance"
+    },
+    {
+      "section_ref": "507.5.1",
+      "value": 180,
+      "unit": "m",
+      "scope": "SBC-801 Section 507.5.1 Exception 2 — sprinklered hydrant distance"
+    }
+  ],
+  "outputs": {
+    "facts_path": "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\facts\\round4_gap_facts.json"
+  },
+  "dedup_keys_against": [
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\facts\\facts_full.json",
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\facts\\gap_completion_facts.json",
+    "D:\\ConsultX_Clean\\data\\consultx_brain\\full_corpus\\facts\\round2_gap_facts.json"
+  ]
+}

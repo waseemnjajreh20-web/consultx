@@ -80,7 +80,7 @@ function buildBrowserLink(label: string): string {
 }
 
 const STYLES = `
-body{margin:0;padding:0;background-color:${BG_DARK};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+body{margin:0;padding:0;background-color:${BG_DARK}!important;-webkit-text-size-adjust:100%!important;-ms-text-size-adjust:100%!important}
 table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
 img{border:0;outline:none;text-decoration:none;display:block}
 @-ms-viewport{width:device-width}
@@ -120,7 +120,7 @@ export function buildFounding10HtmlEmail(): string {
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 <style>${STYLES}</style>
 </head>
-<body style="margin:0;padding:0;background-color:${BG_DARK};font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
+<body bgcolor="${CARD_DARK}" style="margin:0;padding:0;background-color:${BG_DARK};font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
 <div style="display:none;font-size:1px;color:${BG_DARK};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">ConsultX Pro first month for 10 SAR — limited launch offer for early engineers. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
 <!-- ===== OUTER WRAPPER ===== -->

@@ -1,0 +1,1365 @@
+{
+  "schema_version": "1.0",
+  "agent": "Sub-Agent A5 (round 4)",
+  "generated_at": "2026-05-01T18:39:26.601500+00:00",
+  "section_count": 404,
+  "prior_section_count": 394,
+  "section_count_delta": 10,
+  "by_family_count": {
+    "SBC-201": 150,
+    "SBC-801": 254
+  },
+  "by_extraction_status": {
+    "complete": 377,
+    "partial": 27
+  },
+  "tables_excluded_from_section_index": [
+    "sbc-201-table-1004-5",
+    "sbc-201-table-1006-3-3",
+    "sbc-201-table-504-3",
+    "sbc-201-table-504-4",
+    "sbc-201-table-506-2"
+  ],
+  "drift_findings": {
+    "title_drift": [],
+    "body_does_not_mention_ref": [],
+    "orphan_parent": [
+      "sbc-801-section-1010-1-2-1",
+      "sbc-801-section-1006-2-2-1",
+      "sbc-801-section-1007-1-1",
+      "sbc-801-section-101-4-7",
+      "sbc-801-section-1010-2-9",
+      "sbc-801-section-1017-3-1",
+      "sbc-801-section-1029-1-1",
+      "sbc-801-section-1030-1-1",
+      "sbc-801-section-1031-3-3",
+      "sbc-801-section-104-10-2",
+      "sbc-801-section-104-8-2",
+      "sbc-801-section-105-1-5",
+      "sbc-801-section-1103-1-1",
+      "sbc-801-section-707-3-10",
+      "sbc-801-section-901-7-1",
+      "sbc-801-section-903-3-1-1",
+      "sbc-801-section-903-3-1-3",
+      "sbc-801-section-907-2-11",
+      "sbc-801-section-907-5-2-1-1",
+      "sbc-801-section-907-5-2-2",
+      "sbc-801-section-914-8-3",
+      "sbc-801-section-915-5-1",
+      "sbc-801-section-308-1-6-3",
+      "sbc-801-section-311-1-1",
+      "sbc-801-section-404-2-3",
+      "sbc-801-section-503-1-1",
+      "sbc-801-section-503-2-3",
+      "sbc-801-section-510-4-1",
+      "sbc-801-section-510-4-2-4",
+      "sbc-801-section-510-4-2-5"
+    ],
+    "duplicate_section_ref": [],
+    "missing_source_pages": [
+      "sbc-201-section-1001",
+      "sbc-201-section-1002",
+      "sbc-201-section-1003",
+      "sbc-201-section-1004",
+      "sbc-201-section-1005",
+      "sbc-201-section-1006",
+      "sbc-201-section-1007",
+      "sbc-201-section-1008",
+      "sbc-201-section-1009",
+      "sbc-201-section-1010",
+      "sbc-201-section-1011",
+      "sbc-201-section-1012",
+      "sbc-201-section-1013",
+      "sbc-201-section-1014",
+      "sbc-201-section-1015",
+      "sbc-201-section-1016",
+      "sbc-201-section-1017",
+      "sbc-201-section-1018",
+      "sbc-201-section-1019",
+      "sbc-201-section-1020",
+      "sbc-201-section-1021",
+      "sbc-201-section-1022",
+      "sbc-201-section-1023",
+      "sbc-201-section-1024",
+      "sbc-201-section-1025",
+      "sbc-201-section-1026",
+      "sbc-201-section-1027",
+      "sbc-201-section-1028",
+      "sbc-201-section-1029",
+      "sbc-201-section-1030",
+      "sbc-201-section-1031",
+      "sbc-201-section-501",
+      "sbc-201-section-502",
+      "sbc-201-section-503",
+      "sbc-201-section-504",
+      "sbc-201-section-505",
+      "sbc-201-section-506",
+      "sbc-201-section-507",
+      "sbc-201-section-508",
+      "sbc-201-section-509",
+      "sbc-201-section-510",
+      "sbc-201-section-601",
+      "sbc-201-section-602",
+      "sbc-201-section-603",
+      "sbc-201-section-701",
+      "sbc-201-section-702",
+      "sbc-201-section-703",
+      "sbc-201-section-704",
+      "sbc-201-section-705",
+      "sbc-201-section-706",
+      "sbc-201-section-707",
+      "sbc-201-section-708",
+      "sbc-201-section-709",
+      "sbc-201-section-710",
+      "sbc-201-section-711",
+      "sbc-201-section-712",
+      "sbc-201-section-713",
+      "sbc-201-section-714",
+      "sbc-201-section-715",
+      "sbc-201-section-716",
+      "sbc-201-section-717",
+      "sbc-201-section-718",
+      "sbc-201-section-719",
+      "sbc-201-section-720",
+      "sbc-201-section-721",
+      "sbc-201-section-722",
+      "sbc-201-section-802",
+      "sbc-201-section-803",
+      "sbc-201-section-804",
+      "sbc-201-section-805",
+      "sbc-201-section-806",
+      "sbc-201-section-808",
+      "sbc-201-section-901",
+      "sbc-201-section-902",
+      "sbc-201-section-903",
+      "sbc-201-section-904",
+      "sbc-201-section-905",
+      "sbc-201-section-906",
+      "sbc-201-section-907",
+      "sbc-201-section-908",
+      "sbc-201-section-909",
+      "sbc-201-section-910",
+      "sbc-201-section-911",
+      "sbc-201-section-912",
+      "sbc-201-section-913",
+      "sbc-201-section-914",
+      "sbc-201-section-915",
+      "sbc-201-section-916",
+      "sbc-201-section-917",
+      "sbc-801-section-1001",
+      "sbc-801-section-1002",
+      "sbc-801-section-1003",
+      "sbc-801-section-1005",
+      "sbc-801-section-1007",
+      "sbc-801-section-1008",
+      "sbc-801-section-1009",
+      "sbc-801-section-101",
+      "sbc-801-section-1010-1-2-1",
+      "sbc-801-section-1012",
+      "sbc-801-section-1013-5",
+      "sbc-801-section-1014",
+      "sbc-801-section-1015",
+      "sbc-801-section-1016",
+      "sbc-801-section-1018",
+      "sbc-801-section-1019",
+      "sbc-801-section-102",
+      "sbc-801-section-1021",
+      "sbc-801-section-1022",
+      "sbc-801-section-1023",
+      "sbc-801-section-1024",
+      "sbc-801-section-1025",
+      "sbc-801-section-1026",
+      "sbc-801-section-1027",
+      "sbc-801-section-1028",
+      "sbc-801-section-1029",
+      "sbc-801-section-103",
+      "sbc-801-section-1030",
+      "sbc-801-section-1031",
+      "sbc-801-section-1032",
+      "sbc-801-section-104",
+      "sbc-801-section-105",
+      "sbc-801-section-106",
+      "sbc-801-section-107",
+      "sbc-801-section-108",
+      "sbc-801-section-109",
+      "sbc-801-section-110",
+      "sbc-801-section-111",
+      "sbc-801-section-112",
+      "sbc-801-section-113",
+      "sbc-801-section-114",
+      "sbc-801-section-201",
+      "sbc-801-section-202",
+      "sbc-801-section-301",
+      "sbc-801-section-302",
+      "sbc-801-section-303",
+      "sbc-801-section-304",
+      "sbc-801-section-305",
+      "sbc-801-section-306",
+      "sbc-801-section-307",
+      "sbc-801-section-308",
+      "sbc-801-section-309",
+      "sbc-801-section-310",
+      "sbc-801-section-311",
+      "sbc-801-section-312",
+      "sbc-801-section-313",
+      "sbc-801-section-314",
+      "sbc-801-section-315",
+      "sbc-801-section-316",
+      "sbc-801-section-317",
+      "sbc-801-section-318",
+      "sbc-801-section-319",
+      "sbc-801-section-320",
+      "sbc-801-section-321",
+      "sbc-801-section-401",
+      "sbc-801-section-402",
+      "sbc-801-section-403",
+      "sbc-801-section-404",
+      "sbc-801-section-405",
+      "sbc-801-section-406",
+      "sbc-801-section-407",
+      "sbc-801-section-501",
+      "sbc-801-section-502",
+      "sbc-801-section-503",
+      "sbc-801-section-504",
+      "sbc-801-section-505",
+      "sbc-801-section-506",
+      "sbc-801-section-507",
+      "sbc-801-section-508",
+      "sbc-801-section-509",
+      "sbc-801-section-510",
+      "sbc-801-section-601",
+      "sbc-801-section-602",
+      "sbc-801-section-603",
+      "sbc-801-section-604",
+      "sbc-801-section-605",
+      "sbc-801-section-606",
+      "sbc-801-section-607",
+      "sbc-801-section-608",
+      "sbc-801-section-609",
+      "sbc-801-section-610",
+      "sbc-801-section-701",
+      "sbc-801-section-702",
+      "sbc-801-section-703",
+      "sbc-801-section-704",
+      "sbc-801-section-705",
+      "sbc-801-section-706",
+      "sbc-801-section-707",
+      "sbc-801-section-708",
+      "sbc-801-section-902",
+      "sbc-801-section-906",
+      "sbc-801-section-908",
+      "sbc-801-section-909",
+      "sbc-801-section-910",
+      "sbc-801-section-911",
+      "sbc-801-section-912",
+      "sbc-801-section-914",
+      "sbc-801-section-915",
+      "sbc-801-section-916",
+      "sbc-801-section-917",
+      "sbc-801-section-409",
+      "sbc-801-section-412",
+      "sbc-801-section-418",
+      "sbc-801-section-419",
+      "sbc-801-section-421"
+    ]
+  },
+  "drift_histogram": {
+    "title_drift": 0,
+    "body_does_not_mention_ref": 0,
+    "orphan_parent": 30,
+    "duplicate_section_ref": 0,
+    "missing_source_pages": 204
+  },
+  "by_chapter_coverage": {
+    "SBC-201": {
+      "10": {
+        "complete": 31
+      },
+      "4": {
+        "complete": 27
+      },
+      "5": {
+        "complete": 10
+      },
+      "6": {
+        "complete": 3
+      },
+      "7": {
+        "complete": 22
+      },
+      "8": {
+        "complete": 6
+      },
+      "9": {
+        "complete": 17
+      },
+      "0": {
+        "complete": 5
+      },
+      "1": {
+        "complete": 15
+      },
+      "2": {
+        "complete": 2
+      },
+      "3": {
+        "complete": 12
+      }
+    },
+    "SBC-801": {
+      "10": {
+        "complete": 42
+      },
+      "1": {
+        "complete": 48,
+        "partial": 5
+      },
+      "11": {
+        "complete": 7,
+        "partial": 1
+      },
+      "2": {
+        "complete": 2
+      },
+      "3": {
+        "complete": 32,
+        "partial": 3
+      },
+      "4": {
+        "complete": 20,
+        "partial": 5
+      },
+      "5": {
+        "complete": 19,
+        "partial": 1
+      },
+      "6": {
+        "complete": 10
+      },
+      "7": {
+        "complete": 10,
+        "partial": 1
+      },
+      "8": {
+        "complete": 10
+      },
+      "9": {
+        "complete": 27,
+        "partial": 6
+      },
+      "23": {
+        "partial": 1
+      },
+      "31": {
+        "partial": 1
+      },
+      "33": {
+        "partial": 1
+      },
+      "56": {
+        "partial": 1
+      },
+      "28": {
+        "partial": 1
+      }
+    }
+  },
+  "round4_inputs": {
+    "sbc201": [
+      "sbc-201-section-103.md",
+      "sbc-201-section-105.md",
+      "sbc-201-section-106.md",
+      "sbc-201-section-107.md",
+      "sbc-201-section-108.md",
+      "sbc-201-section-201.md",
+      "sbc-201-section-301.md",
+      "sbc-201-section-302.md",
+      "sbc-201-section-303.md",
+      "sbc-201-section-304.md",
+      "sbc-201-section-305.md",
+      "sbc-201-section-306.md",
+      "sbc-201-section-307.md",
+      "sbc-201-section-308.md",
+      "sbc-201-section-310.md",
+      "sbc-201-section-311.md",
+      "sbc-201-section-312.md",
+      "sbc-201-section-404.md",
+      "sbc-201-section-406.md",
+      "sbc-201-section-407.md",
+      "sbc-201-section-408.md",
+      "sbc-201-section-409.md",
+      "sbc-201-section-410.md",
+      "sbc-201-section-411.md",
+      "sbc-201-section-412.md",
+      "sbc-201-section-413.md",
+      "sbc-201-section-414.md",
+      "sbc-201-section-415.md",
+      "sbc-201-section-416.md",
+      "sbc-201-section-417.md",
+      "sbc-201-section-418.md",
+      "sbc-201-section-419.md",
+      "sbc-201-section-420.md",
+      "sbc-201-section-421.md",
+      "sbc-201-section-422.md",
+      "sbc-201-section-423.md",
+      "sbc-201-section-424.md",
+      "sbc-201-section-425.md",
+      "sbc-201-section-426.md",
+      "sbc-201-section-427.md",
+      "sbc-201-section-428.md"
+    ],
+    "sbc201_round2": [
+      "sbc-201-section-102.md",
+      "sbc-201-section-104.md",
+      "sbc-201-section-109.md",
+      "sbc-201-section-110.md",
+      "sbc-201-section-111.md",
+      "sbc-201-section-112.md",
+      "sbc-201-section-113.md",
+      "sbc-201-section-114.md",
+      "sbc-201-section-115.md",
+      "sbc-201-section-116.md",
+      "sbc-201-section-202.md",
+      "sbc-201-section-309.md",
+      "sbc-201-section-401.md",
+      "sbc-201-section-402.md"
+    ],
+    "sbc801": [
+      "sbc-801-section-1006-2-2-1.md",
+      "sbc-801-section-1007-1-1.md",
+      "sbc-801-section-101-2.md",
+      "sbc-801-section-101-4-7.md",
+      "sbc-801-section-1010-2-9.md",
+      "sbc-801-section-1017-3-1.md",
+      "sbc-801-section-102-3.md",
+      "sbc-801-section-102-4.md",
+      "sbc-801-section-102-7-1.md",
+      "sbc-801-section-102-7-2.md",
+      "sbc-801-section-102-7.md",
+      "sbc-801-section-1027-6.md",
+      "sbc-801-section-1029-1-1.md",
+      "sbc-801-section-103-1.md",
+      "sbc-801-section-103-3.md",
+      "sbc-801-section-1030-1-1.md",
+      "sbc-801-section-1031-3-3.md",
+      "sbc-801-section-104-10-2.md",
+      "sbc-801-section-104-12.md",
+      "sbc-801-section-104-3.md",
+      "sbc-801-section-104-4.md",
+      "sbc-801-section-104-7-1.md",
+      "sbc-801-section-104-7.md",
+      "sbc-801-section-104-8-2.md",
+      "sbc-801-section-105-1-5.md",
+      "sbc-801-section-105-2-1.md",
+      "sbc-801-section-105-2-2.md",
+      "sbc-801-section-105-2-4.md",
+      "sbc-801-section-105-2.md",
+      "sbc-801-section-105-3-5.md",
+      "sbc-801-section-105-3.md",
+      "sbc-801-section-105-4.md",
+      "sbc-801-section-105-5-16.md",
+      "sbc-801-section-105-5-18.md",
+      "sbc-801-section-105-5-9.md",
+      "sbc-801-section-105-5.md",
+      "sbc-801-section-105-6.md",
+      "sbc-801-section-105-7.md",
+      "sbc-801-section-107-2.md",
+      "sbc-801-section-1103-1-1.md",
+      "sbc-801-section-1108.md",
+      "sbc-801-section-112-3.md",
+      "sbc-801-section-120.md",
+      "sbc-801-section-2311.md",
+      "sbc-801-section-3105.md",
+      "sbc-801-section-3305.md",
+      "sbc-801-section-408.md",
+      "sbc-801-section-409.md",
+      "sbc-801-section-410.md",
+      "sbc-801-section-411.md",
+      "sbc-801-section-412-3.md",
+      "sbc-801-section-412.md",
+      "sbc-801-section-413.md",
+      "sbc-801-section-414.md",
+      "sbc-801-section-415.md",
+      "sbc-801-section-416.md",
+      "sbc-801-section-418.md",
+      "sbc-801-section-419.md",
+      "sbc-801-section-420.md",
+      "sbc-801-section-421.md",
+      "sbc-801-section-422.md",
+      "sbc-801-section-428.md",
+      "sbc-801-section-5604.md",
+      "sbc-801-section-707-3-10.md",
+      "sbc-801-section-711.md",
+      "sbc-801-section-716.md",
+      "sbc-801-section-803-10.md",
+      "sbc-801-section-804-4.md",
+      "sbc-801-section-901-2.md",
+      "sbc-801-section-901-6-2.md",
+      "sbc-801-section-901-6.md",
+      "sbc-801-section-901-7-1.md",
+      "sbc-801-section-903-2.md",
+      "sbc-801-section-903-3-1-1.md",
+      "sbc-801-section-903-3-1-3.md",
+      "sbc-801-section-904-10.md",
+      "sbc-801-section-904-13.md",
+      "sbc-801-section-904-7.md",
+      "sbc-801-section-907-2-11.md",
+      "sbc-801-section-907-3.md",
+      "sbc-801-section-907-5-2-1-1.md",
+      "sbc-801-section-907-5-2-2.md",
+      "sbc-801-section-914-8-3.md",
+      "sbc-801-section-915-5-1.md"
+    ],
+    "sbc801_round2": [
+      "sbc-801-section-104-6.md",
+      "sbc-801-section-1104.md",
+      "sbc-801-section-112-4.md",
+      "sbc-801-section-114-1-1.md",
+      "sbc-801-section-114-1.md",
+      "sbc-801-section-114-3.md",
+      "sbc-801-section-114-4.md",
+      "sbc-801-section-302-1.md",
+      "sbc-801-section-303-1.md",
+      "sbc-801-section-303-4.md",
+      "sbc-801-section-304-1.md",
+      "sbc-801-section-307-1-1.md",
+      "sbc-801-section-307-1.md",
+      "sbc-801-section-307-4.md",
+      "sbc-801-section-308-1-6-3.md",
+      "sbc-801-section-308-2.md",
+      "sbc-801-section-309-1.md",
+      "sbc-801-section-310-4.md",
+      "sbc-801-section-310-5.md",
+      "sbc-801-section-311-1-1.md",
+      "sbc-801-section-314-4.md",
+      "sbc-801-section-404-2-3.md",
+      "sbc-801-section-406-3.md",
+      "sbc-801-section-506-1.md"
+    ],
+    "sbc801_round4_core": [
+      "sbc-801-section-503-1-1.md",
+      "sbc-801-section-503-2-3.md",
+      "sbc-801-section-506-2.md",
+      "sbc-801-section-507-3.md",
+      "sbc-801-section-507-5.md",
+      "sbc-801-section-508-1.md",
+      "sbc-801-section-510-4-1.md",
+      "sbc-801-section-510-4-2-4.md",
+      "sbc-801-section-510-4-2-5.md"
+    ],
+    "sbc801_round4_hazmat": [
+      "sbc-801-section-2808.md"
+    ]
+  },
+  "final_manual_review_list": [
+    {
+      "code_family": "SBC 801",
+      "section_number": "506.2",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "507.3",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "507.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "508.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "508.2",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "508.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "503.1.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "503.2.3",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "510.4.1",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "510.4.2.4",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "510.4.2.5",
+      "chapter": "5",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "718",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "718.2",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "711.2.4",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "716.2.6.4",
+      "chapter": "7",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1202",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1203",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1204",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1205",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1206",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1207",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1209",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1203.3",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1205.1",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1207.10",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1207.6.4",
+      "chapter": "12",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5004",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5001.1",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.11",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.2.1",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.8.2",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.8.3",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.8.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.9.10",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5003.8.3.5",
+      "chapter": "50",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5103",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5101.4",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5104.4",
+      "chapter": "51",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5307.4",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5303.5.3",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5307.4.3",
+      "chapter": "53",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5602",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5606",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5608",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5601.1",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5601.4",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5605.1",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5605.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5606.4",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5608.9",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5601.2.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5604.5.1.3",
+      "chapter": "56",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5706",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5707",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5706.5",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5703.6.2",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5704.2.7",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5704.3.8",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5704.3.4.1",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5706.5.4.5",
+      "chapter": "57",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5807",
+      "chapter": "58",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "5906",
+      "chapter": "59",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "6005",
+      "chapter": "60",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "6004.2.2.10",
+      "chapter": "60",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "6301.1",
+      "chapter": "63",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "6304.2.1.1",
+      "chapter": "63",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2308",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2301.1",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2306.8",
+      "chapter": "23",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2404",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2405",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2406",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2404.9",
+      "chapter": "24",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2501.1",
+      "chapter": "25",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2808",
+      "chapter": "28",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2809",
+      "chapter": "28",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2904",
+      "chapter": "29",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2906.4",
+      "chapter": "29",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3103",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3106",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3103.2",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3103.3",
+      "chapter": "31",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3202",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3203",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3201.3",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3206.10",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3209.4",
+      "chapter": "32",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3503",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3510",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3503.3",
+      "chapter": "35",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "3705",
+      "chapter": "37",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1511",
+      "chapter": "15",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1511.2",
+      "chapter": "15",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1607",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1607.7",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1607.9",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "1607.14.3",
+      "chapter": "16",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "2007",
+      "chapter": "20",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "603.5.2",
+      "chapter": "6",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    },
+    {
+      "code_family": "SBC 801",
+      "section_number": "605.2.1.1",
+      "chapter": "6",
+      "status": "manual_review_keep",
+      "reason": "token_budget_cap",
+      "source_report": "sbc801_manual_review_resolution_report.json"
+    }
+  ],
+  "final_manual_review_count": 101
+}

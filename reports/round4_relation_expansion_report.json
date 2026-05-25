@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-05-01T18:38:52.651223+00:00",
+  "agent": "Sub-Agent A3 (round 4)",
+  "new_edge_count_post_dedup": 80,
+  "cap": 80,
+  "by_type": {
+    "code_to_code": 55,
+    "parent_child": 10,
+    "analytical_check_depends_on": 15
+  },
+  "by_origin": {
+    "frontmatter_dependencies": 12,
+    "analytical_synthetic": 15,
+    "cross_ref_in_text": 53
+  },
+  "files_processed": 405,
+  "round_status": {
+    "sbc801_round4_core": "populated",
+    "sbc801_round4_hazmat": "populated",
+    "sbc201_round4_core": "missing",
+    "sbc801_round3_hazmat": "empty",
+    "sbc801_round3_priority": "empty"
+  },
+  "fallback_source": "round4_md_files",
+  "dedup_keys_at_start": 842,
+  "dedup_keys_at_end": 922,
+  "section_index_total_sections": 394,
+  "outputs": {
+    "round4_gap_relations_json": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/relations/round4_gap_relations.json",
+    "report_md": "D:/ConsultX_Clean/reports/round4_relation_expansion_report.md",
+    "report_json": "D:/ConsultX_Clean/reports/round4_relation_expansion_report.json"
+  },
+  "symbol_check": {
+    "section_symbol_in_outputs": 0,
+    "section_symbol_in_source_mds": 0
+  },
+  "sha256": {
+    "round4_gap_relations_json": "e12820406cb04944c93cd742e6bb90026f472946855cd02f93ecf0f7b87c2837"
+  }
+}

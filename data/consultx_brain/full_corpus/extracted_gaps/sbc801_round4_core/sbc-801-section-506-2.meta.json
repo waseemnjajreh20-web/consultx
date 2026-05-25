@@ -1,0 +1,14 @@
+{
+  "record_id": "sbc-801-section-506-2",
+  "section_id": "506.2",
+  "code_family": "SBC 801",
+  "edition": "2024",
+  "round": 4,
+  "action": "resolved_canonical",
+  "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+  "page_range": "138-142",
+  "extraction_method": "pymupdf-round4-core",
+  "extraction_confidence": "medium",
+  "requires_review": true,
+  "body_length": 553
+}

@@ -1,0 +1,1376 @@
+{
+  "generated_at": "2026-05-01T18:38:52.640389+00:00",
+  "agent": "Sub-Agent A3 (round 4)",
+  "count": 80,
+  "cap": 80,
+  "round_status": {
+    "sbc801_round4_core": "populated",
+    "sbc801_round4_hazmat": "populated",
+    "sbc201_round4_core": "missing",
+    "sbc801_round3_hazmat": "empty",
+    "sbc801_round3_priority": "empty"
+  },
+  "fallback_source": "round4_md_files",
+  "edges": [
+    {
+      "id": "rel-r4-sbc-801-section-801-sbc-801-section-804-code_to_code-1",
+      "from_ref": "sbc-801-section-801",
+      "to_ref": "sbc-801-section-804",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-801 declares frontmatter dependency on Section 804: New buildings interior finish requirements",
+      "source_basis": "sources/sbc801/sbc-801-section-801.md frontmatter dependencies entry",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-808-sbc-801-section-803-code_to_code-2",
+      "from_ref": "sbc-801-section-808",
+      "to_ref": "sbc-801-section-803",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-808 declares frontmatter dependency on Section 803: غرف جمع النفايات والكتان",
+      "source_basis": "sources/sbc801/sbc-801-section-808.md frontmatter dependencies entry",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-104-sbc-801-section-104-6-parent_child-3",
+      "from_ref": "sbc-801-section-104",
+      "to_ref": "sbc-801-section-104-6",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-104-6 is a subsection of sbc-801-section-104 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-104-6 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-112-sbc-801-section-112-4-parent_child-4",
+      "from_ref": "sbc-801-section-112",
+      "to_ref": "sbc-801-section-112-4",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-112-4 is a subsection of sbc-801-section-112 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-112-4 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-1-sbc-801-section-114-1-1-parent_child-5",
+      "from_ref": "sbc-801-section-114-1",
+      "to_ref": "sbc-801-section-114-1-1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-1-1 is a subsection of sbc-801-section-114-1 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-114-1-1 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-sbc-801-section-114-1-parent_child-6",
+      "from_ref": "sbc-801-section-114",
+      "to_ref": "sbc-801-section-114-1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-1 is a subsection of sbc-801-section-114 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-114-1 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-sbc-801-section-114-3-parent_child-7",
+      "from_ref": "sbc-801-section-114",
+      "to_ref": "sbc-801-section-114-3",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-3 is a subsection of sbc-801-section-114 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-114-3 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-sbc-801-section-114-4-parent_child-8",
+      "from_ref": "sbc-801-section-114",
+      "to_ref": "sbc-801-section-114-4",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-4 is a subsection of sbc-801-section-114 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-114-4 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-302-sbc-801-section-302-1-parent_child-9",
+      "from_ref": "sbc-801-section-302",
+      "to_ref": "sbc-801-section-302-1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-302-1 is a subsection of sbc-801-section-302 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-302-1 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-303-sbc-801-section-303-1-parent_child-10",
+      "from_ref": "sbc-801-section-303",
+      "to_ref": "sbc-801-section-303-1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-303-1 is a subsection of sbc-801-section-303 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-303-1 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-303-sbc-801-section-303-4-parent_child-11",
+      "from_ref": "sbc-801-section-303",
+      "to_ref": "sbc-801-section-303-4",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-303-4 is a subsection of sbc-801-section-303 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-303-4 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-304-sbc-801-section-304-1-parent_child-12",
+      "from_ref": "sbc-801-section-304",
+      "to_ref": "sbc-801-section-304-1",
+      "relation_type": "parent_child",
+      "direction": "from_to",
+      "reason": "sbc-801-section-304-1 is a subsection of sbc-801-section-304 per section_index hierarchy (round-round2 sub-clause)",
+      "source_basis": "section_index.json hierarchy entry for sbc-801-section-304-1 (label=round2)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "frontmatter_dependencies"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1002-sbc-801-section-1001-analytical_check_depends_on-13",
+      "from_ref": "sbc-801-section-1002",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1002 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1002 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1003-sbc-801-section-1001-analytical_check_depends_on-14",
+      "from_ref": "sbc-801-section-1003",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1003 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1003 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1004-sbc-801-section-1001-analytical_check_depends_on-15",
+      "from_ref": "sbc-801-section-1004",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1004 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1004 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1005-sbc-801-section-1001-analytical_check_depends_on-16",
+      "from_ref": "sbc-801-section-1005",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1005 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1005 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1006-sbc-801-section-1001-analytical_check_depends_on-17",
+      "from_ref": "sbc-801-section-1006",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1006 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1006 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1007-sbc-801-section-1001-analytical_check_depends_on-18",
+      "from_ref": "sbc-801-section-1007",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1007 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1007 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1008-sbc-801-section-1001-analytical_check_depends_on-19",
+      "from_ref": "sbc-801-section-1008",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1008 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1008 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1009-sbc-801-section-1001-analytical_check_depends_on-20",
+      "from_ref": "sbc-801-section-1009",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1009 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1009 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1010-1-2-1-sbc-801-section-1001-analytical_check_depends_on-21",
+      "from_ref": "sbc-801-section-1010-1-2-1",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1010-1-2-1 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1010-1-2-1 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1010-sbc-801-section-1001-analytical_check_depends_on-22",
+      "from_ref": "sbc-801-section-1010",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1010 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1010 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1011-sbc-801-section-1001-analytical_check_depends_on-23",
+      "from_ref": "sbc-801-section-1011",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1011 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1011 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1012-sbc-801-section-1001-analytical_check_depends_on-24",
+      "from_ref": "sbc-801-section-1012",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1012 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1012 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1013-5-sbc-801-section-1001-analytical_check_depends_on-25",
+      "from_ref": "sbc-801-section-1013-5",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1013-5 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1013-5 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1013-sbc-801-section-1001-analytical_check_depends_on-26",
+      "from_ref": "sbc-801-section-1013",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1013 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1013 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1014-sbc-801-section-1001-analytical_check_depends_on-27",
+      "from_ref": "sbc-801-section-1014",
+      "to_ref": "sbc-801-section-1001",
+      "relation_type": "analytical_check_depends_on",
+      "direction": "from_to",
+      "reason": "Fire-protection / egress analytical check on sbc-801-section-1014 depends on chapter scope section sbc-801-section-1001",
+      "source_basis": "Synthetic analytical-dependency: sbc-801-section-1014 is in SBC 801 chapter 10 (egress)",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "analytical_synthetic"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-1-sbc-801-section-114-1-1-code_to_code-28",
+      "from_ref": "sbc-801-section-114-1",
+      "to_ref": "sbc-801-section-114-1-1",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-1 body cites same-code Section 114.1.1",
+      "source_basis": "sbc-801-section-114-1 body text (same-code cross-reference): \"...erations that are within the scope of that department. The conditions listed in Section 114.1.1 represent many of the most common hazardous conditions enco...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-114-3-sbc-801-section-114-4-code_to_code-29",
+      "from_ref": "sbc-801-section-114-3",
+      "to_ref": "sbc-801-section-114-4",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-114-3 body cites same-code Section 114.4",
+      "source_basis": "sbc-801-section-114-3 body text (same-code cross-reference): \"...he unsafe condition. This report provides the basis for the notice described in Section 114.4....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-302-1-sbc-801-section-201-code_to_code-30",
+      "from_ref": "sbc-801-section-302-1",
+      "to_ref": "sbc-801-section-201",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-302-1 body cites same-code Section 201.3",
+      "source_basis": "sbc-801-section-302-1 body text (same-code cross-reference): \"...is chapter. Terms may be defined in Chapter 2 or in another SBC as indicated in Section 201.3, or the dictionary meaning may be all that is needed (see a...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-307-1-sbc-801-section-307-1-1-code_to_code-31",
+      "from_ref": "sbc-801-section-307-1",
+      "to_ref": "sbc-801-section-307-1-1",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-307-1 body cites Section 307.1.1 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-801-section-307-1 body text (in-accordance pattern): \"...rize to be kindled or maintained any open burning unless conducted and approved in accordance with Sections 307.1.1 through 307.5. ❖ To control the hazards associated with it,...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-307-1-sbc-801-section-307-code_to_code-32",
+      "from_ref": "sbc-801-section-307-1",
+      "to_ref": "sbc-801-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-307-1 body cites same-code Section 307",
+      "source_basis": "sbc-801-section-307-1 body text (same-code cross-reference): \"...burning may not be authorized or undertaken without the approvals specified in Section 307. See the commentary to Section 202for the definition of “Op...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-307-1-sbc-801-section-202-code_to_code-33",
+      "from_ref": "sbc-801-section-307-1",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-307-1 body cites same-code Section 202",
+      "source_basis": "sbc-801-section-307-1 body text (same-code cross-reference): \"...ndertaken without the approvals specified in Section 307. See the commentary to Section 202for the definition of “Open burning” for a discussion of the...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-308-2-sbc-801-section-105-5-code_to_code-34",
+      "from_ref": "sbc-801-section-308-2",
+      "to_ref": "sbc-801-section-105-5",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-308-2 body cites Section 105.5 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-801-section-308-2 body text (in-accordance pattern): \"...e Text 308.2 Permits required. Permits shall be obtained from the Fire official in accordance with Section 105.5 prior to engaging in the following activities involving ope...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-309-1-sbc-801-section-309-code_to_code-35",
+      "from_ref": "sbc-801-section-309-1",
+      "to_ref": "sbc-801-section-309",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-309-1 body cites Section 309.3 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-801-section-309-1 body text (in-accordance pattern): \"...limited to, floor scrubbers and floor buffers, shall be operated and maintained in accordance with Section 309.3 through 309.7. ❖ This section establishes the fire safety r...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-404-2-3-sbc-801-section-202-code_to_code-36",
+      "from_ref": "sbc-801-section-404-2-3",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-404-2-3 body cites same-code Section 202",
+      "source_basis": "sbc-801-section-404-2-3 body text (same-code cross-reference): \"...uirements for plans and procedures for lockdowns (see commentary to ”Lockdown,” Section 202). The section is clear that such plans are allowed only whe...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-506-1-sbc-801-section-506-code_to_code-37",
+      "from_ref": "sbc-801-section-506-1",
+      "to_ref": "sbc-801-section-506",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-506-1 body cites Section 506.2 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-801-section-506-1 body text (in-accordance pattern): \"...than performing manual forcible entry into a structure. If properly maintained in accordance with Section 506.2, a key box can also lower property losses because it expedi...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-506-1-sbc-801-section-202-code_to_code-38",
+      "from_ref": "sbc-801-section-506-1",
+      "to_ref": "sbc-801-section-202",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-506-1 body cites same-code Section 202",
+      "source_basis": "sbc-801-section-506-1 body text (same-code cross-reference): \"...ommentaries to the definitions of “Key box” and “Fire department master key” in Section 202. This section also specifies a level of security for key bo...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-102-sbc-201-section-402-code_to_code-39",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-402",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites same-code Section 402.8",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...requirement elsewhere in the code. As an example, the requirements contained in Section 402.8 for means of egress in a covered mall building would govern...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-102-sbc-201-section-905-code_to_code-40",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-905",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites same-code Section 905.2",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...the content of the standard were included in the body of the code. For example, Section 905.2 references NFPA 14 in its entirety for the installation of...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-102-sbc-201-section-412-code_to_code-41",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-412",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites same-code Section 412.3.6",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...ard is limited to those portions that are specifically identified. For example, Section 412.3.6 requires that aircraft hangars must be provided with fire s...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-102-sbc-201-section-415-code_to_code-42",
+      "from_ref": "sbc-201-section-102",
+      "to_ref": "sbc-201-section-415",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-102 body cites same-code Section 415.9.3",
+      "source_basis": "sbc-201-section-102 body text (same-code cross-reference): \"...ent of the code. In the code, several sections illustrate this concern, such as Section 415.9.3 . Section 415.9.3 Dry cleaning plants. The construction and...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-104-sbc-201-section-110-code_to_code-43",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-110",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites Section 110.3 via 'required-by-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-104 body text (required-by-Section pattern): \"...the building official to enter the premises in order to make permit inspections required by Section 110.3 . Permit application forms typically include a statement in...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-104-sbc-201-section-116-code_to_code-44",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-116",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites same-code Section 116.3",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...ing official is required to issue orders to abate illegal or unsafe conditions. Section 116.3 contains additional information for these notices. 104.4 In...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-104-sbc-201-section-105-code_to_code-45",
+      "from_ref": "sbc-201-section-104",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-104 body cites same-code Section 105.3.1",
+      "source_basis": "sbc-201-section-104 body text (same-code cross-reference): \"...he reasons for the disapproval. This is similar to when a permit is rejected in Section 105.3.1 . 104.11.1 Research reports. Supporting data, where necessa...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-109-sbc-201-section-114-code_to_code-46",
+      "from_ref": "sbc-201-section-109",
+      "to_ref": "sbc-201-section-114",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-109 body cites same-code Section 114.4",
+      "source_basis": "sbc-201-section-109 body text (same-code cross-reference): \"...osed on the responsible party. Note that this is not a penalty, as described in Section 114.4 , for which the person can also be liable. 109.5 Related fe...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-110-sbc-201-section-105-code_to_code-47",
+      "from_ref": "sbc-201-section-110",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-110 body cites Section 105.4 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-110 body text (See-Section pattern): \"...of the building official or the jurisdiction. As with the issuance of permits (see Section 105.4 ), approval as a result of an inspection is not a license t...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-110-sbc-201-section-104-code_to_code-48",
+      "from_ref": "sbc-201-section-110",
+      "to_ref": "sbc-201-section-104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-110 body cites Section 104.6 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-110 body text (See-Section pattern): \"...entry authority that otherwise does not occur until after the permit is issued (see Section 104.6 ). 110.3 Required inspections. The building official, upon...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-111-sbc-201-section-105-code_to_code-49",
+      "from_ref": "sbc-201-section-111",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-111 body cites Section 105.2 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-201-section-111 body text (in-accordance pattern): \"...eption: Certificates of occupancy are not required for work exempt from permits in accordance with Section 105.2 . ❖ This section establishes that a new building or structu...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-115-sbc-201-section-110-code_to_code-50",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-201-section-110",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites Section 110.6 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-201-section-115 body text (in-accordance pattern): \"...ition identified by the building official. Normally, correction notices, issued in accordance with Section 110.6 , are used to inform the permit holder of code violations....\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-115-sbc-201-section-105-code_to_code-51",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites Section 105.2.2 via 'comply-with' pattern (same code)",
+      "source_basis": "sbc-201-section-115 body text (comply-with pattern): \"...e structure, such repairs, alterations, additions and change of occupancy shall comply with the requirements of Section 105.2.2 and SBC 901. ❖ This section provides that unsafe structures...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-115-sbc-201-section-116-code_to_code-52",
+      "from_ref": "sbc-201-section-115",
+      "to_ref": "sbc-201-section-116",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-115 body cites Section 116.2 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-115 body text (See-Section pattern): \"...ms need to be addressed. After the building owner or agent receives the report (see Section 116.2 ), they must inform the building official how they will add...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-116-sbc-201-section-105-code_to_code-53",
+      "from_ref": "sbc-201-section-116",
+      "to_ref": "sbc-201-section-105",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-116 body cites Section 105.2.2 via 'comply-with' pattern (same code)",
+      "source_basis": "sbc-201-section-116 body text (comply-with pattern): \"...e structure, such repairs, alterations, additions and change of occupancy shall comply with the requirements of Section 105.2.2 and SBC 901. ❖ This section provides that unsafe structures...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-104-code_to_code-54",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-104",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 104 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-201-section-202 body text (in-accordance pattern): \"...m “approved” means components are subject to approval by the building official, in accordance with Section 104. ADOBE CONSTRUCTION. Construction in which the exterior loa...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-1009-code_to_code-55",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1009",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1009 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-202 body text (See-Section pattern): \"...of physical limitations, some occupants may need assistance to exit a building. See Section 1009 for requirements establishing areas where people can safely...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-1018-code_to_code-56",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1018",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites Section 1018 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-202 body text (See-Section pattern): \"...ponent, while a corridor would be an enclosed component of the means of egress (see Sections 1018 and 1030 for requirements for aisles). AISLE ACCESS-WAY. Th...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-307-code_to_code-57",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites same-code Section 307.1.1",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...s having a maximum allowable quantity per control area. As stated in Item 12 in Section 307.1.1, a building or structure used for aerosol product storage i...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-1006-code_to_code-58",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites same-code Section 1006.2.2.1",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...re these devices are permitted is specifically listed in the code (for example, Section 1006.2.2.1). The device is used extensively in industrial facilities f...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-1011-code_to_code-59",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-1011",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites same-code Section 1011.14",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...rker access to platforms or equipment. Requirements are found with stairways in Section 1011.14. AMBULATORY CARE FACILITY. Buildings or portions thereof us...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-202-sbc-201-section-422-code_to_code-60",
+      "from_ref": "sbc-201-section-202",
+      "to_ref": "sbc-201-section-422",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-202 body cites same-code Section 422",
+      "source_basis": "sbc-201-section-202 body text (same-code cross-reference): \"...or staff has taken charge of a person who cannot self-evacuate (see commentary, Section 422 and the definition of “Incapable of self-preservation”). Am...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-309-sbc-201-section-304-code_to_code-61",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-304",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites Section 304 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-309 body text (See-Section pattern): \"...R 3—USE AND OCCUPANCY CLASSIFICATION SBC 201-CC-2024 194 classified in Group B (see Section 304) are the larger quantity of goods or merchandise available...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-309-sbc-201-section-311-code_to_code-62",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-311",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites same-code Section 311.1.1",
+      "source_basis": "sbc-201-section-309 body text (same-code cross-reference): \"...ample with quantities of the merchandise in back stockrooms open only to staff. Section 311.1.1 allows accessory storage to be classified as part of the pr...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-309-sbc-201-section-307-code_to_code-63",
+      "from_ref": "sbc-201-section-309",
+      "to_ref": "sbc-201-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-309 body cites same-code Section 307.1",
+      "source_basis": "sbc-201-section-309 body text (same-code cross-reference): \"...tored and sold, the code user must also be aware of the provisions contained in Section 307.1 , Notes c and n of Table 307.1(1) and Notes c and f of Tabl...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-503-code_to_code-64",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-503",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 503 via 'required-by-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-402 body text (required-by-Section pattern): \"...ing height of any anchor building shall be based on the type of construction as required by Section 503 as modified by Sections 504 and 506. Exception: The buildin...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-406-code_to_code-65",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-406",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites Section 406.5 via 'required-by-Section' pattern (same code)",
+      "source_basis": "sbc-201-section-402 body text (required-by-Section pattern): \"...ing height of any parking garage, shall be based on the type of construction as required by Sections 406.5 and 406.6 , respectively. ❖ This section provides a reminde...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-404-code_to_code-66",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-404",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites same-code Section 404",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...Where these lobbies have multiple levels open to each other, the provisions of Section 404, Atriums, may apply. In all such cases, the provisions for...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-508-code_to_code-67",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-508",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites same-code Section 508",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...ms, may apply. In all such cases, the provisions for mixed occupancies found in Section 508 would apply. This section is also not intended to apply to...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-507-code_to_code-68",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-507",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites same-code Section 507",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...around the building in the same manner as unlimited area buildings regulated in Section 507. Where permitted in Section 507, unlimited area buildings r...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-402-sbc-201-section-506-code_to_code-69",
+      "from_ref": "sbc-201-section-402",
+      "to_ref": "sbc-201-section-506",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-402 body cites same-code Section 506",
+      "source_basis": "sbc-201-section-402 body text (same-code cross-reference): \"...unlimited area buildings and are exempt from the allowable area limitations of Section 506 where they are limited to not more than three stories above...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-1017-3-1-sbc-801-section-1006-code_to_code-70",
+      "from_ref": "sbc-801-section-1017-3-1",
+      "to_ref": "sbc-801-section-1006",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-1017-3-1 body cites Section 1006.3 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-801-section-1017-3-1 body text (See-Section pattern): \"...the limited situations where exit access stairways can be used between stories, see Sections 1006.3 and 1019. Exit access elements are included in the travel d...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-104-10-2-sbc-801-section-404-2-3-code_to_code-71",
+      "from_ref": "sbc-801-section-104-10-2",
+      "to_ref": "sbc-801-section-404-2-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-104-10-2 body cites Section 404.2.3 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-801-section-104-10-2 body text (See-Section pattern): \"...n is desired in order to reduce the conflicts between security and life safety (see Section 404.2.3). LODGING HOUSE. A one-family dwelling where one or more oc...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-104-8-2-sbc-801-section-406-3-code_to_code-72",
+      "from_ref": "sbc-801-section-104-8-2",
+      "to_ref": "sbc-801-section-406-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-104-8-2 body cites same-code Section 406.3",
+      "source_basis": "sbc-801-section-104-8-2 body text (same-code cross-reference): \"...d into open or enclosed garages. Private garages are limited in size by SBC 201 Section 406.3 and can be accessory to either residential or nonresidentia...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-105-1-5-sbc-801-section-114-1-1-code_to_code-73",
+      "from_ref": "sbc-801-section-105-1-5",
+      "to_ref": "sbc-801-section-114-1-1",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-105-1-5 body cites same-code Section 114.1.1",
+      "source_basis": "sbc-801-section-105-1-5 body text (same-code cross-reference): \"...ditions that are in violation of this code. ❖ As indicated in the commentary to Section 114.1.1, the Fire official is authorized to seek abatement action b...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-105-1-5-sbc-801-section-114-4-code_to_code-74",
+      "from_ref": "sbc-801-section-105-1-5",
+      "to_ref": "sbc-801-section-114-4",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-105-1-5 body cites same-code Section 114.4",
+      "source_basis": "sbc-801-section-105-1-5 body text (same-code cross-reference): \"...ner, operator or occupant does not take such measures under the requirements of Section 114.4. - CHAPTER 1—SCOPE AND ADMINISTRATION SBC 801-CC-2024 42 BI...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-105-2-2-sbc-801-section-112-code_to_code-75",
+      "from_ref": "sbc-801-section-105-2-2",
+      "to_ref": "sbc-801-section-112",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-105-2-2 body cites Section 112.1 via 'in-accordance' pattern (same code)",
+      "source_basis": "sbc-801-section-105-2-2 body text (in-accordance pattern): \"...ssue such notices or orders as are required to affect compliance with this code in accordance with Sections 112.1 and 112.2. ❖ The fire official is required to issue orders...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-105-2-2-sbc-801-section-104-6-code_to_code-76",
+      "from_ref": "sbc-801-section-105-2-2",
+      "to_ref": "sbc-801-section-104-6",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-105-2-2 body cites Section 104.6.1 via 'required-by-Section' pattern (same code)",
+      "source_basis": "sbc-801-section-105-2-2 body text (required-by-Section pattern): \"...code. 104.6 Official records. The fire official shall keep official records as required by Sections 104.6.1 through 104.6.4. Such official records shall be retained fo...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-105-5-sbc-801-section-307-code_to_code-77",
+      "from_ref": "sbc-801-section-105-5",
+      "to_ref": "sbc-801-section-307",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-105-5 body cites Section 307 via 'See-Section' pattern (same code)",
+      "source_basis": "sbc-801-section-105-5 body text (See-Section pattern): \"...tipulations of the permit shall be adhered to. Exception: Recreational fires. ❖ See Section 307 for open burning provisions. Section 202 includes the defin...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-801-section-907-5-2-2-sbc-801-section-404-2-3-code_to_code-78",
+      "from_ref": "sbc-801-section-907-5-2-2",
+      "to_ref": "sbc-801-section-404-2-3",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-801-section-907-5-2-2 body cites same-code Section 404.2.3",
+      "source_basis": "sbc-801-section-907-5-2-2 body text (same-code cross-reference): \"...r flow. 4.3. Manual activation is provided from a normally occupied location. ❖ Section 404.2.3 addresses the development and implementation of lockdown pl...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-103-sbc-201-section-102-code_to_code-79",
+      "from_ref": "sbc-201-section-103",
+      "to_ref": "sbc-201-section-102",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-103 body cites same-code Section 102.4.2",
+      "source_basis": "sbc-201-section-103 body text (same-code cross-reference): \"...shall take precedence over the provisions in the referenced code or standard. ❖ Section 102.4.2 expands upon the provisions of Section 102.4.1 by making it...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    },
+    {
+      "id": "rel-r4-sbc-201-section-105-sbc-201-section-102-code_to_code-80",
+      "from_ref": "sbc-201-section-105",
+      "to_ref": "sbc-201-section-102",
+      "relation_type": "code_to_code",
+      "direction": "from_to",
+      "reason": "sbc-201-section-105 body cites same-code Section 102.4.2",
+      "source_basis": "sbc-201-section-105 body text (same-code cross-reference): \"...shall take precedence over the provisions in the referenced code or standard. ❖ Section 102.4.2 expands upon the provisions of Section 102.4.1 by making it...\"",
+      "confidence": "PROVEN",
+      "applicable_modes": [
+        "main",
+        "advisory",
+        "analytical"
+      ],
+      "not_citable_as_source": true,
+      "origin": "cross_ref_in_text"
+    }
+  ]
+}

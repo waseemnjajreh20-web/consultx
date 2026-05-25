@@ -1,0 +1,659 @@
+{
+  "agent": "SUB_AGENT_A2_ROUND4_HAZMAT",
+  "code_family": "SBC 801",
+  "edition": 2024,
+  "input_report": "D:/ConsultX_Clean/reports/sbc801_manual_review_resolution_report.json",
+  "generated_at_utc": "2026-05-01T18:38:54Z",
+  "chapters_scope": "50-63 (hazardous materials)",
+  "candidates_total": 41,
+  "token_budget_cap": 25,
+  "resolved": 25,
+  "cross_reference_only": 0,
+  "absent_from_2024_pdf": 0,
+  "manual_review_keep": 16,
+  "quarantine": 0,
+  "section_symbol_total": 0,
+  "output_dir": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat",
+  "counts": {
+    "resolved_canonical": 25,
+    "cross_reference_only": 0,
+    "absent_from_2024_pdf": 0,
+    "manual_review_keep": 16,
+    "quarantine": 0
+  },
+  "items": [
+    {
+      "section_ref": "5004",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5004",
+      "action": "manual_review_keep",
+      "reason": "extraction_quality_fail",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        111,
+        111
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5103",
+      "chapter": "51",
+      "record_id": "sbc-801-section-5103",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        144,
+        200
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2466,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5103.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5103.meta.json",
+      "sha256_md": "0e1189ef4a0b196f685854a6c62507469eb7cdc32b2b1de98869cac7148efb74"
+    },
+    {
+      "section_ref": "5602",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5602",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        22,
+        81
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1832,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5602.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5602.meta.json",
+      "sha256_md": "40b1cc99fdd2ccdf1c58315b9d40d2638d02ab41bfabb5892c271e1c32249ad1"
+    },
+    {
+      "section_ref": "5606",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5606",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        37,
+        96
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1096,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5606.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5606.meta.json",
+      "sha256_md": "cbb7c690be78664d49b467d73486816da349c54f0fdb102a44c769f7116b5b85"
+    },
+    {
+      "section_ref": "5608",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5608",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        44,
+        103
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 499,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5608.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5608.meta.json",
+      "sha256_md": "adb97884dad3391202a549764b9e4bde59e52552d0baf3f987b2d4b13d3c4a0a"
+    },
+    {
+      "section_ref": "5706",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5706",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        122,
+        181
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 877,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5706.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5706.meta.json",
+      "sha256_md": "923361feaf20007e78d3d8a16032d397b49c8674fc2a0a6279e2e98e1a1bcab6"
+    },
+    {
+      "section_ref": "5707",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5707",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        145,
+        200
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 825,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5707.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5707.meta.json",
+      "sha256_md": "50e5993cc6b53ea0f302152c4b60d15cc6c4406f507dd582bdfe79ba56fc6646"
+    },
+    {
+      "section_ref": "5807",
+      "chapter": "58",
+      "record_id": "sbc-801-section-5807",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        176,
+        200
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 425,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5807.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5807.meta.json",
+      "sha256_md": "255b45e94592c64bd86b07b172e004c3bb9b506ed82b6c2f36cb654b2bac05b1"
+    },
+    {
+      "section_ref": "5906",
+      "chapter": "59",
+      "record_id": "sbc-801-section-5906",
+      "action": "manual_review_keep",
+      "reason": "extraction_quality_fail",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        187,
+        187
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "6005",
+      "chapter": "60",
+      "record_id": "sbc-801-section-6005",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "page_range": [
+        12,
+        71
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 3246,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-6005.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-6005.meta.json",
+      "sha256_md": "300c79aaadfb1c9a6bba18f4151de9ae1cc6567699489f58b31b65e906cdc52c"
+    },
+    {
+      "section_ref": "5001.1",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5001-1",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        73,
+        132
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2576,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5001-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5001-1.meta.json",
+      "sha256_md": "80f7280a541bc51785c1271818f037dc9b5c5e0611b813fb4ccc53f8c4699af6"
+    },
+    {
+      "section_ref": "5003.11",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-11",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        108,
+        167
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 3172,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-11.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-11.meta.json",
+      "sha256_md": "1dddab40742771951aee2a4155093f79193dcc38c1eefe3f1c03c600d5b1d9d7"
+    },
+    {
+      "section_ref": "5003.5",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-5",
+      "action": "manual_review_keep",
+      "reason": "extraction_quality_fail",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        97,
+        97
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5101.4",
+      "chapter": "51",
+      "record_id": "sbc-801-section-5101-4",
+      "action": "manual_review_keep",
+      "reason": "extraction_quality_fail",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        144,
+        144
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5104.4",
+      "chapter": "51",
+      "record_id": "sbc-801-section-5104-4",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        152,
+        200
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 4166,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5104-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5104-4.meta.json",
+      "sha256_md": "03aeb1ed86e43b497f5f7f321a8d504a9afae59b8356fdd6665762d5798c612a"
+    },
+    {
+      "section_ref": "5307.4",
+      "chapter": "53",
+      "record_id": "sbc-801-section-5307-4",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        186,
+        200
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 4314,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5307-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5307-4.meta.json",
+      "sha256_md": "a2208d7f71264bc685339d67c9ffd9a90c9c2b971ff4fe202b5b193204c1889e"
+    },
+    {
+      "section_ref": "5601.1",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5601-1",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        15,
+        74
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1927,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5601-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5601-1.meta.json",
+      "sha256_md": "259179e1b776f680dd194a92278efd5c4dd73abac317560d1b513c0a1e29ec48"
+    },
+    {
+      "section_ref": "5601.4",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5601-4",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        19,
+        78
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2527,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5601-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5601-4.meta.json",
+      "sha256_md": "c660f6fbb6a67674c7173d989799c140ec04b4f54d718ffd010ae1aa47dca250"
+    },
+    {
+      "section_ref": "5605.1",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5605-1",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        31,
+        90
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 555,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5605-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5605-1.meta.json",
+      "sha256_md": "3f999771881d30cb5547351e8181e11f222ca879c10edc46d8bb7dbddfeec28f"
+    },
+    {
+      "section_ref": "5605.3",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5605-3",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        32,
+        91
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1247,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5605-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5605-3.meta.json",
+      "sha256_md": "a19a42eea5fc190cd6a8ffd66e203495d1af0b0ce96e95187e28083c5c8cea68"
+    },
+    {
+      "section_ref": "5606.4",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5606-4",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        38,
+        97
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2533,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5606-4.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5606-4.meta.json",
+      "sha256_md": "81f704590bbfc2e5c05cb9196a4ad34106049cb4f22888e723bd27ce66952e1f"
+    },
+    {
+      "section_ref": "5608.9",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5608-9",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        47,
+        106
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1694,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5608-9.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5608-9.meta.json",
+      "sha256_md": "97d7bf1ef4eb82dfea528c3bc3719eaf98d9ad378aa2f7e50d471dabe2ea56d8"
+    },
+    {
+      "section_ref": "5706.5",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5706-5",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        131,
+        190
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2952,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5706-5.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5706-5.meta.json",
+      "sha256_md": "5e525c654c958c082135b49420cf12baf0403c5122d9c8e96a41bb00599d7a45"
+    },
+    {
+      "section_ref": "6301.1",
+      "chapter": "63",
+      "record_id": "sbc-801-section-6301-1",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "page_range": [
+        56,
+        115
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 630,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-6301-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-6301-1.meta.json",
+      "sha256_md": "1fe0d7ad93ad50f14d4aff81fee0801a9853994d2d065d0d3c720c8a22a9a819"
+    },
+    {
+      "section_ref": "5003.2.1",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-2-1",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        91,
+        150
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1216,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-2-1.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-2-1.meta.json",
+      "sha256_md": "385072310231c4bd233022e5aef73f6682dd6c34805184aaee7ad143218b44b7"
+    },
+    {
+      "section_ref": "5003.8.2",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-8-2",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        99,
+        158
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1137,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-2.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-2.meta.json",
+      "sha256_md": "e824bd7a21b7b48d112794f8009b6f07dbff3deab1837adc38a8fd563e6d1bf1"
+    },
+    {
+      "section_ref": "5003.8.3",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-8-3",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        99,
+        158
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2989,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-3.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-3.meta.json",
+      "sha256_md": "37bb506be08e5d31f7af7c0e92f2eca3e12754970ea0dda8acf1d598b287c0ba"
+    },
+    {
+      "section_ref": "5003.8.5",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-8-5",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        103,
+        162
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 1316,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-5.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-8-5.meta.json",
+      "sha256_md": "012b331af104b27f5d031bb1573b7a8c0b12aa0a04fa7d8c01ac7f3ed06f72d6"
+    },
+    {
+      "section_ref": "5003.9.10",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-9-10",
+      "action": "resolved_canonical",
+      "reason": "verbatim_extracted",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        106,
+        165
+      ],
+      "extraction_confidence": "medium",
+      "body_chars": 2194,
+      "md_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-9-10.md",
+      "meta_path": "D:/ConsultX_Clean/data/consultx_brain/full_corpus/extracted_gaps/sbc801_round4_hazmat/sbc-801-section-5003-9-10.meta.json",
+      "sha256_md": "31eef0f256dbd250ef66115e222110bcdff1cb09db3387618319fffed21d9b87"
+    },
+    {
+      "section_ref": "5303.5.3",
+      "chapter": "53",
+      "record_id": "sbc-801-section-5303-5-3",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        172,
+        172
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5307.4.3",
+      "chapter": "53",
+      "record_id": "sbc-801-section-5307-4-3",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        186,
+        186
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5601.2.3",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5601-2-3",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        17,
+        17
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5703.6.2",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5703-6-2",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        63,
+        63
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5704.2.7",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5704-2-7",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        69,
+        69
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5704.3.8",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5704-3-8",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        103,
+        103
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5003.8.3.5",
+      "chapter": "50",
+      "record_id": "sbc-801-section-5003-8-3-5",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "page_range": [
+        102,
+        102
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5604.5.1.3",
+      "chapter": "56",
+      "record_id": "sbc-801-section-5604-5-1-3",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        25,
+        25
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5704.3.4.1",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5704-3-4-1",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        94,
+        94
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "5706.5.4.5",
+      "chapter": "57",
+      "record_id": "sbc-801-section-5706-5-4-5",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "page_range": [
+        137,
+        137
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "6004.2.2.10",
+      "chapter": "60",
+      "record_id": "sbc-801-section-6004-2-2-10",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "page_range": [
+        7,
+        7
+      ],
+      "body_chars": 0
+    },
+    {
+      "section_ref": "6304.2.1.1",
+      "chapter": "63",
+      "record_id": "sbc-801-section-6304-2-1-1",
+      "action": "manual_review_keep",
+      "reason": "token_budget_cap_round4_hazmat",
+      "source_pdf": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "page_range": [
+        62,
+        62
+      ],
+      "body_chars": 0
+    }
+  ]
+}

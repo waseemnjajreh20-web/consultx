@@ -1,0 +1,463 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-01T00:00:00Z",
+  "source_provenance": {
+    "synthesis_inputs": [
+      "D:/sbc_consultx/wiki/synthesis/sprinkler-required-decision.md",
+      "D:/sbc_consultx/wiki/synthesis/egress-design-checklist.md",
+      "D:/sbc_consultx/wiki/concepts/fire-alarm-systems.md",
+      "D:/sbc_consultx/wiki/concepts/occupancy-classification.md",
+      "D:/sbc_consultx/wiki/concepts/interior-finish-requirements.md"
+    ],
+    "v1_decision_tree": "D:/ConsultX_Clean/generated/consultx_brain_v1/group_m_advisory_decision_tree_v1.json"
+  },
+  "header_note": "These workflows guide Advisory reasoning. They are NOT legal source. Every verdict must be paired with verbatim citations from the original SBC 801 / SBC 201 PDF sections referenced here.",
+  "workflows": [
+    {
+      "id": "advisory-sprinkler-required",
+      "domain": "fire_protection_systems",
+      "use_case": "determine sprinkler requirement",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "decision_tree_ref": "decision_trees/sprinkler-required-decision.json",
+      "summary_ar": "تحديد ما إذا كان نظام الرشاشات الآلي مطلوبا للمبنى وفق Section 903.2 من SBC 801.",
+      "summary_en": "Determine whether automatic sprinkler system is required per SBC 801 Section 903.2 family.",
+      "required_inputs": [
+        "occupancy_group",
+        "occupancy_subgroup",
+        "building_height_first_story_m",
+        "has_basement_yes_no",
+        "stories_above_grade",
+        "fire_area_per_floor_m2",
+        "combined_fire_area_m2",
+        "occupant_load_total"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعة الإشغال الأساسية للمبنى (A، B، E، F، H، I، M، R، S، U)؟",
+          "ما الفئة الفرعية داخل المجموعة (مثل A-1، R-2، S-1)؟",
+          "كم يبلغ ارتفاع أرضية الطابق الأول عن سطح الأرض الطبيعية بالأمتار؟",
+          "هل يوجد طابق تحت سطح الأرض في المبنى؟",
+          "كم عدد الطوابق فوق منسوب التسوية؟",
+          "ما مساحة كل طابق من حيز الإشغال بالمتر المربع؟",
+          "ما الإجمالي الكلي لحمولة الشاغلين في المبنى؟"
+        ],
+        "en": [
+          "What is the primary occupancy group of the building (A, B, E, F, H, I, M, R, S, U)?",
+          "What is the sub-classification within the group (e.g. A-1, R-2, S-1)?",
+          "What is the height of the first-story floor above natural grade in metres?",
+          "Does the building include any below-grade story?",
+          "How many stories above grade plane?",
+          "What is the area of each occupancy floor in square metres?",
+          "What is the total combined occupant load of the building?"
+        ]
+      },
+      "source_refs": [
+        "sbc-801-section-903",
+        "sbc-801-section-903.2",
+        "sbc-801-section-903.2.7",
+        "sbc-801-section-903.2.10",
+        "sbc-801-section-903.2.11"
+      ],
+      "relation_refs": [
+        "rel-cond-fire-area-1115-to-sbc801-903-2-7",
+        "rel-cond-combined-area-2230-to-sbc801-903-2-7"
+      ]
+    },
+    {
+      "id": "advisory-fire-alarm-required",
+      "domain": "fire_protection_systems",
+      "use_case": "determine fire alarm requirement",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "تحديد متى يكون نظام إنذار الحريق مطلوبا وفق Section 907.2 ومجموعة الإشغال.",
+      "summary_en": "Determine when a fire alarm system is required per SBC 801 Section 907.2 and occupancy group.",
+      "required_inputs": [
+        "occupancy_group",
+        "occupancy_subgroup",
+        "stories_above_grade",
+        "occupant_load_total",
+        "occupant_load_above_or_below_exit_discharge",
+        "existing_sprinkler_yes_no",
+        "is_covered_or_open_mall"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعة الإشغال والفئة الفرعية للمبنى؟",
+          "كم عدد الطوابق فوق منسوب التسوية؟",
+          "ما إجمالي حمولة الشاغلين، وكم منها فوق أو تحت أدنى مستوى تفريغ خروج؟",
+          "هل المبنى مزود برشاشات وفق Section 903.3.1.1 مع تفعيل الإشعار بسريان الماء؟",
+          "هل المبنى مجمع تجاري مغطى أو مفتوح يتوافق مع SBC 201 Section 402؟"
+        ],
+        "en": [
+          "What is the occupancy group and sub-classification?",
+          "How many stories above grade plane?",
+          "What is the total occupant load, and how much is above or below the lowest level of exit discharge?",
+          "Is the building sprinklered per Section 903.3.1.1 with waterflow-activated occupant notification?",
+          "Is the building a covered or open mall complying with SBC 201 Section 402?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Classify occupancy group (refer advisory-occupancy-classification).",
+        "Step 2: Apply Table 907.2 trigger for the group (e.g. Group M occupant load >= 500 -> manual fire alarm; A occupant load > 300 or 2+ stories; B 5+ stories or occupant load > 500; E all educational; I-1/I-2/I-3 mandatory; R-1/R-2 all units; H all hazardous).",
+        "Step 3: Apply 907.2 exceptions (mall per SBC 201 402; sprinkler with waterflow notification removes manual pull-station requirement only, not the underlying alarm system).",
+        "Step 4: Issue verdict with verbatim 907.2 citation; mark assumptions if any input was missing."
+      ],
+      "source_refs": [
+        "sbc-801-section-907",
+        "sbc-801-section-907.1",
+        "sbc-801-section-907.2",
+        "sbc-801-section-907.2.7",
+        "sbc-801-section-907.2.7.1",
+        "sbc-201-section-402"
+      ],
+      "relation_refs": [
+        "rel-cond-occupant-load-500-to-sbc801-907-2-7",
+        "rel-cond-occupant-load-100-discharge-to-sbc801-907-2-7",
+        "rel-sbc801-907-2-7-exception-mall-buildings-402",
+        "rel-sbc801-907-2-7-exception-sprinkler-903-3-1-1"
+      ]
+    },
+    {
+      "id": "advisory-occupancy-classification",
+      "domain": "occupancy",
+      "use_case": "classify occupancy group",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "تحديد مجموعة الإشغال والفئة الفرعية وفق SBC 801 Chapter 3 / SBC 201 Chapter 3.",
+      "summary_en": "Classify the occupancy group and sub-classification per SBC 801 Chapter 3 / SBC 201 Chapter 3.",
+      "required_inputs": [
+        "use_description",
+        "primary_activity",
+        "occupant_population_type",
+        "presence_of_hazardous_materials",
+        "is_residential_dwelling_unit_count"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما الاستخدام الأساسي للمبنى أو الحيز (مثال: مكتب، متجر، مستشفى، مدرسة، فندق)؟",
+          "ما النشاط الرئيسي الذي يجري داخل الحيز؟",
+          "هل يحتوي المبنى على أشخاص يحتاجون رعاية أو لا يستطيعون الإخلاء الذاتي؟",
+          "هل توجد مواد خطرة مخزنة أو مستخدمة بكميات تتجاوز حدود الكود؟",
+          "في حال السكن، كم عدد الوحدات السكنية؟"
+        ],
+        "en": [
+          "What is the primary use of the building or space (e.g. office, store, hospital, school, hotel)?",
+          "What is the principal activity carried out within the space?",
+          "Does the space house occupants who need care or are unable to self-evacuate?",
+          "Are hazardous materials stored or used above the code thresholds?",
+          "If residential, how many dwelling units are present?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Match the primary use against SBC 201 Chapter 3 group definitions (A=Assembly, B=Business, E=Educational, F=Factory, H=High-Hazard, I=Institutional, M=Mercantile, R=Residential, S=Storage, U=Utility).",
+        "Step 2: Identify sub-classification (A-1..A-5; F-1/F-2; H-1..H-5; I-1..I-4; R-1..R-4; S-1/S-2).",
+        "Step 3: If occupants cannot self-evacuate, escalate to I (then I-1/I-2/I-3/I-4 sub-class).",
+        "Step 4: If hazardous materials exceed Section 307 maximum allowable quantities, escalate to H.",
+        "Step 5: If multiple uses present, refer advisory-mixed-occupancy.",
+        "Step 6: Issue verdict with citation to SBC 201 Section 302..312 and SBC 801 Chapter 3."
+      ],
+      "source_refs": [
+        "sbc-201-section-302",
+        "sbc-201-section-303",
+        "sbc-201-section-304",
+        "sbc-201-section-305",
+        "sbc-201-section-306",
+        "sbc-201-section-307",
+        "sbc-201-section-308",
+        "sbc-201-section-309",
+        "sbc-201-section-310",
+        "sbc-201-section-311",
+        "sbc-201-section-312",
+        "sbc-801-chapter-3"
+      ],
+      "relation_refs": [
+        "rel-sbc201-309-to-sbc801-903-2-7-classification",
+        "rel-sbc201-309-to-sbc801-907-2-7-classification"
+      ]
+    },
+    {
+      "id": "advisory-mixed-occupancy",
+      "domain": "occupancy",
+      "use_case": "evaluate mixed-occupancy strategy (separated vs nonseparated)",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "تقييم استراتيجية الإشغال المختلط: منفصل (Separated) أم غير منفصل (Nonseparated) وفق SBC 201 Section 508.",
+      "summary_en": "Evaluate mixed-occupancy strategy: Separated vs Nonseparated occupancies per SBC 201 Section 508.",
+      "required_inputs": [
+        "list_of_occupancy_groups_present",
+        "area_per_group_m2",
+        "story_layout",
+        "fire_resistance_rating_of_separations",
+        "is_accessory_minor_use"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعات الإشغال الموجودة في المبنى وما مساحة كل منها؟",
+          "كيف يتوزع كل إشغال على الطوابق؟",
+          "ما تصنيف مقاومة الحريق للجدران والأرضيات الفاصلة بين المجموعات؟",
+          "هل توجد مجموعة إشغال ثانوية أقل من 10٪ من إجمالي المساحة لكل طابق؟"
+        ],
+        "en": [
+          "Which occupancy groups are present, and what is the area of each?",
+          "How are these occupancies distributed across stories?",
+          "What is the fire-resistance rating of the separations between groups?",
+          "Is there an accessory occupancy with less than 10% of the floor area per story?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: List groups present and area per story.",
+        "Step 2: If any minor use is < 10% of the story area and < threshold per Section 508.2, classify as Accessory occupancy and group with main occupancy.",
+        "Step 3: Otherwise choose Separated (apply each group's requirements within its compartment) or Nonseparated (apply most-restrictive requirement of all groups across building).",
+        "Step 4: For Separated, verify fire-resistance ratings of separations meet Table 508.4.",
+        "Step 5: For Nonseparated, apply most-restrictive sprinkler / alarm / egress / height-area limits.",
+        "Step 6: Cite Section 508 verbatim with verdict."
+      ],
+      "source_refs": [
+        "sbc-201-section-508",
+        "sbc-201-section-508.2",
+        "sbc-201-section-508.3",
+        "sbc-201-section-508.4",
+        "sbc-201-table-508.4"
+      ],
+      "relation_refs": [
+        "rel-sbc201-508-mixed-occupancy-strategy",
+        "rel-sbc201-508-4-separated-rating-table"
+      ]
+    },
+    {
+      "id": "advisory-egress-design",
+      "domain": "means_of_egress",
+      "use_case": "verify egress sizing and exit count",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "decision_tree_ref": "decision_trees/egress-design-checklist.json",
+      "summary_ar": "التحقق من تصميم مسارات الإخلاء: حمولة الشاغلين، عدد المخارج، عرض الإخلاء، مسافة السفر، الممرات وفق SBC 801 Chapter 10.",
+      "summary_en": "Verify means of egress: occupant load, number of exits, egress width, travel distance, corridors per SBC 801 Chapter 10.",
+      "required_inputs": [
+        "occupancy_group",
+        "floor_area_per_space_m2",
+        "occupant_load_factor_table_1004_5",
+        "existing_sprinkler_yes_no",
+        "longest_travel_distance_m",
+        "longest_common_path_m",
+        "exit_doors_clear_width_mm",
+        "stair_clear_width_mm",
+        "corridor_width_mm",
+        "dead_end_length_m"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعة الإشغال ومعامل الإشغال من Table 1004.5؟",
+          "ما مساحة كل حيز يستخدم لحساب الحمولة؟",
+          "هل المبنى مزود برشاشات؟",
+          "ما أطول مسافة سفر إخلاء فعلية من أبعد نقطة إلى المخرج؟",
+          "ما طول أطول مسار مشترك (Common Path of Travel)؟",
+          "ما عرض الأبواب الصافي وعرض السلالم الصافي بالملم؟",
+          "ما عرض الممرات بالملم؟",
+          "هل يوجد ممرات مسدودة (Dead-End)، وما طولها؟"
+        ],
+        "en": [
+          "What is the occupancy group and occupant-load factor from Table 1004.5?",
+          "What is the area of each space used for occupant-load calculation?",
+          "Is the building sprinklered?",
+          "What is the longest actual egress travel distance from the most remote point to an exit?",
+          "What is the longest common path of travel?",
+          "What are the clear widths of doors and stairs in mm?",
+          "What is the corridor width in mm?",
+          "Are there any dead-end corridors, and what is their length?"
+        ]
+      },
+      "source_refs": [
+        "sbc-801-section-1004",
+        "sbc-801-section-1005",
+        "sbc-801-section-1006",
+        "sbc-801-section-1010",
+        "sbc-801-section-1011",
+        "sbc-801-section-1013",
+        "sbc-801-section-1017",
+        "sbc-801-section-1020",
+        "sbc-801-table-1004.5"
+      ],
+      "relation_refs": [
+        "rel-sbc801-903-affects-1017-travel-distance",
+        "rel-sbc801-1004-feeds-1006-exit-count"
+      ]
+    },
+    {
+      "id": "advisory-standpipe-required",
+      "domain": "fire_protection_systems",
+      "use_case": "determine standpipe requirement",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "تحديد ما إذا كانت أنابيب الإطفاء الرأسية (Standpipe) مطلوبة وفق SBC 801 Section 905.",
+      "summary_en": "Determine whether a standpipe system is required per SBC 801 Section 905.",
+      "required_inputs": [
+        "building_height_above_or_below_lowest_fd_access_m",
+        "occupancy_group",
+        "stories_count",
+        "is_covered_or_open_mall",
+        "stage_assembly_present",
+        "underground_floor_levels"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما ارتفاع المبنى فوق أو تحت أدنى مستوى وصول للدفاع المدني؟",
+          "ما مجموعة الإشغال وعدد الطوابق؟",
+          "هل المبنى مجمع تجاري مغطى أو مفتوح؟",
+          "هل توجد منصة تجميع (Stage Assembly)؟",
+          "كم عدد المستويات تحت الأرض؟"
+        ],
+        "en": [
+          "What is the building height above or below the lowest fire-department access level?",
+          "What is the occupancy group and number of stories?",
+          "Is the building a covered or open mall?",
+          "Is there a stage / assembly platform?",
+          "How many below-grade levels exist?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Identify Section 905.3 trigger (height above lowest level of fire-department access, mall, stage, underground).",
+        "Step 2: Determine class of standpipe (Class I / II / III) per Section 905.2 / 905.3.",
+        "Step 3: Apply exceptions in 905.3.",
+        "Step 4: Render verdict citing 905.3 verbatim."
+      ],
+      "source_refs": [
+        "sbc-801-section-905",
+        "sbc-801-section-905.2",
+        "sbc-801-section-905.3"
+      ],
+      "relation_refs": [
+        "rel-sbc801-905-3-height-trigger",
+        "rel-sbc801-905-mall-trigger"
+      ]
+    },
+    {
+      "id": "advisory-smoke-control-required",
+      "domain": "smoke_control",
+      "use_case": "determine smoke-control requirement",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "تحديد ما إذا كان نظام التحكم بالدخان مطلوبا وفق SBC 801 Section 909 / SBC 201 Section 402 / 404 / 405 / 410 / 412.",
+      "summary_en": "Determine whether a smoke-control system is required per SBC 801 Section 909 and SBC 201 Sections 402/404/405/410/412.",
+      "required_inputs": [
+        "building_type_special",
+        "atrium_present_height_m",
+        "covered_mall_yes_no",
+        "underground_floor_levels",
+        "high_rise_yes_no",
+        "stage_assembly_present"
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "هل المبنى يحتوي على بهو متعدد الطوابق (Atrium)؟ ما ارتفاعه؟",
+          "هل المبنى مجمع تجاري مغطى؟",
+          "هل توجد طوابق تحت الأرض، وكم عددها؟",
+          "هل المبنى شاهق (High-Rise)؟",
+          "هل توجد منصة تجميع (Stage)؟"
+        ],
+        "en": [
+          "Does the building include an atrium? What is its height?",
+          "Is the building a covered mall?",
+          "Are there underground levels, and how many?",
+          "Is the building a high-rise?",
+          "Is there a stage / assembly platform?"
+        ]
+      },
+      "decision_steps_summary": [
+        "Step 1: Identify which Section triggers smoke control (covered mall = SBC 201 402; atrium = SBC 201 404; underground = SBC 201 405; high-rise = SBC 201 403; stage = SBC 201 410; smokeproof enclosures = SBC 801 909.20).",
+        "Step 2: Determine smoke-control method (mechanical pressurization, exhaust, natural).",
+        "Step 3: Verify Section 909 design and acceptance-test requirements apply.",
+        "Step 4: Render verdict citing 909 verbatim and the triggering SBC 201 section."
+      ],
+      "source_refs": [
+        "sbc-801-section-909",
+        "sbc-801-section-909.20",
+        "sbc-201-section-402",
+        "sbc-201-section-403",
+        "sbc-201-section-404",
+        "sbc-201-section-405",
+        "sbc-201-section-410"
+      ],
+      "relation_refs": [
+        "rel-sbc801-909-triggered-by-sbc201-402",
+        "rel-sbc801-909-triggered-by-sbc201-404",
+        "rel-sbc801-909-triggered-by-sbc201-405",
+        "rel-sbc801-909-triggered-by-sbc201-403"
+      ]
+    },
+    {
+      "id": "advisory-missing-input-checklist",
+      "domain": "data_collection",
+      "use_case": "ask user for missing critical inputs before any verdict",
+      "applicable_modes": [
+        "advisory"
+      ],
+      "not_legal_source": true,
+      "summary_ar": "قائمة المدخلات الأدنى اللازمة قبل إصدار أي حكم استشاري. إن نقص أي مدخل حرج، يجب طلبه ولا يصدر حكم نهائي.",
+      "summary_en": "Checklist of minimum inputs required before any advisory verdict. If any critical input is missing, request it; do not issue a final verdict.",
+      "critical_inputs": [
+        "occupancy_group",
+        "occupancy_subgroup",
+        "floor_count",
+        "floor_area_each_floor_m2",
+        "building_height_first_story_m",
+        "stories_above_grade",
+        "has_basement_yes_no",
+        "occupant_load_total",
+        "existing_sprinkler_yes_no",
+        "is_covered_or_open_mall",
+        "hazardous_materials_present"
+      ],
+      "behavior_rules": [
+        "If any critical input is missing or ambiguous, the agent emits a bilingual question list and stops short of any verdict.",
+        "If the user provides a value the agent cannot validate against source, the agent records it as an assumption and flags conditional_flag = true.",
+        "Synthesis pages are never used as the citation source; only SBC 801 / SBC 201 verbatim text is acceptable as legal source."
+      ],
+      "missing_info_prompts": {
+        "ar": [
+          "ما مجموعة الإشغال والفئة الفرعية للمبنى؟",
+          "كم عدد الطوابق ومساحة كل طابق بالمتر المربع؟",
+          "ما ارتفاع المبنى وعدد الطوابق فوق منسوب التسوية؟",
+          "هل يوجد طابق تحت الأرض؟",
+          "ما إجمالي حمولة الشاغلين؟",
+          "هل المبنى مزود بنظام رشاشات؟",
+          "هل المبنى مجمع تجاري مغطى أو مفتوح؟",
+          "هل توجد مواد خطرة بكميات تتجاوز حدود الكود؟"
+        ],
+        "en": [
+          "What is the occupancy group and sub-classification?",
+          "How many floors does the building have, and what is the area of each floor in square metres?",
+          "What is the building height and number of stories above grade plane?",
+          "Is there a below-grade story?",
+          "What is the total occupant load?",
+          "Is the building sprinklered?",
+          "Is the building a covered or open mall?",
+          "Are hazardous materials present above code-allowed thresholds?"
+        ]
+      },
+      "source_refs": [
+        "sbc-801-section-901",
+        "sbc-801-section-902",
+        "sbc-801-section-903",
+        "sbc-801-section-907",
+        "sbc-801-section-1004"
+      ],
+      "relation_refs": []
+    }
+  ]
+}
