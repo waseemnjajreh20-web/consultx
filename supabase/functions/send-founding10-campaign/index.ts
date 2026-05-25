@@ -51,7 +51,9 @@ const PROD_ORIGIN = "https://www.consultx.app";
 
 const HARD_SEND_CAP = 500;        // safety: never send more than this in one call
 const DEFAULT_PREVIEW_LIMIT = 1000;
-const TEST_SUBJECT_SUFFIX = "[iPhone dark test v7]";
+const TEST_SUBJECT_SUFFIX = "[iPhone dark image-bg v8]";
+const BG_0D1425_URL = "https://www.consultx.app/assets/email-bg-0d1425.png";
+const BG_070B15_URL = "https://www.consultx.app/assets/email-bg-070b15.png";
 
 function ctaUrl(): string {
   const params = new URLSearchParams({
@@ -79,8 +81,10 @@ function buildHtml(recipient: string, subjectSuffix?: string): string {
   const safeRecipient = escapeHtml(recipient);
   const titleSuffix = subjectSuffix ? ` ${subjectSuffix}` : "";
   const previewSuffix = subjectSuffix ? ` [${subjectSuffix}]` : "";
-  const BODY_STYLE = "background:#070b15!important;background-color:#070b15!important;margin:0;padding:0;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%";
-  const CARD_STYLE = "background:#0d1425!important;background-color:#0d1425!important";
+  const BG_IMG_CARD = `url('${BG_0D1425_URL}')`;
+  const BG_IMG_OUTER = `url('${BG_070B15_URL}')`;
+  const CARD_STYLE = `background:#0d1425!important;background-color:#0d1425!important;background-image:${BG_IMG_CARD}!important;background-repeat:repeat!important`;
+  const OUTER_STYLE = `background:#070b15!important;background-color:#070b15!important;background-image:${BG_IMG_OUTER}!important;background-repeat:repeat!important`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,7 +95,7 @@ function buildHtml(recipient: string, subjectSuffix?: string): string {
 <title>Founding Engineers Offer — ConsultX Pro for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR${titleSuffix}</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 <style>
-body{margin:0;padding:0;background-color:#070b15!important;-webkit-text-size-adjust:100%!important;-ms-text-size-adjust:100%!important}
+body{margin:0;padding:0;background:#070b15!important;background-color:#070b15!important;background-image:${BG_IMG_OUTER}!important;background-repeat:repeat!important;-webkit-text-size-adjust:100%!important;-ms-text-size-adjust:100%!important}
 table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
 img{border:0;outline:none;text-decoration:none;display:block}
 @-ms-viewport{width:device-width}
@@ -113,33 +117,33 @@ img{border:0;outline:none;text-decoration:none;display:block}
 }
 </style>
 </head>
-<body bgcolor="#0d1425" style="${BODY_STYLE}">
-<div style="display:none;font-size:1px;background:#070b15!important;background-color:#070b15!important;color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">ConsultX Pro first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR — limited launch offer for early engineers.${previewSuffix} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<body bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${OUTER_STYLE};margin:0;padding:0;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
+<div style="display:none;font-size:1px;${OUTER_STYLE};color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">ConsultX Pro first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR — limited launch offer for early engineers.${previewSuffix} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#070b15" style="background:#070b15!important;background-color:#070b15!important">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#070b15" background="${BG_070B15_URL}" style="${OUTER_STYLE}">
 
-<tr><td align="center" bgcolor="#070b15" style="background:#070b15!important;background-color:#070b15!important;padding:24px 0 48px">
+<tr><td align="center" bgcolor="#070b15" background="${BG_070B15_URL}" style="${OUTER_STYLE};padding:24px 0 48px">
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" width="640" align="center"><tr><td bgcolor="#0d1425"><![endif]-->
 
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE};max-width:640px;width:100%;border-radius:16px;border:1px solid #1a2744">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};max-width:640px;width:100%;border-radius:16px;border:1px solid #1a2744">
 
 <!-- HERO -->
-<tr><td bgcolor="#0d1425" style="${CARD_STYLE};background:linear-gradient(180deg,#0d1425 0%,#0a0e1a 100%);border-radius:16px 16px 0 0">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}">
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};background:linear-gradient(180deg,#0d1425 0%,#0a0e1a 100%);border-radius:16px 16px 0 0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:40px 22px 0" class="hero">
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:40px 22px 0" class="hero">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
-<td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:18px 36px;border-radius:16px;border:1px solid #00d4ff22" class="glow-pulse">
+<td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 36px;border-radius:16px;border:1px solid #00d4ff22" class="glow-pulse">
 <img src="${LOGO_URL}" alt="ConsultX" width="100" height="116" style="display:block;border:0;outline:none;margin:0 auto;max-width:100%;height:auto" />
 </td>
 </tr>
 </table>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:20px 22px 4px" class="hero">
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 22px 4px" class="hero">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
 <td bgcolor="#f59e0b11" style="background-color:#f59e0b11;border:1.5px solid #f59e0b44;border-radius:30px;padding:8px 24px">
 <span style="font-size:12px;font-weight:800;color:#fbbf24;letter-spacing:1px;text-transform:uppercase">✦&nbsp; First Month — ${CAMPAIGN_FIRST_CHARGE_SAR} SAR &nbsp;✦</span>
@@ -148,13 +152,13 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </table>
 </td></tr>
 
-<tr><td dir="ltr" align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
-<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.2;letter-spacing:-0.3px" class="head">Founding Engineers Offer</h1>
+<tr><td dir="ltr" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f8fbff;line-height:1.2;letter-spacing:-0.3px" class="head">Founding Engineers Offer</h1>
 <p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.5">Activate your first month of ConsultX Pro for only <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} SAR</strong>.</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Limited launch offer for early engineers.</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
 <!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
 <w:anchorlock/>
@@ -162,7 +166,7 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </v:roundrect>
 <![endif]-->
 <!--[if !mso]><!-- -->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
 <td align="center" bgcolor="#0098b8" style="border-radius:12px;background-color:#0098b8">
 <a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);background-color:#0098b8;color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all;min-height:44px;box-sizing:border-box" class="cta-btn">Activate for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR →</a>
@@ -170,13 +174,13 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </tr>
 </table>
 <!--<![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
 </table>
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
-<td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
-<a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">Open offer in browser</a>
+<td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:14px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">
+<a href="${cta}" target="_blank" style="color:#8fa3bf;text-decoration:underline">Open offer in browser</a>
 </td>
 </tr>
 </table>
@@ -185,126 +189,126 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </td></tr>
 
 <!-- ENGLISH VALUE SECTION -->
-<tr><td dir="ltr" bgcolor="#0d1425" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
-<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#94a3b8">
+<tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#d9e7ff">
 ConsultX is built for engineers who review fire and life safety, Saudi Building Code, NFPA references, compliance notes, and technical reports. You may not have seen what it can really do yet.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">With ConsultX Pro, you can:</p>
-<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" style="${CARD_STYLE}">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#ffffff">With ConsultX Pro, you can:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">Review fire and life safety requirements faster.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">Review fire and life safety requirements faster.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">Use Advisory Mode for deeper SBC / NFPA questions.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">Use Advisory Mode for deeper SBC / NFPA questions.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">Use Analytical Mode for drawing and compliance review.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">Use Analytical Mode for drawing and compliance review.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">Generate clearer engineering reasoning with source-based answers.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">Generate clearer engineering reasoning with source-based answers.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">Save time before reports, reviews, and client responses.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">Save time before reports, reviews, and client responses.</td>
 </tr></table>
 </td>
 </tr>
 </table>
 </td></tr>
 
-<tr><td dir="ltr" bgcolor="#0d1425" style="${CARD_STYLE};padding:8px 44px 24px" class="sec">
-<p style="margin:0;font-size:13px;line-height:1.5;color:#64748b;font-style:italic">After the first month, your subscription renews at the normal Pro price unless canceled.</p>
+<tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 24px" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.5;color:#8fa3bf;font-style:italic">After the first month, your subscription renews at the normal Pro price unless canceled.</p>
 </td></tr>
 
-<tr><td bgcolor="#0d1425" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:18px 44px 12px" class="sec">
-<p style="margin:0;font-size:11px;line-height:1.5;color:#475569">Built for SBC 201, SBC 801, NFPA, fire &amp; life safety reviews, and engineering decision support.</p>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 12px" class="sec">
+<p style="margin:0;font-size:11px;line-height:1.5;color:#8fa3bf">Built for SBC 201, SBC 801, NFPA, fire &amp; life safety reviews, and engineering decision support.</p>
 </td></tr>
 
-<tr><td bgcolor="#0d1425" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
 <!-- ARABIC SECTION -->
-<tr><td dir="rtl" bgcolor="#0d1425" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
-<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.3;letter-spacing:-0.2px" class="head">عرض خاص للمهندسين الأوائل</h1>
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f8fbff;line-height:1.3;letter-spacing:-0.2px" class="head">عرض خاص للمهندسين الأوائل</h1>
 <p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.7">أول شهر في ConsultX Pro مقابل <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} ريال</strong> فقط.</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.6">عرض إطلاق محدود للمهندسين الأوائل.</p>
 </td></tr>
 
-<tr><td dir="rtl" bgcolor="#0d1425" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
-<p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#94a3b8">
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#d9e7ff">
 تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">مع ConsultX Pro يمكنك:</p>
-<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" style="${CARD_STYLE}">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#ffffff">مع ConsultX Pro يمكنك:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">مراجعة متطلبات السلامة والحماية من الحريق بسرعة أكبر.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">مراجعة متطلبات السلامة والحماية من الحريق بسرعة أكبر.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">استخدام الوضع الاستشاري للأسئلة الكودية العميقة.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">استخدام الوضع الاستشاري للأسئلة الكودية العميقة.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">استخدام الوضع التحليلي لمراجعة المخططات والامتثال.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">استخدام الوضع التحليلي لمراجعة المخططات والامتثال.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">الحصول على إجابات هندسية أوضح ومدعومة بالمصادر.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">الحصول على إجابات هندسية أوضح ومدعومة بالمصادر.</td>
 </tr></table>
 </td>
 </tr>
 <tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr>
-<td bgcolor="#0d1425" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#cbd5e1">توفير الوقت قبل إعداد التقارير والمراجعات والردود الفنية.</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};font-size:15px;line-height:1.55;color:#d9e7ff">توفير الوقت قبل إعداد التقارير والمراجعات والردود الفنية.</td>
 </tr></table>
 </td>
 </tr>
 </table>
 </td></tr>
 
-<tr><td dir="rtl" bgcolor="#0d1425" style="${CARD_STYLE};padding:8px 44px 20px" class="sec">
-<p style="margin:0;font-size:13px;line-height:1.6;color:#64748b;font-style:italic">بعد الشهر الأول، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.</p>
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 20px" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">بعد الشهر الأول، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:4px 44px 28px" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:4px 44px 28px" class="sec">
 <!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
 <w:anchorlock/>
@@ -312,7 +316,7 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </v:roundrect>
 <![endif]-->
 <!--[if !mso]><!-- -->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
 <td align="center" bgcolor="#0098b8" style="border-radius:12px;background-color:#0098b8">
 <a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);background-color:#0098b8;color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all;min-height:44px;box-sizing:border-box" class="cta-btn">← فعّل بـ ${CAMPAIGN_FIRST_CHARGE_SAR} ريال</a>
@@ -320,26 +324,26 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </tr>
 </table>
 <!--<![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
-<tr><td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
 </table>
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" style="${CARD_STYLE}">
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
-<td align="center" bgcolor="#0d1425" style="${CARD_STYLE};padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
-<a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">فتح العرض في المتصفح</a>
+<td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:14px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">
+<a href="${cta}" target="_blank" style="color:#8fa3bf;text-decoration:underline">فتح العرض في المتصفح</a>
 </td>
 </tr>
 </table>
 </td></tr>
 
 <!-- FOOTER -->
-<tr><td bgcolor="#0d1425" style="${CARD_STYLE};padding:8px 44px 28px" class="sec">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table>
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 28px" class="sec">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table>
 
-<p style="margin:16px 0 0;font-size:11px;color:#475569;line-height:1.6;direction:ltr;text-align:center">
+<p style="margin:16px 0 0;font-size:11px;color:#8fa3bf;line-height:1.6;direction:ltr;text-align:center">
 ConsultX &middot; Fire Safety Engineering &middot; Engineering Decision Support<br>
-You are receiving this email at <span style="color:#64748b">${safeRecipient}</span> because you created a ConsultX account.<br>
-If you do not want to receive product updates, email <a href="mailto:support@consultx.app" style="color:#475569;text-decoration:underline">support@consultx.app</a>.
+You are receiving this email at <span style="color:#8fa3bf">${safeRecipient}</span> because you created a ConsultX account.<br>
+If you do not want to receive product updates, email <a href="mailto:support@consultx.app" style="color:#8fa3bf;text-decoration:underline">support@consultx.app</a>.
 </p>
 </td></tr>
 
