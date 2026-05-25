@@ -25,6 +25,8 @@ export default function CampaignFounding10() {
   const [htmlPreview, setHtmlPreview] = useState("");
   const [textPreview, setTextPreview] = useState("");
   const [sending, setSending] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"test" | "fullPreview" | "fullSend">("test");
+  const [confirmFullSend, setConfirmFullSend] = useState(false);
   const [sendResult, setSendResult] = useState<any>(null);
   const [sendError, setSendError] = useState<string | null>(null);
 
@@ -44,9 +46,48 @@ export default function CampaignFounding10() {
     setSending(true);
     setSendResult(null);
     setSendError(null);
+    setPreviewMode("test");
+    setConfirmFullSend(false);
     try {
       const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
         body: { mode: "testOnly", targetEmails: ADMIN_EMAILS },
+      });
+      if (error) throw new Error(error.message || "Function invocation failed");
+      setSendResult(data);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handlePreviewFullSend = async () => {
+    setSending(true);
+    setSendResult(null);
+    setSendError(null);
+    setPreviewMode("fullPreview");
+    setConfirmFullSend(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
+        body: { mode: "send", dryRun: true, limit: 500 },
+      });
+      if (error) throw new Error(error.message || "Function invocation failed");
+      setSendResult(data);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleFullSend = async () => {
+    setSending(true);
+    setSendResult(null);
+    setSendError(null);
+    setPreviewMode("fullSend");
+    try {
+      const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
+        body: { mode: "send", limit: 500 },
       });
       if (error) throw new Error(error.message || "Function invocation failed");
       setSendResult(data);
@@ -173,53 +214,164 @@ export default function CampaignFounding10() {
           </CardContent>
         </Card>
 
-        {/* Send Admin Test */}
+        {/* Send Section */}
         <Card className="bg-card/80 backdrop-blur-xl border-border/50 border-cyan-500/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-cyan-400">
               <Send className="w-4 h-4" />
-              {isAr ? "إرسال اختبار للمشرف" : "Send Admin Test"}
+              {isAr ? "إرسال البريد الإلكتروني للحملة" : "Send Campaign Email"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <p className="text-muted-foreground">
-              {isAr
-                ? "أرسل بريد الحملة إلى حسابات المشرفين فقط لاختبار المظهر والتسليم."
-                : "Send the campaign email to admin accounts only to test rendering and delivery."}
-            </p>
-            <p className="text-xs text-muted-foreground/60 font-mono">
-              {ADMIN_EMAILS.join(", ")}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10"
-              onClick={handleSendTest}
-              disabled={sending}
-            >
-              {sending ? (
-                <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ الإرسال..." : "Sending..."}</>
-              ) : (
-                <><Send className="w-3.5 h-3.5 me-1.5" />{isAr ? "إرسال اختبار" : "Send Admin Test"}</>
-              )}
-            </Button>
+            {/* Admin Test */}
+            <div className="p-3 rounded-lg border border-cyan-500/20 space-y-2">
+              <p className="font-semibold text-cyan-300">{isAr ? "اختبار المشرف" : "Admin Test"}</p>
+              <p className="text-muted-foreground text-xs">
+                {isAr
+                  ? "أرسل بريد الحملة إلى حسابات المشرفين فقط لاختبار المظهر والتسليم."
+                  : "Send the campaign email to admin accounts only to test rendering and delivery."}
+              </p>
+              <p className="text-xs text-muted-foreground/60 font-mono">{ADMIN_EMAILS.join(", ")}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10"
+                onClick={handleSendTest}
+                disabled={sending}
+              >
+                {sending && previewMode === "test" ? (
+                  <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ الإرسال..." : "Sending..."}</>
+                ) : (
+                  <><Send className="w-3.5 h-3.5 me-1.5" />{isAr ? "إرسال اختبار" : "Send Admin Test"}</>
+                )}
+              </Button>
+            </div>
 
+            {/* Preview Full Send */}
+            <div className="p-3 rounded-lg border border-yellow-500/20 space-y-2">
+              <p className="font-semibold text-yellow-300">{isAr ? "معاينة الإرسال الكامل" : "Preview Full Send"}</p>
+              <p className="text-muted-foreground text-xs">
+                {isAr
+                  ? "معاينة جافة: حساب المستخدمين المؤهلين دون إرسال."
+                  : "Dry run: count eligible recipients without sending."}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
+                onClick={handlePreviewFullSend}
+                disabled={sending}
+              >
+                {sending && previewMode === "fullPreview" ? (
+                  <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ..." : "Running..."}</>
+                ) : (
+                  <><Loader2 className="w-3.5 h-3.5 me-1.5" />{isAr ? "معاينة" : "Preview"}</>
+                )}
+              </Button>
+            </div>
+
+            {/* Execute Full Send */}
+            <div className="p-3 rounded-lg border border-red-500/20 space-y-2">
+              <p className="font-semibold text-red-300">{isAr ? "الإرسال الكامل" : "Full Send"}</p>
+              <p className="text-muted-foreground text-xs">
+                {isAr
+                  ? "إرسال البريد الإلكتروني للحملة إلى جميع المستخدمين المسجلين."
+                  : "Send the campaign email to all registered users."}
+              </p>
+              {!confirmFullSend ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+                  onClick={() => setConfirmFullSend(true)}
+                  disabled={sending}
+                >
+                  <Send className="w-3.5 h-3.5 me-1.5" />{isAr ? "إرسال كامل" : "Execute Full Send"}
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-red-400 font-semibold">
+                    {isAr ? "تأكيد الإرسال الكامل لجميع المستخدمين؟" : "Confirm full send to all users?"}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      onClick={handleFullSend}
+                      disabled={sending}
+                    >
+                      {sending ? (
+                        <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ الإرسال..." : "Sending..."}</>
+                      ) : (
+                        <>{isAr ? "تأكيد" : "Confirm"}</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmFullSend(false)}
+                      disabled={sending}
+                    >
+                      {isAr ? "إلغاء" : "Cancel"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Results */}
             {sendResult && (
               <div className="mt-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
-                <p className="text-green-400 font-semibold">{isAr ? "تم الإرسال بنجاح" : "Sent successfully"}</p>
-                <p className="text-muted-foreground">{isAr ? "تم الإرسال:" : "Sent:"} {sendResult.sent}</p>
-                <p className="text-muted-foreground">{isAr ? "فشل:" : "Failed:"} {sendResult.failed}</p>
-                {sendResult.sent_to?.map((item: any) => (
-                  <p key={item.email} className="text-xs text-muted-foreground/60 font-mono">
-                    {item.email}: {item.provider_id || "no_id"}
-                  </p>
-                ))}
-                {sendResult.failures?.length > 0 && (
-                  <div className="text-xs text-red-400/80 mt-1">
-                    {sendResult.failures.map((f: any) => (
-                      <p key={f.email}>{f.email}: {f.error}</p>
+                {previewMode === "fullPreview" && (
+                  <>
+                    <p className="text-yellow-400 font-semibold">{isAr ? "نتيجة المعاينة" : "Preview Result"}</p>
+                    <p className="text-muted-foreground">{isAr ? "سيرسل إلى:" : "Would send:"} {sendResult.would_send}</p>
+                    <p className="text-muted-foreground">{isAr ? "إجمالي المستخدمين:" : "Total users:"} {sendResult.eligible_total}</p>
+                    <p className="text-muted-foreground">{isAr ? "تم تخطي:" : "Skipped:"} {sendResult.skipped_total}</p>
+                    {sendResult.sample && sendResult.sample.length > 0 && (
+                      <div className="mt-1">
+                        <p className="text-xs text-muted-foreground">{isAr ? "عينة:" : "Sample:"}</p>
+                        {sendResult.sample.map((email: string) => (
+                          <p key={email} className="text-xs text-muted-foreground/60 font-mono">{email}</p>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                {previewMode === "fullSend" && (
+                  <>
+                    <p className="text-green-400 font-semibold">{isAr ? "تم الإرسال الكامل" : "Full Send Complete"}</p>
+                    <p className="text-muted-foreground">{isAr ? "تم الإرسال:" : "Sent:"} {sendResult.sent}</p>
+                    <p className="text-muted-foreground">{isAr ? "فشل:" : "Failed:"} {sendResult.failed}</p>
+                    <p className="text-muted-foreground">{isAr ? "المحاولة:" : "Attempted:"} {sendResult.attempted}</p>
+                    {sendResult.failures?.length > 0 && (
+                      <div className="text-xs text-red-400/80 mt-1">
+                        {sendResult.failures.map((f: any) => (
+                          <p key={f.email}>{f.email}: {f.error}</p>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                {previewMode === "test" && (
+                  <>
+                    <p className="text-green-400 font-semibold">{isAr ? "تم إرسال الاختبار" : "Test sent"}</p>
+                    <p className="text-muted-foreground">{isAr ? "تم الإرسال:" : "Sent:"} {sendResult.sent}</p>
+                    <p className="text-muted-foreground">{isAr ? "فشل:" : "Failed:"} {sendResult.failed}</p>
+                    {sendResult.sent_to?.map((item: any) => (
+                      <p key={item.email} className="text-xs text-muted-foreground/60 font-mono">
+                        {item.email}: {item.provider_id || "no_id"}
+                      </p>
                     ))}
-                  </div>
+                    {sendResult.failures?.length > 0 && (
+                      <div className="text-xs text-red-400/80 mt-1">
+                        {sendResult.failures.map((f: any) => (
+                          <p key={f.email}>{f.email}: {f.error}</p>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

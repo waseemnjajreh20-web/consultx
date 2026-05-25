@@ -414,13 +414,12 @@ function buildText(recipient: string, subjectSuffix?: string): string {
 interface EligibleEntry {
   user_id: string;
   email: string;
-  reason: "eligible";
 }
 
 interface IneligibleEntry {
   user_id: string;
   email: string;
-  reason: "paid_active" | "admin" | "no_email" | "already_sent" | "trialing_active" | "anonymous";
+  reason: "no_email";
 }
 
 interface SurveyResult {
@@ -451,58 +450,21 @@ async function surveyUsers(
     if (users.length === 0) break;
     totalUsers += users.length;
 
-    const ids = users.map((u: any) => u.id);
-    const { data: subs, error: subErr } = await admin
-      .from("user_subscriptions")
-      .select("user_id, status")
-      .in("user_id", ids);
-    if (subErr) throw new Error(`user_subscriptions query failed: ${subErr.message}`);
-
-    const subByUser = new Map<string, string[]>();
-    for (const row of subs ?? []) {
-      const arr = subByUser.get(row.user_id) ?? [];
-      arr.push(row.status);
-      subByUser.set(row.user_id, arr);
-    }
-
     for (const u of users) {
       const email = (u.email ?? "").trim().toLowerCase();
       const userId = u.id;
-      const statuses = subByUser.get(userId) ?? [];
 
       if (!email) {
         skipped.push({ user_id: userId, email: "", reason: "no_email" });
         continue;
       }
-      const isAdmin = ADMIN_EMAILS.includes(email);
-      if (statuses.includes("active") || statuses.includes("past_due")) {
-        if (isAdmin) {
-          // Admin with active subscription — still eligible for campaign
-          eligible.push({ user_id: userId, email, reason: "eligible" });
-          continue;
-        }
-        skipped.push({ user_id: userId, email, reason: "paid_active" });
-        continue;
-      }
-      if (isAdmin) {
-        // Admins always eligible even if previously sent
-        eligible.push({ user_id: userId, email, reason: "eligible" });
-        continue;
-      }
-      const meta = (u.app_metadata ?? {}) as Record<string, unknown>;
-      if (typeof meta.founding10_sent_at === "string" && meta.founding10_sent_at.length > 0) {
-        skipped.push({ user_id: userId, email, reason: "already_sent" });
-        continue;
-      }
-      // Treat trialing subscriptions as eligible — the campaign is meant to
-      // pull non-paying users (trialing without a card on file is still
-      // non-paying).
-      eligible.push({ user_id: userId, email, reason: "eligible" });
+      // All registered users with a valid email receive the campaign
+      eligible.push({ user_id: userId, email });
     }
 
     if (users.length < perPage) break;
     page += 1;
-    if (page > 50) break; // hard guard: 50k users
+    if (page > 50) break;
   }
 
   return { totalUsers, eligible, skipped };
@@ -662,18 +624,7 @@ serve(async (req) => {
         HARD_SEND_CAP,
         Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : DEFAULT_PREVIEW_LIMIT,
       );
-      const targets = (
-        allowResend
-          ? [
-              ...survey.eligible,
-              ...survey.skipped.filter((s) => s.reason === "already_sent").map((s) => ({
-                user_id: s.user_id,
-                email: s.email,
-                reason: "eligible" as const,
-              })),
-            ]
-          : survey.eligible
-      ).slice(0, limit);
+      const targets = survey.eligible.slice(0, limit);
 
       if (dryRun) {
         return new Response(
