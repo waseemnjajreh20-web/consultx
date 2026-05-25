@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { supabase } from "@/integrations/supabase/client";
 import {
   FOUNDING10_CAMPAIGN,
   FOUNDING10_CODE,
@@ -23,6 +24,9 @@ export default function CampaignFounding10() {
 
   const [htmlPreview, setHtmlPreview] = useState("");
   const [textPreview, setTextPreview] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<any>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
 
@@ -35,6 +39,23 @@ export default function CampaignFounding10() {
     setHtmlPreview(buildFounding10HtmlEmail());
     setTextPreview(buildFounding10TextEmail());
   }, []);
+
+  const handleSendTest = async () => {
+    setSending(true);
+    setSendResult(null);
+    setSendError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-founding10-campaign", {
+        body: { mode: "testOnly", targetEmails: ADMIN_EMAILS },
+      });
+      if (error) throw new Error(error.message || "Function invocation failed");
+      setSendResult(data);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSending(false);
+    }
+  };
 
   if (authLoading) return null;
   if (!isAdmin) return null;
@@ -152,23 +173,63 @@ export default function CampaignFounding10() {
           </CardContent>
         </Card>
 
-        {/* Send Status */}
-        <Card className="bg-card/80 backdrop-blur-xl border-border/50 border-yellow-500/30">
+        {/* Send Admin Test */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50 border-cyan-500/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-yellow-400">
-              <CheckCircle className="w-4 h-4" />
-              {isAr ? "حالة الإرسال" : "Send Status"}
+            <CardTitle className="text-base flex items-center gap-2 text-cyan-400">
+              <Send className="w-4 h-4" />
+              {isAr ? "إرسال اختبار للمشرف" : "Send Admin Test"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <Badge variant="outline" className="border-yellow-500/30 text-yellow-400">
-              {isAr ? "مُعدّ فقط" : "PREPARED ONLY"}
-            </Badge>
-            <p className="text-muted-foreground mt-2">
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">
               {isAr
-                ? "⚠️ إرسال البريد الإلكتروني معطل في هذه المرحلة التنفيذية."
-                : "⚠️ Email sending is disabled in this implementation pass."}
+                ? "أرسل بريد الحملة إلى حسابات المشرفين فقط لاختبار المظهر والتسليم."
+                : "Send the campaign email to admin accounts only to test rendering and delivery."}
             </p>
+            <p className="text-xs text-muted-foreground/60 font-mono">
+              {ADMIN_EMAILS.join(", ")}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10"
+              onClick={handleSendTest}
+              disabled={sending}
+            >
+              {sending ? (
+                <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ الإرسال..." : "Sending..."}</>
+              ) : (
+                <><Send className="w-3.5 h-3.5 me-1.5" />{isAr ? "إرسال اختبار" : "Send Admin Test"}</>
+              )}
+            </Button>
+
+            {sendResult && (
+              <div className="mt-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
+                <p className="text-green-400 font-semibold">{isAr ? "تم الإرسال بنجاح" : "Sent successfully"}</p>
+                <p className="text-muted-foreground">{isAr ? "تم الإرسال:" : "Sent:"} {sendResult.sent}</p>
+                <p className="text-muted-foreground">{isAr ? "فشل:" : "Failed:"} {sendResult.failed}</p>
+                {sendResult.sent_to?.map((item: any) => (
+                  <p key={item.email} className="text-xs text-muted-foreground/60 font-mono">
+                    {item.email}: {item.provider_id || "no_id"}
+                  </p>
+                ))}
+                {sendResult.failures?.length > 0 && (
+                  <div className="text-xs text-red-400/80 mt-1">
+                    {sendResult.failures.map((f: any) => (
+                      <p key={f.email}>{f.email}: {f.error}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {sendError && (
+              <div className="mt-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-red-400 font-semibold">{isAr ? "فشل الإرسال" : "Send failed"}</p>
+                <p className="text-xs text-red-300/80 font-mono mt-1">{sendError}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

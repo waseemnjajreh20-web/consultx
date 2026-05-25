@@ -83,34 +83,32 @@ function buildHtml(recipient: string): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="x-apple-disable-message-reformatting">
-<meta name="color-scheme" content="dark">
-<meta name="supported-color-schemes" content="dark">
 <title>Founding Engineers Offer — ConsultX Pro for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 <style>
-body{margin:0;padding:0;background-color:#070b15;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;color-scheme:dark}
+body{margin:0;padding:0;background-color:#070b15;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
 table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
 img{border:0;outline:none;text-decoration:none;display:block}
 @-ms-viewport{width:device-width}
 @viewport{width:device-width}
 @keyframes pulse-glow{0%,100%{box-shadow:0 0 18px rgba(0,212,255,0.35),0 0 40px rgba(0,212,255,0.12)}50%{box-shadow:0 0 30px rgba(0,212,255,0.55),0 0 60px rgba(0,212,255,0.20)}}
 .glow-pulse{animation:pulse-glow 3s ease-in-out infinite}
-.px{padding-left:44px!important;padding-right:44px!important}
-.px-hero{padding-left:22px!important;padding-right:22px!important}
+.sec{padding-left:44px!important;padding-right:44px!important}
+.hero{padding-left:22px!important;padding-right:22px!important}
 @media only screen and (max-width:640px){
-.px{padding-left:24px!important;padding-right:24px!important}
-.px-hero{padding-left:20px!important;padding-right:20px!important}
+.sec{padding-left:26px!important;padding-right:26px!important}
+.hero{padding-left:22px!important;padding-right:22px!important}
 .head{font-size:24px!important}
 }
 @media only screen and (max-width:480px){
-.px{padding-left:20px!important;padding-right:20px!important}
-.px-hero{padding-left:18px!important;padding-right:18px!important}
+.sec{padding-left:22px!important;padding-right:22px!important}
+.hero{padding-left:18px!important;padding-right:18px!important}
 .head{font-size:22px!important}
 .cta-btn{padding-left:28px!important;padding-right:28px!important}
 }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#070b15;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;color-scheme:dark">
+<body style="margin:0;padding:0;background-color:#070b15;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
 <div style="display:none;font-size:1px;color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">ConsultX Pro first month for ${CAMPAIGN_FIRST_CHARGE_SAR} SAR — limited launch offer for early engineers. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#070b15" style="background-color:#070b15">
@@ -125,17 +123,17 @@ img{border:0;outline:none;text-decoration:none;display:block}
 <tr><td bgcolor="#0d1425" style="background:linear-gradient(180deg,#0d1425 0%,#0a0e1a 100%);background-color:#0d1425;border-radius:16px 16px 0 0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425">
 
-<tr><td align="center" bgcolor="#0d1425" style="padding:40px 22px 0;background-color:#0d1425" class="px-hero">
+<tr><td align="center" bgcolor="#0d1425" style="padding:40px 22px 0" class="hero">
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
 <tr>
-<td align="center" bgcolor="#0d1425" style="padding:18px 36px;border-radius:16px;background-color:#0d1425;border:1px solid #00d4ff22" class="glow-pulse logo-frame">
+<td align="center" bgcolor="#0d1425" style="padding:18px 36px;border-radius:16px;background-color:#0d1425;border:1px solid #00d4ff22" class="glow-pulse">
 <img src="${LOGO_URL}" alt="ConsultX" width="100" height="116" style="display:block;border:0;outline:none;margin:0 auto;max-width:100%;height:auto" />
 </td>
 </tr>
 </table>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="padding:20px 22px 4px;background-color:#0d1425" class="px-hero">
+<tr><td align="center" bgcolor="#0d1425" style="padding:20px 22px 4px" class="hero">
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
 <tr>
 <td bgcolor="#f59e0b11" style="background-color:#f59e0b11;border:1.5px solid #f59e0b44;border-radius:30px;padding:8px 24px">
@@ -145,13 +143,13 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </table>
 </td></tr>
 
-<tr><td dir="ltr" align="center" bgcolor="#0d1425" style="padding:18px 0 0;background-color:#0d1425" class="px">
-<h1 style="margin:0;font-size:24px;font-weight:900;color:#f1f5f9;line-height:1.2;letter-spacing:-0.3px" class="head">Founding Engineers Offer</h1>
-<p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#00d4ff;line-height:1.5">Activate your first month of ConsultX Pro for only <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} SAR</strong>.</p>
+<tr><td dir="ltr" align="center" bgcolor="#0d1425" style="padding:18px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.2;letter-spacing:-0.3px" class="head">Founding Engineers Offer</h1>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.5">Activate your first month of ConsultX Pro for only <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} SAR</strong>.</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Limited launch offer for early engineers.</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="padding:20px 0 0;background-color:#0d1425" class="px">
+<tr><td align="center" bgcolor="#0d1425" style="padding:20px 44px 0" class="sec">
 <!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
 <w:anchorlock/>
@@ -168,11 +166,11 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </table>
 <!--<![endif]-->
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
-<tr><td align="center" bgcolor="#0d1425" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.4;background-color:#0d1425">No long-term commitment. Cancel anytime.</td></tr>
+<tr><td align="center" bgcolor="#0d1425" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
 </table>
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
 <tr>
-<td align="center" bgcolor="#0d1425" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4;background-color:#0d1425">
+<td align="center" bgcolor="#0d1425" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
 <a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">Open offer in browser</a>
 </td>
 </tr>
@@ -182,11 +180,11 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </td></tr>
 
 <!-- ENGLISH VALUE SECTION -->
-<tr><td dir="ltr" bgcolor="#0d1425" style="padding:28px 0 0;background-color:#0d1425" class="px">
-<p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#94a3b8">
+<tr><td dir="ltr" bgcolor="#0d1425" style="padding:28px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#94a3b8">
 ConsultX is built for engineers who review fire and life safety, Saudi Building Code, NFPA references, compliance notes, and technical reports. You may not have seen what it can really do yet.
 </p>
-<p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#e2e8f0">With ConsultX Pro, you can:</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">With ConsultX Pro, you can:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425">
 <tr>
 <td bgcolor="#0d1425" style="padding:6px 0;font-size:15px;line-height:1.55;color:#cbd5e1;vertical-align:top">
@@ -231,27 +229,27 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </table>
 </td></tr>
 
-<tr><td dir="ltr" bgcolor="#0d1425" style="padding:8px 0 24px;background-color:#0d1425" class="px">
+<tr><td dir="ltr" bgcolor="#0d1425" style="padding:8px 44px 24px" class="sec">
 <p style="margin:0;font-size:13px;line-height:1.5;color:#64748b;font-style:italic">After the first month, your subscription renews at the normal Pro price unless canceled.</p>
 </td></tr>
 
-<tr><td bgcolor="#0d1425" style="padding:0;background-color:#0d1425" class="px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px;background-color:#0d1425">&nbsp;</td></tr></table></td></tr>
+<tr><td bgcolor="#0d1425" style="padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="padding:18px 0 12px;background-color:#0d1425" class="px">
+<tr><td align="center" bgcolor="#0d1425" style="padding:18px 44px 12px" class="sec">
 <p style="margin:0;font-size:11px;line-height:1.5;color:#475569">Built for SBC 201, SBC 801, NFPA, fire &amp; life safety reviews, and engineering decision support.</p>
 </td></tr>
 
-<tr><td bgcolor="#0d1425" style="padding:0;background-color:#0d1425" class="px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px;background-color:#0d1425">&nbsp;</td></tr></table></td></tr>
+<tr><td bgcolor="#0d1425" style="padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
 <!-- ARABIC SECTION -->
-<tr><td dir="rtl" bgcolor="#0d1425" style="padding:28px 0 0;background-color:#0d1425" class="px">
-<h1 style="margin:0;font-size:24px;font-weight:900;color:#f1f5f9;line-height:1.3;letter-spacing:-0.2px" class="head">عرض خاص للمهندسين الأوائل</h1>
-<p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#00d4ff;line-height:1.7">أول شهر في ConsultX Pro مقابل <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} ريال</strong> فقط.</p>
+<tr><td dir="rtl" bgcolor="#0d1425" style="padding:28px 44px 0" class="sec">
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f1f5f9;line-height:1.3;letter-spacing:-0.2px" class="head">عرض خاص للمهندسين الأوائل</h1>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#00d4ff;line-height:1.7">أول شهر في ConsultX Pro مقابل <strong style="color:#fbbf24;font-weight:800">${CAMPAIGN_FIRST_CHARGE_SAR} ريال</strong> فقط.</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.6">عرض إطلاق محدود للمهندسين الأوائل.</p>
 </td></tr>
 
-<tr><td dir="rtl" bgcolor="#0d1425" style="padding:20px 0 0;background-color:#0d1425" class="px">
-<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#94a3b8">
+<tr><td dir="rtl" bgcolor="#0d1425" style="padding:20px 44px 0" class="sec">
+<p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#94a3b8">
 تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e2e8f0">مع ConsultX Pro يمكنك:</p>
@@ -299,11 +297,11 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </table>
 </td></tr>
 
-<tr><td dir="rtl" bgcolor="#0d1425" style="padding:8px 0 20px;background-color:#0d1425" class="px">
+<tr><td dir="rtl" bgcolor="#0d1425" style="padding:8px 44px 20px" class="sec">
 <p style="margin:0;font-size:13px;line-height:1.6;color:#64748b;font-style:italic">بعد الشهر الأول، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" style="padding:4px 0 28px;background-color:#0d1425" class="px">
+<tr><td align="center" bgcolor="#0d1425" style="padding:4px 44px 28px" class="sec">
 <!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
 <w:anchorlock/>
@@ -320,11 +318,11 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </table>
 <!--<![endif]-->
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
-<tr><td align="center" bgcolor="#0d1425" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.6;background-color:#0d1425">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
+<tr><td align="center" bgcolor="#0d1425" style="padding:12px 0 0;font-size:12px;color:#64748b;line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
 </table>
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425">
 <tr>
-<td align="center" bgcolor="#0d1425" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4;background-color:#0d1425">
+<td align="center" bgcolor="#0d1425" style="padding:14px 0 0;font-size:12px;color:#64748b;line-height:1.4">
 <a href="${cta}" target="_blank" style="color:#64748b;text-decoration:underline">فتح العرض في المتصفح</a>
 </td>
 </tr>
@@ -332,8 +330,8 @@ ConsultX is built for engineers who review fire and life safety, Saudi Building 
 </td></tr>
 
 <!-- FOOTER -->
-<tr><td bgcolor="#0d1425" style="padding:8px 0 28px;background-color:#0d1425" class="px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px;background-color:#0d1425">&nbsp;</td></tr></table>
+<tr><td bgcolor="#0d1425" style="padding:8px 44px 28px" class="sec">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425"><tr><td bgcolor="#0d1425" style="border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table>
 
 <p style="margin:16px 0 0;font-size:11px;color:#475569;line-height:1.6;direction:ltr;text-align:center">
 ConsultX &middot; Fire Safety Engineering &middot; Engineering Decision Support<br>
