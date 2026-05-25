@@ -21,6 +21,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 //   { mode: "send", dryRun: false,       — actually send via Resend, mark
 //     limit?: number, allowResend?: bool   app_metadata, return counts
 //   }
+//   { mode: "testOnly", dryRun: true,    — dry-run for admin-only test send
+//     targetEmails: string[]              showing would_send details without
+//   }                                      calling Resend
+//   { mode: "testOnly",                  — send only to targetEmails (must be
+//     targetEmails: string[],              admin emails). Marks only the
+//     dryRun?: false                       actual recipients in app_metadata.
+//   }                                      Ignores normal eligibility ordering.
 //   { mode: "export" }                   — return CSV of eligible emails
 //
 // Required secrets:
@@ -470,9 +477,6 @@ async function surveyUsers(
         eligible.push({ user_id: userId, email, reason: "eligible" });
         continue;
       }
-        skipped.push({ user_id: userId, email, reason: "paid_active" });
-        continue;
-      }
       const meta = (u.app_metadata ?? {}) as Record<string, unknown>;
       if (typeof meta.founding10_sent_at === "string" && meta.founding10_sent_at.length > 0) {
         skipped.push({ user_id: userId, email, reason: "already_sent" });
@@ -721,6 +725,108 @@ serve(async (req) => {
           attempted: targets.length,
           eligible_total: survey.eligible.length,
           skipped_total: survey.skipped.length,
+          failures: failures.slice(0, 20),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (mode === "testOnly") {
+      const targetEmails = body?.targetEmails;
+      if (!Array.isArray(targetEmails) || targetEmails.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "targetEmails must be a non-empty array" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const invalid = targetEmails.filter(
+        (e: string) => !ADMIN_EMAILS.includes(e.trim().toLowerCase()),
+      );
+      if (invalid.length > 0) {
+        return new Response(
+          JSON.stringify({
+            error: "testOnly mode only allows sending to admin email addresses",
+            invalid_emails: invalid,
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const normalized = targetEmails.map((e: string) => e.trim().toLowerCase());
+
+      if (dryRun) {
+        const details = normalized.map((email: string) => {
+          const found = survey.eligible.find((e) => e.email === email) ||
+            survey.skipped.find((e) => e.email === email);
+          return { email, user_id: found ? found.user_id : null, found_in_survey: !!found };
+        });
+
+        return new Response(
+          JSON.stringify({
+            mode: "testOnly",
+            dry_run: true,
+            campaign_code: CAMPAIGN_CODE,
+            subject: SUBJECT,
+            would_send: normalized.length,
+            target_emails: normalized,
+            details,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        return new Response(
+          JSON.stringify({
+            error: "Email provider not configured",
+            blocker: "RESEND_API_KEY",
+            campaign_code: CAMPAIGN_CODE,
+          }),
+          {
+            status: 503,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
+      const replyToEmail = Deno.env.get("REPLY_TO") ?? "support@consultx.app";
+
+      let sent = 0;
+      let failed = 0;
+      const failures: Array<{ email: string; error: string }> = [];
+      const sentList: Array<{ email: string; provider_id: string | null }> = [];
+
+      for (const email of normalized) {
+        const found = survey.eligible.find((e) => e.email === email) ||
+          survey.skipped.find((e) => e.email === email);
+        const userId = found ? found.user_id : null;
+
+        const r = await sendOne(resendApiKey, fromEmail, replyToEmail, email);
+        if (r.ok) {
+          sent += 1;
+          sentList.push({ email, provider_id: r.id });
+          if (userId) {
+            await markSent(admin, userId, "sent", r.id, null);
+          }
+        } else {
+          failed += 1;
+          failures.push({ email, error: r.error ?? "unknown_error" });
+          if (userId) {
+            await markSent(admin, userId, "failed", null, r.error ?? "unknown_error");
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, 120));
+      }
+
+      return new Response(
+        JSON.stringify({
+          mode: "testOnly",
+          sent,
+          failed,
+          attempted: normalized.length,
+          sent_to: sentList,
           failures: failures.slice(0, 20),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
