@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle, Eye, Clock, Users, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Eye, Clock, Users, Send, Loader2, FileText, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,17 @@ export default function CampaignEid50() {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<any>(null);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  // Lead import state
+  const [csvText, setCsvText] = useState("");
+  const [parsedLeads, setParsedLeads] = useState<any[] | null>(null);
+  const [validationSummary, setValidationSummary] = useState<any>(null);
+  const [dryRunResult, setDryRunResult] = useState<any>(null);
+  const [sendLoading, setSendLoading] = useState(false);
+  const [dryRunLoading, setDryRunLoading] = useState(false);
+  const [leadSendResult, setLeadSendResult] = useState<any>(null);
+  const [leadSendError, setLeadSendError] = useState<string | null>(null);
+  const [dryRunDone, setDryRunDone] = useState(false);
 
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
 
@@ -55,6 +67,155 @@ export default function CampaignEid50() {
       setSendError(err instanceof Error ? err.message : String(err));
     } finally {
       setSending(false);
+    }
+  };
+
+  // ── Lead import ────────────────────────────────────────────────────────────
+  const MAX_LEADS = 50;
+  const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  const parseCsvLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === "," && !inQuotes) {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const parseAndValidate = () => {
+    setParsedLeads(null);
+    setValidationSummary(null);
+    setDryRunResult(null);
+    setDryRunDone(false);
+    setLeadSendResult(null);
+    setLeadSendError(null);
+
+    const lines = csvText.split("\n").filter((l) => l.trim());
+    if (lines.length < 2) {
+      setValidationSummary({ error: "Paste at least one lead row (header + data)" });
+      return;
+    }
+
+    const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase().trim());
+    const emailIdx = headers.indexOf("email");
+    const companyIdx = headers.indexOf("company_name");
+    const cityIdx = headers.indexOf("city");
+    const sourceUrlIdx = headers.indexOf("source_url");
+    const categoryIdx = headers.indexOf("category");
+    const notesIdx = headers.indexOf("notes");
+
+    if (emailIdx === -1) {
+      setValidationSummary({ error: 'Missing required column: "email"' });
+      return;
+    }
+
+    const seen = new Set<string>();
+    const valid: any[] = [];
+    const errors: string[] = [];
+    const total = lines.length - 1;
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCsvLine(lines[i]);
+      const rawEmail = values[emailIdx]?.trim() ?? "";
+      const email = rawEmail.toLowerCase();
+
+      if (!email) {
+        errors.push(`Row ${i}: blank email`);
+        continue;
+      }
+      if (!EMAIL_RE.test(email)) {
+        errors.push(`Row ${i}: invalid email — ${rawEmail}`);
+        continue;
+      }
+      if (seen.has(email)) {
+        errors.push(`Row ${i}: duplicate — ${email}`);
+        continue;
+      }
+      seen.add(email);
+
+      valid.push({
+        email,
+        company_name: companyIdx >= 0 ? (values[companyIdx]?.trim() ?? "") : "",
+        city: cityIdx >= 0 ? (values[cityIdx]?.trim() ?? "") : "",
+        source_url: sourceUrlIdx >= 0 ? (values[sourceUrlIdx]?.trim() ?? "") : "",
+        category: categoryIdx >= 0 ? (values[categoryIdx]?.trim() ?? "") : "",
+        notes: notesIdx >= 0 ? (values[notesIdx]?.trim() ?? "") : "",
+      });
+    }
+
+    if (total > MAX_LEADS) {
+      setValidationSummary({
+        error: `Maximum ${MAX_LEADS} leads allowed. Found ${total}.`,
+        total,
+      });
+      return;
+    }
+
+    const missingSource = valid.filter((l) => !l.source_url).length;
+
+    setParsedLeads(valid);
+    setValidationSummary({
+      total,
+      valid: valid.length,
+      invalid: errors.length,
+      duplicates: errors.filter((e) => e.includes("duplicate")).length,
+      ready: valid.length,
+      missingSourceWarn: missingSource,
+      errorsSample: errors.slice(0, 10),
+    });
+  };
+
+  const handleDryRun = async () => {
+    if (!parsedLeads || parsedLeads.length === 0) return;
+    setDryRunLoading(true);
+    setDryRunResult(null);
+    setLeadSendResult(null);
+    setLeadSendError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-eid50-campaign", {
+        body: { mode: "dryRun", leads: parsedLeads },
+      });
+      if (error) throw new Error(error.message || "Dry run failed");
+      setDryRunResult(data);
+      if (data.ready > 0) setDryRunDone(true);
+    } catch (err) {
+      setLeadSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setDryRunLoading(false);
+    }
+  };
+
+  const handleSendLeads = async () => {
+    if (!parsedLeads || parsedLeads.length === 0) return;
+    setSendLoading(true);
+    setLeadSendResult(null);
+    setLeadSendError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-eid50-campaign", {
+        body: { mode: "send", leads: parsedLeads },
+      });
+      if (error) throw new Error(error.message || "Send failed");
+      setLeadSendResult(data);
+    } catch (err) {
+      setLeadSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSendLoading(false);
     }
   };
 
@@ -203,20 +364,167 @@ export default function CampaignEid50() {
               )}
             </Button>
 
-            {/* Awaiting Lead List */}
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <Users className="w-4 h-4 text-amber-400 shrink-0" />
-              <div>
-                <p className="text-amber-300 font-semibold text-xs">
-                  {isAr ? "بانتظار قائمة العملاء المحتملين" : "Awaiting Owner Lead List"}
-                </p>
-                <p className="text-xs text-muted-foreground/60">
+            {/* Lead Import — First 50 External Leads */}
+            <Card className="bg-card/80 backdrop-blur-xl border-border/50 border-amber-500/30 mt-4">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2 text-amber-400">
+                  <FileText className="w-4 h-4" />
+                  {isAr ? "استيراد أول 50 عميلاً محتملاً" : "Import First 50 Leads"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <p className="text-xs text-muted-foreground">
                   {isAr
-                    ? "لم يتم استيراد قائمة جهات الاتصال بعد. سيوفر المالك أول 50 بريداً إلكترونياً."
-                    : "No recipient list imported yet. Owner will provide the first 50 leads."}
+                    ? "الصق بيانات CSV بالتنسيق: email, company_name, city, source_url, category, notes"
+                    : "Paste CSV data in format: email, company_name, city, source_url, category, notes"}
                 </p>
-              </div>
-            </div>
+                <p className="text-xs text-muted-foreground/60 font-mono">
+                  email,company_name,city,source_url,category,notes
+                </p>
+
+                <Textarea
+                  className="font-mono text-xs min-h-[160px]"
+                  placeholder={isAr
+                    ? "info@example.com, شركة هندسية, الرياض, https://... , fire safety, lead from website\n..."
+                    : "info@example.com, Engineering Co, Riyadh, https://... , fire safety, lead from website\n..."}
+                  value={csvText}
+                  onChange={(e) => {
+                    setCsvText(e.target.value);
+                    setParsedLeads(null);
+                    setValidationSummary(null);
+                    setDryRunResult(null);
+                    setDryRunDone(false);
+                    setLeadSendResult(null);
+                    setLeadSendError(null);
+                  }}
+                />
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                    onClick={parseAndValidate}
+                    disabled={!csvText.trim()}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 me-1.5" />
+                    {isAr ? "تحقق ومعاينة" : "Validate & Preview"}
+                  </Button>
+                </div>
+
+                {validationSummary && (
+                  <>
+                    {validationSummary.error ? (
+                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                        <p className="text-red-400 text-xs">{validationSummary.error}</p>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
+                        <p className="text-xs text-green-400 font-semibold">
+                          {isAr ? "ملخص التحقق" : "Validation Summary"}
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                          <div><span className="text-muted-foreground">{isAr ? "الإجمالي:" : "Total:"}</span> <span className="text-foreground font-mono">{validationSummary.total}</span></div>
+                          <div><span className="text-green-400">{isAr ? "صالح:" : "Valid:"}</span> <span className="text-foreground font-mono">{validationSummary.valid}</span></div>
+                          <div><span className="text-red-400">{isAr ? "غير صالح:" : "Invalid:"}</span> <span className="text-foreground font-mono">{validationSummary.invalid}</span></div>
+                          <div><span className="text-amber-400">{isAr ? "مكرر:" : "Duplicates:"}</span> <span className="text-foreground font-mono">{validationSummary.duplicates}</span></div>
+                          <div><span className="text-cyan-400">{isAr ? "جاهز:" : "Ready:"}</span> <span className="text-foreground font-mono">{validationSummary.ready}</span></div>
+                        </div>
+                        {validationSummary.missingSourceWarn > 0 && (
+                          <p className="text-xs text-amber-400/80 mt-1">
+                            <AlertTriangle className="w-3 h-3 inline me-1" />
+                            {isAr
+                              ? `${validationSummary.missingSourceWarn} عناوين بدون source_url`
+                              : `${validationSummary.missingSourceWarn} entries missing source_url`}
+                          </p>
+                        )}
+                        {validationSummary.errorsSample?.length > 0 && (
+                          <div className="mt-1 text-xs text-red-400/70 max-h-[80px] overflow-y-auto">
+                            {validationSummary.errorsSample.slice(0, 5).map((e: string, i: number) => (
+                              <p key={i}>{e}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {parsedLeads && parsedLeads.length > 0 && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10"
+                      onClick={handleDryRun}
+                      disabled={dryRunLoading || !parsedLeads.length}
+                    >
+                      {dryRunLoading ? (
+                        <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ التحقق..." : "Dry Running..."}</>
+                      ) : (
+                        <><CheckCircle className="w-3.5 h-3.5 me-1.5" />{isAr ? "تشغيل تجريبي — تحقق من الخادم" : "Dry Run — Validate on Server"}</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {dryRunResult && (
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
+                    <p className="text-xs text-green-400 font-semibold">
+                      {isAr ? "نتيجة التشغيل التجريبي" : "Dry Run Result"}
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                      <div><span className="text-muted-foreground">{isAr ? "الإجمالي:" : "Total:"}</span> <span className="text-foreground font-mono">{dryRunResult.total}</span></div>
+                      <div><span className="text-green-400">{isAr ? "صالح:" : "Valid:"}</span> <span className="text-foreground font-mono">{dryRunResult.valid}</span></div>
+                      <div><span className="text-red-400">{isAr ? "غير صالح:" : "Invalid:"}</span> <span className="text-foreground font-mono">{dryRunResult.invalid}</span></div>
+                      <div><span className="text-amber-400">{isAr ? "مكرر:" : "Duplicates:"}</span> <span className="text-foreground font-mono">{dryRunResult.duplicates}</span></div>
+                      <div><span className="text-cyan-400">{isAr ? "جاهز:" : "Ready:"}</span> <span className="text-foreground font-mono">{dryRunResult.ready}</span></div>
+                    </div>
+                    {dryRunResult.ready > 0 && (
+                      <div className="flex items-center gap-2 pt-2">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={handleSendLeads}
+                          disabled={sendLoading}
+                        >
+                          {sendLoading ? (
+                            <><Loader2 className="w-3.5 h-3.5 me-1.5 animate-spin" />{isAr ? "جارٍ الإرسال..." : "Sending..."}</>
+                          ) : (
+                            <><Send className="w-3.5 h-3.5 me-1.5" />{isAr ? "إرسال الحملة" : "Execute Send"}</>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {leadSendResult && (
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
+                    <p className="text-green-400 font-semibold text-xs">
+                      {isAr ? "تم الإرسال" : "Send complete"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isAr ? "تم الإرسال:" : "Sent:"} {leadSendResult.sent} / {isAr ? "فشل:" : "Failed:"} {leadSendResult.failed}
+                    </p>
+                    {leadSendResult.failures?.length > 0 && (
+                      <div className="text-xs text-red-400/70 max-h-[80px] overflow-y-auto mt-1">
+                        {leadSendResult.failures.slice(0, 5).map((f: any, i: number) => (
+                          <p key={i}>{f.email}: {f.error}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {leadSendError && (
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <p className="text-red-400 text-xs">{leadSendError}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {sendResult && (
               <div className="mt-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">

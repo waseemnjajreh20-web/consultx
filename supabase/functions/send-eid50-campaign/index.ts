@@ -10,6 +10,7 @@ const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 const CAMPAIGN_CODE = "EID50";
 const SUBJECT = "Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off";
 const TEST_SUBJECT_SUFFIX = "[EID50 FINAL COPY TEST]";
+const MAX_BATCH_LEADS = 50;
 const LOGO_URL = "https://www.consultx.app/assets/consultx-email-logo.png";
 const PROD_ORIGIN = "https://www.consultx.app";
 const BG_0D1425_URL = "https://www.consultx.app/assets/email-bg-0d1425.png";
@@ -435,6 +436,78 @@ function buildText(recipient: string, subjectSuffix?: string): string {
   ].join("\n");
 }
 
+// ── Validation helpers for lead import ──────────────────────────────────────
+const VALID_EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+interface LeadRow {
+  email: string;
+  company_name: string;
+  city: string;
+  source_url: string;
+  category: string;
+  notes: string;
+}
+
+interface ValidationResult {
+  total: number;
+  valid: number;
+  invalid: number;
+  duplicates: number;
+  ready: number;
+  errors: string[];
+}
+
+function validateLeads(raw: unknown[]): { leads: LeadRow[]; result: ValidationResult } {
+  const seen = new Set<string>();
+  const valid: LeadRow[] = [];
+  const errors: string[] = [];
+
+  for (let i = 0; i < raw.length; i++) {
+    const item = raw[i];
+    if (!item || typeof item !== "object") {
+      errors.push(`Row ${i + 1}: invalid entry`);
+      continue;
+    }
+    const row = item as Record<string, unknown>;
+    const email = typeof row.email === "string" ? row.email.trim().toLowerCase() : "";
+
+    if (!email) {
+      errors.push(`Row ${i + 1}: blank email`);
+      continue;
+    }
+    if (!VALID_EMAIL_RE.test(email)) {
+      errors.push(`Row ${i + 1}: invalid email format — ${email}`);
+      continue;
+    }
+    if (seen.has(email)) {
+      errors.push(`Row ${i + 1}: duplicate email — ${email}`);
+      continue;
+    }
+    seen.add(email);
+
+    valid.push({
+      email,
+      company_name: typeof row.company_name === "string" ? row.company_name.trim() : "",
+      city: typeof row.city === "string" ? row.city.trim() : "",
+      source_url: typeof row.source_url === "string" ? row.source_url.trim() : "",
+      category: typeof row.category === "string" ? row.category.trim() : "",
+      notes: typeof row.notes === "string" ? row.notes.trim() : "",
+    });
+  }
+
+  return {
+    leads: valid,
+    result: {
+      total: raw.length,
+      valid: valid.length,
+      invalid: errors.length,
+      duplicates: errors.filter((e) => e.includes("duplicate")).length,
+      ready: valid.length,
+      errors,
+    },
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -472,39 +545,159 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const mode = typeof body?.mode === "string" ? body.mode : "";
 
-    // ── Only testOnly mode is allowed ─────────────────────────────────────────
-    if (mode !== "testOnly") {
+    // ── Supported modes ───────────────────────────────────────────────────────
+    const VALID_MODES = ["testOnly", "dryRun", "send"];
+    if (!VALID_MODES.includes(mode)) {
       return new Response(
         JSON.stringify({
-          error: "Only testOnly mode is supported. Full send is not yet configured for this campaign.",
+          error: `Invalid mode. Supported: ${VALID_MODES.join(", ")}`,
           campaign_code: CAMPAIGN_CODE,
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const targetEmails = body?.targetEmails;
-    if (!Array.isArray(targetEmails) || targetEmails.length === 0) {
+    if (mode === "testOnly") {
+      const targetEmails = body?.targetEmails;
+      if (!Array.isArray(targetEmails) || targetEmails.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "targetEmails must be a non-empty array" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const invalid = targetEmails.filter(
+        (e: string) => !ADMIN_EMAILS.includes(e.trim().toLowerCase()),
+      );
+      if (invalid.length > 0) {
+        return new Response(
+          JSON.stringify({
+            error: "testOnly mode only allows sending to admin email addresses",
+            invalid_emails: invalid,
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const normalized = targetEmails.map((e: string) => e.trim().toLowerCase());
+
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendApiKey) {
+        return new Response(
+          JSON.stringify({
+            error: "Email provider not configured",
+            blocker: "RESEND_API_KEY",
+            campaign_code: CAMPAIGN_CODE,
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
+      const replyToEmail = Deno.env.get("REPLY_TO") ?? "support@consultx.app";
+
+      let sent = 0;
+      let failed = 0;
+      const failures: Array<{ email: string; error: string }> = [];
+      const sentList: Array<{ email: string; provider_id: string | null }> = [];
+
+      for (const email of normalized) {
+        const subject = `${SUBJECT} ${TEST_SUBJECT_SUFFIX}`;
+        try {
+          const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${resendApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: fromEmail,
+              reply_to: replyToEmail,
+              to: [email],
+              subject,
+              html: buildHtml(email, TEST_SUBJECT_SUFFIX),
+              text: buildText(email, TEST_SUBJECT_SUFFIX),
+              tags: [
+                { name: "campaign", value: "eid50" },
+                { name: "mode", value: "testOnly" },
+              ],
+            }),
+          });
+          if (response.ok) {
+            sent += 1;
+            const json = await response.json().catch(() => ({}));
+            sentList.push({ email, provider_id: typeof json?.id === "string" ? json.id : null });
+          } else {
+            failed += 1;
+            const bodyText = await response.text();
+            failures.push({ email, error: bodyText.slice(0, 240) });
+          }
+        } catch (err) {
+          failed += 1;
+          failures.push({ email, error: err instanceof Error ? err.message : String(err) });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 120));
+      }
+
       return new Response(
-        JSON.stringify({ error: "targetEmails must be a non-empty array" }),
+        JSON.stringify({
+          mode: "testOnly",
+          campaign_code: CAMPAIGN_CODE,
+          subject: `${SUBJECT} ${TEST_SUBJECT_SUFFIX}`,
+          sent,
+          failed,
+          attempted: normalized.length,
+          sent_to: sentList,
+          failures: failures.slice(0, 20),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ── dryRun / send modes ───────────────────────────────────────────────────
+    const rawLeads = body?.leads;
+    if (!Array.isArray(rawLeads) || rawLeads.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "leads must be a non-empty array" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (rawLeads.length > MAX_BATCH_LEADS) {
+      return new Response(
+        JSON.stringify({
+          error: `Maximum ${MAX_BATCH_LEADS} leads per batch`,
+          received: rawLeads.length,
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const invalid = targetEmails.filter(
-      (e: string) => !ADMIN_EMAILS.includes(e.trim().toLowerCase()),
-    );
-    if (invalid.length > 0) {
+    const { leads, result } = validateLeads(rawLeads);
+
+    if (mode === "dryRun") {
       return new Response(
         JSON.stringify({
-          error: "testOnly mode only allows sending to admin email addresses",
-          invalid_emails: invalid,
+          mode: "dryRun",
+          campaign_code: CAMPAIGN_CODE,
+          ...result,
+          errors_sample: result.errors.slice(0, 10),
         }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const normalized = targetEmails.map((e: string) => e.trim().toLowerCase());
+    // mode === "send"
+    if (leads.length === 0) {
+      return new Response(
+        JSON.stringify({
+          mode: "send",
+          campaign_code: CAMPAIGN_CODE,
+          error: "No valid leads to send",
+          ...result,
+          errors_sample: result.errors.slice(0, 10),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
@@ -514,10 +707,7 @@ serve(async (req) => {
           blocker: "RESEND_API_KEY",
           campaign_code: CAMPAIGN_CODE,
         }),
-        {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
     const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
@@ -528,8 +718,7 @@ serve(async (req) => {
     const failures: Array<{ email: string; error: string }> = [];
     const sentList: Array<{ email: string; provider_id: string | null }> = [];
 
-    for (const email of normalized) {
-      const subject = `${SUBJECT} ${TEST_SUBJECT_SUFFIX}`;
+    for (const lead of leads) {
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -540,40 +729,40 @@ serve(async (req) => {
           body: JSON.stringify({
             from: fromEmail,
             reply_to: replyToEmail,
-            to: [email],
-            subject,
-            html: buildHtml(email, TEST_SUBJECT_SUFFIX),
-            text: buildText(email, TEST_SUBJECT_SUFFIX),
+            to: [lead.email],
+            subject: SUBJECT,
+            html: buildHtml(lead.email),
+            text: buildText(lead.email),
             tags: [
               { name: "campaign", value: "eid50" },
-              { name: "mode", value: "testOnly" },
+              { name: "mode", value: "send" },
             ],
           }),
         });
         if (response.ok) {
           sent += 1;
           const json = await response.json().catch(() => ({}));
-          sentList.push({ email, provider_id: typeof json?.id === "string" ? json.id : null });
+          sentList.push({ email: lead.email, provider_id: typeof json?.id === "string" ? json.id : null });
         } else {
           failed += 1;
-          const body = await response.text();
-          failures.push({ email, error: body.slice(0, 240) });
+          const bodyText = await response.text();
+          failures.push({ email: lead.email, error: bodyText.slice(0, 240) });
         }
       } catch (err) {
         failed += 1;
-        failures.push({ email, error: err instanceof Error ? err.message : String(err) });
+        failures.push({ email: lead.email, error: err instanceof Error ? err.message : String(err) });
       }
       await new Promise((resolve) => setTimeout(resolve, 120));
     }
 
     return new Response(
       JSON.stringify({
-        mode: "testOnly",
+        mode: "send",
         campaign_code: CAMPAIGN_CODE,
-        subject: `${SUBJECT} ${TEST_SUBJECT_SUFFIX}`,
+        subject: SUBJECT,
         sent,
         failed,
-        attempted: normalized.length,
+        attempted: leads.length,
         sent_to: sentList,
         failures: failures.slice(0, 20),
       }),
