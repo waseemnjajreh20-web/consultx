@@ -196,7 +196,8 @@ export function buildEid50HtmlEmail(): string {
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:${GOLD_DARK};line-height:1.4">${EID50_CAMPAIGN.dateRange.en}</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0;font-size:13px;font-weight:600;color:${TEXT_MUTED};letter-spacing:0.3px;text-transform:uppercase" class="sec">For individual engineers</td></tr>
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 0" class="sec">
 ${ctaEn}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
@@ -242,7 +243,8 @@ ${enterpriseRowsEn}
 </td></tr>
 
 <!-- ENTERPRISE CTA -->
-<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:14px 44px 0;font-size:13px;font-weight:600;color:${TEXT_MUTED};letter-spacing:0.3px;text-transform:uppercase" class="sec">For office teams</td></tr>
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 0" class="sec">
 ${entCtaEn}
 </td></tr>
 
@@ -266,7 +268,7 @@ ${entCtaEn}
 
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
-كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، التوثيق، وتسريع العمل.
+كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">ماذا يحصل عليه المهندس في ConsultX Pro؟</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
@@ -299,7 +301,8 @@ ${enterpriseRowsAr}
 </td></tr>
 
 <!-- ARABIC ENTERPRISE CTA -->
-<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:14px 44px 0;font-size:13px;font-weight:600;color:${TEXT_MUTED}" class="sec">للمكاتب والفرق</td></tr>
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 0" class="sec">
 ${entCtaAr}
 </td></tr>
 
@@ -309,7 +312,8 @@ ${entCtaAr}
 </td></tr>
 
 <!-- ARABIC CTA -->
-<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:4px 44px 28px" class="sec">
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:14px 44px 0;font-size:13px;font-weight:600;color:${TEXT_MUTED}" class="sec">للمهندس الفردي</td></tr>
+<tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 28px" class="sec">
 ${ctaAr}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:12px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
@@ -381,7 +385,7 @@ ${"=".repeat(34)}
 ${EID50_CAMPAIGN.subheadline.ar}
 ${"=".repeat(66)}
 
-كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، التوثيق، وتسريع العمل.
+كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
 
 ماذا يحصل عليه المهندس في ConsultX Pro؟
 ${benefitLinesAr}

@@ -9,7 +9,7 @@ const corsHeaders = {
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 const CAMPAIGN_CODE = "EID50";
 const SUBJECT = "Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off";
-const TEST_SUBJECT_SUFFIX = "[EID50 ENTERPRISE COPY TEST]";
+const TEST_SUBJECT_SUFFIX = "[EID50 FINAL COPY TEST]";
 const LOGO_URL = "https://www.consultx.app/assets/consultx-email-logo.png";
 const PROD_ORIGIN = "https://www.consultx.app";
 const BG_0D1425_URL = "https://www.consultx.app/assets/email-bg-0d1425.png";
@@ -200,7 +200,8 @@ img{border:0;outline:none;text-decoration:none;display:block}
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Valid 26&ndash;30 May only</p>
 </td></tr>
 
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:20px 44px 0" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0;font-size:13px;font-weight:600;color:#8fa3bf;letter-spacing:0.3px;text-transform:uppercase" class="sec">For individual engineers</td></tr>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
 ${ctaEn}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
 <tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
@@ -248,11 +249,12 @@ ${enterpriseRowsEn}
 
 <!-- ENTERPRISE NOTE -->
 <tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
-<p style="margin:0;font-size:13px;line-height:1.5;color:#8fa3bf;font-style:italic">Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.</p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#8fa3bf;font-style:italic">Enterprise is built for offices that need team access, case tracking, internal review workflows, and clearer technical accountability across engineering work.</p>
 </td></tr>
 
 <!-- ENTERPRISE CTA -->
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:14px 44px 0;font-size:13px;font-weight:600;color:#8fa3bf;letter-spacing:0.3px;text-transform:uppercase" class="sec">For office teams</td></tr>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
 ${entCtaEn}
 </td></tr>
 
@@ -276,8 +278,7 @@ ${entCtaEn}
 
 <tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#d9e7ff">
-\u0643\u0644 \u0639\u0627\u0645 \u0648\u0623\u0646\u062A\u0645 \u0628\u062E\u064A\u0631 \u0645\u0646 ConsultX. \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0643\u062A\u0628\u0643 \u064A\u062A\u0639\u0627\u0645\u0644 \u064A\u0648\u0645\u064A\u064B\u0627 \u0645\u0639 \u0623\u0633\u0626\u0644\u0629 SBC\u060C \u0645\u0631\u0627\u062C\u0639 NFPA\u060C \u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064A\u0629 \u0645\u0646 \u0627\u0644\u062D\u0631\u064A\u0642\u060C \u0641\u062D\u0635 \u0627\u0644\u0645\u062E\u0637\u0637\u0627\u062A\u060C \u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0627\u0644\u0639\u0645\u0644\u0627\u0621\u060C \u0648\u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u062F\u0627\u062E\u0644\u064A\u0629\u060C \u0641\u0625\u0646 ConsultX \u064A\u0645\u0646\u062D\u0643 \u0641\u0631\u064A\u0642\u0643 \u0637\u0631\u064A\u0642\u0629 \u0623\u0643\u062B\u0631 \u062A\u0646\u0638\u064A\u0645\u064B\u0627 \u0644\u0644\u0645\u0631\u0627\u062C\u0639\u0629\u060C \u0627\u0644\u062A\u0648\u062B\u064A\u0642\u060C \u0648\u062A\u0633\u0631\u064A\u0639 \u0627\u0644\u0639\u0645\u0644.
-</p>
+\u0643\u0644 \u0639\u0627\u0645 \u0648\u0623\u0646\u062A\u0645 \u0628\u062E\u064A\u0631 \u0645\u0646 ConsultX. \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0643\u062A\u0628\u0643 \u064A\u062A\u0639\u0627\u0645\u0644 \u064A\u0648\u0645\u064A\u064B\u0627 \u0645\u0639 \u0623\u0633\u0626\u0644\u0629 SBC\u060C \u0645\u0631\u0627\u062C\u0639 NFPA\u060C \u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064A\u0629 \u0645\u0646 \u0627\u0644\u062D\u0631\u064A\u0642\u060C \u0641\u062D\u0635 \u0627\u0644\u0645\u062E\u0637\u0637\u0627\u062A\u060C \u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0627\u0644\u0639\u0645\u0644\u0627\u0621\u060C \u0648\u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u062F\u0627\u062E\u0644\u064A\u0629\u060C \u0641\u0625\u0646 ConsultX \u064A\u0645\u0646\u062D \u0641\u0631\u064A\u0642\u0643 \u0637\u0631\u064A\u0642\u0629 \u0623\u0643\u062B\u0631 \u062A\u0646\u0638\u064A\u0645\u064B\u0627 \u0644\u0644\u0645\u0631\u0627\u062C\u0639\u0629\u060C \u0648\u0627\u0644\u062A\u0648\u062B\u064A\u0642\u060C \u0648\u062A\u0633\u0631\u064A\u0639 \u0627\u0644\u0639\u0645\u0644.\n</p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">\u0645\u0627\u0630\u0627 \u064A\u062D\u0635\u0644 \u0639\u0644\u064A\u0647 \u0627\u0644\u0645\u0647\u0646\u062F\u0633 \u0641\u064A ConsultX Pro\u061F</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
 ${benefitRowsAr}
@@ -305,11 +306,12 @@ ${enterpriseRowsAr}
 
 <!-- ARABIC ENTERPRISE NOTE -->
 <tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
-<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">\u062E\u0635\u0627\u0626\u0635 Enterprise \u0645\u0635\u0645\u0645\u0629 \u0644\u0644\u0645\u0643\u0627\u062A\u0628 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629 \u0627\u0644\u062A\u064A \u062A\u062D\u062A\u0627\u062C \u0648\u0635\u0648\u0644 \u0641\u0631\u064A\u0642\u060C \u062A\u062A\u0628\u0639 \u062D\u0627\u0644\u0627\u062A\u060C \u0648\u0633\u064A\u0631 \u0645\u0631\u0627\u062C\u0639\u0629 \u062F\u0627\u062E\u0644\u064A. \u064A\u062A\u0645 \u062A\u0637\u0648\u064A\u0631 \u0628\u0639\u0636 \u062E\u0635\u0627\u0626\u0635 \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0645\u062A\u0642\u062F\u0645\u0629 \u0648\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u062A\u062F\u0631\u064A\u062C\u064A\u064B\u0627.</p>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">تم تصميم Enterprise للمكاتب التي تحتاج وصولًا جماعيًا للفريق، وتتبعًا للحالات، وسير مراجعة داخليًا، ووضوحًا أكبر في المسؤوليات الفنية داخل العمل الهندسي.</p>
 </td></tr>
 
 <!-- ARABIC ENTERPRISE CTA -->
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:14px 44px 0;font-size:13px;font-weight:600;color:#8fa3bf" class="sec">للمكاتب والفرق</td></tr>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
 ${entCtaAr}
 </td></tr>
 
@@ -319,7 +321,8 @@ ${entCtaAr}
 </td></tr>
 
 <!-- ARABIC CTA -->
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:4px 44px 28px" class="sec">
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:14px 44px 0;font-size:13px;font-weight:600;color:#8fa3bf" class="sec">للمهندس الفردي</td></tr>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 28px" class="sec">
 ${ctaAr}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
 <tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.6">\u0628\u062F\u0648\u0646 \u0627\u0644\u062A\u0632\u0627\u0645 \u0637\u0648\u064A\u0644. \u064A\u0645\u0643\u0646\u0643 \u0627\u0644\u0625\u0644\u063A\u0627\u0621 \u0641\u064A \u0623\u064A \u0648\u0642\u062A.</td></tr>
@@ -384,7 +387,7 @@ function buildText(recipient: string, subjectSuffix?: string): string {
     "What does ConsultX Enterprise give your office?",
     enterpriseLinesEn,
     "",
-    "Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.",
+    "Enterprise is built for offices that need team access, case tracking, internal review workflows, and clearer technical accountability across engineering work.",
     "",
     "Start Enterprise Team Offer:",
     entCta,
@@ -402,7 +405,7 @@ function buildText(recipient: string, subjectSuffix?: string): string {
     "خصم 50% على أول شهر — صالح فقط من 26 إلى 30 مايو 2026.",
     `${"=".repeat(66)}`,
     "",
-    "كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، التوثيق، وتسريع العمل.",
+    "كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.",
     "",
     "ماذا يحصل عليه المهندس في ConsultX Pro؟",
     benefitLinesAr,
@@ -415,7 +418,7 @@ function buildText(recipient: string, subjectSuffix?: string): string {
     "ماذا يمنح ConsultX Enterprise لمكتبك؟",
     enterpriseLinesAr,
     "",
-    "خصائص Enterprise مصممة للمكاتب الهندسية التي تحتاج وصول فريق، تتبع حالات، وسير مراجعة داخلي. يتم تطوير بعض خصائص التقارير المتقدمة وبوابة العملاء تدريجيًا.",
+    "تم تصميم Enterprise للمكاتب التي تحتاج وصولًا جماعيًا للفريق، وتتبعًا للحالات، وسير مراجعة داخليًا، ووضوحًا أكبر في المسؤوليات الفنية داخل العمل الهندسي.",
     "",
     "ابدأ عرض Enterprise Team:",
     entCta,

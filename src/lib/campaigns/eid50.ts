@@ -64,8 +64,8 @@ export const EID50_CAMPAIGN = {
     ar: "ابدأ عرض Enterprise Team",
   },
   enterpriseNote: {
-    en: "Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.",
-    ar: "خصائص Enterprise مصممة للمكاتب الهندسية التي تحتاج وصول فريق، تتبع حالات، وسير مراجعة داخلي. يتم تطوير بعض خصائص التقارير المتقدمة وبوابة العملاء تدريجيًا.",
+    en: "Enterprise is built for offices that need team access, case tracking, internal review workflows, and clearer technical accountability across engineering work.",
+    ar: "تم تصميم Enterprise للمكاتب التي تحتاج وصولًا جماعيًا للفريق، وتتبعًا للحالات، وسير مراجعة داخليًا، ووضوحًا أكبر في المسؤوليات الفنية داخل العمل الهندسي.",
   },
   afterFirstMonth: {
     en: "After the discounted first month, the plan renews at the normal monthly price unless canceled.",
