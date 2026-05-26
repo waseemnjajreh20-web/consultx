@@ -15,6 +15,7 @@ import {
   isEid50Active,
   getEid50SubscribeUrl,
 } from "@/lib/campaigns/eid50";
+import { EID50_FIRST_50_LEADS_CSV } from "@/lib/campaigns/eid50First50Leads";
 import { buildEid50HtmlEmail, buildEid50TextEmail } from "@/lib/emailTemplates/eid50";
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
@@ -399,7 +400,7 @@ export default function CampaignEid50() {
                   }}
                 />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     variant="outline"
                     size="sm"
@@ -409,6 +410,23 @@ export default function CampaignEid50() {
                   >
                     <CheckCircle className="w-3.5 h-3.5 me-1.5" />
                     {isAr ? "تحقق ومعاينة" : "Validate & Preview"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
+                    onClick={() => {
+                      setCsvText(EID50_FIRST_50_LEADS_CSV.join("\n"));
+                      setParsedLeads(null);
+                      setValidationSummary(null);
+                      setDryRunResult(null);
+                      setDryRunDone(false);
+                      setLeadSendResult(null);
+                      setLeadSendError(null);
+                    }}
+                  >
+                    <FileText className="w-3.5 h-3.5 me-1.5" />
+                    {isAr ? "تحميل أول 50 عميلاً" : "Load First 50 Leads"}
                   </Button>
                 </div>
 
