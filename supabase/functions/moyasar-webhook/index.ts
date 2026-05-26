@@ -317,6 +317,7 @@ serve(async (req) => {
     // Promo-aware amount validation
     const verifiedPromoCode = verifiedPayment?.metadata?.promo_code ?? null;
     const isFounding10 = verifiedPromoCode === "FOUNDING10";
+    const isEid50 = verifiedPromoCode === "EID50";
 
     // Amount validation (renewal vs verification flow).
     const isRenewalTx = (existingTx as any)?.payment_type === "renewal";
@@ -350,7 +351,9 @@ serve(async (req) => {
         });
       }
     } else {
-      const expectedAmount = isFounding10 ? 1000 : 100;
+      // EID50 Pro: 12250 halalas = 122.50 SAR (50% of 24500)
+      const planSlug = sub?.subscription_plans?.slug ?? "";
+      const expectedAmount = isFounding10 ? 1000 : (isEid50 && planSlug === "pro") ? 12250 : 100;
       if (verifiedPayment?.amount !== expectedAmount) {
         console.error("Re-verification mismatch: verification amount");
         await insertDeadLetter(adminClient, {

@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 import { isFounding10Active, FOUNDING10_CODE, FOUNDING10_CAMPAIGN } from "@/lib/campaigns/founding10";
+import { isEid50Active, EID50_CODE, EID50_CAMPAIGN, EID50_PRICING } from "@/lib/campaigns/eid50";
 
 const MOYASAR_PUBLISHABLE_KEY = (import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string)?.trim();
 const MOYASAR_TOKENS_ENDPOINT = "https://api.moyasar.com/v1/tokens";
@@ -98,6 +99,7 @@ const Subscribe = () => {
 
   const promoCode = searchParams.get("promo");
   const founding10Active = promoCode === FOUNDING10_CODE && isFounding10Active();
+  const eid50Active = promoCode === EID50_CODE && isEid50Active();
 
   const [card, setCard] = useState<CardForm>(EMPTY_CARD);
   const [submitting, setSubmitting] = useState(false);
@@ -124,20 +126,24 @@ const Subscribe = () => {
       if (data && data.length > 0) {
         // Hide free + legacy 'enterprise' from public checkout.
         const visible: Plan[] = (data as Plan[]).filter((p) => !HIDDEN_PUBLIC_SLUGS.has(p.slug));
-        setPlans(visible);
+        // For EID50, restrict visible plans to "pro" only (enterprise deferred)
+        const campaignVisible = eid50Active
+          ? visible.filter((p) => p.slug === "pro")
+          : visible;
+        setPlans(campaignVisible);
         // Initialise seat count for per-seat plans at min_seats.
         const initialSeats: Record<string, number> = {};
-        for (const p of visible) {
+        for (const p of campaignVisible) {
           if (PER_SEAT_SLUGS.has(p.slug)) {
             initialSeats[p.id] = Math.max(1, p.min_seats ?? 1);
           }
         }
         setSeatCounts(initialSeats);
         const urlPlan = searchParams.get("plan");
-        const matchedPlan = urlPlan ? visible.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
-        if (founding10Active) {
-          const proPlan = visible.find((p) => p.slug === "pro");
-          setSelectedPlan(proPlan?.id || visible[0].id);
+        const matchedPlan = urlPlan ? campaignVisible.find((p) => p.id === urlPlan || p.slug === urlPlan) : null;
+        if (founding10Active || eid50Active) {
+          const proPlan = campaignVisible.find((p) => p.slug === "pro");
+          setSelectedPlan(proPlan?.id || campaignVisible[0].id);
         } else if (matchedPlan) {
           setSelectedPlan(matchedPlan.id);
         } else {
@@ -178,6 +184,8 @@ const Subscribe = () => {
       const body: Record<string, unknown> = isPerSeat ? { plan_id: selectedPlan, seat_count: seatCount } : { plan_id: selectedPlan };
       if (founding10Active) {
         body.promo_code = FOUNDING10_CODE;
+      } else if (eid50Active) {
+        body.promo_code = EID50_CODE;
       }
       const { data, error } = await supabase.functions.invoke("moyasar-create-subscription", {
         body,
@@ -312,6 +320,8 @@ const Subscribe = () => {
       };
       if (founding10Active) {
         initiateBody.promo_code = FOUNDING10_CODE;
+      } else if (eid50Active) {
+        initiateBody.promo_code = EID50_CODE;
       }
       const { data, error } = await supabase.functions.invoke("moyasar-initiate-token-payment", {
         body: initiateBody,
@@ -417,6 +427,21 @@ const Subscribe = () => {
             </div>
           )}
 
+          {eid50Active && (
+            <div className="max-w-lg mx-auto mb-6 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/40 rounded-xl px-5 py-4 text-center">
+              <Gift className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+              <h3 className="text-base font-bold text-foreground mb-1">
+                {language === "ar" ? EID50_CAMPAIGN.title.ar : EID50_CAMPAIGN.title.en}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-1">
+                {language === "ar" ? EID50_CAMPAIGN.offer.ar : EID50_CAMPAIGN.offer.en}
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                {language === "ar" ? EID50_CAMPAIGN.afterFirstMonth.ar : EID50_CAMPAIGN.afterFirstMonth.en}
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 max-w-4xl mx-auto">
             {plans.map((plan, i) => {
               const selected = plan.id === selectedPlan;
@@ -438,7 +463,7 @@ const Subscribe = () => {
                   }`}
                   style={{ animationDelay: `${i * 0.1}s` }}
                   onClick={() => {
-                    if (founding10Active && plan.slug !== "pro") return;
+                    if ((founding10Active || eid50Active) && plan.slug !== "pro") return;
                     setSelectedPlan(plan.id);
                   }}
                 >

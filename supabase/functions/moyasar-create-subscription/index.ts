@@ -114,10 +114,19 @@ serve(async (req) => {
       : (plan.price_amount as number);
 
     const isFounding10 = promo_code === "FOUNDING10";
-    const chargeAmount = isFounding10 ? 1000 : 100;
-    const chargeDescription = isFounding10
-      ? `Founding Engineers Offer — First month of ${plan.name_en}`
-      : `Card verification for ${plan.name_en}`;
+    const isEid50 = promo_code === "EID50";
+    let chargeAmount = 100;
+    let chargeDescription = `Card verification for ${plan.name_en}`;
+    if (isFounding10) {
+      chargeAmount = 1000;
+      chargeDescription = `Founding Engineers Offer — First month of ${plan.name_en}`;
+    } else if (isEid50) {
+      if (plan.slug === "pro") {
+        chargeAmount = 12250; // 122.50 SAR = 50% of 24500
+        chargeDescription = `Eid Offer — First month at 50% off — ${plan.name_en}`;
+      }
+      // Enterprise per-seat EID50 deferred — see campaign requirements
+    }
 
     // ── Block double-active subscriptions ────────────────────────────────────
     const { data: activeSub } = await adminClient

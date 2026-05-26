@@ -138,10 +138,25 @@ serve(async (req) => {
 
     // ── Promo-aware charge amount ────────────────────────────────────────────
     const isFounding10 = promoCode === "FOUNDING10";
-    const chargeAmount = isFounding10 ? 1000 : 100;
-    const chargeDescription = isFounding10
-      ? "ConsultX Founding Engineers Offer — First Month"
-      : "ConsultX card verification";
+    const isEid50 = promoCode === "EID50";
+    let chargeAmount = 100;
+    let chargeDescription = "ConsultX card verification";
+    if (isFounding10) {
+      chargeAmount = 1000;
+      chargeDescription = "ConsultX Founding Engineers Offer — First Month";
+    } else if (isEid50) {
+      // Plan lookup to determine correct EID50 charge amount
+      const { data: eid50Plan } = await adminClient
+        .from("subscription_plans")
+        .select("slug, price_amount, price_per_seat")
+        .eq("id", sub.plan_id)
+        .single();
+      if (eid50Plan?.slug === "pro") {
+        chargeAmount = 12250; // 122.50 SAR = 50% of 24500
+        chargeDescription = "ConsultX Eid Offer — First Month at 50% Off";
+      }
+      // Enterprise per-seat EID50 deferred
+    }
 
     // ── Create Moyasar payment from token ────────────────────────────────────
     let chargeData: any;
@@ -165,7 +180,11 @@ serve(async (req) => {
             given_id: givenId,
             plan_id: sub.plan_id,
             user_id: user.id,
-            purpose: isFounding10 ? "founding10_first_month" : "card_verification",
+            purpose: isFounding10
+              ? "founding10_first_month"
+              : isEid50
+              ? "eid50_first_month"
+              : "card_verification",
             ...(promoCode ? { promo_code: promoCode } : {}),
           },
         }),
