@@ -30,6 +30,7 @@ const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const PublicCaseTracking = lazy(() => import("./pages/PublicCaseTracking"));
 const PlanLab = lazy(() => import("./pages/PlanLab"));
 const CampaignFounding10 = lazy(() => import("./pages/CampaignFounding10"));
+const CampaignEid50 = lazy(() => import("./pages/CampaignEid50"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -66,6 +67,7 @@ const AnimatedRoutes = () => {
           <Route path="/track/:token" element={<PageTransition><PublicCaseTracking /></PageTransition>} />
           <Route path="/plan-lab" element={<PageTransition><PlanLab /></PageTransition>} />
           <Route path="/admin/campaigns/founding10" element={<PageTransition><CampaignFounding10 /></PageTransition>} />
+          <Route path="/admin/campaigns/eid50" element={<PageTransition><CampaignEid50 /></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
