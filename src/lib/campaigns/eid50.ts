@@ -6,11 +6,27 @@ export function isEid50Active(): boolean {
   return EID50_LIVE();
 }
 
+// Verified from DB subscription_plans table — stored in halalas, divided by 100.
+export const EID50_PRICING = {
+  pro: {
+    normalSar: 245,
+    discountedSar: 122.5,
+    normalLabel: "245 SAR",
+    discountedLabel: "122.50 SAR",
+  },
+  enterpriseTeam: {
+    normalPerSeatSar: 399,
+    discountedPerSeatSar: 199.5,
+    normalLabel: "399 SAR/seat",
+    discountedLabel: "199.50 SAR/seat",
+  },
+} as const;
+
 export const EID50_SUBJECTS = {
-  recommended: "Eid Al-Adha Offer: 50% Off ConsultX Pro",
+  recommended: "Eid Al-Adha Offer: ConsultX Pro for 122.50 SAR Instead of 245 SAR",
   alternatives: [
-    "Eid Mubarak from ConsultX — 50% Off for 5 Days",
-    "Special Eid Offer for Engineering Offices in Saudi Arabia",
+    "Eid Al-Adha Offer: ConsultX Pro at 50% Off",
+    "Special Eid Offer for Engineering Offices — 50% Off Pro",
   ],
 };
 
@@ -21,24 +37,24 @@ export const EID50_CAMPAIGN = {
     ar: "عرض عيد الأضحى للمكاتب الهندسية",
   },
   subheadline: {
-    en: "Celebrate Eid with 50% off your first month of ConsultX Pro — valid for 5 days only.",
-    ar: "بمناسبة عيد الأضحى، احصل على خصم 50% على أول شهر من ConsultX Pro لمدة 5 أيام فقط.",
+    en: "50% off your first month — valid only from 26 to 30 May 2026.",
+    ar: "خصم 50% على أول شهر — صالح فقط من 26 إلى 30 مايو 2026.",
   },
   offer: {
-    en: "50% off your first month of ConsultX Pro — for engineering offices and consultants in Saudi Arabia.",
-    ar: "خصم 50٪ على أول شهر من ConsultX Pro — للمكاتب الهندسية والاستشاريين في المملكة العربية السعودية.",
+    en: "ConsultX Pro for 122.50 SAR instead of 245 SAR — first month only.",
+    ar: "ConsultX Pro بـ 122.50 ريال بدلًا من 245 ريال — أول شهر فقط.",
   },
   offerShort: {
     en: "50% off — 5 days only",
     ar: "خصم 50٪ — 5 أيام فقط",
   },
   cta: {
-    en: "Claim 50% Eid Offer",
-    ar: "احصل على خصم العيد 50%",
+    en: "Activate 50% Eid Offer",
+    ar: "فعّل خصم العيد 50%",
   },
   afterFirstMonth: {
-    en: "After the discounted first month, your subscription renews at the normal Pro price unless canceled.",
-    ar: "بعد أول شهر مخفض، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.",
+    en: "After the discounted first month, the plan renews at the normal monthly price unless canceled.",
+    ar: "بعد أول شهر مخفض، يتم التجديد بالسعر الشهري الطبيعي ما لم يتم الإلغاء.",
   },
   dateRange: {
     en: "Valid 26–30 May only",

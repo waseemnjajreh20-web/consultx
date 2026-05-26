@@ -1,4 +1,4 @@
-import { EID50_CAMPAIGN, getEid50SubscribeUrl } from "@/lib/campaigns/eid50";
+import { EID50_CAMPAIGN, EID50_PRICING, getEid50SubscribeUrl } from "@/lib/campaigns/eid50";
 
 const APP_NAME = "ConsultX";
 const BG_DARK = "#070b15";
@@ -22,17 +22,19 @@ const OUTER_STYLE = `background:#${BG_DARK}!important;background-color:#${BG_DAR
 const ctaUrl = getEid50SubscribeUrl("email", "outbound");
 
 const BENEFITS_EN = [
-  "Faster SBC / NFPA technical review — get instant references across Saudi Building Code, NFPA standards, and local regulations.",
-  "Advisory Mode for deep code questions — ask complex SBC 201, SBC 801, and fire safety questions and receive cited answers.",
-  "Analytical Mode for drawing and compliance review — upload drawings and documents for AI-powered analysis.",
-  "Clearer engineering reports and client responses — generate professional, source-backed documentation in less time.",
+  "Advisory Mode for SBC / NFPA questions — ask deep fire and life safety questions and get structured, source-aware answers.",
+  "Analytical Mode for drawings and documents — upload drawings and documents to identify requirements, gaps, and review notes before submission.",
+  "Faster technical decisions — reduce repeated searching through code clauses and move faster in daily engineering review work.",
+  "Better reports and client responses — prepare clearer technical comments, summaries, and professional replies.",
+  "Saudi-focused workflow — built around SBC, fire and life safety review, Civil Defense-oriented workflows, and engineering office needs.",
 ];
 
 const BENEFITS_AR = [
-  "مراجعة أسرع لمتطلبات SBC / NFPA — احصل على مراجع فورية من كود البناء السعودي ومعايير NFPA واللوائح المحلية.",
-  "وضع Advisory للأسئلة الكودية العميقة — اطرح أسئلة معقدة في SBC 201 و SBC 801 والسلامة واحصل على إجابات موثقة.",
-  "وضع Analytical لمراجعة المخططات والامتثال — ارفع المخططات والمستندات لتحليل مدعوم بالذكاء الاصطناعي.",
-  "تقارير وردود فنية أوضح للعملاء — أنشئ وثائق مهنية مدعومة بالمصادر في وقت أقل.",
+  "وضع Advisory لأسئلة SBC / NFPA — اطرح أسئلة عميقة في السلامة والحماية من الحريق واحصل على إجابات منظمة ومدعومة بالمراجع.",
+  "وضع Analytical للمخططات والمستندات — ارفع المخططات والمستندات لاستخراج المتطلبات، الفجوات، وملاحظات المراجعة قبل الرفع أو التسليم.",
+  "قرارات فنية أسرع — قلّل وقت البحث المتكرر داخل البنود والكود، وتحرك أسرع في أعمال المراجعة اليومية.",
+  "تقارير وردود أوضح للعملاء — جهّز ملاحظات فنية، ملخصات، وردود هندسية أكثر تنظيمًا واحترافية.",
+  "سير عمل موجه للسوق السعودي — مصمم حول SBC، مراجعات السلامة والحماية من الحريق، ومتطلبات المكاتب الهندسية.",
 ];
 
 function buildOutlookVmlButton(buttonText: string, href: string): string {
@@ -125,23 +127,20 @@ export function buildEid50HtmlEmail(): string {
 <style>${STYLES}</style>
 </head>
 <body bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${OUTER_STYLE};margin:0;padding:0;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
-<div style="display:none;font-size:1px;${OUTER_STYLE};color:${BG_DARK};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">Eid Mubarak from ConsultX — 50% off your first month of Pro for engineering offices in Saudi Arabia. Valid 26–30 May. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<div style="display:none;font-size:1px;${OUTER_STYLE};color:${BG_DARK};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">A 5-day Eid offer for engineering offices reviewing SBC, NFPA, fire and life safety requirements. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
-<!-- ===== OUTER WRAPPER ===== -->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${BG_DARK}" background="${BG_070B15_URL}" style="${OUTER_STYLE}">
 
 <tr><td align="center" bgcolor="${BG_DARK}" background="${BG_070B15_URL}" style="${OUTER_STYLE};padding:24px 0 48px">
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" width="640" align="center"><tr><td bgcolor="${CARD_DARK}"><![endif]-->
 
-<!-- ===== MAIN CARD ===== -->
 <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};max-width:640px;width:100%;border-radius:16px;border:1px solid ${CARD_BORDER}">
 
-<!-- ===== HERO ===== -->
+<!-- HERO -->
 <tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};background:linear-gradient(180deg,${CARD_DARK} 0%,#0a0e1a 100%);border-radius:16px 16px 0 0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 
-<!-- Logo -->
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:40px 22px 0" class="hero">
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
@@ -152,7 +151,6 @@ export function buildEid50HtmlEmail(): string {
 </table>
 </td></tr>
 
-<!-- Gold badge -->
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 22px 4px" class="hero">
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 <tr>
@@ -163,14 +161,13 @@ export function buildEid50HtmlEmail(): string {
 </table>
 </td></tr>
 
-<!-- Headline -->
 <tr><td dir="ltr" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
 <h1 style="margin:0;font-size:26px;font-weight:900;color:${TEXT_HEADING};line-height:1.2;letter-spacing:-0.3px" class="head">${EID50_CAMPAIGN.title.en}</h1>
-<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:${CYAN};line-height:1.5">${EID50_CAMPAIGN.subheadline.en}</p>
+<p style="margin:8px 0 0;font-size:20px;font-weight:700;color:${CYAN};line-height:1.4">ConsultX Pro for ${EID50_PRICING.pro.discountedLabel} instead of ${EID50_PRICING.pro.normalLabel}</p>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:${TEXT_BODY};line-height:1.5">${EID50_CAMPAIGN.subheadline.en}</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:${GOLD_DARK};line-height:1.4">${EID50_CAMPAIGN.dateRange.en}</p>
 </td></tr>
 
-<!-- English CTA -->
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
 ${ctaEn}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
@@ -181,54 +178,89 @@ ${buildBrowserLink("Open offer in browser")}
 </table>
 </td></tr>
 
-<!-- ===== ENGLISH VALUE SECTION ===== -->
+<!-- ENGLISH VALUE SECTION -->
 <tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${TEXT_BODY}">
-Eid Mubarak to the engineering community in Saudi Arabia. As you celebrate Eid Al-Adha with family and colleagues, we want to share something special for your office. ConsultX is the AI-powered decision-support platform trusted by fire and life safety professionals, engineering offices, and consultants across the Kingdom. Whether you are reviewing SBC 201 compliance, researching NFPA standards, or preparing technical reports, ConsultX helps your team get faster, source-backed answers — so you can deliver more in less time.
+Eid Mubarak from ConsultX. For engineering offices and fire/life-safety consultants, this is a limited opportunity to test ConsultX Pro in real project work: code questions, drawing review, compliance notes, and technical reports — at half the first-month price.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">With ConsultX Pro, you can:</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">What do you get with ConsultX Pro?</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 ${benefitRowsEn}
 </table>
+</td></tr>
+
+<!-- TRUST SECTION -->
+<tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">Built for Saudi engineering compliance workflows</p>
+<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${TEXT_BODY}">
+ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineers review faster and document clearer while keeping final professional judgment with the licensed engineer.
+</p>
+</td></tr>
+
+<!-- ENTERPRISE / TEAM SECTION -->
+<tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 4px" class="sec">
+<p style="margin:0 0 6px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">For engineering offices and teams</p>
+<p style="margin:0;font-size:14px;line-height:1.6;color:${TEXT_BODY}">
+Need seats for your team? The Eid offer also applies to Enterprise/team subscriptions: ${EID50_PRICING.enterpriseTeam.discountedLabel} instead of ${EID50_PRICING.enterpriseTeam.normalLabel} per user for the first month.<br>
+<a href="${ctaUrl}" target="_blank" style="color:${CYAN};text-decoration:underline">Contact us to activate the team offer</a>.
+</p>
 </td></tr>
 
 <tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 24px" class="sec">
 <p style="margin:0;font-size:13px;line-height:1.5;color:${TEXT_MUTED};font-style:italic">${EID50_CAMPAIGN.afterFirstMonth.en}</p>
 </td></tr>
 
-<!-- ===== DIVIDER ===== -->
+<!-- DIVIDER -->
 <tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid ${CARD_BORDER};height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
-<!-- ===== CREDIBILITY ===== -->
+<!-- CREDIBILITY -->
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 12px" class="sec">
 <p style="margin:0;font-size:11px;line-height:1.5;color:${TEXT_MUTED}">Trusted by engineering offices across Saudi Arabia for SBC 201, SBC 801, NFPA compliance, fire &amp; life safety reviews, and engineering decision support.</p>
 </td></tr>
 
-<!-- ===== DIVIDER 2 ===== -->
+<!-- DIVIDER 2 -->
 <tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid ${CARD_BORDER};height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
-<!-- ===== ARABIC SECTION ===== -->
+<!-- ARABIC SECTION -->
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
 <h1 style="margin:0;font-size:26px;font-weight:900;color:${TEXT_HEADING};line-height:1.3;letter-spacing:-0.2px" class="head">${EID50_CAMPAIGN.title.ar}</h1>
-<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:${CYAN};line-height:1.7">${EID50_CAMPAIGN.subheadline.ar}</p>
+<p style="margin:8px 0 0;font-size:20px;font-weight:700;color:${CYAN};line-height:1.6">ConsultX Pro بـ ${EID50_PRICING.pro.discountedLabel} بدلًا من ${EID50_PRICING.pro.normalLabel}</p>
+<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:${TEXT_BODY};line-height:1.7">${EID50_CAMPAIGN.subheadline.ar}</p>
 <p style="margin:8px 0 0;font-size:12px;font-weight:600;color:${GOLD_DARK};line-height:1.6">${EID50_CAMPAIGN.dateRange.ar}</p>
 </td></tr>
 
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
-كل عام وأنتم بخير بمناسبة عيد الأضحى المبارك. نهدي المكاتب الهندسية والمهندسين والاستشاريين في المملكة العربية السعودية عرضاً خاصاً. ConsultX هي منصة دعم قرارات هندسية مدعومة بالذكاء الاصطناعي، تساعد فريقك في مراجعة متطلبات السلامة والحماية من الحريق، والإجابة على أسئلة كود البناء السعودي SBC ومراجع NFPA، ومراجعة المخططات، وإعداد التقارير الفنية — بشكل أسرع وبدقة أعلى.
+كل عام وأنتم بخير من ConsultX. للمكاتب الهندسية واستشاريي السلامة والوقاية من الحريق، هذا عرض محدود لتجربة ConsultX Pro في العمل الهندسي اليومي: أسئلة الكود، مراجعة المخططات، ملاحظات الامتثال، والتقارير الفنية — بنصف سعر أول شهر.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">مع ConsultX Pro يمكنك:</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">ماذا تحصل عليه في ConsultX Pro؟</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
 ${benefitRowsAr}
 </table>
+</td></tr>
+
+<!-- ARABIC TRUST SECTION -->
+<tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">مصمم لسير عمل المكاتب الهندسية في السعودية</p>
+<p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
+يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد المهندس على المراجعة بشكل أسرع والتوثيق بشكل أوضح، مع بقاء القرار المهني النهائي للمهندس المختص.
+</p>
+</td></tr>
+
+<!-- ARABIC ENTERPRISE / TEAM SECTION -->
+<tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 4px" class="sec">
+<p style="margin:0 0 6px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">للمكاتب الهندسية والشركات</p>
+<p style="margin:0;font-size:14px;line-height:1.8;color:${TEXT_BODY}">
+تحتاج مقاعد لفريقك؟ عرض العيد يشمل الاشتراكات المؤسسية وفرق العمل: ${EID50_PRICING.enterpriseTeam.discountedLabel} بدلًا من ${EID50_PRICING.enterpriseTeam.normalLabel} لكل مستخدم في أول شهر.<br>
+<a href="${ctaUrl}" target="_blank" style="color:${CYAN};text-decoration:underline">تواصل معنا لتفعيل عرض الفريق</a>.
+</p>
 </td></tr>
 
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 20px" class="sec">
 <p style="margin:0;font-size:13px;line-height:1.6;color:${TEXT_MUTED};font-style:italic">${EID50_CAMPAIGN.afterFirstMonth.ar}</p>
 </td></tr>
 
-<!-- ===== ARABIC CTA ===== -->
+<!-- ARABIC CTA -->
 <tr><td align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:4px 44px 28px" class="sec">
 ${ctaAr}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
@@ -237,7 +269,7 @@ ${ctaAr}
 ${buildBrowserLink("فتح العرض في المتصفح")}
 </td></tr>
 
-<!-- ===== FOOTER ===== -->
+<!-- FOOTER -->
 <tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:8px 44px 28px" class="sec">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}"><tr><td bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};border-top:1px solid ${CARD_BORDER};height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table>
 
@@ -249,7 +281,6 @@ If you do not wish to receive future communications, <a href="mailto:support@con
 </td></tr>
 
 </table>
-<!-- ===== END MAIN CARD ===== -->
 
 <!--[if mso]></td></tr></table><![endif]-->
 
@@ -260,47 +291,61 @@ If you do not wish to receive future communications, <a href="mailto:support@con
 }
 
 export function buildEid50TextEmail(): string {
-  const benefitLinesEn = BENEFITS_EN.map((b) => `  ▸ ${b}`).join("\n");
-  const benefitLinesAr = BENEFITS_AR.map((b) => `  ▸ ${b}`).join("\n");
+  const benefitLinesEn = BENEFITS_EN.map((b) => `  ${b}`).join("\n");
+  const benefitLinesAr = BENEFITS_AR.map((b) => `  ${b}`).join("\n");
 
-  return `EID AL-ADHA OFFER — 50% OFF CONSULTX PRO
-${"=".repeat(46)}
+  return `EID AL-ADHA OFFER — CONSULTX PRO FOR ${EID50_PRICING.pro.discountedLabel.toUpperCase()} INSTEAD OF ${EID50_PRICING.pro.normalLabel.toUpperCase()}
+${"=".repeat(56)}
 
-Eid Mubarak to the engineering community in Saudi Arabia.
+${EID50_CAMPAIGN.subheadline.en}
+${"=".repeat(56)}
 
-Celebrate Eid with 50% off your first month of ConsultX Pro — valid for 5 days only (26–30 May).
+Eid Mubarak from ConsultX. For engineering offices and fire/life-safety consultants, this is a limited opportunity to test ConsultX Pro in real project work: code questions, drawing review, compliance notes, and technical reports — at half the first-month price.
 
-ConsultX is the AI-powered decision-support platform trusted by fire and life safety professionals, engineering offices, and consultants across the Kingdom. Whether you are reviewing SBC 201 compliance, researching NFPA standards, or preparing technical reports, ConsultX helps your team get faster, source-backed answers — so you can deliver more in less time.
-
-With ConsultX Pro, you can:
+What do you get with ConsultX Pro?
 ${benefitLinesEn}
 
-After the discounted first month, your subscription renews at the normal Pro price unless canceled.
+Built for Saudi engineering compliance workflows:
+ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineers review faster and document clearer while keeping final professional judgment with the licensed engineer.
 
-Claim your 50% Eid Offer: ${ctaUrl}
+For engineering offices and teams:
+Need seats for your team? The Eid offer also applies to Enterprise/team subscriptions: ${EID50_PRICING.enterpriseTeam.discountedLabel} instead of ${EID50_PRICING.enterpriseTeam.normalLabel} per user for the first month.
+Contact us to activate the team offer: ${ctaUrl}
+
+${EID50_CAMPAIGN.afterFirstMonth.en}
+
+Activate 50% Eid Offer:
+${ctaUrl}
 
 ---
 ${"=".repeat(60)}
 
-عرض عيد الأضحى للمكاتب الهندسية — خصم 50٪ على ConsultX Pro
-${"=".repeat(50)}
+عرض عيد الأضحى — ConsultX Pro بـ ${EID50_PRICING.pro.discountedLabel} بدلًا من ${EID50_PRICING.pro.normalLabel}
+${"=".repeat(66)}
 
-كل عام وأنتم بخير بمناسبة عيد الأضحى المبارك.
+${EID50_CAMPAIGN.subheadline.ar}
+${"=".repeat(66)}
 
-بمناسبة عيد الأضحى، احصل على خصم 50% على أول شهر من ConsultX Pro لمدة 5 أيام فقط (من 26 إلى 30 مايو).
+كل عام وأنتم بخير من ConsultX. للمكاتب الهندسية واستشاريي السلامة والوقاية من الحريق، هذا عرض محدود لتجربة ConsultX Pro في العمل الهندسي اليومي: أسئلة الكود، مراجعة المخططات، ملاحظات الامتثال، والتقارير الفنية — بنصف سعر أول شهر.
 
-ConsultX منصة دعم قرارات هندسية مدعومة بالذكاء الاصطناعي، تساعد فريقك في مراجعة متطلبات السلامة والحماية من الحريق، والإجابة على أسئلة كود البناء السعودي SBC ومراجع NFPA، ومراجعة المخططات، وإعداد التقارير الفنية — بشكل أسرع وبدقة أعلى.
-
-مع ConsultX Pro يمكنك:
+ماذا تحصل عليه في ConsultX Pro؟
 ${benefitLinesAr}
 
-بعد أول شهر مخفض، يتم التجديد بالسعر الطبيعي لخطة Pro ما لم يتم الإلغاء.
+مصمم لسير عمل المكاتب الهندسية في السعودية:
+يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد المهندس على المراجعة بشكل أسرع والتوثيق بشكل أوضح، مع بقاء القرار المهني النهائي للمهندس المختص.
 
-احصل على خصم العيد 50%: ${ctaUrl}
+للمكاتب الهندسية والشركات:
+تحتاج مقاعد لفريقك؟ عرض العيد يشمل الاشتراكات المؤسسية وفرق العمل: ${EID50_PRICING.enterpriseTeam.discountedLabel} بدلًا من ${EID50_PRICING.enterpriseTeam.normalLabel} لكل مستخدم في أول شهر.
+تواصل معنا لتفعيل عرض الفريق: ${ctaUrl}
+
+بعد أول شهر مخفض، يتم التجديد بالسعر الشهري الطبيعي ما لم يتم الإلغاء.
+
+فعّل خصم العيد 50%:
+${ctaUrl}
 
 ---
 ${"=".repeat(60)}
-ConsultX — AI-Powered Engineering Decision Support · Saudi Arabia
+ConsultX · AI-Powered Engineering Decision Support · Saudi Arabia
 Trusted by engineering offices across Saudi Arabia for SBC 201, SBC 801, NFPA compliance, fire & life safety reviews, and engineering decision support.
 
 You are receiving this email because your office contact was identified through publicly available engineering office listings in the Kingdom of Saudi Arabia.
