@@ -63,7 +63,8 @@ export default function CampaignEid50() {
 
   const isAr = language !== "en";
   const active = isEid50Active();
-  const ctaUrl = getEid50SubscribeUrl("email", "outbound");
+  const ctaUrl = getEid50SubscribeUrl("email", "outbound", "pro");
+  const enterpriseCtaUrl = getEid50SubscribeUrl("email", "outbound", "enterprise_team");
 
   return (
     <div className="min-h-screen bg-background" dir={isAr ? "rtl" : "ltr"}>
@@ -155,9 +156,15 @@ export default function CampaignEid50() {
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-muted-foreground">{isAr ? "التواريخ:" : "Dates:"}</span> <span className="text-amber-400 font-semibold">{EID50_CAMPAIGN.dateRange.en}</span>
             </div>
-            <div className="mt-2 p-3 rounded-lg bg-muted/30 border border-border/30">
-              <p className="text-muted-foreground text-xs">{isAr ? "رابط CTA:" : "CTA URL:"}</p>
-              <a href={ctaUrl} className="text-primary underline break-all text-xs font-mono" target="_blank" rel="noopener noreferrer">{ctaUrl}</a>
+            <div className="mt-2 p-3 rounded-lg bg-muted/30 border border-border/30 space-y-2">
+              <div>
+                <p className="text-muted-foreground text-xs">{isAr ? "رابط CTA (Pro):" : "CTA URL (Pro):"}</p>
+                <a href={ctaUrl} className="text-primary underline break-all text-xs font-mono" target="_blank" rel="noopener noreferrer">{ctaUrl}</a>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">{isAr ? "رابط CTA (Enterprise):" : "CTA URL (Enterprise):"}</p>
+                <a href={enterpriseCtaUrl} className="text-primary underline break-all text-xs font-mono" target="_blank" rel="noopener noreferrer">{enterpriseCtaUrl}</a>
+              </div>
             </div>
           </CardContent>
         </Card>

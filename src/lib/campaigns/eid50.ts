@@ -20,13 +20,20 @@ export const EID50_PRICING = {
     normalLabel: "399 SAR/seat",
     discountedLabel: "199.50 SAR/seat",
   },
+  enterpriseOffice: {
+    normalPerSeatSar: 549,
+    discountedPerSeatSar: 274.5,
+    normalLabel: "549 SAR/seat",
+    discountedLabel: "274.50 SAR/seat",
+  },
 } as const;
 
 export const EID50_SUBJECTS = {
-  recommended: "Eid Al-Adha Offer: ConsultX Pro for 122.50 SAR Instead of 245 SAR",
+  recommended: "Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off",
   alternatives: [
-    "Eid Al-Adha Offer: ConsultX Pro at 50% Off",
-    "Special Eid Offer for Engineering Offices — 50% Off Pro",
+    "Eid Al-Adha Offer: ConsultX Pro & Enterprise at 50% Off",
+    "For Engineering Offices: ConsultX Enterprise from 199.50 SAR/Seat",
+    "Build a Faster Review Workflow for Your Engineering Office",
   ],
 };
 
@@ -52,6 +59,14 @@ export const EID50_CAMPAIGN = {
     en: "Activate 50% Eid Offer",
     ar: "فعّل خصم العيد 50%",
   },
+  enterpriseCta: {
+    en: "Start Enterprise Team Offer",
+    ar: "ابدأ عرض Enterprise Team",
+  },
+  enterpriseNote: {
+    en: "Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.",
+    ar: "خصائص Enterprise مصممة للمكاتب الهندسية التي تحتاج وصول فريق، تتبع حالات، وسير مراجعة داخلي. يتم تطوير بعض خصائص التقارير المتقدمة وبوابة العملاء تدريجيًا.",
+  },
   afterFirstMonth: {
     en: "After the discounted first month, the plan renews at the normal monthly price unless canceled.",
     ar: "بعد أول شهر مخفض، يتم التجديد بالسعر الشهري الطبيعي ما لم يتم الإلغاء.",
@@ -65,6 +80,6 @@ export const EID50_CAMPAIGN = {
 
 const BASE_URL = import.meta.env.VITE_APP_URL || "https://www.consultx.app";
 
-export function getEid50SubscribeUrl(utmSource = "email", utmMedium = "outbound"): string {
-  return `${BASE_URL}/subscribe?plan=pro&promo=${EID50_CODE}&utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=eid50&utm_content=engineering_offices_ksa`;
+export function getEid50SubscribeUrl(utmSource = "email", utmMedium = "outbound", plan = "pro"): string {
+  return `${BASE_URL}/subscribe?plan=${plan}&promo=${EID50_CODE}&utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=eid50&utm_content=engineering_offices_ksa`;
 }

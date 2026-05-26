@@ -8,16 +8,16 @@ const corsHeaders = {
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 const CAMPAIGN_CODE = "EID50";
-const SUBJECT = "Eid Al-Adha Offer: ConsultX Pro for 122.50 SAR Instead of 245 SAR";
-const TEST_SUBJECT_SUFFIX = "[EID50 PRICE COPY TEST]";
+const SUBJECT = "Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off";
+const TEST_SUBJECT_SUFFIX = "[EID50 ENTERPRISE COPY TEST]";
 const LOGO_URL = "https://www.consultx.app/assets/consultx-email-logo.png";
 const PROD_ORIGIN = "https://www.consultx.app";
 const BG_0D1425_URL = "https://www.consultx.app/assets/email-bg-0d1425.png";
 const BG_070B15_URL = "https://www.consultx.app/assets/email-bg-070b15.png";
 
-function ctaUrl(): string {
+function ctaUrl(plan = "pro"): string {
   const params = new URLSearchParams({
-    plan: "pro",
+    plan,
     promo: CAMPAIGN_CODE,
     utm_source: "email",
     utm_medium: "outbound",
@@ -36,8 +36,45 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
+const BENEFITS_EN = [
+  "Advisory Mode for code questions \u2014 ask SBC, NFPA, and fire/life-safety questions and get structured, source-aware answers.",
+  "Analytical Mode for drawings and documents \u2014 upload drawings and documents to identify requirements, missing information, and review gaps before submission.",
+  "Faster technical responses \u2014 reduce repeated searching through clauses and prepare clearer technical comments.",
+  "Better engineering reports \u2014 create cleaner summaries, review notes, and client-ready technical replies.",
+  "Saudi-focused review workflow \u2014 built around SBC, NFPA, fire safety review, and engineering office needs.",
+];
+
+const BENEFITS_AR = [
+  "\u0648\u0636\u0639 Advisory \u0644\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0643\u0648\u062F\u064A\u0629 \u2014 \u0627\u0637\u0631\u062D \u0623\u0633\u0626\u0644\u0629 SBC \u0648NFPA \u0648\u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u0644\u062D\u0645\u0627\u064A\u0629 \u0645\u0646 \u0627\u0644\u062D\u0631\u064A\u0642 \u0648\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0625\u062C\u0627\u0628\u0627\u062A \u0645\u0646\u0638\u0645\u0629 \u0648\u0645\u062F\u0639\u0648\u0645\u0629 \u0628\u0627\u0644\u0645\u0631\u0627\u062C\u0639.",
+  "\u0648\u0636\u0639 Analytical \u0644\u0644\u0645\u062E\u0637\u0637\u0627\u062A \u0648\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A \u2014 \u0627\u0631\u0641\u0639 \u0627\u0644\u0645\u062E\u0637\u0637\u0627\u062A \u0648\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A \u0644\u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0627\u0644\u0645\u062A\u0637\u0644\u0628\u0627\u062A\u060C \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0646\u0627\u0642\u0635\u0629\u060C \u0648\u0641\u062C\u0648\u0627\u062A \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0642\u0628\u0644 \u0627\u0644\u0631\u0641\u0639 \u0623\u0648 \u0627\u0644\u062A\u0633\u0644\u064A\u0645.",
+  "\u0631\u062F\u0648\u062F \u0641\u0646\u064A\u0629 \u0623\u0633\u0631\u0639 \u2014 \u0642\u0644\u0651\u0644 \u0627\u0644\u0628\u062D\u062B \u0627\u0644\u0645\u062A\u0643\u0631\u0631 \u062F\u0627\u062E\u0644 \u0627\u0644\u0628\u0646\u0648\u062F\u060C \u0648\u062C\u0647\u0651\u0632 \u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0641\u0646\u064A\u0629 \u0623\u0648\u0636\u062D.",
+  "\u062A\u0642\u0627\u0631\u064A\u0631 \u0647\u0646\u062F\u0633\u064A\u0629 \u0623\u0641\u0636\u0644 \u2014 \u0623\u0646\u0634\u0626 \u0645\u0644\u062E\u0635\u0627\u062A\u060C \u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0645\u0631\u0627\u062C\u0639\u0629\u060C \u0648\u0631\u062F\u0648\u062F \u0641\u0646\u064A\u0629 \u0623\u0643\u062B\u0631 \u062A\u0646\u0638\u064A\u0645\u064B\u0627 \u0644\u0644\u0639\u0645\u0644\u0627\u0621.",
+  "\u0633\u064A\u0631 \u0645\u0631\u0627\u062C\u0639\u0629 \u0645\u0648\u062C\u0647 \u0644\u0644\u0633\u0648\u0642 \u0627\u0644\u0633\u0639\u0648\u062F\u064A \u2014 \u0645\u0635\u0645\u0645 \u062D\u0648\u0644 SBC \u0648NFPA \u0648\u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u062D\u062A\u064A\u0627\u062C\u0627\u062A \u0627\u0644\u0645\u0643\u0627\u062A\u0628 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629.",
+];
+
+const ENTERPRISE_BENEFITS_EN = [
+  "Shared organization workspace \u2014 manage your office team inside one ConsultX workspace instead of scattered individual accounts.",
+  "Team seats with enforced seat limits \u2014 invite team members and manage paid seats with controlled access.",
+  "Role-based access \u2014 separate owner/admin, engineers, reviewers, and finance-oriented access so each user sees the right workspace.",
+  "Case workflow and status tracking \u2014 create and track engineering cases with status history instead of losing review progress across chats and files.",
+  "Review and approval foundation \u2014 support internal engineering review and approval workflows before final delivery.",
+  "AI report/session binding \u2014 keep AI review outputs linked to cases and reports so technical decisions are easier to trace.",
+  "Better office-level quality control \u2014 help engineers, senior reviewers, and managers work from a more consistent review process.",
+];
+
+const ENTERPRISE_BENEFITS_AR = [
+  "\u0645\u0633\u0627\u062D\u0629 \u0639\u0645\u0644 \u0645\u0634\u062A\u0631\u0643\u0629 \u0644\u0644\u0645\u0643\u062A\u0628 \u2014 \u0623\u062F\u0631 \u0641\u0631\u064A\u0642\u0643 \u062F\u0627\u062E\u0644 Workspace \u0648\u0627\u062D\u062F \u0628\u062F\u0644 \u0627\u0644\u062D\u0633\u0627\u0628\u0627\u062A \u0627\u0644\u0641\u0631\u062F\u064A\u0629 \u0627\u0644\u0645\u062A\u0641\u0631\u0642\u0629.",
+  "\u0645\u0642\u0627\u0639\u062F \u0641\u0631\u064A\u0642 \u0645\u0639 \u0636\u0628\u0637 \u0639\u062F\u062F \u0627\u0644\u0645\u0642\u0627\u0639\u062F \u2014 \u0627\u062F\u0639\u064F \u0623\u0639\u0636\u0627\u0621 \u0627\u0644\u0641\u0631\u064A\u0642 \u0648\u0623\u062F\u0631 \u0627\u0644\u0645\u0642\u0627\u0639\u062F \u0627\u0644\u0645\u062F\u0641\u0648\u0639\u0629 \u0628\u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0648\u0627\u0636\u062D\u0629.",
+  "\u0635\u0644\u0627\u062D\u064A\u0627\u062A \u062D\u0633\u0628 \u0627\u0644\u062F\u0648\u0631 \u2014 \u0627\u0641\u0635\u0644 \u0628\u064A\u0646 \u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0627\u0644\u0645\u0627\u0644\u0643\u060C \u0627\u0644\u0625\u062F\u0627\u0631\u0629\u060C \u0627\u0644\u0645\u0647\u0646\u062F\u0633\u064A\u0646\u060C \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u064A\u0646\u060C \u0648\u0627\u0644\u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0627\u0644\u0645\u0627\u0644\u064A\u0629.",
+  "\u0633\u064A\u0631 \u062D\u0627\u0644\u0627\u062A \u0648\u062A\u062A\u0628\u0639 \u0627\u0644\u062D\u0627\u0644\u0629 \u2014 \u0623\u0646\u0634\u0626 \u062D\u0627\u0644\u0627\u062A \u0647\u0646\u062F\u0633\u064A\u0629 \u0648\u062A\u0627\u0628\u0639 \u0633\u062C\u0644 \u0627\u0644\u062D\u0627\u0644\u0629 \u0628\u062F\u0644 \u0636\u064A\u0627\u0639 \u062A\u0642\u062F\u0645 \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0628\u064A\u0646 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0627\u062A \u0648\u0627\u0644\u0645\u0644\u0641\u0627\u062A.",
+  "\u0623\u0633\u0627\u0633 \u0644\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0648\u0627\u0644\u0627\u0639\u062A\u0645\u0627\u062F \u0627\u0644\u062F\u0627\u062E\u0644\u064A \u2014 \u0627\u062F\u0639\u0645 \u0633\u064A\u0631 \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629 \u0648\u0627\u0644\u0627\u0639\u062A\u0645\u0627\u062F \u0627\u0644\u062F\u0627\u062E\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0633\u0644\u064A\u0645 \u0627\u0644\u0646\u0647\u0627\u0626\u064A.",
+  "\u0631\u0628\u0637 \u0645\u062E\u0631\u062C\u0627\u062A \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064A \u0628\u0627\u0644\u062D\u0627\u0644\u0627\u062A \u0648\u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u2014 \u0627\u062D\u062A\u0641\u0638 \u0628\u0645\u062E\u0631\u062C\u0627\u062A \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0648\u0631\u0628\u0637\u0647\u0627 \u0628\u0627\u0644\u062D\u0627\u0644\u0627\u062A \u0644\u062A\u0633\u0647\u064A\u0644 \u062A\u062A\u0628\u0639 \u0627\u0644\u0642\u0631\u0627\u0631\u0627\u062A \u0627\u0644\u0641\u0646\u064A\u0629.",
+  "\u0636\u0628\u0637 \u062C\u0648\u062F\u0629 \u0639\u0644\u0649 \u0645\u0633\u062A\u0648\u0649 \u0627\u0644\u0645\u0643\u062A\u0628 \u2014 \u0633\u0627\u0639\u062F \u0627\u0644\u0645\u0647\u0646\u062F\u0633\u064A\u0646 \u0648\u0627\u0644\u0645\u0631\u0627\u062C\u0639\u064A\u0646 \u0648\u0627\u0644\u0645\u062F\u064A\u0631\u064A\u0646 \u0639\u0644\u0649 \u0627\u0644\u0639\u0645\u0644 \u0648\u0641\u0642 \u0633\u064A\u0631 \u0645\u0631\u0627\u062C\u0639\u0629 \u0623\u0643\u062B\u0631 \u0627\u062A\u0633\u0627\u0642\u064B\u0627.",
+];
+
 function buildHtml(recipient: string, subjectSuffix?: string): string {
-  const cta = ctaUrl();
+  const cta = ctaUrl("pro");
+  const entCta = ctaUrl("enterprise_team");
   const safeRecipient = escapeHtml(recipient);
   const titleSuffix = subjectSuffix ? ` ${subjectSuffix}` : "";
   const previewSuffix = subjectSuffix ? ` [${subjectSuffix}]` : "";
@@ -45,6 +82,47 @@ function buildHtml(recipient: string, subjectSuffix?: string): string {
   const BG_IMG_OUTER = `url('${BG_070B15_URL}')`;
   const CARD = `background:#0d1425!important;background-color:#0d1425!important;background-image:${BG_IMG_CARD}!important;background-repeat:repeat!important`;
   const OUTER = `background:#070b15!important;background-color:#070b15!important;background-image:${BG_IMG_OUTER}!important;background-repeat:repeat!important`;
+
+  function buildBenefitRows(items: string[]): string {
+    return items.map((item) => `<tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
+<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">\u25b8</td>
+<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">${item}</td>
+</tr></table>
+</td>
+</tr>`).join("");
+  }
+
+  function buildCTAHtml(buttonText: string, rtlArrow: string, href: string): string {
+    const displayText = `${buttonText} ${rtlArrow}`;
+    return `<!--[if mso]>
+<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${href}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
+<w:anchorlock/>
+<center style="color:#0a0e1a;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px">${displayText}</center>
+</v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-- -->
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
+<tr>
+<td align="center" bgcolor="#0098b8" style="border-radius:12px;background-color:#0098b8">
+<a href="${href}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);background-color:#0098b8;color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all;min-height:44px;box-sizing:border-box" class="cta-btn">${displayText}</a>
+</td>
+</tr>
+</table>
+<!--<![endif]-->`;
+  }
+
+  const benefitRowsEn = buildBenefitRows(BENEFITS_EN);
+  const benefitRowsAr = buildBenefitRows(BENEFITS_AR);
+  const enterpriseRowsEn = buildBenefitRows(ENTERPRISE_BENEFITS_EN);
+  const enterpriseRowsAr = buildBenefitRows(ENTERPRISE_BENEFITS_AR);
+
+  const ctaEn = buildCTAHtml("Activate 50% Eid Offer", "\u2192", cta);
+  const ctaAr = buildCTAHtml("\u0641\u0639\u0651\u0644 \u062E\u0635\u0645 \u0627\u0644\u0639\u064A\u062F 50%", "\u2190", cta);
+  const entCtaEn = buildCTAHtml("Start Enterprise Team Offer", "\u2192", entCta);
+  const entCtaAr = buildCTAHtml("\u0627\u0628\u062F\u0623 \u0639\u0631\u0636 Enterprise Team", "\u2190", entCta);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,7 +156,7 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </style>
 </head>
 <body bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${OUTER};margin:0;padding:0;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%">
-<div style="display:none;font-size:1px;${OUTER};color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">A 5-day Eid offer for engineering offices reviewing SBC, NFPA, fire and life safety requirements.${previewSuffix} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<div style="display:none;font-size:1px;${OUTER};color:#070b15;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">Eid offer for Saudi engineering offices \u2014 ConsultX Pro and Enterprise at 50% off the first month.${previewSuffix} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#070b15" background="${BG_070B15_URL}" style="${OUTER}">
 
@@ -114,27 +192,16 @@ img{border:0;outline:none;text-decoration:none;display:block}
 
 <tr><td dir="ltr" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
 <h1 style="margin:0;font-size:26px;font-weight:900;color:#f8fbff;line-height:1.2;letter-spacing:-0.3px" class="head">Eid Al-Adha Offer for Engineering Offices</h1>
-<p style="margin:8px 0 0;font-size:20px;font-weight:700;color:#00d4ff;line-height:1.4">ConsultX Pro for 122.50 SAR instead of 245 SAR</p>
-<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#d9e7ff;line-height:1.5">50% off your first month — valid only from 26 to 30 May 2026.</p>
-<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Valid 26–30 May only</p>
+<p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#d9e7ff;line-height:1.5">Upgrade your engineering review workflow &mdash; not just one engineer&rsquo;s inbox.</p>
+
+<p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#00d4ff;line-height:1.4">ConsultX Pro: 245 SAR &rarr; 122.50 SAR for the first month</p>
+<p style="margin:6px 0 0;font-size:18px;font-weight:700;color:#00d4ff;line-height:1.4">Enterprise Team: 399 SAR/seat &rarr; 199.50 SAR/seat for the first month</p>
+
+<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.4">Valid 26&ndash;30 May only</p>
 </td></tr>
 
 <tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:20px 44px 0" class="sec">
-<!--[if mso]>
-<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
-<w:anchorlock/>
-<center style="color:#0a0e1a;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px">Activate 50% Eid Offer →</center>
-</v:roundrect>
-<![endif]-->
-<!--[if !mso]><!-- -->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
-<tr>
-<td align="center" bgcolor="#0098b8" style="border-radius:12px;background-color:#0098b8">
-<a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);background-color:#0098b8;color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all;min-height:44px;box-sizing:border-box" class="cta-btn">Activate 50% Eid Offer →</a>
-</td>
-</tr>
-</table>
-<!--<![endif]-->
+${ctaEn}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
 <tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">No long-term commitment. Cancel anytime.</td></tr>
 </table>
@@ -149,51 +216,14 @@ img{border:0;outline:none;text-decoration:none;display:block}
 </table>
 </td></tr>
 
-<!-- ENGLISH VALUE SECTION -->
+<!-- ENGLISH VALUE: PRO -->
 <tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:28px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#d9e7ff">
-Eid Mubarak from ConsultX. For engineering offices and fire/life-safety consultants, this is a limited opportunity to test ConsultX Pro in real project work: code questions, drawing review, compliance notes, and technical reports — at half the first-month price.
+Eid Mubarak from ConsultX. If your office handles SBC questions, NFPA references, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">What do you get with ConsultX Pro?</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">What does ConsultX Pro give one engineer?</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">Advisory Mode for SBC / NFPA questions — ask deep fire and life safety questions and get structured, source-aware answers.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">Analytical Mode for drawings and documents — upload drawings and documents to identify requirements, gaps, and review notes before submission.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">Faster technical decisions — reduce repeated searching through code clauses and move faster in daily engineering review work.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">Better reports and client responses — prepare clearer technical comments, summaries, and professional replies.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">Saudi-focused workflow — built around SBC, fire and life safety review, Civil Defense-oriented workflows, and engineering office needs.</td>
-</tr></table>
-</td>
-</tr>
+${benefitRowsEn}
 </table>
 </td></tr>
 
@@ -201,130 +231,103 @@ Eid Mubarak from ConsultX. For engineering offices and fire/life-safety consulta
 <tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">Built for Saudi engineering compliance workflows</p>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#d9e7ff">
-ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineers review faster and document clearer while keeping final professional judgment with the licensed engineer.
+ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.
 </p>
 </td></tr>
 
-<!-- ENTERPRISE / TEAM SECTION -->
-<tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 4px" class="sec">
-<p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#f8fbff">For engineering offices and teams</p>
-<p style="margin:0;font-size:14px;line-height:1.6;color:#d9e7ff">
-Need seats for your team? The Eid offer also applies to Enterprise/team subscriptions: 199.50 SAR/seat instead of 399 SAR/seat per user for the first month.<br>
-<a href="${cta}" target="_blank" style="color:#00d4ff;text-decoration:underline">Contact us to activate the team offer</a>.
-</p>
+<!-- DIVIDER -->
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
+
+<!-- ENGLISH VALUE: ENTERPRISE -->
+<tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">What does ConsultX Enterprise give your office?</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
+${enterpriseRowsEn}
+</table>
 </td></tr>
 
+<!-- ENTERPRISE NOTE -->
+<tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.5;color:#8fa3bf;font-style:italic">Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.</p>
+</td></tr>
+
+<!-- ENTERPRISE CTA -->
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+${entCtaEn}
+</td></tr>
+
+<!-- RENEWAL NOTE -->
 <tr><td dir="ltr" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 24px" class="sec">
 <p style="margin:0;font-size:13px;line-height:1.5;color:#8fa3bf;font-style:italic">After the discounted first month, the plan renews at the normal monthly price unless canceled.</p>
 </td></tr>
 
-<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
-
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 12px" class="sec">
-<p style="margin:0;font-size:11px;line-height:1.5;color:#8fa3bf">Trusted by engineering offices across Saudi Arabia for SBC 201, SBC 801, NFPA compliance, fire &amp; life safety reviews, and engineering decision support.</p>
-</td></tr>
-
+<!-- DIVIDER 2 -->
 <tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
 <!-- ARABIC SECTION -->
 <tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:28px 44px 0" class="sec">
-<h1 style="margin:0;font-size:26px;font-weight:900;color:#f8fbff;line-height:1.3;letter-spacing:-0.2px" class="head">عرض عيد الأضحى للمكاتب الهندسية</h1>
-<p style="margin:8px 0 0;font-size:20px;font-weight:700;color:#00d4ff;line-height:1.6">ConsultX Pro بـ 122.50 ريال بدلًا من 245 ريال</p>
-<p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#d9e7ff;line-height:1.7">خصم 50% على أول شهر — صالح فقط من 26 إلى 30 مايو 2026.</p>
-<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.6">صالح من 26 إلى 30 مايو فقط</p>
+<h1 style="margin:0;font-size:26px;font-weight:900;color:#f8fbff;line-height:1.3;letter-spacing:-0.2px" class="head">\u0639\u0631\u0636 \u0639\u064A\u062F \u0627\u0644\u0623\u0636\u062D\u0649 \u0644\u0644\u0645\u0643\u0627\u062A\u0628 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629</h1>
+<p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#d9e7ff;line-height:1.7">\u0637\u0648\u0651\u0631 \u0633\u064A\u0631 \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u062F\u0627\u062E\u0644 \u0645\u0643\u062A\u0628\u0643 &mdash; \u0648\u0644\u064A\u0633 \u0645\u062C\u0631\u062F \u062D\u0633\u0627\u0628 \u0641\u0631\u062F\u064A \u0644\u0645\u0647\u0646\u062F\u0633 \u0648\u0627\u062D\u062F.</p>
+
+<p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#00d4ff;line-height:1.6">ConsultX Pro: 245 SAR &rarr; 122.50 SAR \u0644\u0623\u0648\u0644 \u0634\u0647\u0631</p>
+<p style="margin:6px 0 0;font-size:18px;font-weight:700;color:#00d4ff;line-height:1.6">Enterprise Team: 399 SAR/\u0645\u0642\u0639\u062F &rarr; 199.50 SAR/\u0645\u0642\u0639\u062F \u0644\u0623\u0648\u0644 \u0634\u0647\u0631</p>
+<p style="margin:8px 0 0;font-size:12px;font-weight:600;color:#f59e0b;line-height:1.6">\u0635\u0627\u0644\u062D \u0645\u0646 26 \u0625\u0644\u0649 30 \u0645\u0627\u064A\u0648 \u0641\u0642\u0637</p>
 </td></tr>
 
 <tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#d9e7ff">
-كل عام وأنتم بخير من ConsultX. للمكاتب الهندسية واستشاريي السلامة والوقاية من الحريق، هذا عرض محدود لتجربة ConsultX Pro في العمل الهندسي اليومي: أسئلة الكود، مراجعة المخططات، ملاحظات الامتثال، والتقارير الفنية — بنصف سعر أول شهر.
+\u0643\u0644 \u0639\u0627\u0645 \u0648\u0623\u0646\u062A\u0645 \u0628\u062E\u064A\u0631 \u0645\u0646 ConsultX. \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0643\u062A\u0628\u0643 \u064A\u062A\u0639\u0627\u0645\u0644 \u064A\u0648\u0645\u064A\u064B\u0627 \u0645\u0639 \u0623\u0633\u0626\u0644\u0629 SBC\u060C \u0645\u0631\u0627\u062C\u0639 NFPA\u060C \u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064A\u0629 \u0645\u0646 \u0627\u0644\u062D\u0631\u064A\u0642\u060C \u0641\u062D\u0635 \u0627\u0644\u0645\u062E\u0637\u0637\u0627\u062A\u060C \u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0627\u0644\u0639\u0645\u0644\u0627\u0621\u060C \u0648\u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u062F\u0627\u062E\u0644\u064A\u0629\u060C \u0641\u0625\u0646 ConsultX \u064A\u0645\u0646\u062D\u0643 \u0641\u0631\u064A\u0642\u0643 \u0637\u0631\u064A\u0642\u0629 \u0623\u0643\u062B\u0631 \u062A\u0646\u0638\u064A\u0645\u064B\u0627 \u0644\u0644\u0645\u0631\u0627\u062C\u0639\u0629\u060C \u0627\u0644\u062A\u0648\u062B\u064A\u0642\u060C \u0648\u062A\u0633\u0631\u064A\u0639 \u0627\u0644\u0639\u0645\u0644.
 </p>
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">ماذا تحصل عليه في ConsultX Pro؟</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">\u0645\u0627\u0630\u0627 \u064A\u062D\u0635\u0644 \u0639\u0644\u064A\u0647 \u0627\u0644\u0645\u0647\u0646\u062F\u0633 \u0641\u064A ConsultX Pro\u061F</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">وضع Advisory لأسئلة SBC / NFPA — اطرح أسئلة عميقة في السلامة والحماية من الحريق واحصل على إجابات منظمة ومدعومة بالمراجع.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">وضع Analytical للمخططات والمستندات — ارفع المخططات والمستندات لاستخراج المتطلبات، الفجوات، وملاحظات المراجعة قبل الرفع أو التسليم.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};width:22px;font-size:15px;color:#00d4ff;vertical-align:top;padding-right:8px">▸</td>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">قرارات فنية أسرع — قلّل وقت البحث المتكرر داخل البنود والكود، وتحرك أسرع في أعمال المراجعة اليومية.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">تقارير وردود أوضح للعملاء — جهّز ملاحظات فنية، ملخصات، وردود هندسية أكثر تنظيمًا واحترافية.</td>
-</tr></table>
-</td>
-</tr>
-<tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:6px 0;font-size:15px;line-height:1.55;color:#d9e7ff;vertical-align:top">
-<table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr>
-<td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};font-size:15px;line-height:1.55;color:#d9e7ff">سير عمل موجه للسوق السعودي — مصمم حول SBC، مراجعات السلامة والحماية من الحريق، ومتطلبات المكاتب الهندسية.</td>
-</tr></table>
-</td>
-</tr>
+${benefitRowsAr}
 </table>
 </td></tr>
 
 <!-- ARABIC TRUST SECTION -->
 <tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
-<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">مصمم لسير عمل المكاتب الهندسية في السعودية</p>
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">\u0645\u0635\u0645\u0645 \u062D\u0648\u0644 \u0623\u0639\u0645\u0627\u0644 \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629 \u0641\u064A \u0627\u0644\u0633\u0639\u0648\u062F\u064A\u0629</p>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#d9e7ff">
-يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد المهندس على المراجعة بشكل أسرع والتوثيق بشكل أوضح، مع بقاء القرار المهني النهائي للمهندس المختص.
+\u064A\u062F\u0639\u0645 ConsultX \u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0647\u0646\u062F\u0633\u064A \u0628\u0627\u0644\u0627\u0633\u062A\u0646\u0627\u062F \u0625\u0644\u0649 \u0645\u0631\u0627\u062C\u0639 \u0648\u0645\u062A\u0637\u0644\u0628\u0627\u062A \u0643\u0648\u062F \u0627\u0644\u0628\u0646\u0627\u0621 \u0627\u0644\u0633\u0639\u0648\u062F\u064A\u060C \u0648\u0645\u0639\u0627\u064A\u064A\u0631 NFPA\u060C \u0648\u0633\u064A\u0631 \u0639\u0645\u0644 \u0645\u0631\u0627\u062C\u0639\u0627\u062A \u0627\u0644\u0633\u0644\u0627\u0645\u0629 \u0648\u0627\u0644\u0648\u0642\u0627\u064A\u0629 \u0645\u0646 \u0627\u0644\u062D\u0631\u064A\u0642. \u064A\u0633\u0627\u0639\u062F \u0627\u0644\u0641\u0631\u0642 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629 \u0639\u0644\u0649 \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0628\u0634\u0643\u0644 \u0623\u0633\u0631\u0639\u060C \u0648\u0627\u0644\u062A\u0648\u062B\u064A\u0642 \u0628\u0634\u0643\u0644 \u0623\u0648\u0636\u062D\u060C \u0648\u062A\u0642\u0644\u064A\u0644 \u0648\u0642\u062A \u0627\u0644\u0628\u062D\u062B \u0627\u0644\u0645\u062A\u0643\u0631\u0631\u060C \u0645\u0639 \u0628\u0642\u0627\u0621 \u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0645\u0647\u0646\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A \u0644\u0644\u0645\u0647\u0646\u062F\u0633 \u0627\u0644\u0645\u062E\u062A\u0635.
 </p>
 </td></tr>
 
-<!-- ARABIC ENTERPRISE / TEAM SECTION -->
-<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 4px" class="sec">
-<p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#f8fbff">للمكاتب الهندسية والشركات</p>
-<p style="margin:0;font-size:14px;line-height:1.8;color:#d9e7ff">
-تحتاج مقاعد لفريقك؟ عرض العيد يشمل الاشتراكات المؤسسية وفرق العمل: 199.50 ريال/مستخدم بدلًا من 399 ريال/مستخدم لكل مستخدم في أول شهر.<br>
-<a href="${cta}" target="_blank" style="color:#00d4ff;text-decoration:underline">تواصل معنا لتفعيل عرض الفريق</a>.
-</p>
-</td></tr>
+<!-- ARABIC DIVIDER -->
+<tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:0 44px" class="sec"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}"><tr><td bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};border-top:1px solid #1a2744;height:1px;line-height:1px;font-size:1px">&nbsp;</td></tr></table></td></tr>
 
-<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 20px" class="sec">
-<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">بعد أول شهر مخفض، يتم التجديد بالسعر الشهري الطبيعي ما لم يتم الإلغاء.</p>
-</td></tr>
-
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:4px 44px 28px" class="sec">
-<!--[if mso]>
-<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${cta}" style="height:52px;v-text-anchor:middle;width:280px" arcsize="20%" strokecolor="#0098b8" fillcolor="#00d4ff">
-<w:anchorlock/>
-<center style="color:#0a0e1a;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px">← فعّل خصم العيد 50%</center>
-</v:roundrect>
-<![endif]-->
-<!--[if !mso]><!-- -->
-<table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
-<tr>
-<td align="center" bgcolor="#0098b8" style="border-radius:12px;background-color:#0098b8">
-<a href="${cta}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#00d4ff,#0098b8);background-color:#0098b8;color:#0a0e1a;padding:14px 44px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.5px;mso-hide:all;min-height:44px;box-sizing:border-box" class="cta-btn">← فعّل خصم العيد 50%</a>
-</td>
-</tr>
+<!-- ARABIC ENTERPRISE SECTION -->
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#f8fbff">\u0645\u0627\u0630\u0627 \u064A\u0645\u0646\u062D ConsultX Enterprise \u0644\u0645\u0643\u062A\u0628\u0643\u061F</p>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
+${enterpriseRowsAr}
 </table>
-<!--<![endif]-->
+</td></tr>
+
+<!-- ARABIC ENTERPRISE NOTE -->
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 0" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">\u062E\u0635\u0627\u0626\u0635 Enterprise \u0645\u0635\u0645\u0645\u0629 \u0644\u0644\u0645\u0643\u0627\u062A\u0628 \u0627\u0644\u0647\u0646\u062F\u0633\u064A\u0629 \u0627\u0644\u062A\u064A \u062A\u062D\u062A\u0627\u062C \u0648\u0635\u0648\u0644 \u0641\u0631\u064A\u0642\u060C \u062A\u062A\u0628\u0639 \u062D\u0627\u0644\u0627\u062A\u060C \u0648\u0633\u064A\u0631 \u0645\u0631\u0627\u062C\u0639\u0629 \u062F\u0627\u062E\u0644\u064A. \u064A\u062A\u0645 \u062A\u0637\u0648\u064A\u0631 \u0628\u0639\u0636 \u062E\u0635\u0627\u0626\u0635 \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0645\u062A\u0642\u062F\u0645\u0629 \u0648\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u062A\u062F\u0631\u064A\u062C\u064A\u064B\u0627.</p>
+</td></tr>
+
+<!-- ARABIC ENTERPRISE CTA -->
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:18px 44px 0" class="sec">
+${entCtaAr}
+</td></tr>
+
+<!-- ARABIC RENEWAL NOTE -->
+<tr><td dir="rtl" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:8px 44px 20px" class="sec">
+<p style="margin:0;font-size:13px;line-height:1.6;color:#8fa3bf;font-style:italic">\u0628\u0639\u062F \u0623\u0648\u0644 \u0634\u0647\u0631 \u0645\u062E\u0641\u0636\u060C \u064A\u062A\u0645 \u0627\u0644\u062A\u062C\u062F\u064A\u062F \u0628\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0634\u0647\u0631\u064A \u0627\u0644\u0637\u0628\u064A\u0639\u064A \u0645\u0627 \u0644\u0645 \u064A\u062A\u0645 \u0627\u0644\u0625\u0644\u063A\u0627\u0621.</p>
+</td></tr>
+
+<!-- ARABIC CTA -->
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:4px 44px 28px" class="sec">
+${ctaAr}
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
-<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.6">بدون التزام طويل. يمكنك الإلغاء في أي وقت.</td></tr>
+<tr><td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:12px 0 0;font-size:12px;color:#8fa3bf;line-height:1.6">\u0628\u062F\u0648\u0646 \u0627\u0644\u062A\u0632\u0627\u0645 \u0637\u0648\u064A\u0644. \u064A\u0645\u0643\u0646\u0643 \u0627\u0644\u0625\u0644\u063A\u0627\u0621 \u0641\u064A \u0623\u064A \u0648\u0642\u062A.</td></tr>
 </table>
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD}">
 <tr>
 <td align="center" bgcolor="#0d1425" background="${BG_0D1425_URL}" style="${CARD};padding:14px 0 0;font-size:12px;color:#8fa3bf;line-height:1.4">
-<a href="${cta}" target="_blank" style="color:#8fa3bf;text-decoration:underline">فتح العرض في المتصفح</a>
+<a href="${cta}" target="_blank" style="color:#8fa3bf;text-decoration:underline">\u0641\u062A\u062D \u0627\u0644\u0639\u0631\u0636 \u0641\u064A \u0627\u0644\u0645\u062A\u0635\u0641\u062D</a>
 </td>
 </tr>
 </table>
@@ -352,30 +355,39 @@ If you do not wish to receive future communications, <a href="mailto:support@con
 }
 
 function buildText(recipient: string, subjectSuffix?: string): string {
-  const cta = ctaUrl();
+  const cta = ctaUrl("pro");
+  const entCta = ctaUrl("enterprise_team");
   const suf = subjectSuffix ? ` ${subjectSuffix}` : "";
+
+  const benefitLinesEn = BENEFITS_EN.map((b) => `  ${b}`).join("\n");
+  const benefitLinesAr = BENEFITS_AR.map((b) => `  ${b}`).join("\n");
+  const enterpriseLinesEn = ENTERPRISE_BENEFITS_EN.map((b) => `  ${b}`).join("\n");
+  const enterpriseLinesAr = ENTERPRISE_BENEFITS_AR.map((b) => `  ${b}`).join("\n");
+
   return [
-    `Eid Al-Adha Offer — ConsultX Pro for 122.50 SAR Instead of 245 SAR${suf}`,
+    `Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off${suf}`,
     `${"=".repeat(60)}`,
     "",
     "50% off your first month — valid only from 26 to 30 May 2026.",
     `${"=".repeat(60)}`,
     "",
-    "Eid Mubarak from ConsultX. For engineering offices and fire/life-safety consultants, this is a limited opportunity to test ConsultX Pro in real project work: code questions, drawing review, compliance notes, and technical reports — at half the first-month price.",
+    "Eid Mubarak from ConsultX. If your office handles SBC questions, NFPA references, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.",
     "",
-    "What do you get with ConsultX Pro?",
-    "  Advisory Mode for SBC / NFPA questions — ask deep fire and life safety questions and get structured, source-aware answers.",
-    "  Analytical Mode for drawings and documents — upload drawings and documents to identify requirements, gaps, and review notes before submission.",
-    "  Faster technical decisions — reduce repeated searching through code clauses and move faster in daily engineering review work.",
-    "  Better reports and client responses — prepare clearer technical comments, summaries, and professional replies.",
-    "  Saudi-focused workflow — built around SBC, fire and life safety review, Civil Defense-oriented workflows, and engineering office needs.",
+    "What does ConsultX Pro give one engineer?",
+    benefitLinesEn,
     "",
     "Built for Saudi engineering compliance workflows:",
-    "ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineers review faster and document clearer while keeping final professional judgment with the licensed engineer.",
+    "ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.",
     "",
-    "For engineering offices and teams:",
-    "Need seats for your team? The Eid offer also applies to Enterprise/team subscriptions: 199.50 SAR/seat instead of 399 SAR/seat per user for the first month.",
-    `Contact us to activate the team offer: ${cta}`,
+    "---",
+    "",
+    "What does ConsultX Enterprise give your office?",
+    enterpriseLinesEn,
+    "",
+    "Enterprise features are designed for engineering offices that need team access, case tracking, and internal review workflow. Some advanced reporting and client portal capabilities are being expanded progressively.",
+    "",
+    "Start Enterprise Team Offer:",
+    entCta,
     "",
     "After the discounted first month, the plan renews at the normal monthly price unless canceled.",
     "",
@@ -384,27 +396,29 @@ function buildText(recipient: string, subjectSuffix?: string): string {
     "",
     "------------------------------------------------------------",
     "",
-    `عرض عيد الأضحى — ConsultX Pro بـ 122.50 ريال بدلًا من 245 ريال${suf}`,
-    `${"=".repeat(66)}`,
+    "عرض عيد الأضحى للمكاتب الهندسية",
+    `${"=".repeat(34)}`,
     "",
     "خصم 50% على أول شهر — صالح فقط من 26 إلى 30 مايو 2026.",
     `${"=".repeat(66)}`,
     "",
-    "كل عام وأنتم بخير من ConsultX. للمكاتب الهندسية واستشاريي السلامة والوقاية من الحريق، هذا عرض محدود لتجربة ConsultX Pro في العمل الهندسي اليومي: أسئلة الكود، مراجعة المخططات، ملاحظات الامتثال، والتقارير الفنية — بنصف سعر أول شهر.",
+    "كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، التوثيق، وتسريع العمل.",
     "",
-    "ماذا تحصل عليه في ConsultX Pro؟",
-    "  وضع Advisory لأسئلة SBC / NFPA — اطرح أسئلة عميقة في السلامة والحماية من الحريق واحصل على إجابات منظمة ومدعومة بالمراجع.",
-    "  وضع Analytical للمخططات والمستندات — ارفع المخططات والمستندات لاستخراج المتطلبات، الفجوات، وملاحظات المراجعة قبل الرفع أو التسليم.",
-    "  قرارات فنية أسرع — قلّل وقت البحث المتكرر داخل البنود والكود، وتحرك أسرع في أعمال المراجعة اليومية.",
-    "  تقارير وردود أوضح للعملاء — جهّز ملاحظات فنية، ملخصات، وردود هندسية أكثر تنظيمًا واحترافية.",
-    "  سير عمل موجه للسوق السعودي — مصمم حول SBC، مراجعات السلامة والحماية من الحريق، ومتطلبات المكاتب الهندسية.",
+    "ماذا يحصل عليه المهندس في ConsultX Pro؟",
+    benefitLinesAr,
     "",
-    "مصمم لسير عمل المكاتب الهندسية في السعودية:",
-    "يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد المهندس على المراجعة بشكل أسرع والتوثيق بشكل أوضح، مع بقاء القرار المهني النهائي للمهندس المختص.",
+    "مصمم حول أعمال المراجعة الهندسية في السعودية:",
+    "يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد الفرق الهندسية على المراجعة بشكل أسرع، والتوثيق بشكل أوضح، وتقليل وقت البحث المتكرر، مع بقاء القرار المهني النهائي للمهندس المختص.",
     "",
-    "للمكاتب الهندسية والشركات:",
-    "تحتاج مقاعد لفريقك؟ عرض العيد يشمل الاشتراكات المؤسسية وفرق العمل: 199.50 ريال/مستخدم بدلًا من 399 ريال/مستخدم لكل مستخدم في أول شهر.",
-    `تواصل معنا لتفعيل عرض الفريق: ${cta}`,
+    "---",
+    "",
+    "ماذا يمنح ConsultX Enterprise لمكتبك؟",
+    enterpriseLinesAr,
+    "",
+    "خصائص Enterprise مصممة للمكاتب الهندسية التي تحتاج وصول فريق، تتبع حالات، وسير مراجعة داخلي. يتم تطوير بعض خصائص التقارير المتقدمة وبوابة العملاء تدريجيًا.",
+    "",
+    "ابدأ عرض Enterprise Team:",
+    entCta,
     "",
     "بعد أول شهر مخفض، يتم التجديد بالسعر الشهري الطبيعي ما لم يتم الإلغاء.",
     "",
