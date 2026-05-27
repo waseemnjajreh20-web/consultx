@@ -373,6 +373,16 @@ export default function CampaignEid50() {
                   {isAr ? "استيراد أول 50 عميلاً محتملاً" : "Import First 50 Leads"}
                 </CardTitle>
               </CardHeader>
+              <div className="px-6 pb-3">
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                  <Send className="w-4 h-4 text-purple-400 shrink-0" />
+                  <p className="text-xs text-purple-400">
+                    {isAr
+                      ? "نسخة مراقبة المشرف مفعّلة: سيتم إرسال نسخة من البريد الإلكتروني نفسه إلى بريدي المشرفين لمراقبة التسليم."
+                      : "Admin monitoring copy enabled: 2 admin inboxes will receive the same production email."}
+                  </p>
+                </div>
+              </div>
               <CardContent className="space-y-3 text-sm">
                 <p className="text-xs text-muted-foreground">
                   {isAr
@@ -491,13 +501,20 @@ export default function CampaignEid50() {
                     <p className="text-xs text-green-400 font-semibold">
                       {isAr ? "نتيجة التشغيل التجريبي" : "Dry Run Result"}
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
                       <div><span className="text-muted-foreground">{isAr ? "الإجمالي:" : "Total:"}</span> <span className="text-foreground font-mono">{dryRunResult.total}</span></div>
                       <div><span className="text-green-400">{isAr ? "صالح:" : "Valid:"}</span> <span className="text-foreground font-mono">{dryRunResult.valid}</span></div>
                       <div><span className="text-red-400">{isAr ? "غير صالح:" : "Invalid:"}</span> <span className="text-foreground font-mono">{dryRunResult.invalid}</span></div>
                       <div><span className="text-amber-400">{isAr ? "مكرر:" : "Duplicates:"}</span> <span className="text-foreground font-mono">{dryRunResult.duplicates}</span></div>
                       <div><span className="text-cyan-400">{isAr ? "جاهز:" : "Ready:"}</span> <span className="text-foreground font-mono">{dryRunResult.ready}</span></div>
+                      <div><span className="text-purple-400">{isAr ? "مراقبة المشرف:" : "Admin Monitor:"}</span> <span className="text-foreground font-mono">{dryRunResult.admin_monitoring}</span></div>
                     </div>
+                    <p className="text-xs text-purple-400/80 mt-1 flex items-center gap-1">
+                      <Send className="w-3 h-3" />
+                      {isAr
+                        ? `سيتم إرسال ${dryRunResult.total_messages} رسالة إجمالاً (${dryRunResult.ready} خارجية + ${dryRunResult.admin_monitoring} نسخة مراقبة للمشرف)`
+                        : `Total ${dryRunResult.total_messages} messages will be sent (${dryRunResult.ready} external + ${dryRunResult.admin_monitoring} admin monitoring copies)`}
+                    </p>
                     {dryRunResult.ready > 0 && (
                       <div className="flex items-center gap-2 pt-2">
                         <Button
@@ -523,9 +540,23 @@ export default function CampaignEid50() {
                     <p className="text-green-400 font-semibold text-xs">
                       {isAr ? "تم الإرسال" : "Send complete"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isAr ? "تم الإرسال:" : "Sent:"} {leadSendResult.sent} / {isAr ? "فشل:" : "Failed:"} {leadSendResult.failed}
-                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 text-xs">
+                      <div><span className="text-muted-foreground">{isAr ? "تم الإرسال:" : "Sent:"}</span> <span className="text-foreground font-mono">{leadSendResult.sent}</span></div>
+                      <div><span className="text-muted-foreground">{isAr ? "خارجي:" : "External:"}</span> <span className="text-foreground font-mono">{leadSendResult.external_sent ?? leadSendResult.sent}</span></div>
+                      <div><span className="text-purple-400">{isAr ? "مراقبة:" : "Admin Monitor:"}</span> <span className="text-foreground font-mono">{leadSendResult.admin_monitoring_sent ?? 0}</span></div>
+                    </div>
+                    {leadSendResult.failed > 0 && (
+                      <p className="text-xs text-red-400">
+                        {isAr ? "فشل:" : "Failed:"} {leadSendResult.failed}
+                      </p>
+                    )}
+                    {leadSendResult.duplicate_monitor_skipped > 0 && (
+                      <p className="text-xs text-amber-400/80">
+                        {isAr
+                          ? `تخطي ${leadSendResult.duplicate_monitor_skipped} نسخة مراقبة مكررة (البريد موجود بالفعل في القائمة)`
+                          : `Skipped ${leadSendResult.duplicate_monitor_skipped} duplicate monitoring copy (admin email already in lead list)`}
+                      </p>
+                    )}
                     {leadSendResult.failures?.length > 0 && (
                       <div className="text-xs text-red-400/70 max-h-[80px] overflow-y-auto mt-1">
                         {leadSendResult.failures.slice(0, 5).map((f: any, i: number) => (

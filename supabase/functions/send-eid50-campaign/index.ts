@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+const ADMIN_MONITORING_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 const CAMPAIGN_CODE = "EID50";
 const SUBJECT = "Eid Offer: Upgrade Your Engineering Office with ConsultX at 50% Off";
 const TEST_SUBJECT_SUFFIX = "[EID50 FINAL COPY TEST]";
@@ -673,12 +674,29 @@ serve(async (req) => {
 
     const { leads, result } = validateLeads(rawLeads);
 
+    // ── Admin monitoring recipients ───────────────────────────────────────────
+    const leadEmails = new Set(leads.map((l) => l.email.toLowerCase().trim()));
+    const adminMonitor: string[] = [];
+    let duplicateMonitorSkipped = 0;
+    for (const adminEmail of ADMIN_MONITORING_EMAILS) {
+      const normalized = adminEmail.toLowerCase().trim();
+      if (leadEmails.has(normalized)) {
+        duplicateMonitorSkipped += 1;
+      } else {
+        adminMonitor.push(normalized);
+      }
+    }
+    const adminMonitorCount = adminMonitor.length;
+    const totalMessages = leads.length + adminMonitorCount;
+
     if (mode === "dryRun") {
       return new Response(
         JSON.stringify({
           mode: "dryRun",
           campaign_code: CAMPAIGN_CODE,
           ...result,
+          admin_monitoring: adminMonitorCount,
+          total_messages: totalMessages,
           errors_sample: result.errors.slice(0, 10),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -693,6 +711,8 @@ serve(async (req) => {
           campaign_code: CAMPAIGN_CODE,
           error: "No valid leads to send",
           ...result,
+          admin_monitoring: adminMonitorCount,
+          total_messages: totalMessages,
           errors_sample: result.errors.slice(0, 10),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -713,12 +733,19 @@ serve(async (req) => {
     const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
     const replyToEmail = Deno.env.get("REPLY_TO") ?? "support@consultx.app";
 
+    // Collect all recipients: external leads + admin monitoring copies
+    const allRecipients: { email: string; isAdmin: boolean }[] = [
+      ...leads.map((l) => ({ email: l.email, isAdmin: false })),
+      ...adminMonitor.map((email) => ({ email, isAdmin: true })),
+    ];
+
     let sent = 0;
     let failed = 0;
+    let adminSent = 0;
     const failures: Array<{ email: string; error: string }> = [];
     const sentList: Array<{ email: string; provider_id: string | null }> = [];
 
-    for (const lead of leads) {
+    for (const recipient of allRecipients) {
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -729,28 +756,29 @@ serve(async (req) => {
           body: JSON.stringify({
             from: fromEmail,
             reply_to: replyToEmail,
-            to: [lead.email],
+            to: [recipient.email],
             subject: SUBJECT,
-            html: buildHtml(lead.email),
-            text: buildText(lead.email),
+            html: buildHtml(recipient.email),
+            text: buildText(recipient.email),
             tags: [
               { name: "campaign", value: "eid50" },
-              { name: "mode", value: "send" },
+              { name: "mode", value: recipient.isAdmin ? "admin_monitoring" : "send" },
             ],
           }),
         });
         if (response.ok) {
           sent += 1;
+          if (recipient.isAdmin) adminSent += 1;
           const json = await response.json().catch(() => ({}));
-          sentList.push({ email: lead.email, provider_id: typeof json?.id === "string" ? json.id : null });
+          sentList.push({ email: recipient.email, provider_id: typeof json?.id === "string" ? json.id : null });
         } else {
           failed += 1;
           const bodyText = await response.text();
-          failures.push({ email: lead.email, error: bodyText.slice(0, 240) });
+          failures.push({ email: recipient.email, error: bodyText.slice(0, 240) });
         }
       } catch (err) {
         failed += 1;
-        failures.push({ email: lead.email, error: err instanceof Error ? err.message : String(err) });
+        failures.push({ email: recipient.email, error: err instanceof Error ? err.message : String(err) });
       }
       await new Promise((resolve) => setTimeout(resolve, 120));
     }
@@ -762,7 +790,10 @@ serve(async (req) => {
         subject: SUBJECT,
         sent,
         failed,
-        attempted: leads.length,
+        attempted: allRecipients.length,
+        external_sent: sent - adminSent,
+        admin_monitoring_sent: adminSent,
+        duplicate_monitor_skipped: duplicateMonitorSkipped,
         sent_to: sentList,
         failures: failures.slice(0, 20),
       }),
