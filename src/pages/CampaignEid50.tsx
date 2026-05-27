@@ -16,6 +16,7 @@ import {
   getEid50SubscribeUrl,
 } from "@/lib/campaigns/eid50";
 import { EID50_FIRST_50_LEADS_CSV } from "@/lib/campaigns/eid50First50Leads";
+import { EID50_SECOND_50_LEADS_CSV } from "@/lib/campaigns/eid50Second50Leads";
 import { buildEid50HtmlEmail, buildEid50TextEmail } from "@/lib/emailTemplates/eid50";
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
@@ -437,6 +438,23 @@ export default function CampaignEid50() {
                   >
                     <FileText className="w-3.5 h-3.5 me-1.5" />
                     {isAr ? "تحميل أول 50 عميلاً" : "Load First 50 Leads"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10"
+                    onClick={() => {
+                      setCsvText(EID50_SECOND_50_LEADS_CSV.join("\n"));
+                      setParsedLeads(null);
+                      setValidationSummary(null);
+                      setDryRunResult(null);
+                      setDryRunDone(false);
+                      setLeadSendResult(null);
+                      setLeadSendError(null);
+                    }}
+                  >
+                    <FileText className="w-3.5 h-3.5 me-1.5" />
+                    {isAr ? "تحميل الدفعة الثانية (50)" : "Load Second 50 Leads"}
                   </Button>
                 </div>
 
