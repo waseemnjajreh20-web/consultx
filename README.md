@@ -16,12 +16,12 @@
 
 | Feature | Description |
 |---|---|
-| 🔍 **Standard Mode** | Quick, concise answers with code citations |
-| 📊 **Analysis Mode** | Step-by-step technical breakdown with detailed reasoning |
-| 🌐 **Bilingual Support** | Full Arabic (RTL) and English (LTR) interface and responses |
-| 📖 **Verbatim Citations** | Direct quotes from SBC sections, tables, and clauses |
-| 💬 **Conversation History** | Save, load, and delete past consulting sessions |
-| 🔐 **User Authentication** | Email/password signup and login |
+|  **Standard Mode** | Quick, concise answers with code citations |
+|  **Analysis Mode** | Step-by-step technical breakdown with detailed reasoning |
+|  **Bilingual Support** | Full Arabic (RTL) and English (LTR) interface and responses |
+|  **Verbatim Citations** | Direct quotes from SBC sections, tables, and clauses |
+|  **Conversation History** | Save, load, and delete past consulting sessions |
+|  **User Authentication** | Email/password signup and login |
 
 ---
 
@@ -71,26 +71,26 @@
 
 ```mermaid
 graph TD
-    A[ 👤 User Query / استفسار المستخدم ] --> B[🧠 Smart Planning Agent]
+    A[  User Query / استفسار المستخدم ] --> B[ Smart Planning Agent]
     B --> B1[Classify Building Type & Occupancy]
     B --> B2[Determine Hazard Level]
     B --> B3[Build Research Plan]
 
-    B1 & B2 & B3 --> C[⚡ Parallel Processing]
+    B1 & B2 & B3 --> C[Parallel Processing]
 
-    C --> C1[🔑 Keyword Extraction]
-    C --> C2[🌐 Bilingual Glossary Translation]
-    C --> C3[📊 Chunk Scoring & Ranking]
+    C --> C1[ Keyword Extraction]
+    C --> C2[ Bilingual Glossary Translation]
+    C --> C3[ Chunk Scoring & Ranking]
 
-    C1 & C2 & C3 --> D[📋 Automated Code Review]
+    C1 & C2 & C3 --> D[ Automated Code Review]
     D --> D1[Match against SBC 801-2024 legal text]
     D --> D2[Verify section numbers & tables]
 
-    D1 & D2 --> E[✅ Single Source of Truth Validation]
+    D1 & D2 --> E[ Single Source of Truth Validation]
     E --> E1[Verbatim citations only]
     E --> E2[Reject ungrounded claims]
 
-    E1 & E2 --> F[📄 Documented Response]
+    E1 & E2 --> F[ Documented Response]
     F --> F1[Section & page references]
     F --> F2[Original code quotes]
     F --> F3[Engineering recommendations]
@@ -116,10 +116,10 @@ graph TD
 
 ### Design Principles
 
-- **🎯 Single Source of Truth** — Every answer is grounded in actual SBC text stored in the system; no external or fabricated references
-- **🚫 Zero Hallucination** — Citations must be verbatim from stored documents; paraphrased or invented references are rejected
-- **⚡ Parallel Processing** — Keyword extraction, glossary translation, and chunk scoring run concurrently for efficient multi-file retrieval
-- **🌐 Bilingual Bridge** — Arabic user queries are mapped to English code content through a curated technical glossary, ensuring accurate cross-language retrieval
+- ** Single Source of Truth** — Every answer is grounded in actual SBC text stored in the system; no external or fabricated references
+- ** Zero Hallucination** — Citations must be verbatim from stored documents; paraphrased or invented references are rejected
+- ** Parallel Processing** — Keyword extraction, glossary translation, and chunk scoring run concurrently for efficient multi-file retrieval
+- ** Bilingual Bridge** — Arabic user queries are mapped to English code content through a curated technical glossary, ensuring accurate cross-language retrieval
 
 ---
 
