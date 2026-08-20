@@ -249,8 +249,8 @@ export function formatSourceLabel(meta: SourceMeta, lang: "ar" | "en" = "ar"): s
   // of collapsing to the same bare "📖 SBC 201" as other chunk files.
   if (meta.pageStart !== null && meta.pageEnd !== null) {
     return lang === "en"
-      ? `📖 ${code} · pp. ${meta.pageStart}–${meta.pageEnd}`
-      : `📖 ${code} · صفحات ${meta.pageStart}–${meta.pageEnd}`;
+      ? `📖 ${code} — Pages ${meta.pageStart}–${meta.pageEnd}`
+      : `📖 ${code} — صفحات ${meta.pageStart}–${meta.pageEnd}`;
   }
   return `📖 ${code}`;
 }
