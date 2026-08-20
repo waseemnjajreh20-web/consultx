@@ -5,9 +5,16 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 
-const SUPABASE_URL = 'https://hrnltxmwoaphgejckutk.supabase.co';
-const ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhybmx0eG13b2FwaGdlamNrdXRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjI1MDYsImV4cCI6MjA4NTY5ODUwNn0.eeODoyolv0eXg42xJ-rAUzIs_CjcUWNu2sx5LABuIiE';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !ANON_KEY) {
+  console.error(
+    "Missing credentials. Set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
+  );
+  process.exit(1);
+}
+
 const INDEX_URL = `${SUPABASE_URL}/functions/v1/sbc-graph-indexer`;
 const COUNT_RPC_URL = `${SUPABASE_URL}/rest/v1/rpc/get_indexed_chunk_count`;
 const LOG_FILE = path.join(__dirname, 'indexing_status.txt');

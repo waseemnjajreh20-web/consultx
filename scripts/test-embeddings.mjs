@@ -1,4 +1,9 @@
-const API_KEY = process.argv[2] || "AIzaSyAdlXUrZea2d-e_Wp1RW53WjFoVHQ59HHM";
+const API_KEY = process.argv[2] || process.env.GOOGLE_GEMINI_API_KEY;
+
+if (!API_KEY) {
+  console.error("Missing API key. Set GOOGLE_GEMINI_API_KEY or pass it as the first argument.");
+  process.exit(1);
+}
 
 const MODELS = [
   "text-embedding-004",

@@ -1,7 +1,7 @@
 # Environment variables (NEVER commit these)
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
 # Supabase local
 .supabase/
@@ -38,3 +38,13 @@ consultx-main/.git_disabled/
 consultx-main/.git_disabled*
 consultx-main/
 .vercel
+
+# Cleanup archive (generated/brain/report backups - not source code)
+.archive/
+
+# Local tool configs containing API keys
+opencode.json
+
+# TestSprite temp config bug (backslash path)
+testsprite_tests\tmp\config.json
+

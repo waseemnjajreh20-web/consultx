@@ -2,23 +2,40 @@
  * Admin Setup Script — ConsultX
  * Creates/updates admin users with lifetime enterprise subscriptions.
  *
- * Usage: node scripts/setup-admins.cjs
+ * Usage:
+ *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ADMIN_EMAILS=a@b.com,c@d.com ADMIN_PASSWORD=... node scripts/setup-admins.cjs
  */
 
 const { createClient } = require("@supabase/supabase-js");
 
-const SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhybmx0eG13b2FwaGdlamNrdXRrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDEyMjUwNiwiZXhwIjoyMDg1Njk4NTA2fQ.RQWe-ZbIKR6wAnWb7Ag1vzMXBJsSiN4v2NSb4uZ5c3o";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error(
+    "Missing credentials. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables."
+  );
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const ADMINS = [
-  { email: "waseemnjajreh20@gmail.com", password: "WAsEEm12@" },
-  { email: "njajrehwaseem@gmail.com", password: "WAsEEm12@" },
-];
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((e) => e.trim())
+  .filter(Boolean);
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (ADMIN_EMAILS.length === 0 || !ADMIN_PASSWORD) {
+  console.error(
+    "Missing admin config. Set ADMIN_EMAILS (comma-separated) and ADMIN_PASSWORD environment variables."
+  );
+  process.exit(1);
+}
+
+const ADMINS = ADMIN_EMAILS.map((email) => ({ email, password: ADMIN_PASSWORD }));
 
 async function setupAdmin(admin) {
   console.log(`\n=== Setting up: ${admin.email} ===`);
