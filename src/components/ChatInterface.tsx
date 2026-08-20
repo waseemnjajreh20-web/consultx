@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
-  isAllowedAdminEmail,
   getAdminEntitlementOverride,
   ADMIN_OVERRIDE_HEADER,
   ADMIN_OVERRIDE_EVENT,
@@ -23,6 +22,7 @@ import {
 import { getSuggestedQuestionKeys } from "@/lib/suggestions";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { isAdminEmail } from "@/config/auth";
 import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
 import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
@@ -39,6 +39,8 @@ import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/Source
 import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta, type SourceMeta } from "@/utils/sourceMetadata";
 import { expectedDocCode, isFamilyMatch, findSameFamilySource, availableFamilies } from "@/utils/citationRouting";
 import { usePreferences } from "@/hooks/usePreferences";
+import ErrorBoundary from "@/components/ErrorBoundary";
+const ReportArtifactDrawer = React.lazy(() => import("@/components/analytical-reports/ReportArtifactDrawer"));
 
 interface Message {
   id: string;
@@ -107,8 +109,11 @@ const ERROR_CHECK_DELAY_MS = 300_000; // 5 minutes
 // Requirement 4 — Utility Bar: Copy · Export · Download PDF
 // 100% inline styles — no CSS class dependency, no external hooks
 // ─────────────────────────────────────────────────────────────────────────────
-function UtilityBar({ content, mode, messageId, userName }: {
+function UtilityBar({ content, mode, messageId, userName, onProfessionalReport, professionalReportEnabled, language }: {
   content: string; mode: ChatMode; messageId: string; userName: string;
+  onProfessionalReport?: (content: string) => void;
+  professionalReportEnabled?: boolean;
+  language?: string;
 }) {
   const [copied,   setCopied]   = useState(false);
   const [exported, setExported] = useState(false);
@@ -148,20 +153,17 @@ function UtilityBar({ content, mode, messageId, userName }: {
 
   // ── Copy ──────────────────────────────────────────────────────────────────
   const handleCopy = async () => {
-    console.log("[ConsultX Utility] Copy clicked");
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
-      console.log("[ConsultX Utility] Copied to clipboard ✓");
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("[ConsultX Utility] Copy failed:", err);
+    } catch {
+      // fallback silently
     }
   };
 
   // ── Export — Web Share API with clipboard fallback ───────────────────────
   const handleExport = async () => {
-    console.log("[ConsultX Utility] Export clicked");
     try {
       if (navigator.share) {
         await navigator.share({ title: "ConsultX - تقرير هندسي", text: content });
@@ -169,16 +171,14 @@ function UtilityBar({ content, mode, messageId, userName }: {
         await navigator.clipboard.writeText(content);
       }
       setExported(true);
-      console.log("[ConsultX Utility] Export done ✓");
       setTimeout(() => setExported(false), 2000);
-    } catch (err) {
-      console.error("[ConsultX Utility] Export failed:", err);
+    } catch {
+      // fallback silently
     }
   };
 
   // ── PDF — DOM clone, branded A4 print window ─────────────────────────────
   const handlePdf = () => {
-    console.log("[ConsultX Utility] PDF clicked");
 
     // 1. Grab fully-rendered HTML
     const contentEl  = document.getElementById(`cmr-${messageId}`);
@@ -375,10 +375,7 @@ function UtilityBar({ content, mode, messageId, userName }: {
     const url  = URL.createObjectURL(blob);
     const win  = window.open(url, "_blank");
     if (win) {
-      console.log("[ConsultX Utility] Print window opened ✓");
       win.onunload = () => URL.revokeObjectURL(url);
-    } else {
-      console.error("[ConsultX Utility] Popup blocked — allow popups for this site");
     }
   };
 
@@ -459,6 +456,25 @@ function UtilityBar({ content, mode, messageId, userName }: {
         <PdfIcon />
         <span>PDF</span>
       </button>
+
+      {/* Professional Report — analysis mode only, gated behind feature flag */}
+      {professionalReportEnabled && onProfessionalReport && (
+        <button
+          onClick={() => onProfessionalReport(content)}
+          onMouseEnter={e => hover(e, true)}
+          onMouseLeave={e => hover(e, false)}
+          style={{
+            ...BASE,
+            background: "rgba(220,20,60,0.08)",
+            border: "1px solid rgba(220,20,60,0.2)",
+            color: "#DC143C",
+          }}
+          title={language === "en" ? "Generate Professional Report" : "توليد تقرير احترافي"}
+        >
+          <FileText size={13} strokeWidth={2} />
+          <span>{language === "en" ? "Report" : "تقرير"}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -647,7 +663,7 @@ async function streamChat({
     "Content-Type": "application/json",
     Authorization: `Bearer ${session.access_token}`,
   };
-  const chatOverride = isAllowedAdminEmail(session.user?.email) ? getAdminEntitlementOverride() : null;
+  const chatOverride = isAdminEmail(session.user?.email) ? getAdminEntitlementOverride() : null;
   if (chatOverride) chatHeaders[ADMIN_OVERRIDE_HEADER] = chatOverride;
 
   const resp = await fetch(CHAT_URL, {
@@ -884,16 +900,16 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     "مستشار ConsultX";
   const displayName = userName.includes("@") ? userName.split("@")[0] : userName;
   const isMobile = useIsMobile();
-  const isAdmin = user?.email === "njajrehwaseem@gmail.com" || user?.email === "waseemnjajreh20@gmail.com";
+  const isAdmin = !!(user?.email && isAdminEmail(user.email));
   const { subscription, refetch: refetchSub } = useSubscription();
 
   // E7.2: Admin test-mode badge — admin-only, reactive to override changes.
   const [adminOverrideActive, setAdminOverrideActive] = useState<AdminEntitlementOverride | null>(
-    () => (isAllowedAdminEmail(user?.email) ? getAdminEntitlementOverride() : null)
+    () => (isAdminEmail(user?.email) ? getAdminEntitlementOverride() : null)
   );
   useEffect(() => {
     const sync = () => {
-      setAdminOverrideActive(isAllowedAdminEmail(user?.email) ? getAdminEntitlementOverride() : null);
+      setAdminOverrideActive(isAdminEmail(user?.email) ? getAdminEntitlementOverride() : null);
     };
     sync();
     window.addEventListener(ADMIN_OVERRIDE_EVENT, sync);
@@ -903,6 +919,11 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       window.removeEventListener("storage", sync);
     };
   }, [user?.email]);
+  const analyticalReportsEnabled = import.meta.env.VITE_ANALYTICAL_REPORTS_ENABLED === "true" || import.meta.env.VITE_ANALYTICAL_REPORTS_ENABLED === true;
+  const [showReportDrawer, setShowReportDrawer] = useState(false);
+  const [reportMessageContent, setReportMessageContent] = useState<string>("");
+  const [reportMessageId, setReportMessageId] = useState<string>("");
+
   const { trialData, dismissWelcomeBanner } = useLaunchTrial();
   const { profile, isEngineerTrial, isTrialExpired, isFreePlan, trialMsRemaining, markTrialExpiredModalShown } = useProfile();
   const [showExpiryModal, setShowExpiryModal] = useState(false);
@@ -1207,7 +1228,6 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
           waitingTimersRef.current = [];
           const validation = validateResponse(fullContent, currentMode, currentLanguage);
           if (!validation.valid && currentRetryCount < MAX_RETRIES - 1) {
-            console.log(`Response validation failed (attempt ${currentRetryCount + 1}):`, validation.issues);
             setRetryCount(currentRetryCount + 1);
             setChatItems(prev => prev.filter(item => ("type" in item) || item.id !== assistantId));
             handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
@@ -1365,7 +1385,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
           }));
           uploadedUrls.push(...(results.filter(Boolean) as string[]));
         }
-      } catch (err) { console.error("File upload error:", err); }
+      } catch { /* upload error handled silently */ }
     }
 
     if (currentConvId) {
@@ -2020,6 +2040,17 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                           mode={msgMode}
                           messageId={message.id}
                           userName={displayName}
+                          onProfessionalReport={(c) => {
+                            setReportMessageContent(c);
+                            setReportMessageId(message.id);
+                            setShowReportDrawer(true);
+                          }}
+                          professionalReportEnabled={
+                            analyticalReportsEnabled &&
+                            msgMode === "analysis" &&
+                            displayContent.length > 100
+                          }
+                          language={language}
                         />
                       </div>
                     )}
@@ -2176,6 +2207,27 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
           onSelectSource={(meta) => setSourcePanel(prev => ({ ...prev, activeMeta: meta }))}
           onBack={() => setSourcePanel(prev => ({ ...prev, activeMeta: null }))}
         />
+      )}
+
+      {/* Analytical Reports — Phase 1 DOCX generator (gated + lazy loaded) */}
+      {analyticalReportsEnabled && showReportDrawer && (
+        <ErrorBoundary>
+          <Suspense fallback={<div className="flex items-center justify-center p-8" dir={language === "ar" ? "rtl" : "ltr"}>
+            <div className="text-center space-y-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto" />
+              <p className="text-sm text-muted-foreground">{language === "ar" ? "جاري تحميل نموذج التقرير..." : "Loading report form..."}</p>
+            </div>
+          </div>}>
+            <ReportArtifactDrawer
+              open={showReportDrawer}
+              onOpenChange={(open) => setShowReportDrawer(open)}
+              messageId={reportMessageId}
+              messageContent={reportMessageContent}
+              preparedByDefault={displayName}
+              uiLanguage={language as "ar" | "en"}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </div>
   );

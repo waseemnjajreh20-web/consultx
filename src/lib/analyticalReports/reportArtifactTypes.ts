@@ -1,0 +1,197 @@
+﻿/**
+ * analytical_report_artifact_v1
+ *
+ * Canonical frontend data contract for a ConsultX Analytical Mode report
+ * artifact. Version suffix is load-bearing ΓÇö if the shape changes
+ * incompatibly, bump to v2 rather than mutating v1 consumers.
+ *
+ * See docs/analytical-reports/design-v1.md for the full design rationale.
+ */
+
+export type ReportType =
+  | "case_study"
+  | "code_requirements_plan"
+  | "receiving_conformity"
+  | "gap_deficiency"
+  | "design_basis"
+  | "authority_submission";
+
+export type ReportLanguage = "ar" | "en" | "bilingual";
+
+export type ReportStatus = "draft" | "for_review" | "final";
+
+export type BrandingMode =
+  | "consultx_only"
+  | "company_only"
+  | "both"
+  | "none";
+
+/**
+ * Per-source page metadata. Mirrors ChunkPageMeta from
+ * src/utils/sourceMetadata.ts ΓÇö kept loose here so this module has zero
+ * cross-imports with the chat layer.
+ */
+export interface ReportSourceMeta {
+  file: string;
+  pageStart?: number | null;
+  pageEnd?: number | null;
+  precision?: string;
+  sectionRef?: string;
+  sectionConfidence?: string;
+}
+
+/**
+ * Compliance row extracted from the analytical response's Section V
+ * (Engineering Analysis) table when present. Each row is a single
+ * requirement check with an explicit status.
+ */
+export interface ComplianceRow {
+  item: string;            // ╪º┘ä╪╣┘å╪╡╪▒ / item
+  requirement: string;     // ╪º┘ä┘à╪¬╪╖┘ä╪¿ / requirement
+  reference: string;       // ╪º┘ä┘à╪▒╪¼╪╣ / reference (Document + Section + Page)
+  status: "compliant" | "non_compliant" | "conditional" | "unknown";
+  statusLabel: string;     // raw status text from the AI response
+  notes: string;           // ┘à┘ä╪º╪¡╪╕╪º╪¬ / notes
+}
+
+/**
+ * Parsed sections from the analytical response. Each section is the raw
+ * markdown text content (with leading header stripped). If a section is
+ * not present in the AI output, the field is undefined ΓÇö generators must
+ * tolerate missing sections.
+ */
+export interface ParsedAnalyticalSections {
+  intro?: string;
+  classification?: string;          // Section I ΓÇö Project Classification
+  inputsReviewed?: string;          // Section II ΓÇö Inputs Reviewed
+  codePathGoverning?: string;       // Section III ΓÇö Governing Code Path
+  keyRequirements?: string;         // Section IV ΓÇö Key Requirements
+  engineeringAnalysis?: string;     // Section V ΓÇö Engineering Analysis
+  conflictsRisk?: string;           // Section VI ΓÇö Conflicts & Risk Areas
+  missingInfo?: string;             // Section VII ΓÇö Missing Critical Information
+  reviewPosition?: string;          // Section VIII ΓÇö Preliminary Review Position
+  complianceVerdict?: string;       // Section IX ΓÇö Compliance Verdict
+  nextActions?: string;             // Section X ΓÇö Required Clarifications & Next Actions
+  /** Catch-all for content that did not match any recognized section header. */
+  unstructuredNotes?: string;
+}
+
+export interface ReportMetadata {
+  projectName: string;
+  projectNumber?: string;
+  clientName: string;          // client / owner
+  location?: string;
+  preparedBy: string;          // engineer name (prepared by)
+  reviewedBy?: string;
+  revisionNumber: number;      // positive integer, default 1
+  revisionDate: string;        // ISO date (YYYY-MM-DD)
+}
+
+/**
+ * Cover page visual treatment. Phase 1.1 v1 defines three styles:
+ *  - Professional: dark-navy heading bar, balanced metadata table
+ *  - Authority: prominent title, tighter metadata for submission docs
+ *  - Internal: muted accent, plain title for internal-use reports
+ */
+export type CoverPageStyle = "Professional" | "Authority" | "Internal";
+
+export interface ReportBranding {
+  mode: BrandingMode;
+  companyName?: string;
+  /** Base64 data URL (data:image/...;base64,...) for company logo, optional. */
+  companyLogoDataUrl?: string;
+  /** Cover page visual treatment. Defaults to "Professional" when omitted. */
+  coverPageStyle?: CoverPageStyle;
+}
+
+/**
+ * Full report artifact ΓÇö the single object that flows from parser ΓåÆ
+ * generator. Future server-side generators must accept this exact shape.
+ */
+// Forward-declared type for the structured intake form embedded into
+// every Phase 1.1+ artifact. Defined in intakeFormTypes.ts ΓÇö we keep the
+// import path narrow to avoid a circular cycle with classification
+// helpers.
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type { AnalyticalReportIntakeFormV1 } from "./intakeFormTypes";
+
+export interface AnalyticalReportArtifactV1 {
+  /** Schema version tag ΓÇö always this literal value. */
+  schema: "analytical_report_artifact_v1";
+
+  reportType: ReportType;
+  language: ReportLanguage;
+  status: ReportStatus;
+
+  metadata: ReportMetadata;
+  branding: ReportBranding;
+
+  /**
+   * Structured intake form captured before DOCX generation
+   * (analytical_report_intake_form_v1). When the artifact is built from
+   * Phase 1.1+ wizard flow, this is always set. When generated by older
+   * code paths it may be undefined and the DOCX falls back to the basic
+   * metadata-only layout.
+   */
+  intake?: AnalyticalReportIntakeFormV1;
+
+  /** Source analytical assistant message id + raw content. */
+  source: {
+    messageId: string;
+    rawContent: string;
+  };
+
+  /** Parsed structured sections from the AI response. */
+  sections: ParsedAnalyticalSections;
+
+  /** Optional compliance matrix extracted from Section V's markdown table. */
+  complianceMatrix: ComplianceRow[];
+
+  /**
+   * Recommendations / next actions ΓÇö denormalized list extracted from
+   * Section X. Generators may render this as a numbered list separately
+   * from the raw nextActions text.
+   */
+  recommendations: string[];
+
+  /**
+   * Limitations / engineer-approval note. Always present in the final
+   * document. If the AI response includes the canonical closing
+   * disclaimer, it is captured here; otherwise a default disclaimer is
+   * used by the generator.
+   */
+  limitations: string;
+
+  /** SBC source files cited in the original response. */
+  sourceFiles: string[];
+  sourceMeta: ReportSourceMeta[];
+
+  generatedAt: string;        // ISO 8601 datetime (UTC)
+  generatedBy?: string;       // optional ΓÇö current user display name
+}
+
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Per-report-type display config
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+/**
+ * Which parsed sections each report type includes, in render order, and
+ * how the cover/title pages are labeled. The shape is intentionally flat
+ * so adding a new report type is a single registry entry.
+ */
+export interface ReportTypeConfig {
+  type: ReportType;
+  labelAr: string;
+  labelEn: string;
+  titleAr: string;
+  titleEn: string;
+  subtitleAr: string;
+  subtitleEn: string;
+  descriptionAr: string;
+  descriptionEn: string;
+  /** Sections to render in this report type, in order. */
+  sections: (keyof ParsedAnalyticalSections)[];
+  showRevisionTable: boolean;
+  showTOC: boolean;
+  showComplianceMatrix: boolean;
+}

@@ -20,4 +20,21 @@ export default defineConfig(({ mode }) => ({
       ),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/framer-motion")) return "vendor-framer";
+          if (id.includes("node_modules/@supabase/supabase-js")) return "vendor-supabase";
+          if (id.includes("node_modules/pdfjs-dist")) return "vendor-pdfjs";
+          if (id.includes("node_modules/docx") || id.includes("node_modules/jszip")) return "vendor-docx";
+          if (id.includes("node_modules/recharts") || id.includes("d3-")) return "vendor-charts";
+          if (id.includes("node_modules/@radix-ui/")) return "vendor-radix";
+          if (id.includes("node_modules/lucide-react")) return "vendor-icons";
+          if (id.includes("node_modules/react-router")) return "vendor-router";
+          if (id.includes("node_modules/@tanstack/react-query")) return "vendor-query";
+        },
+      },
+    },
+  },
 }));
