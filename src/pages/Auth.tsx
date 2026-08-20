@@ -25,8 +25,10 @@ const PARTICLES = Array.from({ length: 10 }, (_, i) => ({
   opacity: 0.06 + Math.random() * 0.1,
 }));
 
+type AuthMode = "login" | "signup" | "reset" | "recovery";
+
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,43 +39,35 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, session, signIn, signUp } = useAuth();
+  const { user, session, signIn, signUp, isRecoveryMode, resetPassword, updatePassword } = useAuth();
   const { t, dir, language } = useLanguage();
   const isAr = language === "ar";
 
-  const showCorporateBadge = !isLogin && isCorporateEmail(email) && isPromoActive();
-  const showPromoBanner = !isLogin && isPromoActive();
+  const isLogin = mode === "login";
+  const isReset = mode === "reset";
+  const isRecovery = mode === "recovery";
 
-  const activateAutoTrial = async (accessToken: string) => {
-    try {
-      await supabase.functions.invoke("auto-trial", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    } catch (e) {
-      console.error("Auto-trial error:", e);
+  useEffect(() => {
+    if (isRecoveryMode) {
+      setMode("recovery");
     }
-  };
+  }, [isRecoveryMode]);
 
-  const activateCorporateTrial = async (accessToken: string) => {
-    try {
-      await supabase.functions.invoke("corporate-trial", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    } catch (e) {
-      console.error("Corporate-trial error:", e);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "recovery") {
+      setMode("recovery");
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!user || !session) return;
-    // Covers ALL sign-in paths, including Google OAuth redirect where Auth.tsx
-    // is not mounted during the callback and the inline handlers cannot run.
-    // auto-trial is idempotent — returns "already_exists" immediately if a
-    // user_subscriptions row is already present, so this is safe for returning
-    // users of every auth method.
-    activateAutoTrial(session.access_token).catch(() => {});
+    if (isRecovery) return;
     navigate("/");
-  }, [user, session, navigate]);
+  }, [user, session, navigate, isRecovery]);
+
+  const showCorporateBadge = mode === "signup" && isCorporateEmail(email) && isPromoActive();
+  const showPromoBanner = mode === "signup" && isPromoActive();
 
   const triggerShake = () => {
     setShake(true);
@@ -85,13 +79,29 @@ const Auth = () => {
     const emailSchema = z.string().email(t("invalidEmail"));
     const passwordSchema = z.string().min(6, t("passwordMinLength"));
 
-    const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) newErrors.email = emailResult.error.errors[0].message;
+    if (isRecovery) {
+      if (!password) {
+        newErrors.password = t("passwordMinLength");
+      } else if (password.length < 6) {
+        newErrors.password = t("passwordMinLength");
+      }
+      if (password !== confirmPassword) newErrors.confirmPassword = t("passwordMismatch");
+    } else if (isReset) {
+      if (!email) {
+        newErrors.email = t("invalidEmail");
+      } else {
+        const emailResult = emailSchema.safeParse(email);
+        if (!emailResult.success) newErrors.email = emailResult.error.errors[0].message;
+      }
+    } else {
+      const emailResult = emailSchema.safeParse(email);
+      if (!emailResult.success) newErrors.email = emailResult.error.errors[0].message;
 
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) newErrors.password = passwordResult.error.errors[0].message;
+      const passwordResult = passwordSchema.safeParse(password);
+      if (!passwordResult.success) newErrors.password = passwordResult.error.errors[0].message;
 
-    if (!isLogin && password !== confirmPassword) newErrors.confirmPassword = t("passwordMismatch");
+      if (mode === "signup" && password !== confirmPassword) newErrors.confirmPassword = t("passwordMismatch");
+    }
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) triggerShake();
     return Object.keys(newErrors).length === 0;
@@ -103,7 +113,27 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
+      if (isRecovery) {
+        const { error } = await updatePassword(password);
+        if (error) {
+          triggerShake();
+          toast({ title: t("passwordUpdateError"), description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: t("passwordUpdated"), variant: "default" });
+          setMode("login");
+          setPassword("");
+          setConfirmPassword("");
+        }
+      } else if (isReset) {
+        const { error } = await resetPassword(email);
+        if (error) {
+          triggerShake();
+          toast({ title: t("unexpectedError"), description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: t("resetLinkSent"), variant: "default" });
+          setMode("login");
+        }
+      } else if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
           triggerShake();
@@ -113,16 +143,10 @@ const Auth = () => {
             variant: "destructive",
           });
         } else {
-          const { data: { session: newSession } } = await supabase.auth.getSession();
-          if (newSession) await activateAutoTrial(newSession.access_token);
           toast({ title: t("welcomeBack"), description: t("loginSuccess") });
-
-          // Post-auth redirect: pricing page may pass ?redirect=subscribe&plan=<id>.
-          // The /subscribe page accepts ?plan=<id> via useSearchParams.
           const params = new URLSearchParams(window.location.search);
           const redirect = params.get("redirect");
           const plan = params.get("plan");
-
           if (redirect === "subscribe" && plan) {
             navigate(`/subscribe?plan=${encodeURIComponent(plan)}`);
             return;
@@ -141,24 +165,16 @@ const Auth = () => {
         } else {
           const { data: { session: newSession } } = await supabase.auth.getSession();
           if (newSession) {
-            // Session available = auto-confirmed or confirmed user
-            await activateAutoTrial(newSession.access_token);
-            await activateCorporateTrial(newSession.access_token);
             toast({ title: t("accountCreated"), description: t("signupSuccess") });
-
-            // Post-auth redirect: pricing page may pass ?redirect=subscribe&plan=<id>.
-            // The /subscribe page accepts ?plan=<id> via useSearchParams.
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get("redirect");
             const plan = params.get("plan");
-
             if (redirect === "subscribe" && plan) {
               navigate(`/subscribe?plan=${encodeURIComponent(plan)}`);
               return;
             }
             navigate("/");
           } else {
-            // No session = email confirmation required
             toast({
               title: isAr ? "تم إنشاء الحساب بنجاح" : "Account created successfully",
               description: isAr
@@ -281,10 +297,10 @@ const Auth = () => {
                 backgroundClip: "text",
               }}
             >
-              {isLogin ? t("loginTitle") : t("signupTitle")}
+              {isRecovery ? t("resetPassword") : isReset ? t("resetPassword") : isLogin ? t("loginTitle") : t("signupTitle")}
             </h1>
             <p className="text-sm" style={{ color: "rgba(200,220,240,0.5)" }}>
-              {isLogin ? t("loginSubtitle") : t("signupSubtitle")}
+              {isRecovery ? "" : isReset ? t("resetPasswordInstructions") : isLogin ? t("loginSubtitle") : t("signupSubtitle")}
             </p>
           </div>
 
@@ -305,89 +321,92 @@ const Auth = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5" dir={dir}>
-            {/* Email */}
-            <div className="space-y-1.5">
-              <label
-                className="block text-sm font-medium"
-                style={{ color: "rgba(200,220,240,0.85)" }}
-              >
-                {t("email")}
-              </label>
-              <div className="relative">
-                <Mail
-                  size={16}
-                  strokeWidth={1.5}
-                  className="absolute top-1/2 -translate-y-1/2"
-                  style={{
-                    [dir === "rtl" ? "right" : "left"]: "12px",
-                    color: focusedField === "email" ? CYAN : "rgba(200,220,240,0.35)",
-                    transition: "color 0.2s ease",
-                  }}
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="your@email.com"
-                  dir="ltr"
-                  style={inputStyle("email", !!errors.email)}
-                />
-              </div>
-              {errors.email && <p className="text-xs" style={{ color: "hsl(0 72% 65%)" }}>{errors.email}</p>}
-              {/* Corporate email badge */}
-              {showCorporateBadge && (
-                <div
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg animate-fade-in"
-                  style={{
-                    background: "rgba(0,212,255,0.08)",
-                    border: "1px solid rgba(0,212,255,0.2)",
-                    color: CYAN,
-                    display: "inline-flex",
-                  }}
+            {/* Email - show for login, signup, reset */}
+            {!isRecovery && (
+              <div className="space-y-1.5">
+                <label
+                  className="block text-sm font-medium"
+                  style={{ color: "rgba(200,220,240,0.85)" }}
                 >
-                  <Sparkles size={11} strokeWidth={1.5} />
-                  {isAr ? "بريد مؤسسي — ستحصل على تجربة باقة مهندس مجاناً" : "Corporate email — You'll get a free Engineer plan trial"}
+                  {t("email")}
+                </label>
+                <div className="relative">
+                  <Mail
+                    size={16}
+                    strokeWidth={1.5}
+                    className="absolute top-1/2 -translate-y-1/2"
+                    style={{
+                      [dir === "rtl" ? "right" : "left"]: "12px",
+                      color: focusedField === "email" ? CYAN : "rgba(200,220,240,0.35)",
+                      transition: "color 0.2s ease",
+                    }}
+                  />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => setFocusedField("email")}
+                    onBlur={() => setFocusedField(null)}
+                    placeholder="your@email.com"
+                    dir="ltr"
+                    style={inputStyle("email", !!errors.email)}
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium" style={{ color: "rgba(200,220,240,0.85)" }}>
-                {t("password")}
-              </label>
-              <div className="relative">
-                <Lock
-                  size={16}
-                  strokeWidth={1.5}
-                  className="absolute top-1/2 -translate-y-1/2"
-                  style={{
-                    [dir === "rtl" ? "right" : "left"]: "12px",
-                    color: focusedField === "password" ? CYAN : "rgba(200,220,240,0.35)",
-                    transition: "color 0.2s ease",
-                  }}
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField("password")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="••••••••"
-                  dir="ltr"
-                  style={inputStyle("password", !!errors.password)}
-                />
+                {errors.email && <p className="text-xs" style={{ color: "hsl(0 72% 65%)" }}>{errors.email}</p>}
+                {mode === "signup" && showCorporateBadge && (
+                  <div
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg animate-fade-in"
+                    style={{
+                      background: "rgba(0,212,255,0.08)",
+                      border: "1px solid rgba(0,212,255,0.2)",
+                      color: CYAN,
+                      display: "inline-flex",
+                    }}
+                  >
+                    <Sparkles size={11} strokeWidth={1.5} />
+                    {isAr ? "بريد مؤسسي — ستحصل على تجربة باقة مهندس مجاناً" : "Corporate email — You'll get a free Engineer plan trial"}
+                  </div>
+                )}
               </div>
-              {errors.password && <p className="text-xs" style={{ color: "hsl(0 72% 65%)" }}>{errors.password}</p>}
-            </div>
+            )}
 
-            {/* Confirm password (signup) */}
-            {!isLogin && (
+            {/* Password - show for login, signup, recovery */}
+            {!isReset && (
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium" style={{ color: "rgba(200,220,240,0.85)" }}>
-                  {t("confirmPassword")}
+                  {isRecovery ? t("newPassword") : t("password")}
+                </label>
+                <div className="relative">
+                  <Lock
+                    size={16}
+                    strokeWidth={1.5}
+                    className="absolute top-1/2 -translate-y-1/2"
+                    style={{
+                      [dir === "rtl" ? "right" : "left"]: "12px",
+                      color: focusedField === "password" ? CYAN : "rgba(200,220,240,0.35)",
+                      transition: "color 0.2s ease",
+                    }}
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setFocusedField("password")}
+                    onBlur={() => setFocusedField(null)}
+                    placeholder="••••••••"
+                    dir="ltr"
+                    style={inputStyle("password", !!errors.password)}
+                  />
+                </div>
+                {errors.password && <p className="text-xs" style={{ color: "hsl(0 72% 65%)" }}>{errors.password}</p>}
+              </div>
+            )}
+
+            {/* Confirm password (signup, recovery) */}
+            {(mode === "signup" || isRecovery) && (
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium" style={{ color: "rgba(200,220,240,0.85)" }}>
+                  {isRecovery ? t("confirmNewPassword") : t("confirmPassword")}
                 </label>
                 <div className="relative">
                   <Lock
@@ -417,6 +436,22 @@ const Auth = () => {
               </div>
             )}
 
+            {/* Forgot password link (login only) */}
+            {isLogin && (
+              <div className="text-center -mt-2">
+                <button
+                  type="button"
+                  onClick={() => { setMode("reset"); setErrors({}); }}
+                  className="text-xs font-medium transition-all duration-200"
+                  style={{ color: "rgba(0,212,255,0.7)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = CYAN; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(0,212,255,0.7)"; }}
+                >
+                  {t("forgotPassword")}
+                </button>
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
@@ -436,77 +471,107 @@ const Auth = () => {
             >
               {isLoading ? (
                 <Loader2 size={16} strokeWidth={1.5} className="animate-spin" />
+              ) : isRecovery ? (
+                <><Lock size={16} strokeWidth={1.5} />{t("updatePassword")}</>
+              ) : isReset ? (
+                <><Mail size={16} strokeWidth={1.5} />{t("sendResetLink")}</>
               ) : isLogin ? (
-                <LogIn size={16} strokeWidth={1.5} />
+                <><LogIn size={16} strokeWidth={1.5} />{t("signIn")}</>
               ) : (
-                <UserPlus size={16} strokeWidth={1.5} />
+                <><UserPlus size={16} strokeWidth={1.5} />{t("signUp")}</>
               )}
-              {isLogin ? t("signIn") : t("signUp")}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-            <span className="text-xs" style={{ color: "rgba(200,220,240,0.3)" }}>{isAr ? "أو" : "or"}</span>
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-          </div>
+          {/* Divider + Google - only for login/signup */}
+          {(isLogin || mode === "signup") && (
+            <>
+              <div className="flex items-center gap-3 my-5">
+                <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+                <span className="text-xs" style={{ color: "rgba(200,220,240,0.3)" }}>{isAr ? "أو" : "or"}</span>
+                <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+              </div>
 
-          {/* Google Sign-In */}
-          <button
-            type="button"
-            onClick={async () => {
-              setIsLoading(true);
-              try {
-                const { error } = await supabase.auth.signInWithOAuth({
-                  provider: "google",
-                  options: {
-                    redirectTo: window.location.origin,
-                  },
-                });
-                if (error) throw error;
-              } catch (e) {
-                toast({ title: t("unexpectedError"), variant: "destructive" });
-              } finally {
-                setIsLoading(false);
-              }
-            }}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-medium text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(200,220,240,0.85)",
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; }}
-          >
-            <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M47.532 24.552c0-1.636-.147-3.2-.418-4.698H24.48v9.01h13.02c-.572 2.99-2.26 5.52-4.8 7.22v6.01h7.76c4.54-4.18 7.072-10.34 7.072-17.542z" fill="#4285F4"/>
-              <path d="M24.48 48c6.48 0 11.922-2.148 15.896-5.818l-7.76-6.01c-2.148 1.44-4.896 2.29-8.136 2.29-6.26 0-11.562-4.228-13.46-9.908H2.98v6.2C6.94 42.87 15.1 48 24.48 48z" fill="#34A853"/>
-              <path d="M11.02 28.554A14.373 14.373 0 0 1 10.2 24c0-1.582.274-3.116.82-4.554v-6.2H2.98A23.942 23.942 0 0 0 .48 24c0 3.86.924 7.514 2.5 10.754l8.04-6.2z" fill="#FBBC05"/>
-              <path d="M24.48 9.538c3.528 0 6.694 1.212 9.19 3.594l6.882-6.882C36.396 2.372 30.956 0 24.48 0 15.1 0 6.94 5.13 2.98 13.246l8.04 6.2c1.898-5.68 7.2-9.908 13.46-9.908z" fill="#EA4335"/>
-            </svg>
-            {isLogin
-              ? (isAr ? "تسجيل الدخول بـ Google" : "Sign in with Google")
-              : (isAr ? "إنشاء حساب بـ Google" : "Sign up with Google")}
-          </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsLoading(true);
+                  try {
+                    const { error } = await supabase.auth.signInWithOAuth({
+                      provider: "google",
+                      options: { redirectTo: window.location.origin },
+                    });
+                    if (error) throw error;
+                  } catch (e) {
+                    toast({ title: t("unexpectedError"), variant: "destructive" });
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-medium text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(200,220,240,0.85)",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M47.532 24.552c0-1.636-.147-3.2-.418-4.698H24.48v9.01h13.02c-.572 2.99-2.26 5.52-4.8 7.22v6.01h7.76c4.54-4.18 7.072-10.34 7.072-17.542z" fill="#4285F4"/>
+                  <path d="M24.48 48c6.48 0 11.922-2.148 15.896-5.818l-7.76-6.01c-2.148 1.44-4.896 2.29-8.136 2.29-6.26 0-11.562-4.228-13.46-9.908H2.98v6.2C6.94 42.87 15.1 48 24.48 48z" fill="#34A853"/>
+                  <path d="M11.02 28.554A14.373 14.373 0 0 1 10.2 24c0-1.582.274-3.116.82-4.554v-6.2H2.98A23.942 23.942 0 0 0 .48 24c0 3.86.924 7.514 2.5 10.754l8.04-6.2z" fill="#FBBC05"/>
+                  <path d="M24.48 9.538c3.528 0 6.694 1.212 9.19 3.594l6.882-6.882C36.396 2.372 30.956 0 24.48 0 15.1 0 6.94 5.13 2.98 13.246l8.04 6.2c1.898-5.68 7.2-9.908 13.46-9.908z" fill="#EA4335"/>
+                </svg>
+                {isLogin
+                  ? (isAr ? "تسجيل الدخول بـ Google" : "Sign in with Google")
+                  : (isAr ? "إنشاء حساب بـ Google" : "Sign up with Google")}
+              </button>
+            </>
+          )}
 
-          {/* Toggle login/signup */}
+          {/* Toggle - varies by mode */}
           <div className="mt-5 text-center text-sm">
-            <span style={{ color: "rgba(200,220,240,0.45)" }}>
-              {isLogin ? t("noAccount") : t("hasAccount")}
-            </span>{" "}
-            <button
-              type="button"
-              onClick={() => { setIsLogin(!isLogin); setErrors({}); setEmail(""); setPassword(""); setConfirmPassword(""); }}
-              className="font-medium transition-all duration-200"
-              style={{ color: CYAN }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"; }}
-            >
-              {isLogin ? t("signUp") : t("signIn")}
-            </button>
+            {isRecovery ? (
+              <button
+                type="button"
+                onClick={() => { setMode("login"); setErrors({}); setPassword(""); setConfirmPassword(""); }}
+                className="font-medium transition-all duration-200"
+                style={{ color: CYAN }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"; }}
+              >
+                {t("backToLogin")}
+              </button>
+            ) : isReset ? (
+              <button
+                type="button"
+                onClick={() => { setMode("login"); setErrors({}); setEmail(""); }}
+                className="font-medium transition-all duration-200"
+                style={{ color: CYAN }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"; }}
+              >
+                {t("backToLogin")}
+              </button>
+            ) : (
+              <>
+                <span style={{ color: "rgba(200,220,240,0.45)" }}>
+                  {isLogin ? t("noAccount") : t("hasAccount")}
+                </span>{" "}
+                <button
+                  type="button"
+                  onClick={() => { setMode(isLogin ? "signup" : "login"); setErrors({}); setEmail(""); setPassword(""); setConfirmPassword(""); }}
+                  className="font-medium transition-all duration-200"
+                  style={{ color: CYAN }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"; }}
+                >
+                  {isLogin ? t("signUp") : t("signIn")}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
