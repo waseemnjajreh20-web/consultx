@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, Clock, CheckCircle, Loader2, ArrowRight, ArrowLeft, Sparkles, Lock, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,13 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import consultxIcon from "@/assets/consultx-icon.png";
 import { isFounding10Active, FOUNDING10_CODE, FOUNDING10_CAMPAIGN } from "@/lib/campaigns/founding10";
 import { isEid50Active, EID50_CODE, EID50_CAMPAIGN, EID50_PRICING } from "@/lib/campaigns/eid50";
+import {
+  EMPTY_CARD,
+  formatCardNumber,
+  validateCard,
+  buildMoyasarTokenPayload,
+  type CardForm,
+} from "@/lib/payment/card";
 
 const MOYASAR_PUBLISHABLE_KEY = (import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY as string)?.trim();
 const MOYASAR_TOKENS_ENDPOINT = "https://api.moyasar.com/v1/tokens";
@@ -50,38 +57,7 @@ interface Plan {
 const HIDDEN_PUBLIC_SLUGS = new Set(["free", "enterprise"]);
 const PER_SEAT_SLUGS = new Set(["enterprise_team", "enterprise_office"]);
 
-type CardForm = {
-  name: string;
-  number: string;
-  month: string;
-  year: string;
-  cvc: string;
-};
-
-const EMPTY_CARD: CardForm = { name: "", number: "", month: "", year: "", cvc: "" };
-
-const luhnOk = (digits: string): boolean => {
-  if (digits.length < 12) return false;
-  let sum = 0;
-  let alt = false;
-  for (let i = digits.length - 1; i >= 0; i--) {
-    let n = parseInt(digits[i], 10);
-    if (Number.isNaN(n)) return false;
-    if (alt) {
-      n *= 2;
-      if (n > 9) n -= 9;
-    }
-    sum += n;
-    alt = !alt;
-  }
-  return sum % 10 === 0;
-};
-
-const formatCardNumber = (raw: string): string => {
-  const digits = raw.replace(/\D/g, "").slice(0, 19);
-  return digits.replace(/(.{4})/g, "$1 ").trim();
-};
-
+type SeatState = Record<string, number>;
 const Subscribe = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -153,7 +129,7 @@ const Subscribe = () => {
       }
     };
     fetchPlans();
-  }, [searchParams]);
+  }, [searchParams, eid50Active, founding10Active]);
 
   const resetCardState = () => {
     setCard(EMPTY_CARD);
@@ -219,26 +195,6 @@ const Subscribe = () => {
     }
   };
 
-  const validateCard = (): { ok: boolean; errors: Partial<Record<keyof CardForm, true>> } => {
-    const errors: Partial<Record<keyof CardForm, true>> = {};
-    const numberDigits = card.number.replace(/\D/g, "");
-    if (card.name.trim().length < 2) errors.name = true;
-    if (!luhnOk(numberDigits)) errors.number = true;
-    const monthN = parseInt(card.month, 10);
-    if (!Number.isFinite(monthN) || monthN < 1 || monthN > 12) errors.month = true;
-    const yearN = parseInt(card.year, 10);
-    const fullYear = card.year.length === 2 ? 2000 + yearN : yearN;
-    const now = new Date();
-    const thisYear = now.getFullYear();
-    const thisMonth = now.getMonth() + 1;
-    if (!Number.isFinite(yearN) || fullYear < thisYear || fullYear > thisYear + 20) {
-      errors.year = true;
-    } else if (fullYear === thisYear && monthN < thisMonth) {
-      errors.year = true;
-    }
-    if (!/^\d{3,4}$/.test(card.cvc)) errors.cvc = true;
-    return { ok: Object.keys(errors).length === 0, errors };
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,7 +210,7 @@ const Subscribe = () => {
       return;
     }
 
-    const { ok, errors } = validateCard();
+    const { ok, errors } = validateCard(card);
     setFieldErrors(errors);
     if (!ok) {
       setFormError(language === "ar" ? "يرجى التحقق من بيانات البطاقة" : "Please check the card details.");
@@ -263,18 +219,7 @@ const Subscribe = () => {
 
     setSubmitting(true);
 
-    const numberDigits = card.number.replace(/\D/g, "");
-    const month = card.month.padStart(2, "0");
-    const year = card.year.length === 2 ? `20${card.year}` : card.year;
-    const tokenPayload = {
-      publishable_api_key: MOYASAR_PUBLISHABLE_KEY,
-      save_only: true,
-      name: card.name.trim(),
-      number: numberDigits,
-      month,
-      year,
-      cvc: card.cvc,
-    };
+    const tokenPayload = buildMoyasarTokenPayload(card, MOYASAR_PUBLISHABLE_KEY);
 
     let token: string | null = null;
     try {
@@ -283,7 +228,7 @@ const Subscribe = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tokenPayload),
       });
-      const tokenJson: any = await tokenResp.json().catch(() => ({}));
+      const tokenJson: { id?: unknown; message?: unknown } = await tokenResp.json().catch(() => ({}));
       if (!tokenResp.ok) {
         const safeMessage = typeof tokenJson?.message === "string"
           ? tokenJson.message

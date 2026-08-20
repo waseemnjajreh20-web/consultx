@@ -1,6 +1,7 @@
 export const EID50_CODE = "EID50";
 
-export const EID50_LIVE = () => import.meta.env.VITE_EID50_LIVE === "true";
+export const EID50_LIVE = (env: Record<string, unknown> = import.meta.env): boolean =>
+  env.VITE_EID50_LIVE === "true";
 
 export function isEid50Active(): boolean {
   return EID50_LIVE();
