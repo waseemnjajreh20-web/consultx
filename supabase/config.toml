@@ -3,9 +3,6 @@ project_id = "hrnltxmwoaphgejckutk"
 [functions.fire-safety-chat]
 verify_jwt = false
 
-[functions.fire-safety-chat-v2]
-verify_jwt = false
-
 [functions.moyasar-create-subscription]
 verify_jwt = false
 
