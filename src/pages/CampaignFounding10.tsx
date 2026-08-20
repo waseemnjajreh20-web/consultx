@@ -14,8 +14,9 @@ import {
   getFounding10SubscribeUrl,
 } from "@/lib/campaigns/founding10";
 import { buildFounding10HtmlEmail, buildFounding10TextEmail } from "@/lib/emailTemplates/founding10";
+import { AUTH_CONFIG, isAdminEmail } from "@/config/auth";
 
-const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+const ADMIN_EMAILS = AUTH_CONFIG.adminEmails;
 
 export default function CampaignFounding10() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function CampaignFounding10() {
   const [sendResult, setSendResult] = useState<any>(null);
   const [sendError, setSendError] = useState<string | null>(null);
 
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");

@@ -7,8 +7,8 @@
  */
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, type SubscriptionStatus } from "@/hooks/useSubscription";
-
-const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+import { isAdminEmail } from "@/config/auth";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
 
 /**
  * Discriminant access state — one value, unambiguous.
@@ -89,7 +89,7 @@ export function useEntitlement(): UseEntitlementResult {
 
   const isLoading = authLoading || (!!user && subLoading);
   const isAnonymous = !authLoading && !user;
-  const isAdmin = !!(user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()));
+  const isAdmin = isAdminEmail(user?.email);
 
   const rawAccessState: string = subscription?.access_state ?? "none";
 

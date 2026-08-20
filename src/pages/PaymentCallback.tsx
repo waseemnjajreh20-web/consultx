@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
 
 type CallbackStatus = "loading" | "success_trial" | "success_active" | "failed" | "pending";
 
@@ -64,7 +65,7 @@ const PaymentCallback = () => {
 
           if (data?.active) {
             // Distinguish: active paid vs trialing with card
-            if (data.status === "active") {
+            if (data.status === SUBSCRIPTION_CONFIG.statuses.active) {
               setStatus("success_active");
             } else {
               // trialing — card was added, trial is running

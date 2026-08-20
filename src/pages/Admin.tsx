@@ -16,8 +16,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import consultxIcon from "@/assets/consultx-icon.png";
-
-const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+import { isAdminEmail } from "@/config/auth";
 
 type AdminTab = "stats" | "users";
 
@@ -123,7 +122,7 @@ export default function Admin() {
   const [autoIndexProgress, setAutoIndexProgress] = useState({ done: 0, total: 18, remaining: 18 });
   const stopAutoRef = useRef(false);
 
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
+  const isAdmin = isAdminEmail(user?.email);
   const [activeTab, setActiveTab] = useState<AdminTab>("stats");
 
   useEffect(() => {

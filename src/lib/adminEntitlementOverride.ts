@@ -1,4 +1,5 @@
-export const ADMIN_OVERRIDE_EMAILS = ["waseemnjajreh20@gmail.com", "njajrehwaseem@gmail.com"];
+import { isAdminEmail } from "@/config/auth";
+
 export const ADMIN_OVERRIDE_STORAGE_KEY = "cx_admin_entitlement_override";
 export const ADMIN_OVERRIDE_HEADER = "X-ConsultX-Admin-Entitlement-Override";
 export const ADMIN_OVERRIDE_EVENT = "consultx-admin-override-changed";
@@ -14,10 +15,6 @@ export const OVERRIDE_LABELS: Record<AdminEntitlementOverride, { en: string; ar:
 };
 
 const VALID: AdminEntitlementOverride[] = ["free", "engineer", "pro", "enterprise", "owner"];
-
-export function isAllowedAdminEmail(email: string | null | undefined): boolean {
-  return !!(email && ADMIN_OVERRIDE_EMAILS.includes(email.toLowerCase()));
-}
 
 export function getAdminEntitlementOverride(): AdminEntitlementOverride | null {
   try {

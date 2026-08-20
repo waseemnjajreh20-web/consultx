@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TRIAL_CONFIG } from "@/config/trial";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,10 @@ interface Props {
 const PLAN_LABELS: Record<string, string> = {
   free: "مجاني",
   engineer: "مهندس",
+  pro: "برو",
   enterprise: "مؤسسي",
+  enterprise_team: "فريق المؤسسة",
+  enterprise_office: "مكتب المؤسسة",
 };
 
 const SUB_STATUS_LABELS: Record<string, string> = {
@@ -83,7 +87,10 @@ const ROLE_LABELS: Record<string, string> = {
 const planColor: Record<string, string> = {
   free: "border-muted/50 text-muted-foreground",
   engineer: "border-accent/40 text-accent",
-  enterprise: "border-primary/40 text-primary",
+  pro: "border-primary/40 text-primary",
+  enterprise: "border-purple-500/40 text-purple-400",
+  enterprise_team: "border-purple-500/40 text-purple-400",
+  enterprise_office: "border-purple-500/40 text-purple-400",
 };
 
 const subColor: Record<string, string> = {
@@ -383,7 +390,7 @@ export function AdminUserManagement({ accessToken }: Props) {
                       disabled={anyBusy}
                       title="بدء تجربة 7 أيام"
                       onClick={() =>
-                        act(u.id, "start_trial", { days: 7 }, "✅ تم بدء التجربة المجانية (7 أيام)")
+                        act(u.id, "start_trial", { days: TRIAL_CONFIG.trialDays }, `✅ تم بدء التجربة المجانية (${TRIAL_CONFIG.trialDays} أيام)`)
                       }
                     >
                       {isBusy(u.id, "start_trial")
@@ -398,7 +405,7 @@ export function AdminUserManagement({ accessToken }: Props) {
                       disabled={anyBusy}
                       title="تمديد التجربة 7 أيام إضافية"
                       onClick={() =>
-                        act(u.id, "extend_trial", { days: 7 }, "✅ تم تمديد التجربة 7 أيام")
+                        act(u.id, "extend_trial", { days: TRIAL_CONFIG.trialDays }, `✅ تم تمديد التجربة ${TRIAL_CONFIG.trialDays} أيام`)
                       }
                     >
                       {isBusy(u.id, "extend_trial")

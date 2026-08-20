@@ -1,21 +1,17 @@
-export const FREE_EMAIL_DOMAINS = new Set([
-  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "live.com",
-  "aol.com", "icloud.com", "mail.com", "protonmail.com", "zoho.com",
-  "yandex.com", "gmx.com", "tutanota.com", "fastmail.com",
-  "yahoo.co.uk", "hotmail.co.uk", "googlemail.com",
-]);
+import { isCorporateEmail as isCorporateEmailConfig, TRIAL_CONFIG } from "@/config/trial";
+
+export const FREE_EMAIL_DOMAINS = TRIAL_CONFIG.freeEmailDomains;
 
 export const LAUNCH_PROMO = {
   enabled: true,
   name: "launch_engineer_trial",
-  trialDays: 3,
+  trialDays: TRIAL_CONFIG.trialDays,
   expiryDate: new Date("2026-06-30T23:59:59Z"),
   planGranted: "engineer",
 };
 
 export function isCorporateEmail(email: string): boolean {
-  const domain = email.split("@")[1]?.toLowerCase() ?? "";
-  return domain.length > 0 && !FREE_EMAIL_DOMAINS.has(domain);
+  return isCorporateEmailConfig(email);
 }
 
 export function isPromoActive(): boolean {

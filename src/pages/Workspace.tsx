@@ -12,11 +12,9 @@ import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import { CLOSED_PANEL } from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
 import type { SourceMeta } from "@/utils/sourceMetadata";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
 
 const ChatInterface = lazy(() => import("@/components/ChatInterface"));
-
-// Mirrors GRACE_DAYS in check-subscription and fire-safety-chat.
-const GRACE_DAYS = 7;
 
 const Workspace = () => {
   const navigate = useNavigate();
@@ -65,10 +63,10 @@ const Workspace = () => {
     if (user?.id) sessionStorage.setItem(`pastdue_dismissed_${user.id}`, "1");
   };
 
-  const isPastDueInGrace = subscription?.status === "past_due" && isPaidActive;
+  const isPastDueInGrace = subscription?.status === SUBSCRIPTION_CONFIG.statuses.pastDue && isPaidActive;
   const graceEndDate =
     isPastDueInGrace && subscription?.past_due_since
-      ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
+      ? new Date(new Date(subscription.past_due_since).getTime() + SUBSCRIPTION_CONFIG.gracePeriodDays * 86_400_000)
       : null;
 
   if (isLoading || !isReady) return <LoadingSpinner />;

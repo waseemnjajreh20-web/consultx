@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { isAdminEmail } from "@/config/auth";
 import {
-  isAllowedAdminEmail,
   getAdminEntitlementOverride,
   ADMIN_OVERRIDE_HEADER,
   ADMIN_OVERRIDE_EVENT,
@@ -99,7 +99,7 @@ export function useSubscription() {
       const invokeHeaders: Record<string, string> = {
         Authorization: `Bearer ${session.access_token}`,
       };
-      const adminOverride = isAllowedAdminEmail(user.email) ? getAdminEntitlementOverride() : null;
+      const adminOverride = isAdminEmail(user.email) ? getAdminEntitlementOverride() : null;
       if (adminOverride) invokeHeaders[ADMIN_OVERRIDE_HEADER] = adminOverride;
 
       const { data, error: fnError } = await supabase.functions.invoke("check-subscription", {

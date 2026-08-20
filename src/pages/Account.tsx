@@ -32,6 +32,7 @@ import type { TranslationKey } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,7 +159,7 @@ const Account = () => {
   const {
     user, session, signOut, authLoading, subscription, subLoading, refetch,
     isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess, isFreeLoggedIn,
-    trialDaysRemaining, rawAccessState, isOrgMember,
+    trialDaysRemaining, rawAccessState, isOrgMember, isAdmin,
   } = useEntitlement();
 
   const {
@@ -379,12 +380,9 @@ const Account = () => {
         language === "ar"
           ? "فعّل باقة مهندس للوصول الكامل"
           : "Activate Engineer subscription for full access";
-    } else if (subscription?.status === "past_due") {
-      // past_due within grace — isPaidActive is true but a payment renewal failed.
-      // GRACE_DAYS mirrors the constant in check-subscription and fire-safety-chat.
-      const GRACE_DAYS = 7;
+    } else if (subscription?.status === SUBSCRIPTION_CONFIG.statuses.pastDue) {
       const graceEnd = subscription.past_due_since
-        ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
+        ? new Date(new Date(subscription.past_due_since).getTime() + SUBSCRIPTION_CONFIG.gracePeriodDays * 86_400_000)
         : null;
       glowClass = "border-orange-500/40 shadow-[0_0_24px_rgba(249,115,22,0.12)]";
       gradientClass = "from-orange-500/10 to-transparent";
@@ -491,8 +489,7 @@ const Account = () => {
                 {language === "ar" ? "فعّل اشتراكك" : "Activate Subscription"}
               </Button>
             )}
-            {(user?.email === "njajrehwaseem@gmail.com" ||
-              user?.email === "waseemnjajreh20@gmail.com") && (
+            {(isAdmin) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -510,10 +507,8 @@ const Account = () => {
 
   // Subscription
   const renderSubscription = () => {
-    // Mirror the 7-day grace constant used in check-subscription and fire-safety-chat.
-    const GRACE_DAYS = 7;
     const graceEndDate = subscription?.past_due_since
-      ? new Date(new Date(subscription.past_due_since).getTime() + GRACE_DAYS * 86_400_000)
+      ? new Date(new Date(subscription.past_due_since).getTime() + SUBSCRIPTION_CONFIG.gracePeriodDays * 86_400_000)
       : null;
 
     const subStatus = subscription?.status;
@@ -521,7 +516,7 @@ const Account = () => {
 
     // Status badge config — ordered from most-specific to least-specific.
     const badge = (() => {
-      if (subStatus === "past_due") return {
+      if (subStatus === SUBSCRIPTION_CONFIG.statuses.pastDue) return {
         cls: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
         label: language === "ar" ? "دفع معلق" : "Payment Due",
       };

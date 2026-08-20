@@ -18,8 +18,9 @@ import {
 import { EID50_FIRST_50_LEADS_CSV } from "@/lib/campaigns/eid50First50Leads";
 import { EID50_SECOND_50_LEADS_CSV } from "@/lib/campaigns/eid50Second50Leads";
 import { buildEid50HtmlEmail, buildEid50TextEmail } from "@/lib/emailTemplates/eid50";
+import { AUTH_CONFIG, isAdminEmail } from "@/config/auth";
 
-const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+const ADMIN_EMAILS = AUTH_CONFIG.adminEmails;
 
 export default function CampaignEid50() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export default function CampaignEid50() {
   const [leadSendError, setLeadSendError] = useState<string | null>(null);
   const [dryRunDone, setDryRunDone] = useState(false);
 
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
