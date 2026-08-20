@@ -17,6 +17,18 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+/**
+ * Plans an admin may assign directly.
+ *
+ * Must stay in sync with subscription_plans.slug and with the selectors in
+ * src/components/AdminUserManagement.tsx.
+ *
+ * Per-seat plans (enterprise_team / enterprise_office) are deliberately absent:
+ * they carry a seat_count and are managed through the seat RPCs, not a flat grant.
+ */
+const ASSIGNABLE_PLANS = ["free", "engineer", "pro", "enterprise"];
+const INVITABLE_PLANS = ASSIGNABLE_PLANS;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -120,9 +132,10 @@ serve(async (req) => {
 
     // ── set_plan ────────────────────────────────────────────────────────────
     if (action === "set_plan") {
-      const validPlans = ["free", "engineer", "enterprise"];
       const plan_type = payload.plan_type as string;
-      if (!validPlans.includes(plan_type)) return json({ error: `Invalid plan_type. Must be one of: ${validPlans.join(", ")}` }, 400);
+      if (!ASSIGNABLE_PLANS.includes(plan_type)) {
+        return json({ error: `Invalid plan_type. Must be one of: ${ASSIGNABLE_PLANS.join(", ")}` }, 400);
+      }
 
       // 1. Capture old plan for the audit trail before mutating anything.
       const { data: currentProfile } = await adminClient
@@ -160,19 +173,50 @@ serve(async (req) => {
           .in("status", ["active", "trialing", "past_due"]);
       } else {
         // Grant: upsert an admin-issued subscription — active, 1-year period.
+        //
+        // plan_id is NOT NULL and is what check-subscription joins on to derive
+        // the effective plan slug. It takes precedence over profiles.plan_type:
+        //
+        //   planSlug = plan?.slug ?? profile?.plan_type ?? "free"
+        //
+        // So the subscription row must point at the plan the admin just chose.
+        // Omitting plan_id previously caused two distinct failures:
+        //   - INSERT violated the NOT NULL constraint, so no row was created and
+        //     the user stayed "ineligible" despite the profile being updated.
+        //   - UPDATE left a stale plan_id, so check-subscription resolved the
+        //     *old* plan and silently reverted the admin's change.
+        const { data: planRow, error: planLookupErr } = await adminClient
+          .from("subscription_plans")
+          .select("id")
+          .eq("slug", plan_type)
+          .maybeSingle();
+        if (planLookupErr) throw planLookupErr;
+        if (!planRow) {
+          return json(
+            { error: `No subscription_plans row found with slug "${plan_type}". Cannot grant plan.` },
+            500
+          );
+        }
+
         const periodEnd = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
+        // Must select the same row check-subscription reads, which is the most
+        // recently created one. Users who resubscribe accumulate several rows;
+        // updating an arbitrary one would leave the newest row stale and the
+        // admin's change would again appear to be ignored.
         const { data: existingSub } = await adminClient
           .from("user_subscriptions")
           .select("id")
           .eq("user_id", target_user_id)
+          .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (existingSub) {
-          await adminClient
+          const { error: subUpdateErr } = await adminClient
             .from("user_subscriptions")
             .update({
+              plan_id: planRow.id,
               status: "active",
               current_period_start: now.toISOString(),
               current_period_end: periodEnd.toISOString(),
@@ -180,15 +224,18 @@ serve(async (req) => {
               updated_at: now.toISOString(),
             })
             .eq("id", existingSub.id);
+          if (subUpdateErr) throw subUpdateErr;
         } else {
-          await adminClient
+          const { error: subInsertErr } = await adminClient
             .from("user_subscriptions")
             .insert({
               user_id: target_user_id,
+              plan_id: planRow.id,
               status: "active",
               current_period_start: now.toISOString(),
               current_period_end: periodEnd.toISOString(),
             });
+          if (subInsertErr) throw subInsertErr;
         }
       }
 
@@ -487,6 +534,11 @@ serve(async (req) => {
       const email = (payload.email as string)?.toLowerCase();
       if (!email) return json({ error: "email is required" }, 400);
       const invitedPlanType = (payload.plan_type as string) || "free";
+      // Guard against an arbitrary string reaching profiles.plan_type, which
+      // check-subscription joins against subscription_plans.slug.
+      if (!INVITABLE_PLANS.includes(invitedPlanType)) {
+        return json({ error: `Invalid plan_type. Must be one of: ${INVITABLE_PLANS.join(", ")}` }, 400);
+      }
 
       const { data: invited, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(
         email,

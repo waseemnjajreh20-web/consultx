@@ -336,6 +336,7 @@ export function AdminUserManagement({ accessToken }: Props) {
                       <SelectContent>
                         <SelectItem value="free">مجاني</SelectItem>
                         <SelectItem value="engineer">مهندس</SelectItem>
+                        <SelectItem value="pro">برو</SelectItem>
                         <SelectItem value="enterprise">مؤسسي</SelectItem>
                       </SelectContent>
                     </Select>
@@ -516,6 +517,7 @@ export function AdminUserManagement({ accessToken }: Props) {
                 <SelectContent>
                   <SelectItem value="free">مجاني</SelectItem>
                   <SelectItem value="engineer">مهندس</SelectItem>
+                  <SelectItem value="pro">برو</SelectItem>
                   <SelectItem value="enterprise">مؤسسي</SelectItem>
                 </SelectContent>
               </Select>
