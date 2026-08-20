@@ -25,8 +25,8 @@ export const PLAN_CONFIG = {
       engineer: "مهندس",
       pro: "برو",
       enterprise: "مؤسسة",
-      enterpriseTeam: "فريق المؤسسة",
-      enterpriseOffice: "مكتب المؤسسة",
+      enterprise_team: "فريق المؤسسة",
+      enterprise_office: "مكتب المؤسسة",
       owner: "اشتراك المالك",
     },
     en: {
@@ -34,8 +34,8 @@ export const PLAN_CONFIG = {
       engineer: "Engineer",
       pro: "Pro",
       enterprise: "Enterprise",
-      enterpriseTeam: "Enterprise Team",
-      enterpriseOffice: "Enterprise Office",
+      enterprise_team: "Enterprise Team",
+      enterprise_office: "Enterprise Office",
       owner: "Owner Mode",
     },
   } as const,
@@ -46,8 +46,8 @@ export const PLAN_CONFIG = {
     engineer: { monthly: 9900, yearly: 99000, currency: "SAR" }, // 99 SAR/mo
     pro: { monthly: 19900, yearly: 199000, currency: "SAR" }, // 199 SAR/mo
     enterprise: { monthly: 34900, yearly: 349000, currency: "SAR" }, // 349 SAR/mo
-    enterpriseTeam: { monthly: 29900, yearly: 299000, currency: "SAR", perSeat: true }, // 299 SAR/seat/mo
-    enterpriseOffice: { monthly: 49900, yearly: 499000, currency: "SAR", perSeat: true }, // 499 SAR/seat/mo
+    enterprise_team: { monthly: 29900, yearly: 299000, currency: "SAR", perSeat: true }, // 299 SAR/seat/mo
+    enterprise_office: { monthly: 49900, yearly: 499000, currency: "SAR", perSeat: true }, // 499 SAR/seat/mo
     owner: { monthly: 0, yearly: 0, currency: "SAR" },
   } as const,
 
@@ -57,8 +57,8 @@ export const PLAN_CONFIG = {
     engineer: 1,
     pro: 2,
     enterprise: 3,
-    enterpriseTeam: 3,
-    enterpriseOffice: 3,
+    enterprise_team: 3,
+    enterprise_office: 3,
     owner: 4, // Highest - admin override
   } as const,
 
@@ -70,8 +70,8 @@ export const PLAN_CONFIG = {
       engineer: { advisory: 20, analysis: 10 },
       pro: { advisory: 100, analysis: 50 },
       enterprise: { advisory: null, analysis: null }, // null = unlimited
-      enterpriseTeam: { advisory: null, analysis: null },
-      enterpriseOffice: { advisory: null, analysis: null },
+      enterprise_team: { advisory: null, analysis: null },
+      enterprise_office: { advisory: null, analysis: null },
       owner: { advisory: null, analysis: null },
     },
 
@@ -81,8 +81,8 @@ export const PLAN_CONFIG = {
       engineer: { min: 1, max: 1, pricePerSeat: null },
       pro: { min: 1, max: 1, pricePerSeat: null },
       enterprise: { min: 1, max: 1, pricePerSeat: null }, // Legacy flat
-      enterpriseTeam: { min: 2, max: 50, pricePerSeat: 29900 }, // 299 SAR/seat
-      enterpriseOffice: { min: 5, max: 200, pricePerSeat: 49900 }, // 499 SAR/seat
+      enterprise_team: { min: 2, max: 50, pricePerSeat: 29900 }, // 299 SAR/seat
+      enterprise_office: { min: 5, max: 200, pricePerSeat: 49900 }, // 499 SAR/seat
       owner: { min: 1, max: 1, pricePerSeat: null },
     },
 
@@ -136,7 +136,7 @@ export const PLAN_CONFIG = {
         sso: true,
         auditLogs: true,
       },
-      enterpriseTeam: {
+      enterprise_team: {
         advisoryMode: true,
         analysisMode: true,
         planAnalysis: true,
@@ -148,7 +148,7 @@ export const PLAN_CONFIG = {
         sso: true,
         auditLogs: true,
       },
-      enterpriseOffice: {
+      enterprise_office: {
         advisoryMode: true,
         analysisMode: true,
         planAnalysis: true,
@@ -196,9 +196,10 @@ export const PLAN_CONFIG = {
     free: ["engineer", "pro", "enterprise"],
     engineer: ["pro", "enterprise"],
     pro: ["enterprise"],
-    enterprise: ["enterpriseTeam", "enterpriseOffice"],
-    enterpriseTeam: ["enterpriseOffice"],
-    enterpriseOffice: [],
+    enterprise: ["enterprise_team", "enterprise_office"],
+    enterprise_team: ["enterprise_office"],
+    enterprise_office: [],
+    owner: [], // Admin override — top tier, nothing to upgrade to
   } as const,
 
   /** Default plan for new users */
@@ -213,8 +214,8 @@ export const PLAN_CONFIG = {
     engineer: "border-accent/40 text-accent",
     pro: "border-primary/40 text-primary",
     enterprise: "border-purple-500/40 text-purple-400",
-    enterpriseTeam: "border-purple-500/40 text-purple-400",
-    enterpriseOffice: "border-purple-500/40 text-purple-400",
+    enterprise_team: "border-purple-500/40 text-purple-400",
+    enterprise_office: "border-purple-500/40 text-purple-400",
     owner: "border-primary/40 text-primary",
   } as const,
 } as const;
@@ -236,12 +237,12 @@ export function getPlanTier(slug: PlanSlug): number {
 
 /** Check if plan is enterprise tier */
 export function isEnterprisePlan(slug: PlanSlug): boolean {
-  return PLAN_CONFIG.enterpriseSlugs.includes(slug as any);
+  return (PLAN_CONFIG.enterpriseSlugs as readonly string[]).includes(slug);
 }
 
 /** Check if plan is paid (non-free) */
 export function isPaidPlan(slug: PlanSlug): boolean {
-  return PLAN_CONFIG.paidSlugs.includes(slug as any);
+  return (PLAN_CONFIG.paidSlugs as readonly string[]).includes(slug);
 }
 
 /** Get daily message limits for a plan */
