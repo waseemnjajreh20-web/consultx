@@ -45,6 +45,6 @@ consultx-main/
 # Local tool configs containing API keys
 opencode.json
 
-# TestSprite temp config bug (backslash path)
-testsprite_tests\tmp\config.json
+# TestSprite generated artifacts (tool output, not source)
+testsprite_tests/
 
