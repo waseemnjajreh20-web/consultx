@@ -21,15 +21,25 @@
 | 🌐 **Bilingual Support** | Full Arabic (RTL) and English (LTR) interface and responses |
 | 📖 **Verbatim Citations** | Direct quotes from SBC sections, tables, and clauses |
 | 💬 **Conversation History** | Save, load, and delete past consulting sessions |
-| 🔐 **User Authentication** | Email/password signup and login |
+| 🔐 **User Authentication** | Email/password signup, login, and password reset |
+| 💳 **Subscriptions** | Free, Engineer, Pro, Team and Enterprise plans with usage entitlements |
+| 🏢 **Enterprise Workspace** | Cases, documents and team collaboration |
+| 📄 **Analytical Reports** | Structured intake forms with branded DOCX export *(flagged)* |
+| 📐 **Plan Lab** | Drawing analysis workspace *(flagged)* |
+
+> Features marked *(flagged)* are gated behind `VITE_*_ENABLED` environment
+> variables and are off by default.
 
 ---
 
 ## Tech Stack
 
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui
-- **Backend:** Lovable Cloud (Edge Functions, Database, Storage, Auth)
-- **AI Model:** Google Gemini 2.5 Pro via Lovable AI Gateway
+- **Backend:** Supabase (Postgres, Auth, Storage, Edge Functions on Deno)
+- **AI Model:** Google Gemini, called directly via the Generative Language API
+- **Payments:** Moyasar
+- **Email:** Resend
+- **Hosting:** Vercel
 - **Fonts:** Cairo, IBM Plex Sans Arabic
 
 ---
@@ -50,7 +60,7 @@
 │  2. Translate Arabic → English (glossary)   │
 │  3. Load SBC chunks from Storage            │
 │  4. Score & rank chunks against query       │
-│  5. Send top matches + question to AI model │
+│  5. Send top matches + question to Gemini   │
 │  6. Stream grounded answer back to client   │
 └──────────┬────────────────┬─────────────────┘
            │                │
@@ -128,34 +138,59 @@ graph TD
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v18+
-- [Bun](https://bun.sh/) (recommended) or npm
+- npm (the repository ships a `package-lock.json`; do not use Bun or pnpm)
 
 ### Installation
 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd consultx
+cd ConsultX_Clean
 
 # Install dependencies
-bun install
+npm install
+
+# Configure environment
+cp .env.example .env.local   # then fill in the values
 
 # Start the development server
-bun run dev
+npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The app will be available at `http://localhost:8080`.
+
+### Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the Vite dev server on port 8080 |
+| `npm run build` | Production build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Run the Vitest suite (218 tests) |
+| `npm run lint` | ESLint over the frontend source |
 
 ### Environment Variables
 
-The project requires the following environment variables (auto-configured via Lovable Cloud):
+See [`.env.example`](.env.example) for the full, documented list. The minimum
+needed to boot the frontend:
 
 | Variable | Description |
 |---|---|
-| `VITE_SUPABASE_URL` | Backend API endpoint |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Public API key |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/publishable key |
 
-> **Note:** Backend services (database, storage, auth, edge functions) are managed by Lovable Cloud — no additional setup required.
+> **Server-side secrets** (Gemini, Moyasar, Resend, service-role key) are **not**
+> read from `.env` files. They are set as Supabase Edge Function secrets via
+> `supabase secrets set`. Never commit a file containing real values — every
+> `.env.*` file is gitignored except `.env.example`.
+
+### Project Documentation
+
+| Document | Purpose |
+|---|---|
+| [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md) | Tasks requiring owner/dashboard access |
+| [`docs/ARCHIVE_INDEX.md`](docs/ARCHIVE_INDEX.md) | What was removed in the repo cleanup and how to recover it |
+| [`docs/audits/`](docs/audits/) | Platform reality audits |
 
 ---
 
