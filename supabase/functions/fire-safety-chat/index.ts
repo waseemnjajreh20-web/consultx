@@ -16,7 +16,7 @@ import type { AdvisoryBrainB1, RouterResult, AugmentationResult } from "./brain_
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
-  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta",
+  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta, X-Retrieval-Engine",
 };
 
 // ==================== CORE RULES (Non-negotiable) ====================
@@ -2671,7 +2671,8 @@ async function fetchStructuredTables(
 async function fetchSBCContextVector(
   query: string,
   mode: string,
-  extraKeywords?: string[]
+  extraKeywords?: string[],
+  forceFilterCode?: string | null
 ): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -2711,11 +2712,15 @@ async function fetchSBCContextVector(
     }
 
     // 2. Detect code type filter
-    let filterCode: string | null = null;
-    if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
-      filterCode = 'SBC801';
-    } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
-      filterCode = 'SBC201';
+    // forceFilterCode lets a caller (e.g. Advisory's R26 occupant_load restriction)
+    // override the regex auto-detection below with an authoritative value.
+    let filterCode: string | null = forceFilterCode !== undefined ? forceFilterCode : null;
+    if (filterCode === null) {
+      if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
+        filterCode = 'SBC801';
+      } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
+        filterCode = 'SBC201';
+      }
     }
 
     // 3. Vector search
@@ -5310,6 +5315,8 @@ serve(async (req) => {
     let _routerResultB2: RouterResult | null = null;
     let _augmentationB2: AugmentationResult | null = null;
     let _thinkingEventsB2: ThinkingEvent[] = [];
+    // Advisory Vector Retrieval flag (outer scope; populated in retrieval branch, read in SSE branch)
+    let _retrievalEngine: "vector" | "keyword" = "keyword";
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -5460,13 +5467,50 @@ serve(async (req) => {
       }
 
       // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
-      // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
       // R26: restrict to SBC201 for occupant_load — prevents SBC801_Ch10 contamination
       const _restrictToSBC201 = _routerResultB2?.workflow_id === "wf_occupant_load";
-      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
+
+      // ── Advisory Vector Retrieval flag (P0 remediation, docs/audits/truth-layer-baseline.md) ──
+      // Default OFF → byte-identical to prior behavior (keyword/storage path only).
+      // When "1" AND mode === "standard": try match_sbc_documents (pgvector) first;
+      // fall back to the keyword/storage path on any error OR on an empty result set.
+      // fetchSBCContext is NEVER removed — it remains the fallback and the sole path
+      // when the flag is off. This is reversible by unsetting the env var.
+      const ADVISORY_VECTOR_RETRIEVAL_ENABLED = Deno.env.get("ADVISORY_VECTOR_RETRIEVAL_ENABLED") === "1";
+      let sbcContext: string;
+      let files: string[];
+      let keywordMeta: SourcePageMeta[];
+      if (mode === "standard" && ADVISORY_VECTOR_RETRIEVAL_ENABLED) {
+        try {
+          const forcedCode = _restrictToSBC201 ? "SBC201" : null;
+          const vec = await fetchSBCContextVector(userQuery, "primary", undefined, forcedCode);
+          if (vec.context && vec.context.trim().length > 0) {
+            sbcContext = vec.context;
+            files = vec.files;
+            keywordMeta = vec.sourceMeta;
+            _retrievalEngine = "vector";
+          } else {
+            const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
+            sbcContext = kw.context;
+            files = kw.files;
+            keywordMeta = kw.sourceMeta;
+          }
+        } catch (e) {
+          console.warn("[AdvisoryVectorRetrieval] Error, falling back to keyword:", e instanceof Error ? e.message : e);
+          const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
+          sbcContext = kw.context;
+          files = kw.files;
+          keywordMeta = kw.sourceMeta;
+        }
+      } else {
+        const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
+        sbcContext = kw.context;
+        files = kw.files;
+        keywordMeta = kw.sourceMeta;
+      }
       usedFiles = files;
       usedSourceMeta = keywordMeta;
-      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
+      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${_retrievalEngine}]`);
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
@@ -5775,6 +5819,7 @@ ABSOLUTELY FORBIDDEN:
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+        "X-Retrieval-Engine": _retrievalEngine,
       };
 
       const bufferingStream = new TransformStream({
@@ -5839,6 +5884,7 @@ ABSOLUTELY FORBIDDEN:
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+        "X-Retrieval-Engine": _retrievalEngine,
       };
 
       const advisoryStream = new TransformStream({
@@ -5997,6 +6043,7 @@ ABSOLUTELY FORBIDDEN:
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+        "X-Retrieval-Engine": _retrievalEngine,
       },
     });
   } catch (error) {
