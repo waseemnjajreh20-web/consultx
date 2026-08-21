@@ -1054,6 +1054,12 @@ type SourcePageMeta = {
   // unambiguous section_number is available across the chunks for this file.
   sectionRef?: string | null;
   sectionConfidence?: SectionConfidence;
+  // Provenance link to source_registry. `origin` tells the ledger which
+  // retrieval engine produced this entry; `sourceType`/`editionYear` are
+  // looked up from source_registry by code_type/file family.
+  origin?: LedgerOrigin;
+  sourceType?: 'normative' | 'commentary' | 'informative' | 'unknown';
+  editionYear?: number | null;
 };
 const queryCache: Map<string, { result: { context: string; files: string[]; sourceMeta: SourcePageMeta[] }; timestamp: number }> = new Map();
 const QUERY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
@@ -1082,6 +1088,8 @@ interface EvidenceLedgerEntry {
   precision: 'page_range' | 'chunk_range_only' | 'unavailable';
   isClickableSource: boolean;
   origin: LedgerOrigin;
+  sourceType: 'normative' | 'commentary' | 'informative' | 'unknown';
+  editionYear: number | null;
 }
 
 /** Infer SBC family from a chunk/PDF/table source filename. */
@@ -1098,6 +1106,86 @@ function familyFromSourceCode(code: string | null | undefined): LedgerFamily {
   if (/201/.test(code)) return "SBC-201";
   if (/801/.test(code)) return "SBC-801";
   return "UNKNOWN";
+}
+
+// ==================== SOURCE REGISTRY PROVENANCE LOOKUP ====================
+// Minimal, read-only link between retrieved chunks and the source_registry
+// table already present in production. We cache the small registry in memory
+// (≤ a few dozen rows) and resolve authority_level + edition_year by source_id.
+
+type SourceRegistryRow = {
+  source_id: string;
+  authority_level: 'normative' | 'commentary' | 'informative' | null;
+  edition_year: number | null;
+};
+
+let sourceRegistryCache: Map<string, SourceRegistryRow> | null = null;
+let sourceRegistryCacheTs = 0;
+const SOURCE_REGISTRY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function loadSourceRegistry(supabaseAdmin: any): Promise<Map<string, SourceRegistryRow>> {
+  const now = Date.now();
+  if (sourceRegistryCache && (now - sourceRegistryCacheTs) < SOURCE_REGISTRY_CACHE_TTL) {
+    return sourceRegistryCache;
+  }
+  const { data, error } = await supabaseAdmin
+    .from('source_registry')
+    .select('source_id, authority_level, edition_year');
+  if (error || !data) {
+    console.warn('[Provenance] source_registry lookup failed:', error?.message);
+    return new Map();
+  }
+  const map = new Map<string, SourceRegistryRow>();
+  for (const row of data as SourceRegistryRow[]) {
+    map.set(row.source_id, row);
+  }
+  sourceRegistryCache = map;
+  sourceRegistryCacheTs = now;
+  console.log(`[Provenance] source_registry loaded: ${map.size} entries`);
+  return map;
+}
+
+function sourceIdFromFamily(family: LedgerFamily): string | null {
+  if (family === 'SBC-201') return 'SBC201';
+  if (family === 'SBC-801') return 'SBC801';
+  return null;
+}
+
+function sourceIdFromCodeType(codeType: string | null | undefined): string | null {
+  if (!codeType) return null;
+  const normalized = codeType.trim().toUpperCase();
+  if (normalized === 'SBC201') return 'SBC201';
+  if (normalized === 'SBC801') return 'SBC801';
+  if (normalized === 'SBC801_COMM') return 'SBC801_COMM';
+  return null;
+}
+
+function resolveProvenance(
+  registry: Map<string, SourceRegistryRow>,
+  sourceId: string | null
+): { sourceType: 'normative' | 'commentary' | 'informative' | 'unknown'; editionYear: number | null } {
+  if (!sourceId) return { sourceType: 'unknown', editionYear: null };
+  const row = registry.get(sourceId);
+  if (!row) return { sourceType: 'unknown', editionYear: null };
+  const level = row.authority_level;
+  const sourceType = level === 'normative' || level === 'commentary' || level === 'informative'
+    ? level
+    : 'unknown';
+  return { sourceType, editionYear: row.edition_year };
+}
+
+/** Enrich SourcePageMeta entries with provenance from source_registry. */
+function enrichSourceMetaProvenance(
+  meta: SourcePageMeta[],
+  registry: Map<string, SourceRegistryRow>,
+  origin: LedgerOrigin
+): SourcePageMeta[] {
+  return meta.map(m => {
+    const family = familyFromFileName(m.file);
+    const sourceId = sourceIdFromFamily(family);
+    const { sourceType, editionYear } = resolveProvenance(registry, sourceId);
+    return { ...m, origin, sourceType, editionYear };
+  });
 }
 
 /** Build the ledger from retrieval outputs available at the response site. */
@@ -1118,7 +1206,9 @@ function buildEvidenceLedger(
       pageEnd: m.pageEnd,
       precision: m.precision,
       isClickableSource: true,
-      origin: "keyword_chunk",
+      origin: m.origin ?? 'keyword_chunk',
+      sourceType: m.sourceType ?? 'unknown',
+      editionYear: m.editionYear ?? null,
     });
   }
 
@@ -1136,6 +1226,8 @@ function buildEvidenceLedger(
       // they ARE valid evidence for citation verification.
       isClickableSource: false,
       origin: "structured_table",
+      sourceType: 'unknown',
+      editionYear: null,
     });
   }
 
@@ -1183,18 +1275,34 @@ function buildEvidenceSummaryForPrompt(ledger: EvidenceLedgerEntry[]): string {
     .filter(e => e.origin === "structured_table" && e.tableRef)
     .map(e => `${e.sourceFamily}/Table ${e.tableRef}`);
 
+  // Provenance summary per source family (authoritative edition + authority level)
+  const provLines: string[] = [];
+  for (const fam of ["SBC-201", "SBC-801"] as LedgerFamily[]) {
+    if (!fams.has(fam)) continue;
+    const entries = ledger.filter(e => e.sourceFamily === fam && e.origin !== "structured_table");
+    if (entries.length === 0) continue;
+    const edition = entries.find(e => e.editionYear)?.editionYear ?? "unknown";
+    const types = new Set(entries.map(e => e.sourceType));
+    const authority = types.has("commentary")
+      ? (types.has("normative") ? "mixed normative + commentary" : "commentary")
+      : (types.has("normative") ? "normative" : "unknown");
+    provLines.push(`- ${fam}: authority=${authority}, edition=${edition}`);
+  }
+
   return `\n\n📋 EVIDENCE LEDGER (binding — Advisory citation verifier will enforce):
 - SBC-201 retrieved: ${fams.has("SBC-201") ? "yes" : "no"}
 - SBC-801 retrieved: ${fams.has("SBC-801") ? "yes" : "no"}
 - Retrieved SBC-201 section refs: ${sec201.length ? sec201.join(", ") : "(none)"}
 - Retrieved SBC-801 section refs: ${sec801.length ? sec801.join(", ") : "(none)"}
 - Structured tables: ${tables.length ? tables.join(", ") : "(none)"}
+${provLines.length ? "- Source provenance:\n" + provLines.map(l => `  ${l}`).join("\n") : ""}
 
 ENFORCEMENT:
 1. You may NOT emit a citation token for an SBC family marked "no" above.
 2. You may NOT emit conf:high for a (family, section) pair that is not in the lists above with a high/medium ledger confidence — the verifier will downgrade it.
 3. If you know a likely section number that is NOT in the ledger, write the phrase "مرجع متوقع يحتاج تحقق من مصدر مطابق" (or English: "expected reference — needs source verification") instead of a citation token.
 4. Bracketed citation tokens that fail the ledger check will be downgraded server-side to conf:low with section_label:unsupported or source_family:unretrieved.
+5. Sources marked "commentary" or "informative" MUST NOT be presented as legally binding code text. Use phrasing such as "تفسير / commentary" or "إرشاد / informative guidance" and distinguish them from normative requirements.
 `;
 }
 
@@ -1387,11 +1495,22 @@ function verifyAdvisoryCitations(text: string, ledger: EvidenceLedgerEntry[]): V
     const tableRef = tableMatch?.[1] ?? null;
     const conf = (confMatch?.[1] ?? "").toLowerCase();
 
+    // Provenance guard: if the ONLY retrieved evidence for this family is
+    // commentary/informative, the model must not present it as binding code.
+    const provenanceEntries = ledger.filter(e => e.sourceFamily === fam && e.origin !== "structured_table");
+    const onlyNonNormative = provenanceEntries.length > 0 && provenanceEntries.every(e => e.sourceType === "commentary" || e.sourceType === "informative");
+
     // Case 1 — family not in ledger at all → unretrieved
     if (!fams.has(fam)) {
       unsupportedFamily += 1;
       changes += 1;
       return `[${rewriteFields(innerFull, { conf: "low", addLabel: "source_family:unretrieved" })}]`;
+    }
+
+    // Case 1b — family is in ledger but only as commentary/informative
+    if (onlyNonNormative) {
+      changes += 1;
+      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "source_type:commentary_not_code" })}]`;
     }
 
     // Case 2 — family is in ledger, but specific section/table is not
@@ -2025,6 +2144,7 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
   
   try {
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const sourceRegistry = await loadSourceRegistry(supabaseAdmin);
     
     const { data: files, error: listError } = await supabaseAdmin.storage
       .from("ssss")
@@ -2094,7 +2214,7 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
     }
     
     if (candidateFiles.length === 0) {
-      return { context: "", files: [] };
+      return { context: "", files: [], sourceMeta: [] };
     }
     
     // Smart file selection based on page ranges
@@ -2311,7 +2431,11 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
         };
       });
 
-      const result = { context: contextStr, files: [...sourcesUsed], sourceMeta };
+      const result = {
+        context: contextStr,
+        files: [...sourcesUsed],
+        sourceMeta: enrichSourceMetaProvenance(sourceMeta, sourceRegistry, "keyword_chunk"),
+      };
       queryCache.set(cacheKey, { result, timestamp: Date.now() });
       cleanupQueryCache();
       return result;
@@ -2685,6 +2809,7 @@ async function fetchSBCContextVector(
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const sourceRegistry = await loadSourceRegistry(supabaseAdmin);
 
     // 1. Generate query embedding
     const embResponse = await fetch(
@@ -2738,6 +2863,14 @@ async function fetchSBCContextVector(
 
     console.log(`[Vector RAG] Found ${matches.length} matches, top similarity: ${matches[0]?.similarity?.toFixed(3)}`);
 
+    // Build authoritative code_type lookup per file from vector match metadata.
+    const codeTypeMap = new Map<string, string>();
+    for (const match of matches) {
+      if (match.code_type && match.file_name) {
+        codeTypeMap.set(match.file_name, match.code_type);
+      }
+    }
+
     // 4. Build context
     const usedFiles = [...new Set(matches.map((m: any) => m.file_name))] as string[];
     let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
@@ -2783,6 +2916,11 @@ async function fetchSBCContextVector(
         sectionRef = sorted[0];
         sectionConfidence = 'ambiguous';
       }
+      // Resolve provenance from source_registry using the authoritative
+      // code_type returned by match_sbc_documents for this file's chunks.
+      const codeTypeForFile = codeTypeMap.get(file);
+      const sourceId = sourceIdFromCodeType(codeTypeForFile) ?? sourceIdFromFamily(familyFromFileName(file));
+      const { sourceType, editionYear } = resolveProvenance(sourceRegistry, sourceId);
       return {
         file,
         pageStart: m?.minPage ?? null,
@@ -2790,6 +2928,9 @@ async function fetchSBCContextVector(
         precision: hasPages ? 'page_range' : 'chunk_range_only',
         sectionRef,
         sectionConfidence,
+        origin: "vector_chunk",
+        sourceType,
+        editionYear,
       };
     });
 
@@ -5955,7 +6096,7 @@ ABSOLUTELY FORBIDDEN:
               type: "thinking_status",
               stage: evt.phase,
               message: msg,
-              workflow: _routerResultB2?.workflow_id ?? null,
+              workflow: (_routerResultB2 as RouterResult | null)?.workflow_id ?? null,
             });
             thinkingChunks.push(enc.encode(`data: ${payload}\n\n`));
           } catch { /* skip malformed event — never break the answer stream */ }

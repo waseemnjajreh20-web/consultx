@@ -1,0 +1,6391 @@
+{
+  "extracted_at": "2026-08-21T12:06:36.900Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "columns",
+  "count": 78,
+  "data": [
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "instance_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "payload",
+          "data_type": "json",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "''::character varying",
+          "column_name": "ip_address",
+          "data_type": "character varying",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        }
+      ],
+      "table_name": "audit_log_entries",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "provider_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "identifier",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "client_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "client_secret",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "acceptable_client_ids",
+          "data_type": "ARRAY",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "scopes",
+          "data_type": "ARRAY",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "true",
+          "column_name": "pkce_enabled",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "attribute_mapping",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "authorization_params",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "true",
+          "column_name": "enabled",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "false",
+          "column_name": "email_optional",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "issuer",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": null,
+          "column_name": "discovery_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": "false",
+          "column_name": "skip_nonce_check",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "cached_discovery",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": null,
+          "column_name": "discovery_cached_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": null,
+          "column_name": "authorization_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 19
+        },
+        {
+          "column_default": null,
+          "column_name": "token_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 20
+        },
+        {
+          "column_default": null,
+          "column_name": "userinfo_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 21
+        },
+        {
+          "column_default": null,
+          "column_name": "jwks_uri",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 22
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 23
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 24
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "custom_claims_allowlist",
+          "data_type": "ARRAY",
+          "is_nullable": "NO",
+          "ordinal_position": 25
+        }
+      ],
+      "table_name": "custom_oauth_providers",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "auth_code",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "code_challenge_method",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "code_challenge",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "provider_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "provider_access_token",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "provider_refresh_token",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "authentication_method",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "auth_code_issued_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "invite_token",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "referrer",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": null,
+          "column_name": "oauth_client_state_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "linking_target_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": "false",
+          "column_name": "email_optional",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 17
+        }
+      ],
+      "table_name": "flow_state",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "provider_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "identity_data",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "provider",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "last_sign_in_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "email",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "identities",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "uuid",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "raw_base_config",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        }
+      ],
+      "table_name": "instances",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "session_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "authentication_method",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        }
+      ],
+      "table_name": "mfa_amr_claims",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "factor_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "verified_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "ip_address",
+          "data_type": "inet",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "otp_code",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "web_authn_session_data",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "mfa_challenges",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "friendly_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "factor_type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "status",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "secret",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "phone",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "last_challenged_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "web_authn_credential",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "web_authn_aaguid",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "last_webauthn_challenge_data",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        }
+      ],
+      "table_name": "mfa_factors",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "authorization_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "client_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "redirect_uri",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "scope",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "state",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "resource",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "code_challenge",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "code_challenge_method",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'code'::auth.oauth_response_type",
+          "column_name": "response_type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "'pending'::auth.oauth_authorization_status",
+          "column_name": "status",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "authorization_code",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "(now() + '00:03:00'::interval)",
+          "column_name": "expires_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "approved_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "nonce",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        }
+      ],
+      "table_name": "oauth_authorizations",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "provider_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "code_verifier",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        }
+      ],
+      "table_name": "oauth_client_states",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "client_secret_hash",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "registration_type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "redirect_uris",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "grant_types",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "client_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "client_uri",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "logo_uri",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "deleted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "'confidential'::auth.oauth_client_type",
+          "column_name": "client_type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "token_endpoint_auth_method",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "oauth_clients",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "client_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "scopes",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "granted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "revoked_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "oauth_consents",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "token_type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "token_hash",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "relates_to",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "one_time_tokens",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "instance_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": "nextval('auth.refresh_tokens_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "token",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "revoked",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "parent",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "session_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "refresh_tokens",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "sso_provider_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "entity_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "metadata_xml",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "metadata_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "attribute_mapping",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "name_id_format",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "saml_providers",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "sso_provider_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "request_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "for_email",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "redirect_to",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "flow_state_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "saml_relay_states",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "version",
+          "data_type": "character varying",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        }
+      ],
+      "table_name": "schema_migrations",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "factor_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "aal",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "not_after",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "refreshed_at",
+          "data_type": "timestamp without time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "user_agent",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "ip",
+          "data_type": "inet",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "tag",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "oauth_client_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "refresh_token_hmac_key",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "refresh_token_counter",
+          "data_type": "bigint",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": null,
+          "column_name": "scopes",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        }
+      ],
+      "table_name": "sessions",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "sso_provider_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "domain",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        }
+      ],
+      "table_name": "sso_domains",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "resource_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "disabled",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        }
+      ],
+      "table_name": "sso_providers",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "instance_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "aud",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "role",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "email",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "encrypted_password",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "email_confirmed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "invited_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "confirmation_token",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "confirmation_sent_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "recovery_token",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "recovery_sent_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "email_change_token_new",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "email_change",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": null,
+          "column_name": "email_change_sent_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "last_sign_in_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "raw_app_meta_data",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": null,
+          "column_name": "raw_user_meta_data",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": null,
+          "column_name": "is_super_admin",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 19
+        },
+        {
+          "column_default": null,
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 20
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 21
+        },
+        {
+          "column_default": "NULL::character varying",
+          "column_name": "phone",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 22
+        },
+        {
+          "column_default": null,
+          "column_name": "phone_confirmed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 23
+        },
+        {
+          "column_default": "''::character varying",
+          "column_name": "phone_change",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 24
+        },
+        {
+          "column_default": "''::character varying",
+          "column_name": "phone_change_token",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 25
+        },
+        {
+          "column_default": null,
+          "column_name": "phone_change_sent_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 26
+        },
+        {
+          "column_default": null,
+          "column_name": "confirmed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 27
+        },
+        {
+          "column_default": "''::character varying",
+          "column_name": "email_change_token_current",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 28
+        },
+        {
+          "column_default": "0",
+          "column_name": "email_change_confirm_status",
+          "data_type": "smallint",
+          "is_nullable": "YES",
+          "ordinal_position": 29
+        },
+        {
+          "column_default": null,
+          "column_name": "banned_until",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 30
+        },
+        {
+          "column_default": "''::character varying",
+          "column_name": "reauthentication_token",
+          "data_type": "character varying",
+          "is_nullable": "YES",
+          "ordinal_position": 31
+        },
+        {
+          "column_default": null,
+          "column_name": "reauthentication_sent_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 32
+        },
+        {
+          "column_default": "false",
+          "column_name": "is_sso_user",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 33
+        },
+        {
+          "column_default": null,
+          "column_name": "deleted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 34
+        },
+        {
+          "column_default": "false",
+          "column_name": "is_anonymous",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 35
+        }
+      ],
+      "table_name": "users",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "challenge_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "session_data",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "expires_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "webauthn_challenges",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "credential_id",
+          "data_type": "bytea",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "public_key",
+          "data_type": "bytea",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "''::text",
+          "column_name": "attestation_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "aaguid",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "0",
+          "column_name": "sign_count",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "transports",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "false",
+          "column_name": "backup_eligible",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "false",
+          "column_name": "backed_up",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "''::text",
+          "column_name": "friendly_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "last_used_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "webauthn_credentials",
+      "table_schema": "auth"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "admin_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "admin_email",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "target_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "action",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "payload",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "admin_audit_log",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "session_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "report_mode",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "1",
+          "column_name": "version_number",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "prompt_snapshot",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "response_content",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'en'::text",
+          "column_name": "output_language",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "'google'::text",
+          "column_name": "model_provider",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "model_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "sources",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "citations",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "evidence_json",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "confidence_note",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": "'pending'::text",
+          "column_name": "engineer_decision",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": null,
+          "column_name": "engineer_decision_note",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 19
+        },
+        {
+          "column_default": null,
+          "column_name": "decided_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 20
+        },
+        {
+          "column_default": null,
+          "column_name": "decided_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 21
+        },
+        {
+          "column_default": null,
+          "column_name": "document_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 22
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 23
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 24
+        }
+      ],
+      "table_name": "ai_report_versions",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "session_mode",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'started'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "conversation_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "started_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "completed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        }
+      ],
+      "table_name": "case_ai_sessions",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "review_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "approver_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "decision",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "decision_note",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        }
+      ],
+      "table_name": "case_approvals",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "client_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "phone_e164",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "email",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "'none'::text",
+          "column_name": "preferred_channel",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "true",
+          "column_name": "receive_updates",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        }
+      ],
+      "table_name": "case_client_contacts",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "uploaded_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "category",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'internal_only'::text",
+          "column_name": "visibility",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "storage_path",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "file_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "file_size_bytes",
+          "data_type": "bigint",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "mime_type",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "1",
+          "column_name": "version_number",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        }
+      ],
+      "table_name": "case_documents",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "author_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "body",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'internal_only'::text",
+          "column_name": "visibility",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        }
+      ],
+      "table_name": "case_notes",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "public_token",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "true",
+          "column_name": "public_enabled",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "public_title",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "public_summary",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "false",
+          "column_name": "show_engineer_contact",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "true",
+          "column_name": "show_progress_percent",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "last_published_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        }
+      ],
+      "table_name": "case_public_tracking",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "title_ar",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "title_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "body_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "body_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "public_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "progress_percent",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "false",
+          "column_name": "client_action_required",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "required_action_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "required_action_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "published_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "published_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "false",
+          "column_name": "notify_client",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": "'not_sent'::text",
+          "column_name": "notification_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 16
+        }
+      ],
+      "table_name": "case_public_updates",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "review_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "report_version_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "linked_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "case_review_ai_reports",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "reviewer_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'draft'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "1",
+          "column_name": "revision_number",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "summary",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "findings",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "recommendation",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "submitted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "returned_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "accepted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "case_reviews",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "from_status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "to_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "actor_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "note",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        }
+      ],
+      "table_name": "case_status_history",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "task_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "from_status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "to_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "actor_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "note",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "case_task_events",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "case_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "assigned_to",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'open'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "'normal'::text",
+          "column_name": "priority",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "due_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "completed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        }
+      ],
+      "table_name": "case_tasks",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "level",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "community_id",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "summary",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "summary_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "node_ids",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "sbc_sources",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "topic_keywords",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "central_theme",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "compliance_chain",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "cross_references",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "design_impact",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        }
+      ],
+      "table_name": "community_summaries",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "'محادثة جديدة'::text",
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "'standard'::text",
+          "column_name": "mode",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "conversations",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('corpus_coverage_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "file_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "page_start",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "page_end",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "chunk_count",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "file_size_bytes",
+          "data_type": "bigint",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "sha256",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "'present'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "last_checked",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        }
+      ],
+      "table_name": "corpus_coverage",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "CURRENT_DATE",
+          "column_name": "usage_date",
+          "data_type": "date",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "0",
+          "column_name": "message_count",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "daily_message_usage",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('document_tables_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "table_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "section_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "table_number",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "caption_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "caption_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "page_start",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "page_end",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "true",
+          "column_name": "normative",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "axis_schema",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "rows",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "'[]'::jsonb",
+          "column_name": "footnotes",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "now()",
+          "column_name": "last_updated",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        }
+      ],
+      "table_name": "document_tables",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": "0",
+          "column_name": "last_number",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        }
+      ],
+      "table_name": "enterprise_case_counters",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "case_number",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "client_ref",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "client_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'draft'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "assigned_engineer_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "head_reviewer_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "submitted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "assigned_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "completed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": null,
+          "column_name": "delivered_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "closed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "cancelled_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 19
+        }
+      ],
+      "table_name": "enterprise_cases",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "target_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "relationship_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "1.0",
+          "column_name": "weight",
+          "data_type": "double precision",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "graph_edges",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "file_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "sbc_source",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "page_range",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'pending'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "0",
+          "column_name": "nodes_extracted",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "0",
+          "column_name": "edges_extracted",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "error_message",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "processed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "0",
+          "column_name": "last_processed_chunk",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        }
+      ],
+      "table_name": "graph_indexing_status",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "sbc_source",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "page_range",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "chapter",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "keywords",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "name_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "section_ref",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "numerical_value",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "unit",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "description_visual",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "'text'::text",
+          "column_name": "content_type",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "structured_table",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "chunk_id",
+          "data_type": "bigint",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        }
+      ],
+      "table_name": "graph_nodes",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "conversation_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "role",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "content",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "sources",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "image_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "image_urls",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        }
+      ],
+      "table_name": "messages",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "CURRENT_DATE",
+          "column_name": "usage_date",
+          "data_type": "date",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "mode",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "0",
+          "column_name": "count",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "mode_daily_usage",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "email",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "'engineer'::text",
+          "column_name": "role",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "token",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'pending'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "expires_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "accepted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        }
+      ],
+      "table_name": "org_invitations",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "now()",
+          "column_name": "last_seen_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        }
+      ],
+      "table_name": "org_member_presence",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "member_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "display_name_override",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "role_title_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "role_title_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "department",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "phone_ext",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "notes",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        }
+      ],
+      "table_name": "org_member_profiles",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "role",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'active'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "invited_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "invited_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "joined_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "removed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        }
+      ],
+      "table_name": "org_members",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "author_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "body",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "false",
+          "column_name": "is_deleted",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "edited_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        }
+      ],
+      "table_name": "org_messages",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "org_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "logo_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "report_header_ar",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "report_header_en",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "primary_color",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "secondary_color",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "'standard'::text",
+          "column_name": "default_report_style",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "updated_by",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        }
+      ],
+      "table_name": "organization_branding_settings",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "owner_user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "'trial'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "trial_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "(now() + '1 mon'::interval)",
+          "column_name": "trial_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "subscription_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "organizations",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_charge_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "amount",
+          "data_type": "numeric",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'SAR'::text",
+          "column_name": "currency",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "plan",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "billing_cycle",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'INITIATED'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "payment_history",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "subscription_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_charge_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "amount",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'SAR'::text",
+          "column_name": "currency",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "'initiated'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'verification'::text",
+          "column_name": "payment_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "moyasar_payment_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "failure_code",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "failure_message",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "0",
+          "column_name": "retry_count",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "payment_transactions",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "name_ar",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "0",
+          "column_name": "price",
+          "data_type": "numeric",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "0",
+          "column_name": "annual_price",
+          "data_type": "numeric",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'month'::text",
+          "column_name": "interval",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "plan_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "features",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "plans",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "'free'::text",
+          "column_name": "plan_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "trial_type",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "trial_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "trial_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "corporate_domain",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "false",
+          "column_name": "trial_expired_modal_shown",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "subscription_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "subscription_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "billing_cycle",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_charge_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "0",
+          "column_name": "daily_message_count",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "daily_message_date",
+          "data_type": "date",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "launch_trial_status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": null,
+          "column_name": "launch_trial_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": null,
+          "column_name": "launch_trial_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 19
+        },
+        {
+          "column_default": "false",
+          "column_name": "launch_trial_consumed",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 20
+        },
+        {
+          "column_default": null,
+          "column_name": "launch_source",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 21
+        },
+        {
+          "column_default": "'user'::text",
+          "column_name": "role",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 22
+        }
+      ],
+      "table_name": "profiles",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "table_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "table_title",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "source_code",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'2024'::text",
+          "column_name": "edition",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "chapter",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "section",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "content_md",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "keywords",
+          "data_type": "ARRAY",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "notes",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'{}'::text[]",
+          "column_name": "supersedes",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        }
+      ],
+      "table_name": "sbc_code_tables",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('sbc_documents_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "content",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "metadata",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "embedding",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "code_type",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "section_number",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "chapter_number",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "page_start",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "page_end",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "file_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "chunk_index",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "canonical_section_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "true",
+          "column_name": "normative",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "'AR'::text",
+          "column_name": "language",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        }
+      ],
+      "table_name": "sbc_documents",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('sbc_pages_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "code_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "title",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "version",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "'ConsultX_file'::text",
+          "column_name": "bucket",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "file_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "json_page",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "chapter_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "section_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "code_text",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "commentary",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "full_text",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        }
+      ],
+      "table_name": "sbc_pages",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "full_name_ar",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "full_name_en",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "authority_level",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "tier",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'SA'::text",
+          "column_name": "jurisdiction",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "edition_year",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "total_pages",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "'pending'::text",
+          "column_name": "ingestion_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "false",
+          "column_name": "coverage_verified",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "false",
+          "column_name": "vector_indexed",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "last_validated",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "source_registry",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('source_versions_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "now()",
+          "column_name": "ingested_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "file_count",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "chunk_count",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "vector_row_count",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_1_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_2_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_3_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_4_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_5_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "gate_6_pass",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "notes",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "created_by",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        }
+      ],
+      "table_name": "source_versions",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name_ar",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "name_en",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "'monthly'::text",
+          "column_name": "type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "price_amount",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'SAR'::text",
+          "column_name": "currency",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "30",
+          "column_name": "duration_days",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "'individual'::text",
+          "column_name": "target",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "true",
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "3",
+          "column_name": "trial_period_days",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "'[\"Main\"]'::jsonb",
+          "column_name": "features_access",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "plan_type",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": null,
+          "column_name": "slug",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "features",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "price_per_seat",
+          "data_type": "integer",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": "1",
+          "column_name": "min_seats",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 17
+        }
+      ],
+      "table_name": "subscription_plans",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "display_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "avatar_url",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "job_title",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "phone",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "bio",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "'ar'::text",
+          "column_name": "preferred_language",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "user_public_profiles",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "plan_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "'trialing'::text",
+          "column_name": "status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "trial_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "trial_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "current_period_start",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "current_period_end",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_customer_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_card_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_payment_agreement_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "card_brand",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "card_last_four",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 13
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": null,
+          "column_name": "moyasar_payment_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 16
+        },
+        {
+          "column_default": null,
+          "column_name": "moyasar_card_token",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 17
+        },
+        {
+          "column_default": null,
+          "column_name": "past_due_since",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 18
+        },
+        {
+          "column_default": "false",
+          "column_name": "cancel_at_period_end",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 19
+        },
+        {
+          "column_default": null,
+          "column_name": "cancelled_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 20
+        },
+        {
+          "column_default": null,
+          "column_name": "next_billing_date",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 21
+        },
+        {
+          "column_default": null,
+          "column_name": "dunning_notified_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 22
+        },
+        {
+          "column_default": null,
+          "column_name": "moyasar_given_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 23
+        },
+        {
+          "column_default": "1",
+          "column_name": "seat_count",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 24
+        }
+      ],
+      "table_name": "user_subscriptions",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "nextval('validation_runs_id_seq'::regclass)",
+          "column_name": "id",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "source_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "gate",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "now()",
+          "column_name": "run_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "passed",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "'{}'::jsonb",
+          "column_name": "details",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "script_name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "validation_runs",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "charge_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "tap_status",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "reason",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "payload",
+          "data_type": "jsonb",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        }
+      ],
+      "table_name": "webhook_dead_letters",
+      "table_schema": "public"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "owner",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "false",
+          "column_name": "public",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "false",
+          "column_name": "avif_autodetection",
+          "data_type": "boolean",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "file_size_limit",
+          "data_type": "bigint",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "allowed_mime_types",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "owner_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": "'STANDARD'::storage.buckettype",
+          "column_name": "type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": "'DISABLED'::text",
+          "column_name": "versioning_status",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 12
+        }
+      ],
+      "table_name": "buckets",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": "'ANALYTICS'::storage.buckettype",
+          "column_name": "type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "'ICEBERG'::text",
+          "column_name": "format",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "deleted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        }
+      ],
+      "table_name": "buckets_analytics",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": "'VECTOR'::storage.buckettype",
+          "column_name": "type",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        }
+      ],
+      "table_name": "buckets_vectors",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "character varying",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "hash",
+          "data_type": "character varying",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": "CURRENT_TIMESTAMP",
+          "column_name": "executed_at",
+          "data_type": "timestamp without time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        }
+      ],
+      "table_name": "migrations",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "bucket_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "owner",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": "now()",
+          "column_name": "last_accessed_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "metadata",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "path_tokens",
+          "data_type": "ARRAY",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "version",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        },
+        {
+          "column_default": null,
+          "column_name": "owner_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 11
+        },
+        {
+          "column_default": null,
+          "column_name": "user_metadata",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 12
+        },
+        {
+          "column_default": null,
+          "column_name": "archived_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "ordinal_position": 14
+        },
+        {
+          "column_default": "false",
+          "column_name": "is_delete_marker",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 15
+        },
+        {
+          "column_default": "false",
+          "column_name": "is_versioned",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "ordinal_position": 16
+        }
+      ],
+      "table_name": "objects",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": null,
+          "column_name": "id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": "0",
+          "column_name": "in_progress_size",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "upload_signature",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "bucket_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "key",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "version",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "owner_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "user_metadata",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": null,
+          "column_name": "metadata",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 10
+        }
+      ],
+      "table_name": "s3_multipart_uploads",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "upload_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": "0",
+          "column_name": "size",
+          "data_type": "bigint",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "part_number",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "bucket_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "key",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "etag",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": null,
+          "column_name": "owner_id",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": null,
+          "column_name": "version",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 10
+        }
+      ],
+      "table_name": "s3_multipart_uploads_parts",
+      "table_schema": "storage"
+    },
+    {
+      "columns": [
+        {
+          "column_default": "gen_random_uuid()",
+          "column_name": "id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 1
+        },
+        {
+          "column_default": null,
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 2
+        },
+        {
+          "column_default": null,
+          "column_name": "bucket_id",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 3
+        },
+        {
+          "column_default": null,
+          "column_name": "data_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 4
+        },
+        {
+          "column_default": null,
+          "column_name": "dimension",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "ordinal_position": 5
+        },
+        {
+          "column_default": null,
+          "column_name": "distance_metric",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "ordinal_position": 6
+        },
+        {
+          "column_default": null,
+          "column_name": "metadata_configuration",
+          "data_type": "jsonb",
+          "is_nullable": "YES",
+          "ordinal_position": 7
+        },
+        {
+          "column_default": "now()",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 8
+        },
+        {
+          "column_default": "now()",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "ordinal_position": 9
+        }
+      ],
+      "table_name": "vector_indexes",
+      "table_schema": "storage"
+    }
+  ]
+}

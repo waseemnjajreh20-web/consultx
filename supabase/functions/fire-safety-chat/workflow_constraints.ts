@@ -60,7 +60,7 @@ export function augmentWithWorkflow(
     hints.push({
       node_id: ps.node_id,
       ref: ps.ref,
-      title: ps.title ?? node.node_type !== "orphan" ? (node as any).title ?? null : null,
+      title: ps.title ?? (node as any).title ?? null,
       page_start: ps.page_start ?? (node as any).page_start ?? null,
       source_pdf: ps.source_pdf ?? (node as any).source_pdf ?? null,
       hint_type: "primary_section",
@@ -113,10 +113,10 @@ export function augmentWithWorkflow(
     if (hints.some(h => h.node_id === edge.to_node)) continue;  // already added
     hints.push({
       node_id: edge.to_node,
-      ref: target.node_type !== "orphan" ? (target as any).ref : "",
-      title: target.node_type !== "orphan" ? (target as any).title ?? null : null,
-      page_start: target.node_type !== "orphan" ? (target as any).page_start ?? null : null,
-      source_pdf: target.node_type !== "orphan" ? (target as any).source_pdf ?? null : null,
+      ref: (target as any).ref,
+      title: (target as any).title ?? null,
+      page_start: (target as any).page_start ?? null,
+      source_pdf: (target as any).source_pdf ?? null,
       hint_type: "xref",
       boost_weight: 1.5,
     });

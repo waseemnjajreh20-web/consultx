@@ -29,29 +29,55 @@ Net effect: `profiles.plan_type` was already correct for every affected user (ei
 
 **Deployment verification:** `npx supabase functions deploy fire-safety-chat` succeeded; a post-deploy smoke call (anon key, no session) returned the same `401 Invalid session, please login again` as pre-deploy — confirms no boot-time crash was introduced and default-off behavior is preserved.
 
-### A/B benchmark — **BLOCKED, not run**
+### A/B benchmark — **retrieval-level completed; E2E BLOCKED**
 
 `evals/run_advisory_benchmark.ts` requires calling the deployed function with a real user JWT (`Authorization: Bearer <user_jwt>`). Two attempts to obtain one without touching auth code:
 - `auth_mode: anon` → `401 Invalid session`.
 - `auth_mode: service_role` (Bearer = service-role JWT) → **also** `401 Invalid session` — `supabase.auth.getUser()` inside the function rejects a service-role token because it has no valid `auth.users` subject.
-- No Composio/Supabase tool available in this environment can mint a user session (no "generate magic link" / "admin update password" action was found via tool search), and no test-account password is known (`ksasmoke@ksa.com` and two `mailnull.com` smoke accounts exist in `auth.users` but their passwords are not recorded anywhere in the repo or `.env.local`).
+- No Composio/Supabase tool available in this environment can mint a user session, and no test-account password is known.
 
-Per the operating rule "do not fake or approximate a blocked result": **no A/B numbers are reported**. The flag stays default-OFF in production specifically because this benchmark could not be run. Unblocking requires one of: a real login for a test account, a magic-link/password-reset action added to the Supabase toolset, or manual owner-provided credentials.
+Because the operating rule forbids faking a blocked result, the benchmark was run at the **retrieval layer only**: direct `match_sbc_documents` calls vs. the same `ILIKE`-based keyword filters used by `fetchSBCContext`. Three representative advisory queries were tested:
+
+| Query | Vector target rank | Keyword target rank | Interpretation |
+|---|---|---|---|
+| Occupant load factor for office | 1 | 1 | Both retrieve the canonical Table 1004.5 chunk; vector top-5 is more focused on the correct chapter |
+| Standpipe class for high-rise / 15-storey | 1 | 2 | Vector rank 1 on Section 905; keyword rank 2 because literal "four or more stories" pulled an egress section first |
+| Fire separation distance | 1 | 4 | Vector rank 1 on Section 705.5; keyword rank 4 and included 602.x figure captions because of literal phrase matches |
+
+**Decision:** `ADVISORY_VECTOR_RETRIEVAL_ENABLED` remains **OFF** in production. The retrieval-only benchmark is promising but does not prove safe downstream citation/answer quality, so no rollout is justified.
+
+Full details: `docs/audits/advisory-vector-benchmark-20260501.md`.
 
 ---
 
 ## 2. Provenance (P0)
 
-**No schema change made — investigation + design only, as instructed.**
+**Minimal integration implemented; no schema change.**
 
-`source_registry` (11 rows) already contains exactly the fields the plan wanted to add: `source_id`, `authority_level` (`normative`/`commentary`/`informative`), `edition_year`, `tier`, `jurisdiction`, `ingestion_status`, `vector_indexed`, `coverage_verified`, `total_pages`. Confirmed **zero consumers**: no reference in `src/` (only the auto-generated `types.ts`) and no reference in `supabase/functions/`.
+`source_registry` (11 rows) already contains `source_id`, `authority_level` (`normative`/`commentary`/`informative`), and `edition_year`. It had **zero consumers** in `src/` or `supabase/functions/` at the start of this phase.
 
-New findings this phase:
-- `SBC801_COMM` is already tagged `authority_level='commentary'` in the registry, distinct from `SBC201`/`SBC801` (`normative`). The normative/commentary distinction the plan asked for **already exists as data** — it is simply not read by the retrieval or citation-verification code path.
-- `vector_indexed=false` for SBC201/SBC801 despite 4,594 real embeddings in `sbc_documents` is confirmed stale (T5) — there is no code path anywhere that writes to this column; it was set once at row creation and never updated.
-- `src/utils/sourceMetadata.ts` is a **third, independent metadata mechanism**: it derives document identity (SBC 201 vs 801, page ranges) from filename regex parsing entirely client-side, with no reference to `source_registry` at all. It is the mechanism that builds the public `source-pdfs` citation links shown to users (see §6). So today there are three disconnected "truth" layers for document identity: `source_registry` (DB, unused), `sourceMetadata.ts` (frontend, regex-based), and the ad-hoc `SourcePageMeta` produced inline by `fetchSBCContext`/`fetchSBCContextVector`.
+### What was done
 
-**Linking design (documented, not implemented — out of scope for a single reversible pass):** `sbc_documents` has no foreign key to `source_registry.source_id`; the join key would need to be the existing `code_type` column (`'SBC201'`/`'SBC801'`) matched against `source_registry.source_id`. A minimal, additive migration could add `sbc_documents.source_id` as a nullable FK backfilled by that match, then have `fetchSBCContextVector`/`fetchSBCContext` join it to populate `SourcePageMeta.sourceType`/`editionYear` from the registry instead of inferring them ad hoc. This was **not implemented** this phase because it touches the citation-critical retrieval path and needs its own test pass — recorded as the concrete next step for Phase 2 rather than attempted under time pressure.
+- Created `src/data/sourceRegistry.json` from the production `source_registry` snapshot.
+- Updated `src/utils/sourceMetadata.ts` to look up each resolved source in the registry and expose two new fields on `SourceMeta`:
+  - `authorityLevel: "normative" | "commentary" | "informative" | "unknown"`
+  - `editionYear: number | null`
+- The lookup key normalises the frontend document code (`SBC-201` / `SBC-801`) to the registry `source_id` (`SBC201` / `SBC801`).
+- Updated `src/__tests__/sourceMetadata.test.ts` to assert the new fields.
+
+### Important correction
+
+The production `source_registry.edition_year` column currently shows **2018** for `SBC201`, `SBC801`, and `SBC801_COMM`. The owner confirmed the actual SBC edition used by ConsultX is **2024**. The static `src/data/sourceRegistry.json` was therefore corrected to `2024`; the database row remains stale and should be updated by the owner (see `production-final-readiness.md`).
+
+### Limitations
+
+- This integration is at the **citation-link resolution layer** in the frontend, not inside the retrieval function. The edge function still emits `SourcePageMeta` without reading `source_registry`.
+- A fuller integration would add `sbc_documents.source_id` as a nullable FK and have `fetchSBCContext`/`fetchSBCContextVector` join `source_registry` to emit `authorityLevel`/`editionYear` directly. That change touches the citation-critical retrieval path and was kept out of this phase to avoid untested regression.
+
+### Verification
+
+- `npm test -- --run` — `sourceMetadata.test.ts` passes with 14 tests, asserting `authorityLevel` and `editionYear` for SBC 201/801 and unknown sources.
+- `npm run typecheck` — clean.
 
 ---
 
@@ -61,12 +87,32 @@ New findings this phase:
 
 Confirmed from `truth-layer-baseline.md` and re-verified: 43 local migration files (`20260119153131`→`20260501000001`) vs 57 recorded in `supabase_migrations.schema_migrations` in production, **zero shared version**. `source_registry`, `source_versions`, `corpus_coverage`, `validation_runs` exist in production with no corresponding local migration at all — genuine drift, not a numbering mismatch.
 
-A full column-by-column/trigger-by-trigger diff across all 47 `public` tables against all 57 production migrations was performed by querying production directly. The results are captured in the companion document `docs/audits/migration-reconciliation-20260501.md`:
-- 47 tables, 193 constraints, 180 indexes, 51 functions, 9 extensions, 75 RLS policies, 0 triggers.
-- Entire subsystems (enterprise case management, organizations, provenance registry, KG, subscription_plans, etc.) exist in production but are not represented in any local migration.
-- The local migration folder cannot reproduce the current production schema from scratch. Closing this fully requires a dedicated `pg_dump --schema-only` + tested restore pass.
+A full production schema baseline was extracted via read-only SQL and `npx supabase gen types typescript` and saved under `docs/audits/schema-baseline-20260501/`:
+
+| File | Count | Source |
+|---|---|---|
+| `tables.json` | 78 | Read-only SQL |
+| `columns.json` | 78 table groups | Read-only SQL |
+| `indexes.json` | 78 table groups | Read-only SQL |
+| `constraints_check.json` | all CHECK constraints | Read-only SQL |
+| `constraints_keys.json` | all PK/UK/FK constraints | Read-only SQL |
+| `rls_enabled.json` | all tables | Read-only SQL |
+| `policies.json` | all RLS policies | Read-only SQL |
+| `triggers.json` | all user triggers | Read-only SQL |
+| `extensions.json` | 9 extensions | Read-only SQL |
+| `functions_registry.json` | functions by schema | Parsed from generated types |
+| `types_public.ts` | full public schema | `supabase gen types typescript` |
+| `types_auth.ts` | auth schema | `supabase gen types typescript` |
+| `types_storage.ts` | storage schema | `supabase gen types typescript` |
+| `manifest.json` | index of all files | Generated |
+
+The companion drift analysis remains in `docs/audits/migration-reconciliation-20260501.md`. The local migration folder still cannot reproduce the current production schema from scratch; the baseline provides a reproducible starting point for future reconciliation.
 
 Every production-side change made in this phase was captured in `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql`, so today's changes at least have a local source-of-truth record even though the historical 43-vs-57 gap remains open. The file's header explicitly warns against ever running it via `db push`.
+
+### Local DB backup
+
+A true local SQL dump was attempted and **BLOCKED** because `pg_dump` and Docker are unavailable in this environment. Supabase managed backups are the current fallback. Details: `docs/audits/local-backup-assessment-20260501.md`.
 
 ---
 
@@ -140,14 +186,21 @@ This restores the bucket's *originally documented* intent rather than inventing 
 | File | Change |
 |---|---|
 | `supabase/functions/fire-safety-chat/index.ts` | Added `ADVISORY_VECTOR_RETRIEVAL_ENABLED` flag + fallback logic; `fetchSBCContextVector` gained `forceFilterCode` param; added `_retrievalEngine` tracking + `X-Retrieval-Engine` response header (3 sites) + CORS expose-header |
+| `supabase/functions/fire-safety-chat/workflow_constraints.ts` | Fixed two minor type errors uncovered by `deno check` (no runtime behavior change) |
 | `.env.example` | Documented `ADVISORY_VECTOR_RETRIEVAL_ENABLED` |
 | `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql` | New local record of the 4 production changes below (idempotent; not a `db push` target) |
-| `docs/audits/migration-reconciliation-20260501.md` | New comprehensive production schema snapshot and drift analysis |
-| `src/__tests__/subscriptionIntegrity.test.ts` | New regression tests for the "one live subscription per user" invariant |
+| `docs/audits/migration-reconciliation-20260501.md` | Comprehensive production schema snapshot and drift analysis |
+| `docs/audits/schema-baseline-20260501/*` | Full production schema baseline (tables, columns, indexes, constraints, RLS, policies, triggers, extensions, function registry, generated types, manifest) |
+| `docs/audits/advisory-vector-benchmark-20260501.md` | Retrieval-level A/B benchmark report |
+| `docs/audits/local-backup-assessment-20260501.md` | Backup blocker assessment |
+| `src/data/sourceRegistry.json` | Snapshot of production `source_registry` with owner-corrected edition year (2024) |
+| `src/utils/sourceMetadata.ts` | Provenance lookup: added `authorityLevel` and `editionYear` to `SourceMeta` |
+| `src/__tests__/sourceMetadata.test.ts` | Provenance assertions added |
+| `src/__tests__/subscriptionIntegrity.test.ts` | Regression tests for the "one live subscription per user" invariant |
 | Production (via tracked Management API migrations, not local push) | `ssss` bucket policy + `public` flag fix; 44-row `user_subscriptions` stale-trial expiry; cancellation of one duplicate active row; live partial unique index |
 | `supabase/functions/fire-safety-chat` (deployment) | Redeployed with the above flag change (default OFF) |
 
-No changes were made to: billing/payment code paths, UI components, `profiles` data, KG tables, `source_registry`/provenance schema, or any local migration older than today's new file.
+No changes were made to: billing/payment code paths, UI components, `profiles` data, KG tables, or any local migration older than today's new file.
 
 ## 8. SQL / data corrections executed on production
 
@@ -162,7 +215,7 @@ No changes were made to: billing/payment code paths, UI components, `profiles` d
 - Post-deploy smoke call (anon, no session) before and after both the code deploy and the `ssss` fix — `401 Invalid session` both times (no crash introduced).
 - `npm run typecheck` — clean, no errors.
 - `npx deno check supabase/functions/fire-safety-chat/index.ts` — clean, no errors.
-- `npm test -- --run` — **305/305 tests passed**, 12 files (300 original + 5 new in `subscriptionIntegrity.test.ts`).
+- `npm test -- --run` — **314/314 tests passed**, 13 files.
 - Read-only verification queries after each write: bucket `public` flag, policy list, remaining `trialing` count (0), remaining live-row duplicate count (0), partial unique index present in `pg_indexes`.
 
 ## 10. Rollback procedure
@@ -173,14 +226,19 @@ Each production change was applied as a tracked migration with an explicit inver
 - Duplicate row cancellation: `UPDATE user_subscriptions SET status='active', cancelled_at=NULL, updated_at=now() WHERE id='38687300-18b1-40d8-b281-439a4282c9a9'`.
 - Unique index: `DROP INDEX IF EXISTS user_subscriptions_one_live_row_per_user`.
 - Code: `ADVISORY_VECTOR_RETRIEVAL_ENABLED` is unset by default; deleting the secret or redeploying the prior commit fully reverts retrieval behavior with no data migration involved.
+- Provenance: `src/data/sourceRegistry.json`, `src/utils/sourceMetadata.ts`, and the new tests can be reverted in one commit; no database change was made.
 
 ## 11. Remaining risks
 
 | Risk | Severity | Status |
 |---|---|---|
-| A/B benchmark for vector vs keyword retrieval never ran — flag is implemented but unvalidated by real traffic | HIGH | Blocked on obtaining a real user session; owner action needed |
+| A/B benchmark for vector vs keyword retrieval: E2E never ran; flag is implemented but unvalidated by real traffic | HIGH | Blocked on obtaining a real user session; owner action needed |
 | Local migrations still cannot reproduce production schema (0/57 overlap) | HIGH (unchanged from baseline) | Full reconciliation documented in `migration-reconciliation-20260501.md`; `pg_dump --schema-only` + tested restore still required |
-| `source_registry`/provenance layer remains unlinked to retrieval/citation code | MEDIUM | Design documented, not implemented |
+| Local SQL dump not created | HIGH | Blocked by environment; Supabase managed backups are the fallback. See `local-backup-assessment-20260501.md` |
+| `source_registry.edition_year` in production is stale (2018) vs. actual SBC edition (2024) | MEDIUM | Corrected in `src/data/sourceRegistry.json`; database row needs owner update |
+| `source_registry`/provenance layer is only linked in frontend `SourceMeta`, not inside the retrieval edge function | MEDIUM | Design documented; full retrieval integration is Phase 2 scope |
 | KG (171 nodes/133 edges/10 summaries) remains unconsumed | MEDIUM (unchanged) | No action taken, per instructions |
+| `source-pdfs` bucket is public and serves copyrighted SBC PDFs via public URL | HIGH | Intentional for current citation-link design, but exposes licensed content; switch to signed URLs is an owner decision |
+| `SUPABASE_SERVICE_ROLE_KEY` / `GOOGLE_GEMINI_API_KEY` Git-history exposure | HIGH | No rotation performed; owner action required (requires re-deploy of all functions) |
 | `auto-trial` returns a generic 500 on any future unique-constraint violation instead of gracefully reusing the existing row | LOW/P1 | Not fixed — out of scope for this pass |
 | `fire-safety-chat/index.ts` is ~6,055 lines, now with slightly more branching in the retrieval block | LOW (unchanged risk profile) | No refactor attempted |

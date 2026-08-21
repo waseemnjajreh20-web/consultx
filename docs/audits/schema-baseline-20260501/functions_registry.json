@@ -1,0 +1,679 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "supabase gen types typescript",
+  "object_type": "functions_registry",
+  "count": 68,
+  "data": [
+    {
+      "schema": "public",
+      "function_name": "accept_org_invitation",
+      "args": {
+        "p_token": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "assign_enterprise_case",
+      "args": {
+        "p_assigned_engineer_id?": "string",
+        "p_case_id": "string",
+        "p_head_reviewer_id?": "string",
+        "p_note?": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "attach_ai_report_version",
+      "args": {
+        "p_citations?": "Json",
+        "p_confidence_note?": "string",
+        "p_document_id?": "string",
+        "p_evidence_json?": "Json",
+        "p_model_name": "string",
+        "p_model_provider?": "string",
+        "p_output_language?": "string",
+        "p_prompt_snapshot?": "string",
+        "p_report_mode": "string",
+        "p_response_content": "string",
+        "p_session_id": "string",
+        "p_sources?": "Json",
+        "p_title": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "can_access_enterprise_document_object",
+      "args": {
+        "p_object_name": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "create_case_ai_session",
+      "args": {
+        "p_case_id": "string",
+        "p_conversation_id?": "string",
+        "p_session_mode": "string",
+        "p_title?": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "create_case_task",
+      "args": {
+        "p_assigned_to?": "string",
+        "p_case_id": "string",
+        "p_description?": "string",
+        "p_due_at?": "string",
+        "p_priority?": "string",
+        "p_title": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "create_enterprise_case",
+      "args": {
+        "p_client_name?": "string",
+        "p_client_ref?": "string",
+        "p_description?": "string",
+        "p_org_id": "string",
+        "p_title": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "create_org_invitation_enforced",
+      "args": {
+        "p_email": "string",
+        "p_org_id": "string",
+        "p_role": "string"
+      },
+      "returns": "{\n          accepted_at: string | null\n          created_at: string\n          created_by: string\n          email: string\n          expires_at: string\n          id: string\n          org_id: string\n          role: string\n          status: string\n          token: string\n          updated_at: string\n        }"
+    },
+    {
+      "schema": "public",
+      "function_name": "create_organization_with_owner",
+      "args": {
+        "p_name": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "decide_ai_report_version",
+      "args": {
+        "p_decision": "string",
+        "p_decision_note?": "string",
+        "p_report_version_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "decide_case_approval",
+      "args": {
+        "p_case_id": "string",
+        "p_decision": "string",
+        "p_decision_note?": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "decrement_mode_daily_count",
+      "args": {
+        "p_mode": "string",
+        "p_user_id": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "edit_org_message",
+      "args": {
+        "p_message_id": "string",
+        "p_new_body": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "ensure_case_public_tracking",
+      "args": {
+        "p_case_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_all_mode_daily_counts",
+      "args": {
+        "p_user_id": "string"
+      },
+      "returns": "{\n          count: number\n          mode: string\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_daily_usage",
+      "args": {
+        "p_user_id": "string"
+      },
+      "returns": "number"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_indexed_chunk_count",
+      "args": "never",
+      "returns": "number"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_mode_daily_count",
+      "args": {
+        "p_mode": "string",
+        "p_user_id": "string"
+      },
+      "returns": "number"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_node_neighbors",
+      "args": {
+        "p_limit?": "number",
+        "p_node_ids": "string[]"
+      },
+      "returns": "{\n          description: string\n          description_visual: string\n          name: string\n          node_id: string\n          rel_description: string\n          rel_type: string\n          sbc_source: string\n          section_ref: string\n          structured_table: string\n          type: string\n          weight: number\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_org_member_role",
+      "args": {
+        "p_org_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_org_seat_usage",
+      "args": {
+        "p_org_id": "string"
+      },
+      "returns": "{\n          active_members_count: number\n          available_seats: number\n          is_enforced: boolean\n          min_seats: number\n          org_id: string\n          pending_invitations_count: number\n          plan_slug: string\n          seat_count: number\n          subscription_id: string\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "get_unindexed_chunks",
+      "args": {
+        "p_batch_size?": "number"
+      },
+      "returns": "{\n          chapter_number: string\n          code_type: string\n          content: string\n          file_name: string\n          id: number\n          page_end: number\n          page_start: number\n          section_number: string\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "increment_daily_usage",
+      "args": {
+        "p_user_id": "string"
+      },
+      "returns": "number"
+    },
+    {
+      "schema": "public",
+      "function_name": "increment_mode_daily_count",
+      "args": {
+        "p_mode": "string",
+        "p_user_id": "string"
+      },
+      "returns": "number"
+    },
+    {
+      "schema": "public",
+      "function_name": "is_active_case_member",
+      "args": {
+        "p_org_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "is_active_org_member",
+      "args": {
+        "p_org_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "is_case_assignee",
+      "args": {
+        "p_case_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "is_org_owner",
+      "args": {
+        "p_org_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "is_org_owner_or_admin",
+      "args": {
+        "p_org_id": "string",
+        "p_user_id": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "public",
+      "function_name": "link_ai_report_to_review",
+      "args": {
+        "p_report_version_id": "string",
+        "p_review_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "match_sbc_documents",
+      "args": {
+        "filter_code?": "string",
+        "match_count?": "number",
+        "query_embedding": "string"
+      },
+      "returns": "{\n          chapter_number: string\n          code_type: string\n          content: string\n          file_name: string\n          id: number\n          metadata: Json\n          page_end: number\n          page_start: number\n          section_number: string\n          similarity: number\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "publish_case_public_update",
+      "args": {
+        "p_body_ar?": "string",
+        "p_body_en?": "string",
+        "p_case_id": "string",
+        "p_client_action_required?": "boolean",
+        "p_notify_client?": "boolean",
+        "p_progress_percent?": "number",
+        "p_public_status?": "string",
+        "p_required_action_ar?": "string",
+        "p_required_action_en?": "string",
+        "p_title_ar": "string",
+        "p_title_en?": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "regenerate_case_public_token",
+      "args": {
+        "p_case_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "revoke_org_invitation",
+      "args": {
+        "p_invitation_id": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "search_graph_nodes",
+      "args": {
+        "p_chapter?": "number",
+        "p_keywords": "string[]",
+        "p_limit?": "number",
+        "p_sbc_source?": "string"
+      },
+      "returns": "{\n          chapter: number\n          chunk_id: number\n          description: string\n          description_visual: string\n          id: string\n          keywords: string[]\n          name: string\n          name_ar: string\n          sbc_source: string\n          section_ref: string\n          structured_table: string\n          type: string\n        }[]"
+    },
+    {
+      "schema": "public",
+      "function_name": "send_org_message",
+      "args": {
+        "p_body": "string",
+        "p_org_id": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "soft_delete_org_message",
+      "args": {
+        "p_message_id": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "submit_case_review",
+      "args": {
+        "p_case_id": "string",
+        "p_findings?": "Json",
+        "p_recommendation?": "string",
+        "p_summary": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "touch_org_presence",
+      "args": {
+        "p_org_id": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "transition_case_status",
+      "args": {
+        "p_case_id": "string",
+        "p_note?": "string",
+        "p_to_status": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "transition_case_task",
+      "args": {
+        "p_note?": "string",
+        "p_task_id": "string",
+        "p_to_status": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "update_case_public_tracking_settings",
+      "args": {
+        "p_case_id": "string",
+        "p_public_enabled?": "boolean",
+        "p_public_summary?": "string",
+        "p_public_title?": "string",
+        "p_show_engineer_contact?": "boolean",
+        "p_show_progress_percent?": "boolean"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "update_case_task",
+      "args": {
+        "p_assigned_to?": "string",
+        "p_description?": "string",
+        "p_due_at?": "string",
+        "p_priority?": "string",
+        "p_task_id": "string",
+        "p_title?": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "update_org_member_role",
+      "args": {
+        "p_member_id": "string",
+        "p_role": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "update_org_member_status",
+      "args": {
+        "p_member_id": "string",
+        "p_status": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "update_subscription_seat_count",
+      "args": {
+        "p_seat_count": "number",
+        "p_subscription_id": "string"
+      },
+      "returns": "{\n          cancel_at_period_end: boolean\n          cancelled_at: string | null\n          card_brand: string | null\n          card_last_four: string | null\n          created_at: string\n          current_period_end: string | null\n          current_period_start: string | null\n          dunning_notified_at: string | null\n          id: string\n          moyasar_card_token: string | null\n          moyasar_given_id: string | null\n          moyasar_payment_id: string | null\n          next_billing_date: string | null\n          past_due_since: string | null\n          plan_id: string\n          seat_count: number\n          status: string\n          tap_card_id: string | null\n          tap_customer_id: string | null\n          tap_payment_agreement_id: string | null\n          trial_end: string | null\n          trial_start: string | null\n          updated_at: string\n          user_id: string\n        }"
+    },
+    {
+      "schema": "public",
+      "function_name": "upsert_case_client_contact",
+      "args": {
+        "p_case_id": "string",
+        "p_client_name?": "string",
+        "p_email?": "string",
+        "p_phone_e164?": "string",
+        "p_preferred_channel?": "string",
+        "p_receive_updates?": "boolean"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "public",
+      "function_name": "upsert_my_public_profile",
+      "args": {
+        "p_avatar_url": "string",
+        "p_bio": "string",
+        "p_display_name": "string",
+        "p_job_title": "string",
+        "p_phone": "string",
+        "p_preferred_language": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "upsert_org_member_profile",
+      "args": {
+        "p_department": "string",
+        "p_display_name_override": "string",
+        "p_member_id": "string",
+        "p_notes": "string",
+        "p_phone_ext": "string",
+        "p_role_title_ar": "string",
+        "p_role_title_en": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "public",
+      "function_name": "upsert_organization_branding",
+      "args": {
+        "p_default_report_style?": "string",
+        "p_logo_url?": "string",
+        "p_org_id": "string",
+        "p_primary_color?": "string",
+        "p_report_header_ar?": "string",
+        "p_report_header_en?": "string",
+        "p_secondary_color?": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "auth",
+      "function_name": "email",
+      "args": "never",
+      "returns": "string"
+    },
+    {
+      "schema": "auth",
+      "function_name": "jwt",
+      "args": "never",
+      "returns": "Json"
+    },
+    {
+      "schema": "auth",
+      "function_name": "role",
+      "args": "never",
+      "returns": "string"
+    },
+    {
+      "schema": "auth",
+      "function_name": "uid",
+      "args": "never",
+      "returns": "string"
+    },
+    {
+      "schema": "storage",
+      "function_name": "allow_any_operation",
+      "args": {
+        "expected_operations": "string[]"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "storage",
+      "function_name": "allow_only_operation",
+      "args": {
+        "expected_operation": "string"
+      },
+      "returns": "boolean"
+    },
+    {
+      "schema": "storage",
+      "function_name": "can_insert_object",
+      "args": {
+        "bucketid": "string",
+        "metadata": "Json",
+        "name": "string",
+        "owner": "string"
+      },
+      "returns": "undefined"
+    },
+    {
+      "schema": "storage",
+      "function_name": "extension",
+      "args": {
+        "name": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "storage",
+      "function_name": "filename",
+      "args": {
+        "name": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "storage",
+      "function_name": "foldername",
+      "args": {
+        "name": "string"
+      },
+      "returns": "string[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "get_common_prefix",
+      "args": {
+        "p_delimiter": "string",
+        "p_key": "string",
+        "p_prefix": "string"
+      },
+      "returns": "string"
+    },
+    {
+      "schema": "storage",
+      "function_name": "get_size_by_bucket",
+      "args": "never",
+      "returns": "{\n          bucket_id: string\n          size: number\n        }[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "list_multipart_uploads_with_delimiter",
+      "args": {
+        "bucket_id": "string",
+        "delimiter_param": "string",
+        "max_keys?": "number",
+        "next_key_token?": "string",
+        "next_upload_token?": "string",
+        "prefix_param": "string"
+      },
+      "returns": "{\n          created_at: string\n          id: string\n          key: string\n        }[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "list_objects_with_delimiter",
+      "args": {
+        "_bucket_id": "string",
+        "delimiter_param": "string",
+        "max_keys?": "number",
+        "next_token?": "string",
+        "prefix_param": "string",
+        "sort_order?": "string",
+        "start_after?": "string"
+      },
+      "returns": "{\n          created_at: string\n          id: string\n          last_accessed_at: string\n          metadata: Json\n          name: string\n          updated_at: string\n        }[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "operation",
+      "args": "never",
+      "returns": "string"
+    },
+    {
+      "schema": "storage",
+      "function_name": "search",
+      "args": {
+        "bucketname": "string",
+        "levels?": "number",
+        "limits?": "number",
+        "offsets?": "number",
+        "prefix": "string",
+        "search?": "string",
+        "sortcolumn?": "string",
+        "sortorder?": "string"
+      },
+      "returns": "{\n          created_at: string\n          id: string\n          last_accessed_at: string\n          metadata: Json\n          name: string\n          updated_at: string\n        }[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "search_by_timestamp",
+      "args": {
+        "p_bucket_id": "string",
+        "p_level": "number",
+        "p_limit": "number",
+        "p_prefix": "string",
+        "p_sort_column": "string",
+        "p_sort_column_after": "string",
+        "p_sort_order": "string",
+        "p_start_after": "string"
+      },
+      "returns": "{\n          created_at: string\n          id: string\n          key: string\n          last_accessed_at: string\n          metadata: Json\n          name: string\n          updated_at: string\n        }[]"
+    },
+    {
+      "schema": "storage",
+      "function_name": "search_v2",
+      "args": {
+        "bucket_name": "string",
+        "levels?": "number",
+        "limits?": "number",
+        "prefix": "string",
+        "sort_column?": "string",
+        "sort_column_after?": "string",
+        "sort_order?": "string",
+        "start_after?": "string"
+      },
+      "returns": "{\n          created_at: string\n          id: string\n          key: string\n          last_accessed_at: string\n          metadata: Json\n          name: string\n          updated_at: string\n        }[]"
+    }
+  ]
+}

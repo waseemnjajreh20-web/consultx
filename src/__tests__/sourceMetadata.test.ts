@@ -19,6 +19,8 @@ describe('resolveSourceMeta', () => {
       'SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json'
     );
     expect(meta.documentCode).toBe('SBC-201');
+    expect(meta.editionYear).toBe(2024);
+    expect(meta.authorityLevel).toBe('normative');
     expect(meta.pageStart).toBe(1);
     expect(meta.pageEnd).toBe(250);
     expect(meta.pdfPath).toBe(
@@ -44,6 +46,8 @@ describe('resolveSourceMeta', () => {
       'SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json'
     );
     expect(meta.documentCode).toBe('SBC-801');
+    expect(meta.editionYear).toBe(2024);
+    expect(meta.authorityLevel).toBe('normative');
     expect(meta.pageStart).toBe(201);
     expect(meta.pageEnd).toBe(400);
     expect(meta.pdfPath).toBe(
@@ -108,16 +112,19 @@ describe('resolveSourceMeta', () => {
     }
   });
 
-  it('returns UNKNOWN documentCode and null pdfUrl for unrecognised filenames', () => {
+  it('returns UNKNOWN documentCode, unknown authority, null editionYear and null pdfUrl for unrecognised filenames', () => {
     const meta = resolveSourceMeta('some-other-document-123-456_extracted_chunks.json');
     expect(meta.documentCode).toBe('UNKNOWN');
+    expect(meta.authorityLevel).toBe('unknown');
+    expect(meta.editionYear).toBeNull();
     expect(meta.pdfUrl).toBeNull();
     expect(meta.pdfPath).toBeNull();
   });
 
-  it('returns null pdfUrl for empty string', () => {
+  it('returns null pdfUrl and unknown authority for empty string', () => {
     const meta = resolveSourceMeta('');
     expect(meta.documentCode).toBe('UNKNOWN');
+    expect(meta.authorityLevel).toBe('unknown');
     expect(meta.pdfUrl).toBeNull();
   });
 });

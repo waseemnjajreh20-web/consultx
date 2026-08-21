@@ -1,0 +1,868 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "policies",
+  "count": 86,
+  "data": [
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "cron_job_policy",
+      "qual": "(username = CURRENT_USER)",
+      "roles": "",
+      "schema": "cron",
+      "table": "job",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "cron_job_run_details_policy",
+      "qual": "(username = CURRENT_USER)",
+      "roles": "",
+      "schema": "cron",
+      "table": "job_run_details",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "admin_audit_log_deny_all",
+      "qual": "false",
+      "roles": "",
+      "schema": "public",
+      "table": "admin_audit_log",
+      "with_check": "false"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "ai_report_versions_select",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "ai_report_versions_update",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_ai_sessions_insert",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "with_check": "(is_active_case_member(org_id, auth.uid()) AND (created_by = auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_ai_sessions_select",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_ai_sessions_update",
+      "qual": "((created_by = auth.uid()) OR (get_org_member_role(org_id, auth.uid()) = ANY (ARRAY['owner'::text, 'admin'::text, 'head_of_department'::text])))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "with_check": "((created_by = auth.uid()) OR (get_org_member_role(org_id, auth.uid()) = ANY (ARRAY['owner'::text, 'admin'::text, 'head_of_department'::text])))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_approvals_select",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_approvals",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_client_contacts_insert_members",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_client_contacts_select_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_client_contacts_update_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "docs_delete_manager",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_documents",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "docs_insert_case_member",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_documents",
+      "with_check": "(is_active_case_member(org_id, auth.uid()) AND (uploaded_by = auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "docs_select_case_member",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_documents",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "docs_update_uploader_or_manager",
+      "qual": "((uploaded_by = auth.uid()) OR is_org_owner_or_admin(org_id, auth.uid()))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_documents",
+      "with_check": "((uploaded_by = auth.uid()) OR is_org_owner_or_admin(org_id, auth.uid()))"
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "notes_delete_author_or_manager",
+      "qual": "((author_id = auth.uid()) OR is_org_owner_or_admin(org_id, auth.uid()))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_notes",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "notes_insert_case_member",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_notes",
+      "with_check": "(is_active_case_member(org_id, auth.uid()) AND (author_id = auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "notes_select_case_member",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_notes",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "notes_update_author",
+      "qual": "(author_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_notes",
+      "with_check": "(author_id = auth.uid())"
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_public_tracking_insert_members",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_public_tracking_select_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_public_tracking_update_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_public_updates_select_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_public_updates",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_review_ai_reports_select",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_reviews_insert",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_reviews",
+      "with_check": "(is_active_case_member(org_id, auth.uid()) AND (reviewer_user_id = auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_reviews_select",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_reviews",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_reviews_update",
+      "qual": "((reviewer_user_id = auth.uid()) OR (get_org_member_role(org_id, auth.uid()) = ANY (ARRAY['owner'::text, 'head_of_department'::text])))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_reviews",
+      "with_check": "((reviewer_user_id = auth.uid()) OR (get_org_member_role(org_id, auth.uid()) = ANY (ARRAY['owner'::text, 'head_of_department'::text])))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "history_select_case_member",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_status_history",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_task_events_select_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_task_events",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "case_tasks_select_members",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "case_tasks",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can read community_summaries",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "community_summaries",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can create own conversations",
+      "qual": null,
+      "roles": "",
+      "schema": "public",
+      "table": "conversations",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete own conversations",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "conversations",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update own conversations",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "conversations",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view own conversations",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "conversations",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert own usage",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "daily_message_usage",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update own usage",
+      "qual": "(user_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "daily_message_usage",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view own usage",
+      "qual": "(user_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "daily_message_usage",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "cases_insert_case_member",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "with_check": "(is_active_case_member(org_id, auth.uid()) AND (created_by = auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "cases_select_case_member",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "cases_update_case_member",
+      "qual": "is_active_case_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "with_check": "is_active_case_member(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can read graph_edges",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "graph_edges",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can read graph_indexing_status",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "graph_indexing_status",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can read graph_nodes",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "graph_nodes",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can create messages in own conversations",
+      "qual": null,
+      "roles": "",
+      "schema": "public",
+      "table": "messages",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM conversations\n  WHERE ((conversations.id = messages.conversation_id) AND (conversations.user_id = auth.uid()))))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view messages of own conversations",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversations\n  WHERE ((conversations.id = messages.conversation_id) AND (conversations.user_id = auth.uid()))))",
+      "roles": "",
+      "schema": "public",
+      "table": "messages",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "Service role full access to mode_daily_usage",
+      "qual": "true",
+      "roles": "",
+      "schema": "public",
+      "table": "mode_daily_usage",
+      "with_check": "true"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can read own mode usage",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "mode_daily_usage",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_invitations_delete_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_invitations",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_invitations_select_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_invitations",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_invitations_update_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_invitations",
+      "with_check": "is_org_owner_or_admin(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_member_presence_select",
+      "qual": "is_active_org_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_member_presence",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_member_profiles_select_same_org",
+      "qual": "is_active_org_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_members_delete_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_members",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_members_select_self_or_co_member",
+      "qual": "((user_id = auth.uid()) OR is_active_org_member(org_id, auth.uid()))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_members",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_members_update_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_members",
+      "with_check": "is_org_owner_or_admin(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "org_messages_select",
+      "qual": "(is_active_org_member(org_id, auth.uid()) AND (NOT is_deleted))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "org_messages",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "branding_insert_owner_or_admin",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "with_check": "is_org_owner_or_admin(org_id, auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "branding_select_active_member",
+      "qual": "is_active_org_member(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "branding_update_owner_or_admin",
+      "qual": "is_org_owner_or_admin(org_id, auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "with_check": "is_org_owner_or_admin(org_id, auth.uid())"
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "organizations_insert_self_owner",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organizations",
+      "with_check": "(owner_user_id = auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "organizations_select_owner_or_member",
+      "qual": "((owner_user_id = auth.uid()) OR is_active_org_member(id, auth.uid()))",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organizations",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "organizations_update_owner",
+      "qual": "(owner_user_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "organizations",
+      "with_check": "(owner_user_id = auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view own payment_history",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "payment_history",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view own transactions",
+      "qual": "(user_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "payment_transactions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Plans are viewable by everyone",
+      "qual": "true",
+      "roles": "",
+      "schema": "public",
+      "table": "plans",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own profile",
+      "qual": null,
+      "roles": "",
+      "schema": "public",
+      "table": "profiles",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own profile",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own profile",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "",
+      "schema": "public",
+      "table": "profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated_read_sbc_tables",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "sbc_code_tables",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow public read",
+      "qual": "true",
+      "roles": "",
+      "schema": "public",
+      "table": "sbc_documents",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow service role all",
+      "qual": "true",
+      "roles": "service_role",
+      "schema": "public",
+      "table": "sbc_documents",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can view active plans",
+      "qual": "(is_active = true)",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "subscription_plans",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "user_public_profiles_insert_self",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "user_public_profiles_select_authenticated",
+      "qual": "true",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "policyname": "user_public_profiles_update_self",
+      "qual": "(user_id = auth.uid())",
+      "roles": "authenticated",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow authenticated read access to SBC bucket",
+      "qual": "(bucket_id = 'ssss'::text)",
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow service role full access to SBC bucket",
+      "qual": "(bucket_id = 'ssss'::text)",
+      "roles": "service_role",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": "(bucket_id = 'ssss'::text)"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can view chat images",
+      "qual": "(bucket_id = 'chat-images'::text)",
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete own chat images",
+      "qual": "((bucket_id = 'chat-images'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can upload own chat images",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": "((bucket_id = 'chat-images'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))"
+    },
+    {
+      "cmd": "INSERT",
+      "permissive": "PERMISSIVE",
+      "policyname": "enterprise_docs_insert",
+      "qual": null,
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": "((bucket_id = 'enterprise-case-documents'::text) AND can_access_enterprise_document_object(name, auth.uid()))"
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "enterprise_docs_select",
+      "qual": "((bucket_id = 'enterprise-case-documents'::text) AND can_access_enterprise_document_object(name, auth.uid()))",
+      "roles": "authenticated",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "permissive": "PERMISSIVE",
+      "policyname": "source-pdfs public read",
+      "qual": "(bucket_id = 'source-pdfs'::text)",
+      "roles": "",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "permissive": "PERMISSIVE",
+      "policyname": "source-pdfs service full",
+      "qual": "(bucket_id = 'source-pdfs'::text)",
+      "roles": "service_role",
+      "schema": "storage",
+      "table": "objects",
+      "with_check": "(bucket_id = 'source-pdfs'::text)"
+    }
+  ]
+}

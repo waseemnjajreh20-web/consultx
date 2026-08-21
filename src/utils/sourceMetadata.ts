@@ -14,6 +14,14 @@
 const SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co";
 const PDF_BUCKET = "source-pdfs";
 
+import sourceRegistry from "../data/sourceRegistry.json";
+
+const registryMap = new Map(
+  sourceRegistry.map((r) => [r.source_id, r]),
+);
+
+export type AuthorityLevel = "normative" | "commentary" | "informative" | "unknown";
+
 /** How precise the page number we can offer is */
 export type SourcePrecision = "page_range" | "chunk_range_only" | "unavailable";
 
@@ -46,8 +54,12 @@ export interface SourceMeta {
   sourceFile: string;
   /** Human-readable title */
   title: string;
-  /** "SBC-201" | "SBC-801" | "UNKNOWN" */
+  /** Source registry document code (SBC-201, SBC-801, etc.) */
   documentCode: string;
+  /** Edition year from source_registry, if known */
+  editionYear: number | null;
+  /** Authority level from source_registry: normative / commentary / informative */
+  authorityLevel: AuthorityLevel;
   /** First page to show (chunk-level when available, otherwise from filename) */
   pageStart: number | null;
   /** Last page of displayed range */
@@ -81,11 +93,14 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
   if (tblSentinel) {
     const documentCode = tblSentinel[1];
     const tableRef = tblSentinel[2];
+    const registryEntry = registryMap.get(documentCode.replace("-", ""));
     const codeLabel = documentCode.replace("-", " ");
     return {
       sourceFile,
       title: `${codeLabel} — Table ${tableRef} (Structured DB Evidence)`,
       documentCode,
+      editionYear: registryEntry?.edition_year ?? null,
+      authorityLevel: (registryEntry?.authority_level as AuthorityLevel) ?? "unknown",
       pageStart: null,
       pageEnd: null,
       pdfUrl: null,
@@ -115,6 +130,8 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
       sourceFile,
       title: base || sourceFile,
       documentCode: "UNKNOWN",
+      editionYear: null,
+      authorityLevel: "unknown",
       pageStart: null,
       pageEnd: null,
       pdfUrl: null,
@@ -126,6 +143,7 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
   }
 
   const documentCode = is201 ? "SBC-201" : "SBC-801";
+  const registryEntry = registryMap.get(documentCode.replace("-", ""));
   const folder = is201 ? "sbc/sbc-201" : "sbc/sbc-801";
 
   // Extract page range from trailing "-{start}-{end}"
@@ -155,6 +173,8 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
     sourceFile,
     title,
     documentCode,
+    editionYear: registryEntry?.edition_year ?? null,
+    authorityLevel: (registryEntry?.authority_level as AuthorityLevel) ?? "unknown",
     pageStart,
     pageEnd,
     pdfUrl,

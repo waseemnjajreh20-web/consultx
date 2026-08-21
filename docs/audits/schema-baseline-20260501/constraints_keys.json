@@ -1,0 +1,3946 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "constraints_keys",
+  "count": 331,
+  "data": [
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "audit_log_entries_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "audit_log_entries",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "identifier"
+      ],
+      "name": "custom_oauth_providers_identifier_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "custom_oauth_providers",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "custom_oauth_providers_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "custom_oauth_providers",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "flow_state_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "flow_state",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "identities_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "identities",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "provider_id",
+        "provider"
+      ],
+      "name": "identities_provider_id_provider_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "identities",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "identities_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "identities",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "instances_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "instances",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "amr_id_pk",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "mfa_amr_claims",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "session_id",
+        "authentication_method"
+      ],
+      "name": "mfa_amr_claims_session_id_authentication_method_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "mfa_amr_claims",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "session_id"
+      ],
+      "name": "mfa_amr_claims_session_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.sessions",
+      "schema": "auth",
+      "table": "mfa_amr_claims",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "factor_id"
+      ],
+      "name": "mfa_challenges_auth_factor_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.mfa_factors",
+      "schema": "auth",
+      "table": "mfa_challenges",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "mfa_challenges_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "mfa_challenges",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "last_challenged_at"
+      ],
+      "name": "mfa_factors_last_challenged_at_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "mfa_factors",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "mfa_factors_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "mfa_factors",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "mfa_factors_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "mfa_factors",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "authorization_code"
+      ],
+      "name": "oauth_authorizations_authorization_code_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_authorizations",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "authorization_id"
+      ],
+      "name": "oauth_authorizations_authorization_id_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_authorizations",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "client_id"
+      ],
+      "name": "oauth_authorizations_client_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.oauth_clients",
+      "schema": "auth",
+      "table": "oauth_authorizations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "oauth_authorizations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_authorizations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "oauth_authorizations_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "oauth_authorizations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "oauth_client_states_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_client_states",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "oauth_clients_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_clients",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "client_id"
+      ],
+      "name": "oauth_consents_client_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.oauth_clients",
+      "schema": "auth",
+      "table": "oauth_consents",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "oauth_consents_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_consents",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id",
+        "client_id"
+      ],
+      "name": "oauth_consents_user_client_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "oauth_consents",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "oauth_consents_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "oauth_consents",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "one_time_tokens_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "one_time_tokens",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "one_time_tokens_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "one_time_tokens",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "refresh_tokens_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "refresh_tokens",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "session_id"
+      ],
+      "name": "refresh_tokens_session_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.sessions",
+      "schema": "auth",
+      "table": "refresh_tokens",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "token"
+      ],
+      "name": "refresh_tokens_token_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "refresh_tokens",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "entity_id"
+      ],
+      "name": "saml_providers_entity_id_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "saml_providers",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "saml_providers_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "saml_providers",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "sso_provider_id"
+      ],
+      "name": "saml_providers_sso_provider_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.sso_providers",
+      "schema": "auth",
+      "table": "saml_providers",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "flow_state_id"
+      ],
+      "name": "saml_relay_states_flow_state_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.flow_state",
+      "schema": "auth",
+      "table": "saml_relay_states",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "saml_relay_states_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "saml_relay_states",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "sso_provider_id"
+      ],
+      "name": "saml_relay_states_sso_provider_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.sso_providers",
+      "schema": "auth",
+      "table": "saml_relay_states",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "version"
+      ],
+      "name": "schema_migrations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "schema_migrations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oauth_client_id"
+      ],
+      "name": "sessions_oauth_client_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.oauth_clients",
+      "schema": "auth",
+      "table": "sessions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sessions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "sessions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "sessions_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "sessions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sso_domains_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "sso_domains",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "sso_provider_id"
+      ],
+      "name": "sso_domains_sso_provider_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.sso_providers",
+      "schema": "auth",
+      "table": "sso_domains",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sso_providers_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "sso_providers",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "phone"
+      ],
+      "name": "users_phone_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "users",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "users_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "users",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "webauthn_challenges_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "webauthn_challenges",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "webauthn_challenges_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "webauthn_challenges",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "webauthn_credentials_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "auth",
+      "table": "webauthn_credentials",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "webauthn_credentials_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "auth",
+      "table": "webauthn_credentials",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "jobid"
+      ],
+      "name": "job_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "cron",
+      "table": "job",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "jobname",
+        "username"
+      ],
+      "name": "jobname_username_uniq",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "cron",
+      "table": "job",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "runid"
+      ],
+      "name": "job_run_details_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "cron",
+      "table": "job_run_details",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "fdw_name"
+      ],
+      "name": "wrappers_fdw_stats_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "extensions",
+      "table": "wrappers_fdw_stats",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "aggfnoid"
+      ],
+      "name": "pg_aggregate_fnoid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_aggregate",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "amname"
+      ],
+      "name": "pg_am_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_am",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_am_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_am",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "amopfamily",
+        "amoplefttype",
+        "amoprighttype",
+        "amopstrategy"
+      ],
+      "name": "pg_amop_fam_strat_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_amop",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_amop_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_amop",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "amopopr",
+        "amoppurpose",
+        "amopfamily"
+      ],
+      "name": "pg_amop_opr_fam_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_amop",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "amprocfamily",
+        "amproclefttype",
+        "amprocrighttype",
+        "amprocnum"
+      ],
+      "name": "pg_amproc_fam_proc_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_amproc",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_amproc_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_amproc",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "adrelid",
+        "adnum"
+      ],
+      "name": "pg_attrdef_adrelid_adnum_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_attrdef",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_attrdef_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_attrdef",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "attrelid",
+        "attname"
+      ],
+      "name": "pg_attribute_relid_attnam_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_attribute",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "attrelid",
+        "attnum"
+      ],
+      "name": "pg_attribute_relid_attnum_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_attribute",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "member",
+        "roleid",
+        "grantor"
+      ],
+      "name": "pg_auth_members_member_role_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_auth_members",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_auth_members_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_auth_members",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "roleid",
+        "member",
+        "grantor"
+      ],
+      "name": "pg_auth_members_role_member_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_auth_members",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_authid_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_authid",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "rolname"
+      ],
+      "name": "pg_authid_rolname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_authid",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_cast_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_cast",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "castsource",
+        "casttarget"
+      ],
+      "name": "pg_cast_source_target_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_cast",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_class_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_class",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "relname",
+        "relnamespace"
+      ],
+      "name": "pg_class_relname_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_class",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "collname",
+        "collencoding",
+        "collnamespace"
+      ],
+      "name": "pg_collation_name_enc_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_collation",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_collation_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_collation",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "conrelid",
+        "contypid",
+        "conname"
+      ],
+      "name": "pg_constraint_conrelid_contypid_conname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_constraint",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_constraint_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_constraint",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "connamespace",
+        "conforencoding",
+        "contoencoding",
+        "oid"
+      ],
+      "name": "pg_conversion_default_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_conversion",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "conname",
+        "connamespace"
+      ],
+      "name": "pg_conversion_name_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_conversion",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_conversion_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_conversion",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "datname"
+      ],
+      "name": "pg_database_datname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_database",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_database_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_database",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "setdatabase",
+        "setrole"
+      ],
+      "name": "pg_db_role_setting_databaseid_rol_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_db_role_setting",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_default_acl_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_default_acl",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "defaclrole",
+        "defaclnamespace",
+        "defaclobjtype"
+      ],
+      "name": "pg_default_acl_role_nsp_obj_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_default_acl",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "objoid",
+        "classoid",
+        "objsubid"
+      ],
+      "name": "pg_description_o_c_o_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_description",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_enum_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_enum",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "enumtypid",
+        "enumlabel"
+      ],
+      "name": "pg_enum_typid_label_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_enum",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "enumtypid",
+        "enumsortorder"
+      ],
+      "name": "pg_enum_typid_sortorder_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_enum",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "evtname"
+      ],
+      "name": "pg_event_trigger_evtname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_event_trigger",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_event_trigger_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_event_trigger",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "extname"
+      ],
+      "name": "pg_extension_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_extension",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_extension_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_extension",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "fdwname"
+      ],
+      "name": "pg_foreign_data_wrapper_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_foreign_data_wrapper",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_foreign_data_wrapper_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_foreign_data_wrapper",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "srvname"
+      ],
+      "name": "pg_foreign_server_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_foreign_server",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_foreign_server_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_foreign_server",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "ftrelid"
+      ],
+      "name": "pg_foreign_table_relid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_foreign_table",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "indexrelid"
+      ],
+      "name": "pg_index_indexrelid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_index",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "inhrelid",
+        "inhseqno"
+      ],
+      "name": "pg_inherits_relid_seqno_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_inherits",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "objoid",
+        "classoid",
+        "objsubid"
+      ],
+      "name": "pg_init_privs_o_c_o_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_init_privs",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "lanname"
+      ],
+      "name": "pg_language_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_language",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_language_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_language",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "loid",
+        "pageno"
+      ],
+      "name": "pg_largeobject_loid_pn_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_largeobject",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_largeobject_metadata_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_largeobject_metadata",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "nspname"
+      ],
+      "name": "pg_namespace_nspname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_namespace",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_namespace_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_namespace",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "opcmethod",
+        "opcname",
+        "opcnamespace"
+      ],
+      "name": "pg_opclass_am_name_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_opclass",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_opclass_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_opclass",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_operator_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_operator",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oprname",
+        "oprleft",
+        "oprright",
+        "oprnamespace"
+      ],
+      "name": "pg_operator_oprname_l_r_n_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_operator",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "opfmethod",
+        "opfname",
+        "opfnamespace"
+      ],
+      "name": "pg_opfamily_am_name_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_opfamily",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_opfamily_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_opfamily",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_parameter_acl_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_parameter_acl",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "parname"
+      ],
+      "name": "pg_parameter_acl_parname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_parameter_acl",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "partrelid"
+      ],
+      "name": "pg_partitioned_table_partrelid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_partitioned_table",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_policy_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_policy",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "polrelid",
+        "polname"
+      ],
+      "name": "pg_policy_polrelid_polname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_policy",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_proc_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_proc",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "proname",
+        "proargtypes",
+        "pronamespace"
+      ],
+      "name": "pg_proc_proname_args_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_proc",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_publication_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "pubname"
+      ],
+      "name": "pg_publication_pubname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_publication_namespace_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication_namespace",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "pnnspid",
+        "pnpubid"
+      ],
+      "name": "pg_publication_namespace_pnnspid_pnpubid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication_namespace",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_publication_rel_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication_rel",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "prrelid",
+        "prpubid"
+      ],
+      "name": "pg_publication_rel_prrelid_prpubid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_publication_rel",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "rngmultitypid"
+      ],
+      "name": "pg_range_rngmultitypid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_range",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "rngtypid"
+      ],
+      "name": "pg_range_rngtypid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_range",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "roident"
+      ],
+      "name": "pg_replication_origin_roiident_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_replication_origin",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "roname"
+      ],
+      "name": "pg_replication_origin_roname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_replication_origin",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_rewrite_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_rewrite",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "ev_class",
+        "rulename"
+      ],
+      "name": "pg_rewrite_rel_rulename_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_rewrite",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "objoid",
+        "classoid",
+        "objsubid",
+        "provider"
+      ],
+      "name": "pg_seclabel_object_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_seclabel",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "seqrelid"
+      ],
+      "name": "pg_sequence_seqrelid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_sequence",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "objoid",
+        "classoid"
+      ],
+      "name": "pg_shdescription_o_c_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_shdescription",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "objoid",
+        "classoid",
+        "provider"
+      ],
+      "name": "pg_shseclabel_object_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_shseclabel",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "starelid",
+        "staattnum",
+        "stainherit"
+      ],
+      "name": "pg_statistic_relid_att_inh_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_statistic",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "stxname",
+        "stxnamespace"
+      ],
+      "name": "pg_statistic_ext_name_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_statistic_ext",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_statistic_ext_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_statistic_ext",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "stxoid",
+        "stxdinherit"
+      ],
+      "name": "pg_statistic_ext_data_stxoid_inh_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_statistic_ext_data",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_subscription_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_subscription",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "subdbid",
+        "subname"
+      ],
+      "name": "pg_subscription_subname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_subscription",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "srrelid",
+        "srsubid"
+      ],
+      "name": "pg_subscription_rel_srrelid_srsubid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_subscription_rel",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_tablespace_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_tablespace",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "spcname"
+      ],
+      "name": "pg_tablespace_spcname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_tablespace",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_transform_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_transform",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "trftype",
+        "trflang"
+      ],
+      "name": "pg_transform_type_lang_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_transform",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_trigger_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_trigger",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "tgrelid",
+        "tgname"
+      ],
+      "name": "pg_trigger_tgrelid_tgname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_trigger",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "cfgname",
+        "cfgnamespace"
+      ],
+      "name": "pg_ts_config_cfgname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_config",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_ts_config_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_config",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "mapcfg",
+        "maptokentype",
+        "mapseqno"
+      ],
+      "name": "pg_ts_config_map_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_config_map",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "dictname",
+        "dictnamespace"
+      ],
+      "name": "pg_ts_dict_dictname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_dict",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_ts_dict_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_dict",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_ts_parser_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_parser",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "prsname",
+        "prsnamespace"
+      ],
+      "name": "pg_ts_parser_prsname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_parser",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_ts_template_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_template",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "tmplname",
+        "tmplnamespace"
+      ],
+      "name": "pg_ts_template_tmplname_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_ts_template",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_type_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_type",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "typname",
+        "typnamespace"
+      ],
+      "name": "pg_type_typname_nsp_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_type",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "oid"
+      ],
+      "name": "pg_user_mapping_oid_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_user_mapping",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "umuser",
+        "umserver"
+      ],
+      "name": "pg_user_mapping_user_server_index",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "pg_catalog",
+      "table": "pg_user_mapping",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "admin_audit_log_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "admin_audit_log",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "ai_report_versions_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "ai_report_versions_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "decided_by"
+      ],
+      "name": "ai_report_versions_decided_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "document_id"
+      ],
+      "name": "ai_report_versions_document_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.case_documents",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "ai_report_versions_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "ai_report_versions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "session_id"
+      ],
+      "name": "ai_report_versions_session_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.case_ai_sessions",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "session_id",
+        "version_number"
+      ],
+      "name": "ai_report_versions_session_version_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_ai_sessions_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "case_ai_sessions_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_ai_sessions_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_ai_sessions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "approver_user_id"
+      ],
+      "name": "case_approvals_approver_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_approvals",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_approvals_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_approvals",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_approvals_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_approvals",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_approvals_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_approvals",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "review_id"
+      ],
+      "name": "case_approvals_review_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.case_reviews",
+      "schema": "public",
+      "table": "case_approvals",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_client_contacts_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "case_client_contacts_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_client_contacts_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_client_contacts_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_client_contacts_unique_per_case",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_documents_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_documents",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_documents_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_documents",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_documents_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_documents",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "uploaded_by"
+      ],
+      "name": "case_documents_uploaded_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_documents",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "author_id"
+      ],
+      "name": "case_notes_author_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_notes",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_notes_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_notes",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_notes_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_notes",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_notes_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_notes",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_public_tracking_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "case_public_tracking_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_public_tracking_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_public_tracking_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "public_token"
+      ],
+      "name": "case_public_tracking_public_token_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_public_updates_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_public_updates",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_public_updates_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_public_updates",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_public_updates_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_public_updates",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "published_by"
+      ],
+      "name": "case_public_updates_published_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_public_updates",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "linked_by"
+      ],
+      "name": "case_review_ai_reports_linked_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_review_ai_reports_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_review_ai_reports_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "report_version_id"
+      ],
+      "name": "case_review_ai_reports_report_version_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.ai_report_versions",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "review_id"
+      ],
+      "name": "case_review_ai_reports_review_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.case_reviews",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "review_id",
+        "report_version_id"
+      ],
+      "name": "case_review_ai_reports_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_review_ai_reports",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_reviews_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_reviews",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id",
+        "revision_number"
+      ],
+      "name": "case_reviews_case_revision_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_reviews",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_reviews_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_reviews",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_reviews_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_reviews",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "reviewer_user_id"
+      ],
+      "name": "case_reviews_reviewer_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_reviews",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "actor_user_id"
+      ],
+      "name": "case_status_history_actor_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_status_history",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_status_history_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_status_history",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_status_history_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_status_history",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_status_history_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_status_history",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "actor_user_id"
+      ],
+      "name": "case_task_events_actor_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_task_events",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_task_events_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_task_events",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_task_events_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_task_events",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_task_events_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_task_events",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "task_id"
+      ],
+      "name": "case_task_events_task_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.case_tasks",
+      "schema": "public",
+      "table": "case_task_events",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "assigned_to"
+      ],
+      "name": "case_tasks_assigned_to_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_tasks",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "case_id"
+      ],
+      "name": "case_tasks_case_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.enterprise_cases",
+      "schema": "public",
+      "table": "case_tasks",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "case_tasks_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "case_tasks",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "case_tasks_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "case_tasks",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "case_tasks_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "case_tasks",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "community_summaries_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "community_summaries",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "conversations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "conversations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "conversations_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "conversations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "corpus_coverage_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "corpus_coverage",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "corpus_coverage_source_id_fkey",
+      "references_columns": [
+        "source_id"
+      ],
+      "references_table": "public.source_registry",
+      "schema": "public",
+      "table": "corpus_coverage",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "daily_message_usage_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "daily_message_usage",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id",
+        "usage_date"
+      ],
+      "name": "daily_message_usage_user_id_usage_date_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "daily_message_usage",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "document_tables_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "document_tables",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "document_tables_source_id_fkey",
+      "references_columns": [
+        "source_id"
+      ],
+      "references_table": "public.source_registry",
+      "schema": "public",
+      "table": "document_tables",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "table_id"
+      ],
+      "name": "document_tables_table_id_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "document_tables",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "enterprise_case_counters_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "enterprise_case_counters",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "enterprise_case_counters_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "enterprise_case_counters",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "assigned_engineer_id"
+      ],
+      "name": "enterprise_cases_assigned_engineer_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "enterprise_cases_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "head_reviewer_id"
+      ],
+      "name": "enterprise_cases_head_reviewer_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id",
+        "case_number"
+      ],
+      "name": "enterprise_cases_org_case_number_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "enterprise_cases_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "enterprise_cases_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "graph_edges_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "graph_edges",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "graph_edges_source_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.graph_nodes",
+      "schema": "public",
+      "table": "graph_edges",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "target_id"
+      ],
+      "name": "graph_edges_target_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.graph_nodes",
+      "schema": "public",
+      "table": "graph_edges",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "file_name"
+      ],
+      "name": "graph_indexing_status_file_name_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "graph_indexing_status",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "graph_indexing_status_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "graph_indexing_status",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "graph_nodes_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "graph_nodes",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "conversation_id"
+      ],
+      "name": "messages_conversation_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.conversations",
+      "schema": "public",
+      "table": "messages",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "messages_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "messages",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "mode_daily_usage_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "mode_daily_usage",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "mode_daily_usage_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "mode_daily_usage",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "user_id",
+        "usage_date",
+        "mode"
+      ],
+      "name": "mode_daily_usage_user_id_usage_date_mode_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "mode_daily_usage",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "created_by"
+      ],
+      "name": "org_invitations_created_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_invitations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "org_invitations_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "org_invitations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "org_invitations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_invitations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "token"
+      ],
+      "name": "org_invitations_token_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_invitations",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "org_member_presence_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "org_member_presence",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "user_id",
+        "org_id"
+      ],
+      "name": "org_member_presence_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_member_presence",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "org_member_presence_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_member_presence",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "member_id"
+      ],
+      "name": "org_member_profiles_member_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.org_members",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "org_member_profiles_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "member_id"
+      ],
+      "name": "org_member_profiles_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "updated_by"
+      ],
+      "name": "org_member_profiles_updated_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "org_member_profiles_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "invited_by"
+      ],
+      "name": "org_members_invited_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_members",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "org_members_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "org_members",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id",
+        "user_id"
+      ],
+      "name": "org_members_org_user_unique",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_members",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "org_members_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_members",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "org_members_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_members",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "author_id"
+      ],
+      "name": "org_messages_author_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "org_messages",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "org_messages_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "org_messages",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "org_messages_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "org_messages",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "organization_branding_settings_org_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.organizations",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "org_id"
+      ],
+      "name": "organization_branding_settings_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "updated_by"
+      ],
+      "name": "organization_branding_settings_updated_by_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "owner_user_id"
+      ],
+      "name": "organizations_owner_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "organizations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "organizations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "organizations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "subscription_id"
+      ],
+      "name": "organizations_subscription_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.user_subscriptions",
+      "schema": "public",
+      "table": "organizations",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "payment_history_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "payment_history",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "payment_transactions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "payment_transactions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "subscription_id"
+      ],
+      "name": "payment_transactions_subscription_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.user_subscriptions",
+      "schema": "public",
+      "table": "payment_transactions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "plans_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "plans",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "profiles_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "profiles",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "profiles_user_id_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "profiles",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sbc_code_tables_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "sbc_code_tables",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sbc_documents_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "sbc_documents",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "file_name",
+        "json_page"
+      ],
+      "name": "sbc_pages_file_name_json_page_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "sbc_pages",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "sbc_pages_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "sbc_pages",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "source_registry_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "source_registry",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "source_versions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "source_versions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "source_versions_source_id_fkey",
+      "references_columns": [
+        "source_id"
+      ],
+      "references_table": "public.source_registry",
+      "schema": "public",
+      "table": "source_versions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "subscription_plans_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "subscription_plans",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "user_public_profiles_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "name": "user_public_profiles_user_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "auth.users",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "user_subscriptions_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "user_subscriptions",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "plan_id"
+      ],
+      "name": "user_subscriptions_plan_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "public.subscription_plans",
+      "schema": "public",
+      "table": "user_subscriptions",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "validation_runs_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "validation_runs",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "source_id"
+      ],
+      "name": "validation_runs_source_id_fkey",
+      "references_columns": [
+        "source_id"
+      ],
+      "references_table": "public.source_registry",
+      "schema": "public",
+      "table": "validation_runs",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "webhook_dead_letters_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "public",
+      "table": "webhook_dead_letters",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_2026_05_26_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages_2026_05_26",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_2026_05_27_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages_2026_05_27",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_2026_05_28_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages_2026_05_28",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_2026_05_29_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages_2026_05_29",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id",
+        "inserted_at"
+      ],
+      "name": "messages_2026_05_30_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "messages_2026_05_30",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "version"
+      ],
+      "name": "schema_migrations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "schema_migrations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "pk_subscription",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "realtime",
+      "table": "subscription",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "buckets_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "buckets",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "buckets_analytics_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "buckets_analytics",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "buckets_vectors_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "buckets_vectors",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "name"
+      ],
+      "name": "migrations_name_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "migrations",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "migrations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "migrations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "bucket_id"
+      ],
+      "name": "objects_bucketId_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "storage.buckets",
+      "schema": "storage",
+      "table": "objects",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "objects_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "objects",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "bucket_id"
+      ],
+      "name": "s3_multipart_uploads_bucket_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "storage.buckets",
+      "schema": "storage",
+      "table": "s3_multipart_uploads",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "s3_multipart_uploads_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "s3_multipart_uploads",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "bucket_id"
+      ],
+      "name": "s3_multipart_uploads_parts_bucket_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "storage.buckets",
+      "schema": "storage",
+      "table": "s3_multipart_uploads_parts",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "s3_multipart_uploads_parts_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "s3_multipart_uploads_parts",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "upload_id"
+      ],
+      "name": "s3_multipart_uploads_parts_upload_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "storage.s3_multipart_uploads",
+      "schema": "storage",
+      "table": "s3_multipart_uploads_parts",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "bucket_id"
+      ],
+      "name": "vector_indexes_bucket_id_fkey",
+      "references_columns": [
+        "id"
+      ],
+      "references_table": "storage.buckets_vectors",
+      "schema": "storage",
+      "table": "vector_indexes",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "vector_indexes_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "storage",
+      "table": "vector_indexes",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "idempotency_key"
+      ],
+      "name": "schema_migrations_idempotency_key_key",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "supabase_migrations",
+      "table": "schema_migrations",
+      "type": "UNIQUE"
+    },
+    {
+      "columns": [
+        "version"
+      ],
+      "name": "schema_migrations_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "supabase_migrations",
+      "table": "schema_migrations",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "secrets_pkey",
+      "references_columns": [],
+      "references_table": "",
+      "schema": "vault",
+      "table": "secrets",
+      "type": "PRIMARY KEY"
+    }
+  ]
+}

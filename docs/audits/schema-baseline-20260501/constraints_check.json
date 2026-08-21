@@ -1,0 +1,602 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "constraints_check",
+  "count": 99,
+  "data": [
+    {
+      "definition": "CHECK (((authorization_url IS NULL) OR (authorization_url ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_authorization_url_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((authorization_url IS NULL) OR (char_length(authorization_url) <= 2048)))",
+      "name": "custom_oauth_providers_authorization_url_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((char_length(client_id) >= 1) AND (char_length(client_id) <= 512)))",
+      "name": "custom_oauth_providers_client_id_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((discovery_url IS NULL) OR (char_length(discovery_url) <= 2048)))",
+      "name": "custom_oauth_providers_discovery_url_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK ((identifier ~ '^[a-z0-9][a-z0-9:-]{0,48}[a-z0-9]$'::text))",
+      "name": "custom_oauth_providers_identifier_format",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((issuer IS NULL) OR ((char_length(issuer) >= 1) AND (char_length(issuer) <= 2048))))",
+      "name": "custom_oauth_providers_issuer_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((jwks_uri IS NULL) OR (jwks_uri ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_jwks_uri_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((jwks_uri IS NULL) OR (char_length(jwks_uri) <= 2048)))",
+      "name": "custom_oauth_providers_jwks_uri_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((char_length(name) >= 1) AND (char_length(name) <= 100)))",
+      "name": "custom_oauth_providers_name_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((provider_type <> 'oauth2'::text) OR ((authorization_url IS NOT NULL) AND (token_url IS NOT NULL) AND (userinfo_url IS NOT NULL))))",
+      "name": "custom_oauth_providers_oauth2_requires_endpoints",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((provider_type <> 'oidc'::text) OR (discovery_url IS NULL) OR (discovery_url ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_oidc_discovery_url_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((provider_type <> 'oidc'::text) OR (issuer IS NULL) OR (issuer ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_oidc_issuer_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((provider_type <> 'oidc'::text) OR (issuer IS NOT NULL)))",
+      "name": "custom_oauth_providers_oidc_requires_issuer",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK ((provider_type = ANY (ARRAY['oauth2'::text, 'oidc'::text])))",
+      "name": "custom_oauth_providers_provider_type_check",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((token_url IS NULL) OR (token_url ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_token_url_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((token_url IS NULL) OR (char_length(token_url) <= 2048)))",
+      "name": "custom_oauth_providers_token_url_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((userinfo_url IS NULL) OR (userinfo_url ~~ 'https://%'::text)))",
+      "name": "custom_oauth_providers_userinfo_url_https",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK (((userinfo_url IS NULL) OR (char_length(userinfo_url) <= 2048)))",
+      "name": "custom_oauth_providers_userinfo_url_length",
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "definition": "CHECK ((char_length(authorization_code) <= 255))",
+      "name": "oauth_authorizations_authorization_code_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(code_challenge) <= 128))",
+      "name": "oauth_authorizations_code_challenge_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((expires_at > created_at))",
+      "name": "oauth_authorizations_expires_at_future",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(nonce) <= 255))",
+      "name": "oauth_authorizations_nonce_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(redirect_uri) <= 2048))",
+      "name": "oauth_authorizations_redirect_uri_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(resource) <= 2048))",
+      "name": "oauth_authorizations_resource_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(scope) <= 4096))",
+      "name": "oauth_authorizations_scope_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(state) <= 4096))",
+      "name": "oauth_authorizations_state_length",
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "definition": "CHECK ((char_length(client_name) <= 1024))",
+      "name": "oauth_clients_client_name_length",
+      "schema": "auth",
+      "table": "oauth_clients"
+    },
+    {
+      "definition": "CHECK ((char_length(client_uri) <= 2048))",
+      "name": "oauth_clients_client_uri_length",
+      "schema": "auth",
+      "table": "oauth_clients"
+    },
+    {
+      "definition": "CHECK ((char_length(logo_uri) <= 2048))",
+      "name": "oauth_clients_logo_uri_length",
+      "schema": "auth",
+      "table": "oauth_clients"
+    },
+    {
+      "definition": "CHECK ((token_endpoint_auth_method = ANY (ARRAY['client_secret_basic'::text, 'client_secret_post'::text, 'none'::text])))",
+      "name": "oauth_clients_token_endpoint_auth_method_check",
+      "schema": "auth",
+      "table": "oauth_clients"
+    },
+    {
+      "definition": "CHECK (((revoked_at IS NULL) OR (revoked_at >= granted_at)))",
+      "name": "oauth_consents_revoked_after_granted",
+      "schema": "auth",
+      "table": "oauth_consents"
+    },
+    {
+      "definition": "CHECK ((char_length(scopes) <= 2048))",
+      "name": "oauth_consents_scopes_length",
+      "schema": "auth",
+      "table": "oauth_consents"
+    },
+    {
+      "definition": "CHECK ((char_length(TRIM(BOTH FROM scopes)) > 0))",
+      "name": "oauth_consents_scopes_not_empty",
+      "schema": "auth",
+      "table": "oauth_consents"
+    },
+    {
+      "definition": "CHECK ((char_length(token_hash) > 0))",
+      "name": "one_time_tokens_token_hash_check",
+      "schema": "auth",
+      "table": "one_time_tokens"
+    },
+    {
+      "definition": "CHECK ((char_length(entity_id) > 0))",
+      "name": "entity_id not empty",
+      "schema": "auth",
+      "table": "saml_providers"
+    },
+    {
+      "definition": "CHECK (((metadata_url = NULL::text) OR (char_length(metadata_url) > 0)))",
+      "name": "metadata_url not empty",
+      "schema": "auth",
+      "table": "saml_providers"
+    },
+    {
+      "definition": "CHECK ((char_length(metadata_xml) > 0))",
+      "name": "metadata_xml not empty",
+      "schema": "auth",
+      "table": "saml_providers"
+    },
+    {
+      "definition": "CHECK ((char_length(request_id) > 0))",
+      "name": "request_id not empty",
+      "schema": "auth",
+      "table": "saml_relay_states"
+    },
+    {
+      "definition": "CHECK ((char_length(scopes) <= 4096))",
+      "name": "sessions_scopes_length",
+      "schema": "auth",
+      "table": "sessions"
+    },
+    {
+      "definition": "CHECK ((char_length(domain) > 0))",
+      "name": "domain not empty",
+      "schema": "auth",
+      "table": "sso_domains"
+    },
+    {
+      "definition": "CHECK (((resource_id = NULL::text) OR (char_length(resource_id) > 0)))",
+      "name": "resource_id not empty",
+      "schema": "auth",
+      "table": "sso_providers"
+    },
+    {
+      "definition": "CHECK (((email_change_confirm_status >= 0) AND (email_change_confirm_status <= 2)))",
+      "name": "users_email_change_confirm_status_check",
+      "schema": "auth",
+      "table": "users"
+    },
+    {
+      "definition": "CHECK ((challenge_type = ANY (ARRAY['signup'::text, 'registration'::text, 'authentication'::text])))",
+      "name": "webauthn_challenges_challenge_type_check",
+      "schema": "auth",
+      "table": "webauthn_challenges"
+    },
+    {
+      "definition": "CHECK ((((engineer_decision = 'pending'::text) AND (decided_by IS NULL) AND (decided_at IS NULL)) OR ((engineer_decision <> 'pending'::text) AND (decided_by IS NOT NULL) AND (decided_at IS NOT NULL))))",
+      "name": "ai_report_versions_decision_fields_consistent",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((engineer_decision = ANY (ARRAY['pending'::text, 'accepted'::text, 'rejected'::text, 'accepted_with_notes'::text, 'needs_revision'::text])))",
+      "name": "ai_report_versions_engineer_decision_check",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK (((engineer_decision <> ALL (ARRAY['accepted_with_notes'::text, 'needs_revision'::text])) OR ((engineer_decision_note IS NOT NULL) AND (length(TRIM(BOTH FROM engineer_decision_note)) > 0))))",
+      "name": "ai_report_versions_note_required",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((output_language = ANY (ARRAY['en'::text, 'ar'::text])))",
+      "name": "ai_report_versions_output_language_check",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((report_mode = ANY (ARRAY['advisory'::text, 'analytical'::text])))",
+      "name": "ai_report_versions_report_mode_check",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM response_content)) > 0))",
+      "name": "ai_report_versions_response_not_blank",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))",
+      "name": "ai_report_versions_title_not_blank",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK ((version_number > 0))",
+      "name": "ai_report_versions_version_number_check",
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "definition": "CHECK (((completed_at IS NULL) OR (status = ANY (ARRAY['completed'::text, 'failed'::text]))))",
+      "name": "case_ai_sessions_completed_at_status",
+      "schema": "public",
+      "table": "case_ai_sessions"
+    },
+    {
+      "definition": "CHECK ((session_mode = ANY (ARRAY['advisory'::text, 'analytical'::text])))",
+      "name": "case_ai_sessions_session_mode_check",
+      "schema": "public",
+      "table": "case_ai_sessions"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['started'::text, 'completed'::text, 'failed'::text])))",
+      "name": "case_ai_sessions_status_check",
+      "schema": "public",
+      "table": "case_ai_sessions"
+    },
+    {
+      "definition": "CHECK ((decision = ANY (ARRAY['approved'::text, 'returned_for_revision'::text])))",
+      "name": "case_approvals_decision_check",
+      "schema": "public",
+      "table": "case_approvals"
+    },
+    {
+      "definition": "CHECK (((decision <> 'returned_for_revision'::text) OR ((decision_note IS NOT NULL) AND (length(TRIM(BOTH FROM decision_note)) > 0))))",
+      "name": "case_approvals_note_required_when_returned",
+      "schema": "public",
+      "table": "case_approvals"
+    },
+    {
+      "definition": "CHECK ((preferred_channel = ANY (ARRAY['sms'::text, 'whatsapp'::text, 'email'::text, 'none'::text])))",
+      "name": "case_client_contacts_preferred_channel_check",
+      "schema": "public",
+      "table": "case_client_contacts"
+    },
+    {
+      "definition": "CHECK ((category = ANY (ARRAY['architectural_drawings'::text, 'life_safety_drawings'::text, 'fire_alarm_drawings'::text, 'fire_fighting_drawings'::text, 'pump_tank_details'::text, 'calculations'::text, 'technical_reports'::text, 'client_documents'::text, 'internal_notes'::text, 'final_deliverables'::text])))",
+      "name": "case_documents_category_check",
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM storage_path)) > 0))",
+      "name": "case_documents_storage_path_not_blank",
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))",
+      "name": "case_documents_title_not_blank",
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "definition": "CHECK ((version_number >= 1))",
+      "name": "case_documents_version_positive",
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "definition": "CHECK ((visibility = ANY (ARRAY['internal_only'::text, 'client_visible'::text, 'approval_required'::text, 'final_deliverable'::text])))",
+      "name": "case_documents_visibility_check",
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM body)) > 0))",
+      "name": "case_notes_body_not_blank",
+      "schema": "public",
+      "table": "case_notes"
+    },
+    {
+      "definition": "CHECK ((visibility = 'internal_only'::text))",
+      "name": "case_notes_visibility_check",
+      "schema": "public",
+      "table": "case_notes"
+    },
+    {
+      "definition": "CHECK ((notification_status = ANY (ARRAY['not_sent'::text, 'queued'::text, 'sent'::text, 'failed'::text, 'skipped'::text])))",
+      "name": "case_public_updates_notification_status_check",
+      "schema": "public",
+      "table": "case_public_updates"
+    },
+    {
+      "definition": "CHECK (((progress_percent >= 0) AND (progress_percent <= 100)))",
+      "name": "case_public_updates_progress_percent_check",
+      "schema": "public",
+      "table": "case_public_updates"
+    },
+    {
+      "definition": "CHECK ((revision_number > 0))",
+      "name": "case_reviews_revision_positive",
+      "schema": "public",
+      "table": "case_reviews"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text, 'returned'::text, 'accepted'::text])))",
+      "name": "case_reviews_status_check",
+      "schema": "public",
+      "table": "case_reviews"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM summary)) > 0))",
+      "name": "case_reviews_summary_not_blank",
+      "schema": "public",
+      "table": "case_reviews"
+    },
+    {
+      "definition": "CHECK ((priority = ANY (ARRAY['low'::text, 'normal'::text, 'high'::text, 'urgent'::text])))",
+      "name": "case_tasks_priority_check",
+      "schema": "public",
+      "table": "case_tasks"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'in_progress'::text, 'blocked'::text, 'submitted'::text, 'completed'::text, 'cancelled'::text])))",
+      "name": "case_tasks_status_check",
+      "schema": "public",
+      "table": "case_tasks"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))",
+      "name": "case_tasks_title_not_blank",
+      "schema": "public",
+      "table": "case_tasks"
+    },
+    {
+      "definition": "CHECK ((mode = ANY (ARRAY['standard'::text, 'analysis'::text])))",
+      "name": "conversations_mode_check",
+      "schema": "public",
+      "table": "conversations"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['present'::text, 'corrupt'::text, 'missing'::text])))",
+      "name": "corpus_coverage_status_check",
+      "schema": "public",
+      "table": "corpus_coverage"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text, 'assigned'::text, 'under_engineering_review'::text, 'ai_review_attached'::text, 'engineer_review_completed'::text, 'submitted_to_head'::text, 'returned_for_revision'::text, 'approved_internal'::text, 'delivered_to_client'::text, 'closed'::text, 'cancelled'::text])))",
+      "name": "enterprise_cases_status_check",
+      "schema": "public",
+      "table": "enterprise_cases"
+    },
+    {
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))",
+      "name": "enterprise_cases_title_not_blank",
+      "schema": "public",
+      "table": "enterprise_cases"
+    },
+    {
+      "definition": "CHECK ((role = ANY (ARRAY['user'::text, 'assistant'::text])))",
+      "name": "messages_role_check",
+      "schema": "public",
+      "table": "messages"
+    },
+    {
+      "definition": "CHECK ((mode = ANY (ARRAY['primary'::text, 'standard'::text, 'analysis'::text])))",
+      "name": "mode_daily_usage_mode_check",
+      "schema": "public",
+      "table": "mode_daily_usage"
+    },
+    {
+      "definition": "CHECK ((role = ANY (ARRAY['admin'::text, 'head_of_department'::text, 'engineer'::text, 'finance_officer'::text])))",
+      "name": "org_invitations_role_check",
+      "schema": "public",
+      "table": "org_invitations"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'expired'::text, 'revoked'::text])))",
+      "name": "org_invitations_status_check",
+      "schema": "public",
+      "table": "org_invitations"
+    },
+    {
+      "definition": "CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'head_of_department'::text, 'engineer'::text, 'finance_officer'::text])))",
+      "name": "org_members_role_check",
+      "schema": "public",
+      "table": "org_members"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['invited'::text, 'active'::text, 'suspended'::text, 'removed'::text])))",
+      "name": "org_members_status_check",
+      "schema": "public",
+      "table": "org_members"
+    },
+    {
+      "definition": "CHECK (((length(TRIM(BOTH FROM body)) > 0) AND (length(body) <= 4000)))",
+      "name": "org_messages_body_check",
+      "schema": "public",
+      "table": "org_messages"
+    },
+    {
+      "definition": "CHECK ((default_report_style = ANY (ARRAY['standard'::text, 'formal'::text, 'minimal'::text, 'technical'::text])))",
+      "name": "organization_branding_settings_default_report_style_check",
+      "schema": "public",
+      "table": "organization_branding_settings"
+    },
+    {
+      "definition": "CHECK ((status = ANY (ARRAY['trial'::text, 'active'::text, 'past_due'::text, 'cancelled'::text, 'expired'::text])))",
+      "name": "organizations_status_check",
+      "schema": "public",
+      "table": "organizations"
+    },
+    {
+      "definition": "CHECK ((role = ANY (ARRAY['user'::text, 'admin'::text, 'super_admin'::text])))",
+      "name": "profiles_role_check",
+      "schema": "public",
+      "table": "profiles"
+    },
+    {
+      "definition": "CHECK ((language = ANY (ARRAY['AR'::text, 'EN'::text, 'BOTH'::text])))",
+      "name": "sbc_documents_language_check",
+      "schema": "public",
+      "table": "sbc_documents"
+    },
+    {
+      "definition": "CHECK ((authority_level = ANY (ARRAY['normative'::text, 'informative'::text, 'commentary'::text])))",
+      "name": "source_registry_authority_level_check",
+      "schema": "public",
+      "table": "source_registry"
+    },
+    {
+      "definition": "CHECK ((ingestion_status = ANY (ARRAY['complete'::text, 'partial'::text, 'pending'::text, 'absent'::text])))",
+      "name": "source_registry_ingestion_status_check",
+      "schema": "public",
+      "table": "source_registry"
+    },
+    {
+      "definition": "CHECK ((tier = ANY (ARRAY[1, 2, 3])))",
+      "name": "source_registry_tier_check",
+      "schema": "public",
+      "table": "source_registry"
+    },
+    {
+      "definition": "CHECK ((min_seats >= 1))",
+      "name": "subscription_plans_min_seats_positive_chk",
+      "schema": "public",
+      "table": "subscription_plans"
+    },
+    {
+      "definition": "CHECK (((price_per_seat IS NULL) OR (price_per_seat > 0)))",
+      "name": "subscription_plans_price_per_seat_positive_chk",
+      "schema": "public",
+      "table": "subscription_plans"
+    },
+    {
+      "definition": "CHECK ((preferred_language = ANY (ARRAY['ar'::text, 'en'::text])))",
+      "name": "user_public_profiles_preferred_language_check",
+      "schema": "public",
+      "table": "user_public_profiles"
+    },
+    {
+      "definition": "CHECK ((seat_count >= 1))",
+      "name": "user_subscriptions_seat_count_positive_chk",
+      "schema": "public",
+      "table": "user_subscriptions"
+    },
+    {
+      "definition": "CHECK (((gate >= 1) AND (gate <= 6)))",
+      "name": "validation_runs_gate_check",
+      "schema": "public",
+      "table": "validation_runs"
+    },
+    {
+      "definition": "CHECK ((action_filter = ANY (ARRAY['*'::text, 'INSERT'::text, 'UPDATE'::text, 'DELETE'::text])))",
+      "name": "subscription_action_filter_check",
+      "schema": "realtime",
+      "table": "subscription"
+    },
+    {
+      "definition": "CHECK ((versioning_status = 'DISABLED'::text))",
+      "name": "buckets_versioning_dark_check",
+      "schema": "storage",
+      "table": "buckets"
+    },
+    {
+      "definition": "CHECK (((type = 'STANDARD'::storage.buckettype) OR (versioning_status = 'DISABLED'::text)))",
+      "name": "buckets_versioning_standard_only_check",
+      "schema": "storage",
+      "table": "buckets"
+    },
+    {
+      "definition": "CHECK ((versioning_status = ANY (ARRAY['DISABLED'::text, 'ENABLED'::text, 'SUSPENDED'::text])))",
+      "name": "buckets_versioning_status_check",
+      "schema": "storage",
+      "table": "buckets"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "project_ref": "hrnltxmwoaphgejckutk",
+  "source": "supabase gen types typescript + read-only SQL query",
+  "files": [
+    {
+      "filename": "tables.json",
+      "object_type": "tables",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T09:56:57.722Z",
+      "row_count": 78,
+      "note": "captures tables, columns, functions, relationships"
+    },
+    {
+      "filename": "columns.json",
+      "object_type": "columns",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:06:36.928Z",
+      "row_count": 78,
+      "note": "captures columns only"
+    },
+    {
+      "filename": "indexes.json",
+      "object_type": "indexes",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:06:36.947Z",
+      "row_count": 78,
+      "note": "captures indexes only"
+    },
+    {
+      "filename": "types_public.ts",
+      "object_type": "typescript_types",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:27:24.899Z",
+      "row_count": null,
+      "note": "TypeScript types for public schema"
+    },
+    {
+      "filename": "types_auth.ts",
+      "object_type": "typescript_types",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:30:18.573Z",
+      "row_count": null,
+      "note": "TypeScript types for auth schema"
+    },
+    {
+      "filename": "types_storage.ts",
+      "object_type": "typescript_types",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:30:37.510Z",
+      "row_count": null,
+      "note": "TypeScript types for storage schema"
+    },
+    {
+      "filename": "extensions.json",
+      "object_type": "extensions",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 9,
+      "note": "Postgres extensions installed in the project"
+    },
+    {
+      "filename": "rls_enabled.json",
+      "object_type": "rls_enabled",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 92,
+      "note": "Row Level Security enablement per table"
+    },
+    {
+      "filename": "triggers.json",
+      "object_type": "triggers",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 26,
+      "note": "User-defined triggers with definition"
+    },
+    {
+      "filename": "policies.json",
+      "object_type": "policies",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 86,
+      "note": "Row Level Security policies grouped by schema/table"
+    },
+    {
+      "filename": "constraints_check.json",
+      "object_type": "constraints_check",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 99,
+      "note": "Check constraints with full definitions"
+    },
+    {
+      "filename": "constraints_keys.json",
+      "object_type": "constraints_keys",
+      "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 331,
+      "note": "Primary, unique, and foreign key constraints with columns and references"
+    },
+    {
+      "filename": "functions_registry.json",
+      "object_type": "functions_registry",
+      "source": "supabase gen types typescript",
+      "extracted_at": "2026-08-21T12:45:37.205Z",
+      "row_count": 68,
+      "note": "compact function signatures parsed from generated TypeScript types"
+    }
+  ]
+}

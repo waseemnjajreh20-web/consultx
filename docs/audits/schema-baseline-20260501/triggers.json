@@ -1,0 +1,216 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "triggers",
+  "count": 26,
+  "data": [
+    {
+      "definition": "CREATE TRIGGER cron_job_cache_invalidate AFTER INSERT OR DELETE OR UPDATE OR TRUNCATE ON cron.job FOR EACH STATEMENT EXECUTE FUNCTION cron.job_cache_invalidate()",
+      "event": "INSERT OR UPDATE OR DELETE",
+      "schema": "cron",
+      "table": "job",
+      "timing": "AFTER",
+      "trigger_name": "cron_job_cache_invalidate"
+    },
+    {
+      "definition": "CREATE TRIGGER update_ai_report_versions_updated_at BEFORE UPDATE ON public.ai_report_versions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "ai_report_versions",
+      "timing": "BEFORE",
+      "trigger_name": "update_ai_report_versions_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_ai_sessions_updated_at BEFORE UPDATE ON public.case_ai_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_ai_sessions",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_ai_sessions_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_client_contacts_updated_at BEFORE UPDATE ON public.case_client_contacts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_client_contacts",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_client_contacts_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_documents_updated_at BEFORE UPDATE ON public.case_documents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_documents",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_documents_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_notes_updated_at BEFORE UPDATE ON public.case_notes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_notes",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_notes_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_public_tracking_updated_at BEFORE UPDATE ON public.case_public_tracking FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_public_tracking",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_public_tracking_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_reviews_updated_at BEFORE UPDATE ON public.case_reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_reviews",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_reviews_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_case_tasks_updated_at BEFORE UPDATE ON public.case_tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "case_tasks",
+      "timing": "BEFORE",
+      "trigger_name": "update_case_tasks_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_enterprise_case_counters_updated_at BEFORE UPDATE ON public.enterprise_case_counters FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "enterprise_case_counters",
+      "timing": "BEFORE",
+      "trigger_name": "update_enterprise_case_counters_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_enterprise_cases_updated_at BEFORE UPDATE ON public.enterprise_cases FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "enterprise_cases",
+      "timing": "BEFORE",
+      "trigger_name": "update_enterprise_cases_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_org_invitations_updated_at BEFORE UPDATE ON public.org_invitations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "org_invitations",
+      "timing": "BEFORE",
+      "trigger_name": "update_org_invitations_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_org_member_profiles_updated_at BEFORE UPDATE ON public.org_member_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "org_member_profiles",
+      "timing": "BEFORE",
+      "trigger_name": "update_org_member_profiles_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_org_members_updated_at BEFORE UPDATE ON public.org_members FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "org_members",
+      "timing": "BEFORE",
+      "trigger_name": "update_org_members_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_org_messages_updated_at BEFORE UPDATE ON public.org_messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "org_messages",
+      "timing": "BEFORE",
+      "trigger_name": "update_org_messages_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_organization_branding_settings_updated_at BEFORE UPDATE ON public.organization_branding_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "organization_branding_settings",
+      "timing": "BEFORE",
+      "trigger_name": "update_organization_branding_settings_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "organizations",
+      "timing": "BEFORE",
+      "trigger_name": "update_organizations_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_payment_transactions_updated_at BEFORE UPDATE ON public.payment_transactions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "payment_transactions",
+      "timing": "BEFORE",
+      "trigger_name": "update_payment_transactions_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "profiles",
+      "timing": "BEFORE",
+      "trigger_name": "update_profiles_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_user_public_profiles_updated_at BEFORE UPDATE ON public.user_public_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "user_public_profiles",
+      "timing": "BEFORE",
+      "trigger_name": "update_user_public_profiles_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER update_user_subscriptions_updated_at BEFORE UPDATE ON public.user_subscriptions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "public",
+      "table": "user_subscriptions",
+      "timing": "BEFORE",
+      "trigger_name": "update_user_subscriptions_updated_at"
+    },
+    {
+      "definition": "CREATE TRIGGER tr_check_filters BEFORE INSERT OR UPDATE ON realtime.subscription FOR EACH ROW EXECUTE FUNCTION realtime.subscription_check_filters()",
+      "event": "INSERT OR UPDATE",
+      "schema": "realtime",
+      "table": "subscription",
+      "timing": "BEFORE",
+      "trigger_name": "tr_check_filters"
+    },
+    {
+      "definition": "CREATE TRIGGER enforce_bucket_name_length_trigger BEFORE INSERT OR UPDATE OF name ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_name_length()",
+      "event": "INSERT OR UPDATE",
+      "schema": "storage",
+      "table": "buckets",
+      "timing": "BEFORE",
+      "trigger_name": "enforce_bucket_name_length_trigger"
+    },
+    {
+      "definition": "CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+      "event": "DELETE",
+      "schema": "storage",
+      "table": "buckets",
+      "timing": "BEFORE",
+      "trigger_name": "protect_buckets_delete"
+    },
+    {
+      "definition": "CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+      "event": "DELETE",
+      "schema": "storage",
+      "table": "objects",
+      "timing": "BEFORE",
+      "trigger_name": "protect_objects_delete"
+    },
+    {
+      "definition": "CREATE TRIGGER update_objects_updated_at BEFORE UPDATE ON storage.objects FOR EACH ROW EXECUTE FUNCTION storage.update_updated_at_column()",
+      "event": "UPDATE",
+      "schema": "storage",
+      "table": "objects",
+      "timing": "BEFORE",
+      "trigger_name": "update_objects_updated_at"
+    }
+  ]
+}

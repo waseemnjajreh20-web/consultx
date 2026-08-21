@@ -1,0 +1,560 @@
+{
+  "extracted_at": "2026-08-21T12:45:37.205Z",
+  "source": "production project hrnltxmwoaphgejckutk via read-only SQL query",
+  "object_type": "rls_enabled",
+  "count": 92,
+  "data": [
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "audit_log_entries"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "custom_oauth_providers"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "flow_state"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "identities"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "instances"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "mfa_amr_claims"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "mfa_challenges"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "mfa_factors"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "oauth_authorizations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "oauth_client_states"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "oauth_clients"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "oauth_consents"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "one_time_tokens"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "refresh_tokens"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "saml_providers"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "saml_relay_states"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "schema_migrations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "sessions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "sso_domains"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "sso_providers"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "auth",
+      "table": "users"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "webauthn_challenges"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "auth",
+      "table": "webauthn_credentials"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "cron",
+      "table": "job"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "cron",
+      "table": "job_run_details"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "extensions",
+      "table": "wrappers_fdw_stats"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "net",
+      "table": "_http_response"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "net",
+      "table": "http_request_queue"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "admin_audit_log"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "ai_report_versions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_ai_sessions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_approvals"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_client_contacts"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_documents"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_notes"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_public_tracking"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_public_updates"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_review_ai_reports"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_reviews"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_status_history"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_task_events"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "case_tasks"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "community_summaries"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "conversations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "corpus_coverage"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "daily_message_usage"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "document_tables"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "enterprise_case_counters"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "enterprise_cases"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "graph_edges"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "graph_indexing_status"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "graph_nodes"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "messages"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "mode_daily_usage"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "org_invitations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "org_member_presence"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "org_member_profiles"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "org_members"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "org_messages"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "organization_branding_settings"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "organizations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "payment_history"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "payment_transactions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "plans"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "profiles"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "sbc_code_tables"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "sbc_documents"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "sbc_pages"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "source_registry"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "source_versions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "subscription_plans"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "user_public_profiles"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "user_subscriptions"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "validation_runs"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "public",
+      "table": "webhook_dead_letters"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "messages_2026_05_26"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "messages_2026_05_27"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "messages_2026_05_28"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "messages_2026_05_29"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "messages_2026_05_30"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "schema_migrations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "realtime",
+      "table": "subscription"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "buckets"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "buckets_analytics"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "buckets_vectors"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "migrations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "objects"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "s3_multipart_uploads"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "s3_multipart_uploads_parts"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": true,
+      "schema": "storage",
+      "table": "vector_indexes"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "supabase_migrations",
+      "table": "schema_migrations"
+    },
+    {
+      "force_enabled": false,
+      "rls_enabled": false,
+      "schema": "vault",
+      "table": "secrets"
+    }
+  ]
+}
