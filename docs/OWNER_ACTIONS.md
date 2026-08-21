@@ -41,9 +41,9 @@ No action needed: the Vercel OIDC token expired on its own, and the Supabase
 | # | Task | Detail | Status |
 |---|---|---|---|
 | 9 | **Configure Moyasar production keys** | `VITE_MOYASAR_PUBLISHABLE_KEY` is empty in the saved production env. Live payments cannot complete without it. Also set `MOYASAR_SECRET_KEY` and `MOYASAR_WEBHOOK_SECRET` as Supabase secrets. | `[ ]` |
-| 10 | **Decide: is Tap Payments still used?** | Both Moyasar and Tap integrations exist. If Tap is retired, its edge functions and secrets should be removed. | `[ ]` |
+| 10 | **~~Decide: is Tap Payments still used?~~** | Tap Payments is retired. Source edge functions (`tap-webhook`, `tap-create-subscription`, `tap-charge-subscription`, `create-checkout`, `verify-payment`) and the unsafe `payment-webhook` were removed; `TAP_SECRET_KEY` was rotated/deleted from Supabase secrets. | `[x]` |
 | 11 | **Decide: is Lovable Cloud still used?** | `README.md` still describes a Lovable AI Gateway architecture, but the code migrated to Gemini directly in March 2026. Confirm so the docs can be corrected. | `[ ]` |
-| 12 | **Decommission the `fire-safety-chat-v2` edge function** | Its source was deleted as dead code and its stanza is now removed from `supabase/config.toml` (commit `ee5ed8d`). A deployed instance may still exist — delete it in the dashboard. | `[ ]` |
+| 12 | **~~Decommission the `fire-safety-chat-v2` edge function~~** | Deployed instance deleted from the project; no source references remain. See `docs/ARCHIVE_INDEX.md`. | `[x]` |
 | 13 | **Decide on error monitoring** | No Sentry or equivalent is installed. Approve a provider and supply a DSN if you want production error visibility. | `[ ]` |
 | 14 | **Decide on product analytics** | No analytics installed. Approve a provider (PostHog, etc.) if wanted. | `[ ]` |
 | 18 | **Decide the free-trial policy** | Who gets the 7-day Engineer trial: every new signup, or only corporate-email signups? The code currently does both at once through two different tables, so the two answers contradict each other and the UI locks out most trial users. Details and options in `docs/TRIAL_POLICY_DECISION.md`. **Blocks the fix.** | `[ ]` |

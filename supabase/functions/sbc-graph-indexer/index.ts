@@ -81,8 +81,8 @@ Return ONLY valid JSON:
 
 // ==================== LLM CALL (with retry + exponential backoff for 503) ====================
 async function callGemini(prompt: string, content: string, retries = 3): Promise<any> {
-  const apiKey = Deno.env.get("Gemini_API_Key1");
-  if (!apiKey) throw new Error("Gemini_API_Key1 not configured");
+  const apiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+  if (!apiKey) throw new Error("GOOGLE_GEMINI_API_KEY not configured");
 
   for (let attempt = 0; attempt < retries; attempt++) {
     const response = await fetch(
