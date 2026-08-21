@@ -464,7 +464,7 @@ async function insertDeadLetter(
 //
 // Requires:
 //   RESEND_API_KEY  — Resend API key (Edge Function secret)
-//   FROM_EMAIL      — Sender address (optional; falls back to noreply@consultx.sa)
+//   FROM_EMAIL      — Sender address (optional; falls back to noreply@consultx.app)
 //
 // All errors are caught and logged; this function never throws.
 async function sendDunningEmail(params: {
@@ -477,8 +477,8 @@ async function sendDunningEmail(params: {
     return;
   }
 
-  const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.sa>";
-  const accountUrl = "https://consultx.sa/account";
+  const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
+  const accountUrl = "https://www.consultx.app/account";
 
   const graceEnd = new Date(
     new Date(params.pastDueSince).getTime() + GRACE_DAYS * 24 * 60 * 60 * 1000,
@@ -538,7 +538,7 @@ async function sendDunningEmail(params: {
 
   <hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb">
   <p style="color:#9ca3af;font-size:12px;margin:0;direction:ltr;text-align:left">
-    ConsultX &middot; support@consultx.sa &middot;
+    ConsultX &middot; support@consultx.app &middot;
     You are receiving this because you have an active or recent subscription.
   </p>
 
