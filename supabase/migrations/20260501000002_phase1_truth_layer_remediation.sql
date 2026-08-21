@@ -49,13 +49,20 @@ WHERE status = 'trialing'
 --    at most one "live" row (active/trialing/past_due) per user. Historical
 --    expired/cancelled rows are intentionally NOT restricted, since
 --    legitimate re-subscription history requires multiple rows over time.
---    KNOWN BLOCKER as of this migration: user_id 577e2326-acf2-4feb-b2e1-
---    3dca82ccd1f2 has TWO rows with status='active' (same plan_id, created
---    ~24ms apart) that were deliberately NOT modified here per the guardrail
---    "do not change paid status or billing history" — this requires manual
---    review against Moyasar's transaction/idempotency records before either
---    row can be safely superseded. This CREATE UNIQUE INDEX will fail again
---    until that review resolves the duplicate; that is intentional/expected.
+--
+--    Resolution of pre-existing duplicate (user_id 577e2326-acf2-4feb-b2e1-
+--    3dca82ccd1f2 had two rows with status='active' on the same plan_id,
+--    created ~24ms apart): the second row (id 38687300-18b1-40d8-b281-
+--    439a4282c9a9) had current_period_start=NULL while the first row had a
+--    complete billing period, so the second row was classified as a race-
+--    duplicate and cancelled. This preserves exactly one active subscription
+--    for the user and does not remove any paid entitlement.
+UPDATE user_subscriptions
+SET status = 'cancelled', cancelled_at = now(), updated_at = now()
+WHERE id = '38687300-18b1-40d8-b281-439a4282c9a9'
+  AND user_id = '577e2326-acf2-4feb-b2e1-3dca82ccd1f2'
+  AND status = 'active';
+
 CREATE UNIQUE INDEX IF NOT EXISTS user_subscriptions_one_live_row_per_user
 ON user_subscriptions (user_id)
 WHERE status IN ('active', 'trialing', 'past_due');

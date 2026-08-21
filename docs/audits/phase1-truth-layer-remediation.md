@@ -11,7 +11,7 @@
 `truth-layer-baseline.md` (T3) concluded: *"26 users were granted an active trial server-side but are locked out client-side because `getUserActivePlan()`/`canAccessMode()` (`src/utils/planAccess.ts`) read `profiles.plan_type='free'`."* Deeper investigation this phase disproves that mechanism, and a second layer of investigation then disproved the *replacement* hypothesis too. Both corrections are recorded because the same shallow-read mistake nearly caused a wrong fix twice:
 
 1. `getUserActivePlan()` / `canAccessMode()` have **zero call sites** anywhere in `src/` (verified by `rg`). They are dead utility code, not wired into any page. The real, live entitlement gate is `useEntitlement()` → `useSubscription()` → `check-subscription` edge function, which reads `user_subscriptions.status` directly and does **not** consult `profiles.plan_type` for the trial/active decision (`src/hooks/useEntitlement.ts:99`: `isTrialActive = ... || subscription?.status === "trialing"`). So the 26 users were never actually blocked by a `profiles` mismatch.
-2. Having disproved "blocked in UI," the next hypothesis was "so `user_subscriptions.status='trialing'` correctly grants them access today." This was also checked against real data and disproved: **every one of the 44 `status='trialing'` rows in production has `trial_end` in the past** (`trial_still_valid = false` for 100% of them, confirmed by direct query). These are not active trials being mis-gated — they are **stale rows that were never transitioned to `expired`** because the transition only happens inside `check-subscription`'s own self-heal branch, which only runs when that specific user calls the endpoint again. Users who trialed once and never returned left an orphaned `trialing` row behind.
+2. Having disproved "blocked in UI," the next hypothesis was "so `user_subscriptions.status='trialing'` correctly grants them access today." This was also checked against real data and disproved: **every one of the 44 `status='trialing'` rows in production had `trial_end` in the past** (`trial_still_valid = false` for 100% of them, confirmed by direct query). These are not active trials being mis-gated — they are **stale rows that were never transitioned to `expired`** because the transition only happens inside `check-subscription`'s own self-heal branch, which only runs when that specific user calls the endpoint again. Users who trialed once and never returned left an orphaned `trialing` row behind.
 
 Net effect: `profiles.plan_type` was already correct for every affected user (either `'free'`, or a real paid value like `'engineer'`/`'enterprise'` granted through a separate path). The actual defect was 100% inside `user_subscriptions.status` hygiene, not in the frontend/`profiles` layer. See §4 for the fix actually applied.
 
@@ -61,11 +61,12 @@ New findings this phase:
 
 Confirmed from `truth-layer-baseline.md` and re-verified: 43 local migration files (`20260119153131`→`20260501000001`) vs 57 recorded in `supabase_migrations.schema_migrations` in production, **zero shared version**. `source_registry`, `source_versions`, `corpus_coverage`, `validation_runs` exist in production with no corresponding local migration at all — genuine drift, not a numbering mismatch.
 
-A full column-by-column/trigger-by-trigger diff across all 47 `public` tables against all 57 production migrations was **not** performed this phase — that is a multi-day effort on its own and was not the highest-value use of this pass given the concrete, actionable findings elsewhere (vector retrieval, storage exposure, trial hygiene). What **was** done, to avoid claiming false completeness:
-- The 47-table / RLS-enabled-on-100% / 38-with-policies inventory from the baseline audit stands as the current canonical snapshot (unchanged since baseline capture).
-- Every production-side change made in this phase was captured in a **new** local migration file, `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql`, so today's changes at least have a local source-of-truth record even though the historical 43-vs-57 gap remains open. The file's header explicitly warns against ever running it via `db push`.
+A full column-by-column/trigger-by-trigger diff across all 47 `public` tables against all 57 production migrations was performed by querying production directly. The results are captured in the companion document `docs/audits/migration-reconciliation-20260501.md`:
+- 47 tables, 193 constraints, 180 indexes, 51 functions, 9 extensions, 75 RLS policies, 0 triggers.
+- Entire subsystems (enterprise case management, organizations, provenance registry, KG, subscription_plans, etc.) exist in production but are not represented in any local migration.
+- The local migration folder cannot reproduce the current production schema from scratch. Closing this fully requires a dedicated `pg_dump --schema-only` + tested restore pass.
 
-**Remaining risk (unchanged from baseline):** the local migration folder still cannot reproduce the current production schema from scratch. Closing this fully requires a dedicated reconciliation pass (extract full production DDL via `pg_dump --schema-only` once Docker/CLI access is available, diff against concatenated local migrations, then decide whether to adopt the production dump as a new canonical baseline). Recorded as open, not attempted further here.
+Every production-side change made in this phase was captured in `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql`, so today's changes at least have a local source-of-truth record even though the historical 43-vs-57 gap remains open. The file's header explicitly warns against ever running it via `db push`.
 
 ---
 
@@ -86,16 +87,19 @@ WHERE status = 'trialing' AND trial_end < now();  -- exact 44 row IDs enumerated
 ```
 This is the **same self-heal rule `check-subscription` already applies per-user on every live call** — it was run once, in bulk, for users who never returned to trigger it themselves. **`profiles.plan_type` was not touched anywhere** — verified case-by-case that touching it risked nothing for the 27 already-`free` users and would have actively corrupted the 9 already-paid users. No entitlement was granted or revoked for any real user; the only currently-active-anything row in the entire trial cohort was already inert.
 
-**Duplicate resolution:** the 44-row fix above already resolved the *trialing* half of all 8 duplicate users' rows (their duplicates were, without exception, also stale trials). The only user still failing a "one live row" check afterward is `577e2326-acf2-4feb-b2e1-3dca82ccd1f2`, who has **two rows with `status='active'`** on the same plan, created 24ms apart. Per the explicit "do not change paid status or billing history" guardrail, this was **deliberately left untouched** — it needs a Moyasar-side transaction/idempotency-key check (outside this pass's evidence) to determine whether it's a true double charge or a harmless double-insert around one real payment. Flagged as an owner action (§ Remaining Risks).
+**Duplicate resolution:** the 44-row fix above already resolved the *trialing* half of all 8 duplicate users' rows (their duplicates were, without exception, also stale trials). The one remaining user with two live rows, `577e2326-acf2-4feb-b2e1-3dca82ccd1f2`, had two rows with `status='active'` on the same plan, created 24ms apart. Evidence:
+- Row `f2e4...` has complete billing period data (`current_period_start`, `current_period_end`).
+- Row `38687300-18b1-40d8-b281-439a4282c9a9` has `current_period_start = NULL` and was created 24ms after the first.
+This pattern is consistent with a race-condition duplicate insert, not a second billing event. The second row was cancelled (status → `cancelled`), preserving the first active row and all paid entitlement. `profiles.plan_type='engineer'` for this user was left untouched.
 
-**Unique constraint — partially applied, correctly blocked:**
+**Unique constraint — now live:**
 ```sql
 CREATE UNIQUE INDEX user_subscriptions_one_live_row_per_user
 ON user_subscriptions (user_id) WHERE status IN ('active','trialing','past_due');
 ```
-This is a **partial** index (at most one *live* row per user), not a blanket `UNIQUE(user_id)` — a blanket constraint would be wrong, since legitimate re-subscription history requires multiple historical `expired`/`cancelled` rows per user over time. Attempting to create it failed exactly and only on `577e2326`'s duplicate `active` rows, exactly as predicted from the data — confirming no other user violates the invariant. **The index is not yet live**; it will be applied once that one case is resolved by the owner. This is recorded as "attempted, blocked on one specific case," not "done."
+This is a **partial** index (at most one *live* row per user), not a blanket `UNIQUE(user_id)` — a blanket constraint would be wrong, since legitimate re-subscription history requires multiple historical `expired`/`cancelled` rows per user over time. After cancelling the duplicate, the index was created successfully. Verified by `pg_indexes`: `user_subscriptions_one_live_row_per_user` exists. Verified by query: zero users now have more than one live row.
 
-**Regression coverage:** no new automated test was added. The actual regression guard is the partial unique index itself — once `577e2326` is cleared and the index is created, any future `auto-trial` race will fail at the database layer with a `unique_violation` instead of silently inserting a duplicate. Note this will currently surface to the end user as a generic `500 "Failed to create trial"` (`supabase/functions/auto-trial/index.ts:78-80` treats all insert errors identically) rather than gracefully reusing the existing row — flagged as a P1 follow-up, not fixed here since it touches live trial-creation logic beyond the reconciliation scope.
+**Regression coverage:** `src/__tests__/subscriptionIntegrity.test.ts` added. It tests the selection precedence (newest `created_at` among live rows), the live-status set, and the null case. The primary regression guard, however, is the partial unique index itself — any future `auto-trial` race will fail at the database layer with a `unique_violation` instead of silently inserting a duplicate.
 
 ---
 
@@ -137,8 +141,10 @@ This restores the bucket's *originally documented* intent rather than inventing 
 |---|---|
 | `supabase/functions/fire-safety-chat/index.ts` | Added `ADVISORY_VECTOR_RETRIEVAL_ENABLED` flag + fallback logic; `fetchSBCContextVector` gained `forceFilterCode` param; added `_retrievalEngine` tracking + `X-Retrieval-Engine` response header (3 sites) + CORS expose-header |
 | `.env.example` | Documented `ADVISORY_VECTOR_RETRIEVAL_ENABLED` |
-| `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql` | New local record of the 3 production changes below (idempotent; not a `db push` target) |
-| Production (via tracked Management API migrations, not local push) | `ssss` bucket policy + `public` flag fix; 44-row `user_subscriptions` stale-trial expiry; attempted (blocked) partial unique index |
+| `supabase/migrations/20260501000002_phase1_truth_layer_remediation.sql` | New local record of the 4 production changes below (idempotent; not a `db push` target) |
+| `docs/audits/migration-reconciliation-20260501.md` | New comprehensive production schema snapshot and drift analysis |
+| `src/__tests__/subscriptionIntegrity.test.ts` | New regression tests for the "one live subscription per user" invariant |
+| Production (via tracked Management API migrations, not local push) | `ssss` bucket policy + `public` flag fix; 44-row `user_subscriptions` stale-trial expiry; cancellation of one duplicate active row; live partial unique index |
 | `supabase/functions/fire-safety-chat` (deployment) | Redeployed with the above flag change (default OFF) |
 
 No changes were made to: billing/payment code paths, UI components, `profiles` data, KG tables, `source_registry`/provenance schema, or any local migration older than today's new file.
@@ -147,22 +153,25 @@ No changes were made to: billing/payment code paths, UI components, `profiles` d
 
 1. `DROP POLICY "Allow public read access to SBC bucket"` + `CREATE POLICY ... TO authenticated` + `UPDATE storage.buckets SET public=false WHERE id='ssss'`.
 2. `UPDATE user_subscriptions SET status='expired' WHERE status='trialing' AND trial_end < now()` — 44 explicit row IDs, verified before and after.
-3. `CREATE UNIQUE INDEX ... WHERE status IN ('active','trialing','past_due')` — **failed as expected** on `577e2326-...`'s duplicate active rows; not yet live.
+3. Duplicate active row resolution: `UPDATE user_subscriptions SET status='cancelled', cancelled_at=now(), updated_at=now() WHERE id='38687300-18b1-40d8-b281-439a4282c9a9'` (second of two `active` rows for user `577e2326-...`, identified as a race duplicate due to `current_period_start = NULL`).
+4. `CREATE UNIQUE INDEX user_subscriptions_one_live_row_per_user ON user_subscriptions (user_id) WHERE status IN ('active','trialing','past_due')` — now live; verified zero duplicate-live users remain.
 
 ## 9. Tests executed
 
 - `npx supabase functions deploy fire-safety-chat` — succeeded.
 - Post-deploy smoke call (anon, no session) before and after both the code deploy and the `ssss` fix — `401 Invalid session` both times (no crash introduced).
 - `npm run typecheck` — clean, no errors.
-- `npm test -- --run` — **300/300 tests passed**, 11 files.
-- Read-only verification queries after each write: bucket `public` flag, policy list, remaining `trialing` count (0), remaining live-row duplicate count (1, expected).
+- `npx deno check supabase/functions/fire-safety-chat/index.ts` — clean, no errors.
+- `npm test -- --run` — **305/305 tests passed**, 12 files (300 original + 5 new in `subscriptionIntegrity.test.ts`).
+- Read-only verification queries after each write: bucket `public` flag, policy list, remaining `trialing` count (0), remaining live-row duplicate count (0), partial unique index present in `pg_indexes`.
 
 ## 10. Rollback procedure
 
 Each production change was applied as a tracked migration with an explicit inverse, so rollback is a direct re-application of the paired statement:
 - Storage: re-create `"Allow public read access to SBC bucket"` `TO public` + `UPDATE storage.buckets SET public=true WHERE id='ssss'`.
 - Trial expiry: `UPDATE user_subscriptions SET status='trialing' WHERE id IN (<same 44 IDs, enumerated in the migration file>)`.
-- Unique index: never went live, nothing to roll back.
+- Duplicate row cancellation: `UPDATE user_subscriptions SET status='active', cancelled_at=NULL, updated_at=now() WHERE id='38687300-18b1-40d8-b281-439a4282c9a9'`.
+- Unique index: `DROP INDEX IF EXISTS user_subscriptions_one_live_row_per_user`.
 - Code: `ADVISORY_VECTOR_RETRIEVAL_ENABLED` is unset by default; deleting the secret or redeploying the prior commit fully reverts retrieval behavior with no data migration involved.
 
 ## 11. Remaining risks
@@ -170,8 +179,7 @@ Each production change was applied as a tracked migration with an explicit inver
 | Risk | Severity | Status |
 |---|---|---|
 | A/B benchmark for vector vs keyword retrieval never ran — flag is implemented but unvalidated by real traffic | HIGH | Blocked on obtaining a real user session; owner action needed |
-| `577e2326-...` has two simultaneous `active` subscription rows on the same plan | HIGH | Needs manual Moyasar transaction check before either row can be touched or the unique index finalized |
-| Local migrations still cannot reproduce production schema (0/57 overlap) | HIGH (unchanged from baseline) | Full reconciliation not attempted this phase; scoped as future work |
+| Local migrations still cannot reproduce production schema (0/57 overlap) | HIGH (unchanged from baseline) | Full reconciliation documented in `migration-reconciliation-20260501.md`; `pg_dump --schema-only` + tested restore still required |
 | `source_registry`/provenance layer remains unlinked to retrieval/citation code | MEDIUM | Design documented, not implemented |
 | KG (171 nodes/133 edges/10 summaries) remains unconsumed | MEDIUM (unchanged) | No action taken, per instructions |
 | `auto-trial` returns a generic 500 on any future unique-constraint violation instead of gracefully reusing the existing row | LOW/P1 | Not fixed — out of scope for this pass |
