@@ -1,22 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ── Advisory Brain B2 modules (flag-gated, Advisory-only) ────────────────────
-import { isB2Enabled, loadAdvisoryBrainB1 } from "./brain_b1_loader.ts";
-import { isRouterEnabled, routeAdvisoryQuery } from "./workflow_router.ts";
-import {
-  isEvidenceEnabled, augmentWithWorkflow, buildEvidenceOverlay, filterHintsByFamily,
-} from "./workflow_constraints.ts";
-import {
-  isDynamicThinkingEnabled, buildThinkingSequence,
-  formatThinkingEvent, type ThinkingEvent,
-} from "./thinking_ux_emitter.ts";
-import type { AdvisoryBrainB1, RouterResult, AugmentationResult } from "./brain_b1_types.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
-  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta, X-Retrieval-Engine",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta",
 };
 
 // ==================== CORE RULES (Non-negotiable) ====================
@@ -36,17 +24,9 @@ const CORE_RULES = `
 - Quote code text EXACTLY as written in English from the source documents
 - Include: Document, Chapter, Section/Clause, Page (if available)
 - NO paraphrasing, NO summarizing, NO merging clauses
-- CITATION FORMAT: Always write "Section X.X.X" in full — NEVER use the § symbol in any output
 
 4️⃣ MISSING INFORMATION
 If clause not found, respond: "The required code text is not available in the provided files."
-
-4️⃣-B CERTAINTY LABELING (MANDATORY)
-- Exact clause quoted verbatim → cite normally: "Document: X | Section: Y"
-- Adjacent or contextually related text used (not the literal clause) → prefix: [INDIRECT — Section Y context]
-- No matching text in provided files → use [REQUIRES SOURCE CONFIRMATION] in the compliance verdict; use [NO SOURCE] only in Section VIII (Technical References) to mark which quote could not be retrieved
-- NEVER write ✅ Compliant or ❌ Non-Compliant when source support is absent — use [REQUIRES SOURCE CONFIRMATION] or "غير محدد — يتطلب تحقق مرجعي" instead
-- NEVER imply certainty when the exact clause is absent — fabricating confidence is a critical violation
 
 5️⃣ CROSS-REFERENCING (MANDATORY)
 - For sprinkler/fire protection questions: ALWAYS check SBC 801 (Section 903.2.x) AND SBC 201 (Table 1006.3.x for single exits, Section 101.2 for scope)
@@ -57,231 +37,7 @@ If clause not found, respond: "The required code text is not available in the pr
 6️⃣ LANGUAGE PRECISION
 - NEVER use vague words: "usually", "approximately", "probably", "generally", "often", "غالباً", "تقريباً", "عادةً"
 - ALWAYS be DEFINITIVE: state exact values, exact section numbers, exact requirements
-- EXCEPTION — ANALYTICAL COMPLIANCE MODE: When the exact SBC clause is absent from the retrieved context block, apply Rule 4️⃣-B uncertainty labels ([REQUIRES SOURCE CONFIRMATION], [NO SOURCE], ⚠️, 🔲) instead of forcing definitiveness. "Definitive" applies to retrieved code text — it is NOT a license to state compliance without a source.
 - If uncertain, say "requires AHJ determination" rather than guessing
-`;
-
-// ==================== ADVISORY EVIDENCE CONFIDENCE CAP v2 (Advisory mode only) ====================
-// Localized to text + vision Advisory prompts. NOT applied to Analytical/compliance-audit prompts.
-// Reason for v2 (Step 1.1, after live retest of v117):
-//   - v1 banned "إلزامي" only "as final verdict" — model bypassed via "إلزامية", "إلزامياً",
-//     "إلزامية تركيب", "نظام الرش الآلي إلزامياً", "بشكل قاطع", "يؤكد الحاجة".
-//   - v1's value-link sentence was conditional — model skipped it by treating the link as "clear".
-//   - v1 named the bracketed citation format but did not forbid raw "SBC 801, Section 903.2.7" form.
-//   - v1's sprinkler/fire-alarm independence rule lacked an explicit DO/DON'T example.
-//   - The downstream ARABIC_STYLE block (used by Analytical too) says "authoritative tone" — v2
-//     explicitly supersedes that for Advisory evidence-incomplete responses.
-const ADVISORY_EVIDENCE_CONFIDENCE_CAP = `
-═══════════════════════════════════════
-ADVISORY EVIDENCE CONFIDENCE CAP — v2 (سقف ثقة الأدلة في وضع المستشار — الإصدار الثاني)
-═══════════════════════════════════════
-
-PRECEDENCE: هذه القاعدة تَعلو على أي توجيه أسلوبي آخر في هذا البرومبت (مثل "نبرة مهنية حازمة / authoritative tone"). إذا تعارضت مع أي تعليمات أخرى في هذا البرومبت في وضع المستشار، فهذه القاعدة هي التي تحكم.
-
-═══════════════════════════════════════
-A) تصنيف الدليل (Evidence Tier) — حدّد الفئة قبل الكتابة
-═══════════════════════════════════════
-
-TIER-1 (conf:high) — يُسمح فقط في هذه الحالة بلغة حازمة:
-- نص قسم/جدول مسترجع حرفياً من المصدر المُفهرس، تحت رقم القسم الصحيح، مع تطابق رأس النص (heading) ورقم القسم في البيانات الوصفية.
-- مثال: chunk معنون "Section 903.2.7 Group M" ومحتوى الجسم يبدأ بهذا الرأس بالحرف.
-
-TIER-2 (conf:medium) — لا يُسمح بأي لغة حازمة، استخدم لغة احتمالية فقط:
-- نطاق صفحات (page range) أو chunk بدون رأس قسم مطابق.
-- اسم الملف فقط (مثل SBC801_Ch9_v1_chunks) بدون رقم قسم مستخرج من الجسم.
-- جدول مفهرس (sbc_code_tables) عندما يختلف رقم القسم في الجدول عن رقم القسم الذي تستشهد به.
-
-TIER-3 (conf:low) — لا يُعامل كسلطة قانونية، الإفصاح إلزامي:
-- ملخصات community_summaries أو أي محتوى موسوم LLM_SYNTHESIS / "نظام معرفي مساعد".
-- ملخصات مُستنبطة بدون نص حرفي.
-
-═══════════════════════════════════════
-B) قائمة العبارات المحظورة (HARD BAN) — في كل وضع المستشار، لا يقتصر على "الحكم النهائي"
-═══════════════════════════════════════
-
-ممنوع استخدام أي مما يلي إلا إذا كان الدليل TIER-1 (conf:high) لذلك القرار بعينه:
-
-العربية (تشمل كل التصاريف الصرفية):
-- "إلزامي"
-- "إلزامية"
-- "إلزامياً"
-- "إلزامية تركيب"
-- "إلزامية تطبيق"
-- "إلزامية توفير"
-- "مطلوب قطعاً"
-- "واجب قطعاً"
-- "بشكل قاطع"
-- "بشكل قطعي"
-- "يؤكد الحاجة"
-- "مما يؤكد"
-- "لا شك"
-- "بنسبة تأكيد"
-- "تأكيد عالي"
-- "تأكيد عالي جداً"
-- "حتمياً"
-- "بالتأكيد"
-
-English:
-- "mandatory"
-- "definitively required"
-- "must be installed"
-- "is required" (when paired with a final verdict)
-- "final verdict"
-- "without any doubt"
-
-عند نقص دليل TIER-1، استخدم بدلاً منها فقط:
-- "يرجح"
-- "على الأرجح"
-- "قرار أولي مشروط"
-- "يتطلب تحققاً من النص الكودي الدقيق"
-- "لا يصلح كقرار اعتماد نهائي"
-
-═══════════════════════════════════════
-C) العتبات الرقمية — جملة الإفصاح غير المشروطة (UNCONDITIONAL DISCLOSURE)
-═══════════════════════════════════════
-
-إذا تضمنت إجابتك أيًا من الرموز التالية:
-- 1,115
-- 1115
-- 12,000
-- 12000
-
-فإن جملة واحدة على الأقل من هذه يجب أن تظهر بالحرف بنفس الفقرة التي تذكر فيها العتبة، إلا إذا كان الدليل TIER-1 (conf:high) ومعه رقم قسم نظيف:
-- "القيمة واردة في المصدر المسترجع، لكن ربطها برقم Section يحتاج تحققاً إضافياً."
-
-هذه الجملة غير مشروطة. لا تُحذف بقرار من النموذج بدعوى أن الربط "واضح".
-
-═══════════════════════════════════════
-D) صيغة الاستشهاد — الإلزام الكامل (NO RAW REFS)
-═══════════════════════════════════════
-
-الإشارات الخام مثل "SBC 801, Section 903.2.7" أو "Section 907.2.7" غير كافية بمفردها وممنوعة في الجسم الرئيسي للإجابة. كل استشهاد بمصدر يجب أن يكون داخل رمز Token من هذه الصيغ:
-
-- TIER-1: [SBC-801 Section 903.2.7 | conf:high]
-- TIER-2: [SBC-801 chunk pp.411-435 | conf:medium | section_label:ambiguous]
-- TIER-3: [community_summary | LLM_SYNTHESIS | conf:low]
-
-إذا أردت ذكر رقم قسم بدون رمز Token (مثلاً في شرح هندسي عام)، يجب أن تكتب صراحة: "(مرجع غير محسوم — يحتاج تحقق)".
-
-═══════════════════════════════════════
-E) عدم التطابق المحتمل بين رقم القسم والنص (MANDATORY DISCLOSURE ON TIER-2)
-═══════════════════════════════════════
-
-عند الاستشهاد بـ TIER-2 (chunk / page / section_label:ambiguous)، يجب أن تظهر هذه الجملة في فقرة المرجع بالحرف:
-"يوجد عدم تطابق محتمل بين رقم القسم والنص المسترجع، لذلك لا يجوز اعتماد القرار قبل مراجعة النص الرسمي."
-
-═══════════════════════════════════════
-F) DO NOT / USE INSTEAD — أمثلة من حادثة 2026-05-01 (Group M / 1,200 m²)
-═══════════════════════════════════════
-
-[BAD ❌] "نظام الرش الآلي إلزامي لأن المساحة 1,200 م² تتجاوز 1,115 م²."
-[BAD ❌] "نظام الرش الآلي إلزامياً وفق Section 903.2.7."
-[BAD ❌] "إلزامية تركيب نظام إنذار حريق متكامل."
-[BAD ❌] "مما يؤكد الحاجة للنظام بشكل قاطع."
-[BAD ❌] استشهاد خام: "SBC 801, Section 903.2.7" بدون Token.
-
-[GOOD ✅] "يرجح أن نظام الرش الآلي مطلوب بناءً على قيمة 1,115 م² الواردة في المصدر المسترجع، لكن ربط هذه القيمة برقم Section يحتاج تحققاً إضافياً، لذلك يبقى القرار أولياً ومشروطاً قبل الاعتماد. [SBC-801 chunk pp.411-435 | conf:medium | section_label:ambiguous] القيمة واردة في المصدر المسترجع، لكن ربطها برقم Section يحتاج تحققاً إضافياً. يوجد عدم تطابق محتمل بين رقم القسم والنص المسترجع، لذلك لا يجوز اعتماد القرار قبل مراجعة النص الرسمي."
-
-═══════════════════════════════════════
-G) فصل قرار الرشاشات عن قرار الإنذار (INDEPENDENT EVIDENCE CHAINS)
-═══════════════════════════════════════
-
-قرار الرشاشات (Sprinklers — Section 903.2.x) وقرار إنذار الحريق (Fire Alarm — Section 907.2.x) قراران منفصلان تماماً، ولكلٍّ منهما عتبة وسلسلة دليل مختلفة.
-
-[BAD ❌] "بما أن الرش مطلوب، يصبح الإنذار إلزامياً."
-[BAD ❌] "الرشاشات مطلوبة، وبالتالي يلزم نظام إنذار."
-
-[GOOD ✅] "يجب تقييم نظام الإنذار في مسار مستقل وفق مصدر SBC 801 الخاص بالإنذار. لا يكفي ربطه تلقائياً بالرش إلا إذا كان النص المسترجع يدعم هذا الربط."
-
-كل قرار يحتاج Token استشهاد خاص به (Section 903.2.x للرش، Section 907.2.x للإنذار).
-
-═══════════════════════════════════════
-H) NFPA
-═══════════════════════════════════════
-
-NFPA يُذكر فقط إذا أحال إليه نص SBC المسترجع نفسه. ممنوع توسيع متطلبات NFPA خارج ما ورد في سياق SBC المسترجع.
-
-═══════════════════════════════════════
-I) رمز القسم
-═══════════════════════════════════════
-
-ممنوع استخدام رمز القسم في الإخراج. اكتب "Section" بالإنجليزية أو "القسم" بالعربية.
-
-═══════════════════════════════════════
-K) MULTI-TURN EVIDENCE PERSISTENCE — قاعدة استمرار مستوى الدليل عبر الردود
-═══════════════════════════════════════
-
-محورية: التمييز بين محورين مختلفين تماماً للاكتمال:
-
-  المحور 1 — اكتمال معطيات المشروع (Project-Data Completeness):
-    تصنيف الإشغال، الارتفاع، عدد الطوابق، مساحة الطابق، وجود/عدم وجود الرشاشات الحالية، الحمل الناري… إلخ.
-    اكتمال هذه المعطيات يفتح بوابة "هيكل الإجابة النهائي" في بروتوكول التشخيص الإلزامي.
-
-  المحور 2 — اكتمال الدليل الكودي المُفهرس (Source-Evidence Completeness):
-    وجود نص قسم/جدول حرفي مسترجع تحت رقم القسم الصحيح مع تطابق الرأس والبيانات الوصفية (TIER-1).
-
-اكتمال المحور 1 لا يُغني ولا يُحسّن مستوى المحور 2 ولو بدرجة واحدة.
-
-قاعدة الاستمرار (CARRY-FORWARD RULE):
-إذا تضمنت إجابتك السابقة في هذه المحادثة أيًا مما يلي، يجب أن يبقى مستوى الدليل في الإجابة التالية كما هو، إلا إذا تم استرجاع نص قسم/جدول جديد TIER-1:
-- conf:medium
-- conf:low
-- section_label:ambiguous
-- section_label:inferred
-- chunk أو page-range بدون رأس قسم مطابق
-- جملة الإفصاح عن عدم التطابق من القسم E
-- ملخص community_summary / LLM_SYNTHESIS
-
-الترقية الممنوعة (FORBIDDEN UPGRADES):
-ممنوع الانتقال من "يرجح / قرار أولي مشروط" إلى "ملزم / إلزامي / مطلوب كحكم نهائي / حكم نهائي" فقط لأن المستخدم قدّم معطيات المشروع المفقودة. إكمال معطيات المشروع لا يُكسر سقف الثقة المفروض من القسم A.
-
-الصيغة الإلزامية عند اكتمال معطيات المشروع مع بقاء التيير الأدنى:
-"بعد اكتمال معطيات المشروع، يصبح الترجيح الهندسي أقوى، لكن مستوى الاستناد يبقى متوسطاً بسبب عدم اكتمال ربط النص برقم Section."
-
-[BAD ❌] "بما أن جميع المعطيات الحرجة اكتملت، يكون المبنى ملزماً بتركيب نظام الرش."
-[BAD ❌] "بعد توفر المعطيات الكاملة، يصبح إنذار الحريق المتكامل مطلوباً قطعاً."
-[BAD ❌] "اكتمال المعطيات يجعل الحكم نهائياً."
-
-[GOOD ✅] "بعد اكتمال معطيات المشروع (لا بدروم، طابقان، 1,200 م² لكل طابق، Mercantile فقط، بدون تجمع)، يرجح بقوة أن نظام الرش مطلوب، لكن مستوى الاستناد يبقى متوسطاً لأن ربط القيمة المسترجعة برقم Section يحتاج تحققاً إضافياً. [SBC-801 chunk pp.411-435 | conf:medium | section_label:ambiguous]"
-
-[GOOD ✅] "يجب تقييم نظام الإنذار في مسار مستقل. يمكن القول إن الإنذار مرجح أو يحتاج تحققاً وفق Section 907، لكن لا يصدر حكم نهائي إلا عند وجود نص مسترجع واضح."
-
-═══════════════════════════════════════
-L) FIRE ALARM COMPONENT RESTRAINT — تقييد تفاصيل مكونات نظام الإنذار
-═══════════════════════════════════════
-
-تفاصيل مكونات نظام الإنذار التالية لا تُذكر كمتطلبات تصميم نهائية تحت دليل TIER-2 أو TIER-3:
-- Waterflow detection / كاشف تدفق المياه
-- Manual fire alarm boxes / كواسر الإنذار اليدوية
-- Horns / Strobes / أجهزة التنبيه الصوتية والمرئية
-- Fire Alarm Control Panel (FACP) / لوحة تحكم الإنذار
-- Supervising Station / محطة الإشراف
-- Smoke Detectors / Heat Detectors / Duct Detectors
-- Notification appliances
-
-تحت TIER-2 / TIER-3، تُذكر هذه العناصر فقط بصيغة:
-"عناصر يجب فحصها في تصميم نظام الإنذار وفق المسار المستقل لـ Section 907."
-أو:
-"هذه المكونات ضمن نطاق التحقق التصميمي اللاحق، ولا يصدر فيها حكم نهائي حالياً."
-
-ممنوع تقديم قائمة مكونات إلزامية مفصلة إلا عند توفر TIER-1 يخص كل مكوّن (مثل نص حرفي من Section 907.4.2 لكواسر الإنذار اليدوية).
-
-═══════════════════════════════════════
-M) Self-Check قبل الإرسال (الإصدار الموسّع)
-═══════════════════════════════════════
-
-قبل إرسال أي إجابة في وضع المستشار، تحقق من جميع البنود التالية:
-
-1. لا توجد أي عبارة من قائمة B (HARD BAN) ما لم يكن الدليل TIER-1 لذلك القرار بعينه.
-2. إذا ذُكرت 1115 / 12000، فجملة الإفصاح من القسم C موجودة بالحرف.
-3. كل استشهاد بمرجع كودي داخل Token من القسم D — لا توجد إشارات خام في الجسم.
-4. إذا استُخدم TIER-2، فجملة عدم التطابق من القسم E موجودة.
-5. قرار الرش وقرار الإنذار في فقرتين/مسارين منفصلين، لكلٍّ Token خاص.
-6. لا يوجد رمز قسم في النص.
-7. (متعدد الأدوار) إذا كانت إجابة سابقة في المحادثة تحت TIER-2/TIER-3، فالإجابة الحالية لا ترقى إلى لغة الإلزام/الحكم النهائي بمجرد اكتمال معطيات المشروع، وإنما تستخدم صيغة "الترجيح الهندسي أقوى مع بقاء مستوى الاستناد المتوسط".
-8. (تفاصيل الإنذار) لم تُقدَّم مكونات نظام الإنذار (Waterflow / Manual Pull / Horns / FACP / Supervising Station …) كمتطلبات تصميم نهائية تحت TIER-2/TIER-3 — وإنما كعناصر تحقق ضمن مسار Section 907 المستقل.
-
-مخالفة أي من هذه البنود تُعتبر خطأ تحليلياً جسيماً، حتى لو كانت معطيات المشروع كاملة وحتى لو كانت العتبة الرقمية صحيحة.
 `;
 
 // ==================== LANGUAGE-SPECIFIC CONTENT ====================
@@ -362,8 +118,8 @@ function getStandardPrompt(language: string = "ar"): string {
 - ممنوع منعاً باتاً تقديم أي تحليل، اقتباس، أو توصيات حتى تكتمل المعطيات.
 - إذا كان السؤال عاماً (مثل "مبنى تجاري جديد"): اعتبره ناقصاً واطلب التوضيح.
 
-**الخطوة 3: متى تستخدم هيكل الإجابة النهائي**
-- يُسمح باستخدام هيكل الإجابة النهائي **فقط** عندما تكون جميع المعطيات الحرجة متوفرة في السؤال.
+**الخطوة 3: متى تستخدم الهيكل A-F**
+- يُسمح باستخدام هيكل الإجابة النهائي (A-F) **فقط** عندما تكون جميع المعطيات الحرجة متوفرة في السؤال.
 - إذا كانت المعطيات ناقصة: توقف واطرح 1 إلى 3 أسئلة توضيحية. لا تحلل أي مسار ولا تفترض شيئاً من عندك.
 
 **الخطوة 4: أمثلة على الردود (Few-Shot Examples)**
@@ -395,8 +151,6 @@ function getStandardPrompt(language: string = "ar"): string {
 
 ${CORE_RULES}
 
-${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
-
 ═══════════════════════════════════════
 قيود أساسية غير قابلة للتفاوض:
 ═══════════════════════════════════════
@@ -407,31 +161,45 @@ ${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
 
 3) إذا لم تحتوِ المراجع المتاحة على النص المطلوب، قل ذلك صراحة واطلب من المستخدم رفع المعيار أو الفصل الناقص. لا تخترع أرقام فقرات أو نصوصاً.
 
-4) كل إجابة تقنية يجب أن تستند إلى نص الكود الأصلي مع ذكر رقم القسم والوثيقة. اقتبس النص الإنجليزي عند الحاجة فقط — لا تترجم فقرات كاملة تلقائياً.
+4) يجب أن تبدأ كل إجابة تقنية بفقرة الكود ذات الصلة بالإنجليزية (اقتباس حرفي)، يليها الترجمة العربية، ثم التحليل الهندسي.
 
 ═══════════════════════════════════════
 هيكل الإجابة النهائي (يُستخدم فقط بعد اكتمال المعطيات):
 ═══════════════════════════════════════
 
-**القاعدة الذهبية: الإيجاز = الجودة. الإطالة بلا قيمة مضافة خطأ مهني.**
+A) النص المرجعي (English Quote)
+- اكتب: "Document: <اسم الوثيقة> | Section: <رقم القسم / العنوان>"
+- انسخ النص الإنجليزي الأصلي حرفياً كما هو من المراجع
+- إذا تعددت الفقرات المرتبطة، انسخ كل واحدة على حدة
+- إذا لم تجد النص: قل "النص المطلوب غير متوفر في المراجع الحالية" واطلب رفع المرجع
 
-**1) الإجابة المباشرة** (2-3 أسطر كحد أقصى)
-- الجواب الحاسم مباشرةً — هل يُشترط؟ كم؟ متى؟
-- لا مقدمات، لا تكرار للسؤال.
+B) الترجمة العربية للنص
+- ترجم النص المقتبس بدقة مع الحفاظ على المعنى التقني
+- لا تضف متطلبات غير موجودة صراحة في النص المقتبس
 
-**2) المرجع الحاكم** (سطر أو سطران)
-- "**SBC 801 — القسم 903.2.1:** نص الاشتراط الجوهري فقط بالإنجليزية"
-- إذا تعدد المراجع: اذكر كلاً منها بسطر منفصل.
-- إذا لم يتوفر النص: قل ذلك صراحة ولا تختلق أرقام فقرات.
+C) التحليل الفني بالعربية
+- اشرح المتطلبات بنقاط واضحة أو جداول بسيطة:
+  • نطاق التطبيق (متى ينطبق)
+  • المدخلات المطلوبة (الاستخدام، الارتفاع، المساحة، حالة الرشاشات)
+  • القيم المطلوبة (مساحات، تدفقات، ضغوط، تصنيفات، مسافات)
+  • بنود التنسيق (معماري / ميكانيكي / كهربائي / تحكم)
+- نفّذ الحسابات خطوة بخطوة مع الوحدات
+- إذا وجدت تفسيرات متعددة، اعرض كل واحدة بدون افتراض
 
-**3) التوضيح الهندسي** (3-5 أسطر)
-- اشرح الشرط: متى ينطبق، ما القيم الحاسمة (مساحة / ارتفاع / إشغال).
-- نفّذ أي حساب بسيط خطوة بخطوة مع الوحدات.
-- إذا للتفسير وجوه متعددة: اعرضها بدون حسم إذا كانت المعطيات ناقصة.
+D) الاشتقاق الهندسي (Engineering Logic)
+- اشرح الأساس العلمي أو المنطقي باستخدام مصادر المراجع فقط (Commentary, NFPA, SFPE)
+- أضف المفاهيم الهندسية عند الحاجة: معاملات التدفق، حدود سرعة الهواء، معايير القابلية للبقاء، فروق الضغط
+- صنّف أي افتراض هندسي بوضوح كغير إلزامي (non-prescriptive)
 
-**4) ملاحظة عملية** (اختياري — فقط إذا كانت غير بديهية)
-- تنبيه دفاع مدني، استثناء كودي، أو متطلب تنسيق حرج.
-- إذا لم تكن هناك ملاحظة غير بديهية: احذف هذا القسم كلياً.
+E) توصيات عملية (Actionable Recommendations)
+- قدّم إجراءات تصميم قابلة للتنفيذ: التحجيم، المواقع، التحكم، الاختبار، التشغيل
+- استخدم صيغة قائمة مرجعية (Checklist) عند الحاجة
+
+F) تنبيهات وثغرات واعتمادات الجهات المختصة (AHJ Notes)
+- حدد البنود الخاضعة لمراجعة الدفاع المدني / السلطة المنفذة
+- صنّف كل متطلب: إلزامي (Prescriptive) | تفسيري (Interpretive) | يخضع لموافقة السلطة (AHJ Approval)
+- أبرز الثغرات: مدخلات ناقصة، تعارضات أكواد، اختبارات، تغذية كهربائية، واجهات
+- ذكّر: متطلبات الكود تمثل الحد الأدنى الفني. الدفاع المدني يملك حق التعديل ميدانياً بناءً على تعاميمه العامة والخاصة
 
 ═══════════════════════════════════════
 قواعد صارمة — ممنوع:
@@ -442,12 +210,9 @@ ${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
 3) ممنوع حذف مواقع المصادر من أي اقتباس
 4) ممنوع تقديم نصائح عامة بدون أساس تقني مرجعي
 5) ممنوع إخفاء عدم اليقين — اطلب النص الناقص صراحة
-6) ممنوع إصدار إجابة شاملة مبنية على افتراضات — توقف واطلب المعطيات أولاً
+6) ممنوع إصدار تقرير شامل (A-F) مبني على افتراضات — توقف واطلب المعطيات أولاً
 7) ممنوع افتراض تصنيف إشغال "نموذجي" — اعرض الاحتمالات أو اسأل
 8) ممنوع خلط متطلبات مسارات كود مختلفة في إجابة واحدة
-9) ممنوع ترجمة فقرات الكود كاملةً تلقائياً — اقتبس الإنجليزي واشرح بالعربية فقط عند الحاجة
-10) ممنوع التكرار — لا تُعد صياغة ما قيل في الإجابة المباشرة داخل التوضيح الهندسي
-11) ممنوع الإطالة بلا قيمة مضافة — كل جملة يجب أن تحمل معلومة جديدة أو تطبيقاً جديداً
 
 ═══════════════════════════════════════
 قواعد تصنيف الإشغال الحرجة:
@@ -1041,531 +806,10 @@ const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 const CACHE_MAX_SIZE = 30; // Increased from 20
 
 // Query-level cache for scored results
-type SectionConfidence = 'high' | 'medium' | 'low' | 'ambiguous' | null;
-type SourcePageMeta = {
-  file: string;
-  pageStart: number | null;
-  pageEnd: number | null;
-  precision: 'page_range' | 'chunk_range_only' | 'unavailable';
-  // Step 3 — section_ref end-to-end. Populated only from existing pgvector
-  // chunk metadata. We do NOT infer new section numbers and do NOT repair
-  // misaligned section_number values here — Step 2.5 showed those need
-  // owner-gated curation. UI displays the badge only when a single,
-  // unambiguous section_number is available across the chunks for this file.
-  sectionRef?: string | null;
-  sectionConfidence?: SectionConfidence;
-  // Provenance link to source_registry. `origin` tells the ledger which
-  // retrieval engine produced this entry; `sourceType`/`editionYear` are
-  // looked up from source_registry by code_type/file family.
-  origin?: LedgerOrigin;
-  sourceType?: 'normative' | 'commentary' | 'informative' | 'unknown';
-  editionYear?: number | null;
-};
+type SourcePageMeta = { file: string; pageStart: number | null; pageEnd: number | null; precision: 'page_range' | 'chunk_range_only' | 'unavailable' };
 const queryCache: Map<string, { result: { context: string; files: string[]; sourceMeta: SourcePageMeta[] }; timestamp: number }> = new Map();
 const QUERY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const QUERY_CACHE_MAX = 20;
-
-// ==================== ADVISORY EVIDENCE LEDGER (Step 4) ====================
-// In-memory record of what retrieval ACTUALLY produced for the current Advisory
-// turn. The ledger is the only acceptable basis for an evidence-tier-1 (conf:high)
-// citation. The server-side citation verifier (verifyAdvisoryCitations) downgrades
-// any token whose family / section is not in this ledger before the answer is
-// streamed to the frontend.
-//
-// Strict scope: built from existing data only — no DB writes, no schema migration,
-// no GraphRAG, no corpus changes.
-type LedgerOrigin = "keyword_chunk" | "structured_table" | "vector_chunk" | "unknown";
-type LedgerFamily = "SBC-201" | "SBC-801" | "UNKNOWN";
-
-interface EvidenceLedgerEntry {
-  sourceFamily: LedgerFamily;
-  sectionRef: string | null;
-  tableRef: string | null;
-  sectionConfidence: SectionConfidence;
-  fileName: string | null;
-  pageStart: number | null;
-  pageEnd: number | null;
-  precision: 'page_range' | 'chunk_range_only' | 'unavailable';
-  isClickableSource: boolean;
-  origin: LedgerOrigin;
-  sourceType: 'normative' | 'commentary' | 'informative' | 'unknown';
-  editionYear: number | null;
-}
-
-/** Infer SBC family from a chunk/PDF/table source filename. */
-function familyFromFileName(name: string | null | undefined): LedgerFamily {
-  if (!name) return "UNKNOWN";
-  if (/(?:^|[\s_\-(])SBC[\s_\-]*201\b/i.test(name) || /SBC.?201/i.test(name)) return "SBC-201";
-  if (/(?:^|[\s_\-(])SBC[\s_\-]*801\b/i.test(name) || /SBC.?801/i.test(name)) return "SBC-801";
-  return "UNKNOWN";
-}
-
-/** Infer SBC family from a structured-table `source_code` column value. */
-function familyFromSourceCode(code: string | null | undefined): LedgerFamily {
-  if (!code) return "UNKNOWN";
-  if (/201/.test(code)) return "SBC-201";
-  if (/801/.test(code)) return "SBC-801";
-  return "UNKNOWN";
-}
-
-// ==================== SOURCE REGISTRY PROVENANCE LOOKUP ====================
-// Minimal, read-only link between retrieved chunks and the source_registry
-// table already present in production. We cache the small registry in memory
-// (≤ a few dozen rows) and resolve authority_level + edition_year by source_id.
-
-type SourceRegistryRow = {
-  source_id: string;
-  authority_level: 'normative' | 'commentary' | 'informative' | null;
-  edition_year: number | null;
-};
-
-let sourceRegistryCache: Map<string, SourceRegistryRow> | null = null;
-let sourceRegistryCacheTs = 0;
-const SOURCE_REGISTRY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-async function loadSourceRegistry(supabaseAdmin: any): Promise<Map<string, SourceRegistryRow>> {
-  const now = Date.now();
-  if (sourceRegistryCache && (now - sourceRegistryCacheTs) < SOURCE_REGISTRY_CACHE_TTL) {
-    return sourceRegistryCache;
-  }
-  const { data, error } = await supabaseAdmin
-    .from('source_registry')
-    .select('source_id, authority_level, edition_year');
-  if (error || !data) {
-    console.warn('[Provenance] source_registry lookup failed:', error?.message);
-    return new Map();
-  }
-  const map = new Map<string, SourceRegistryRow>();
-  for (const row of data as SourceRegistryRow[]) {
-    map.set(row.source_id, row);
-  }
-  sourceRegistryCache = map;
-  sourceRegistryCacheTs = now;
-  console.log(`[Provenance] source_registry loaded: ${map.size} entries`);
-  return map;
-}
-
-function sourceIdFromFamily(family: LedgerFamily): string | null {
-  if (family === 'SBC-201') return 'SBC201';
-  if (family === 'SBC-801') return 'SBC801';
-  return null;
-}
-
-function sourceIdFromCodeType(codeType: string | null | undefined): string | null {
-  if (!codeType) return null;
-  const normalized = codeType.trim().toUpperCase();
-  if (normalized === 'SBC201') return 'SBC201';
-  if (normalized === 'SBC801') return 'SBC801';
-  if (normalized === 'SBC801_COMM') return 'SBC801_COMM';
-  return null;
-}
-
-function resolveProvenance(
-  registry: Map<string, SourceRegistryRow>,
-  sourceId: string | null
-): { sourceType: 'normative' | 'commentary' | 'informative' | 'unknown'; editionYear: number | null } {
-  if (!sourceId) return { sourceType: 'unknown', editionYear: null };
-  const row = registry.get(sourceId);
-  if (!row) return { sourceType: 'unknown', editionYear: null };
-  const level = row.authority_level;
-  const sourceType = level === 'normative' || level === 'commentary' || level === 'informative'
-    ? level
-    : 'unknown';
-  return { sourceType, editionYear: row.edition_year };
-}
-
-/** Enrich SourcePageMeta entries with provenance from source_registry. */
-function enrichSourceMetaProvenance(
-  meta: SourcePageMeta[],
-  registry: Map<string, SourceRegistryRow>,
-  origin: LedgerOrigin
-): SourcePageMeta[] {
-  return meta.map(m => {
-    const family = familyFromFileName(m.file);
-    const sourceId = sourceIdFromFamily(family);
-    const { sourceType, editionYear } = resolveProvenance(registry, sourceId);
-    return { ...m, origin, sourceType, editionYear };
-  });
-}
-
-/** Build the ledger from retrieval outputs available at the response site. */
-function buildEvidenceLedger(
-  sourceMeta: SourcePageMeta[],
-  structuredTables: Array<{ tableId: string; sourceCode: string | null; sectionRef: string | null }>,
-): EvidenceLedgerEntry[] {
-  const ledger: EvidenceLedgerEntry[] = [];
-
-  for (const m of sourceMeta) {
-    ledger.push({
-      sourceFamily: familyFromFileName(m.file),
-      sectionRef: m.sectionRef ?? null,
-      tableRef: null,
-      sectionConfidence: m.sectionConfidence ?? null,
-      fileName: m.file,
-      pageStart: m.pageStart,
-      pageEnd: m.pageEnd,
-      precision: m.precision,
-      isClickableSource: true,
-      origin: m.origin ?? 'keyword_chunk',
-      sourceType: m.sourceType ?? 'unknown',
-      editionYear: m.editionYear ?? null,
-    });
-  }
-
-  for (const t of structuredTables) {
-    ledger.push({
-      sourceFamily: familyFromSourceCode(t.sourceCode),
-      sectionRef: t.sectionRef ?? null,
-      tableRef: t.tableId,
-      sectionConfidence: 'medium',
-      fileName: null,
-      pageStart: null,
-      pageEnd: null,
-      precision: 'unavailable',
-      // Structured tables do not currently round-trip to a clickable PDF, but
-      // they ARE valid evidence for citation verification.
-      isClickableSource: false,
-      origin: "structured_table",
-      sourceType: 'unknown',
-      editionYear: null,
-    });
-  }
-
-  return ledger;
-}
-
-/** Set of families that have at least one ledger entry. */
-function ledgerFamilies(ledger: EvidenceLedgerEntry[]): Set<LedgerFamily> {
-  const out = new Set<LedgerFamily>();
-  for (const e of ledger) if (e.sourceFamily !== "UNKNOWN") out.add(e.sourceFamily);
-  return out;
-}
-
-/** Section refs present in the ledger for a given family. */
-function ledgerSectionsFor(ledger: EvidenceLedgerEntry[], fam: LedgerFamily): Set<string> {
-  const out = new Set<string>();
-  for (const e of ledger) {
-    if (e.sourceFamily === fam && e.sectionRef) out.add(e.sectionRef);
-  }
-  return out;
-}
-
-/** Highest section confidence available for a (family, section) pair. */
-function ledgerConfidenceFor(
-  ledger: EvidenceLedgerEntry[],
-  fam: LedgerFamily,
-  sectionRef: string,
-): SectionConfidence {
-  let best: SectionConfidence = null;
-  const order = (c: SectionConfidence) => c === 'high' ? 3 : c === 'medium' ? 2 : c === 'low' ? 1 : c === 'ambiguous' ? 0 : -1;
-  for (const e of ledger) {
-    if (e.sourceFamily === fam && e.sectionRef === sectionRef) {
-      if (order(e.sectionConfidence) > order(best)) best = e.sectionConfidence;
-    }
-  }
-  return best;
-}
-
-/** Build a compact evidence summary the model can read before generating. */
-function buildEvidenceSummaryForPrompt(ledger: EvidenceLedgerEntry[]): string {
-  const fams = ledgerFamilies(ledger);
-  const sec201 = [...ledgerSectionsFor(ledger, "SBC-201")];
-  const sec801 = [...ledgerSectionsFor(ledger, "SBC-801")];
-  const tables = ledger
-    .filter(e => e.origin === "structured_table" && e.tableRef)
-    .map(e => `${e.sourceFamily}/Table ${e.tableRef}`);
-
-  // Provenance summary per source family (authoritative edition + authority level)
-  const provLines: string[] = [];
-  for (const fam of ["SBC-201", "SBC-801"] as LedgerFamily[]) {
-    if (!fams.has(fam)) continue;
-    const entries = ledger.filter(e => e.sourceFamily === fam && e.origin !== "structured_table");
-    if (entries.length === 0) continue;
-    const edition = entries.find(e => e.editionYear)?.editionYear ?? "unknown";
-    const types = new Set(entries.map(e => e.sourceType));
-    const authority = types.has("commentary")
-      ? (types.has("normative") ? "mixed normative + commentary" : "commentary")
-      : (types.has("normative") ? "normative" : "unknown");
-    provLines.push(`- ${fam}: authority=${authority}, edition=${edition}`);
-  }
-
-  return `\n\n📋 EVIDENCE LEDGER (binding — Advisory citation verifier will enforce):
-- SBC-201 retrieved: ${fams.has("SBC-201") ? "yes" : "no"}
-- SBC-801 retrieved: ${fams.has("SBC-801") ? "yes" : "no"}
-- Retrieved SBC-201 section refs: ${sec201.length ? sec201.join(", ") : "(none)"}
-- Retrieved SBC-801 section refs: ${sec801.length ? sec801.join(", ") : "(none)"}
-- Structured tables: ${tables.length ? tables.join(", ") : "(none)"}
-${provLines.length ? "- Source provenance:\n" + provLines.map(l => `  ${l}`).join("\n") : ""}
-
-ENFORCEMENT:
-1. You may NOT emit a citation token for an SBC family marked "no" above.
-2. You may NOT emit conf:high for a (family, section) pair that is not in the lists above with a high/medium ledger confidence — the verifier will downgrade it.
-3. If you know a likely section number that is NOT in the ledger, write the phrase "مرجع متوقع يحتاج تحقق من مصدر مطابق" (or English: "expected reference — needs source verification") instead of a citation token.
-4. Bracketed citation tokens that fail the ledger check will be downgraded server-side to conf:low with section_label:unsupported or source_family:unretrieved.
-5. Sources marked "commentary" or "informative" MUST NOT be presented as legally binding code text. Use phrasing such as "تفسير / commentary" or "إرشاد / informative guidance" and distinguish them from normative requirements.
-`;
-}
-
-// ==================== BRAIN FULL V1 SIDECAR LOADER (Phase 2) =================
-// Loads canonical chunks + relations + facts + decision tree from the passive
-// nested bucket path ssss/brain_full_v1/ uploaded in Phase 1. Returns a single
-// compact prompt-context block, or null if the query is out of domain or the
-// load fails. Advisory-only; never invoked in Main / Analytical.
-// Content is REASONING AID — never a legal citation. The downstream Citation
-// Verifier remains the source-grounding authority.
-const BRAIN_V1_CACHE: Record<string, { value: any; ts: number }> = {};
-const BRAIN_V1_TTL_MS = 5 * 60 * 1000;
-async function brainV1Fetch(supabaseAdmin: any, key: string): Promise<any | null> {
-  const cached = BRAIN_V1_CACHE[key];
-  if (cached && (Date.now() - cached.ts) < BRAIN_V1_TTL_MS) return cached.value;
-  try {
-    const { data, error } = await supabaseAdmin.storage.from("ssss").download(`brain_full_v1/${key}`);
-    if (error || !data) return null;
-    const text = await data.text();
-    const parsed = JSON.parse(text);
-    BRAIN_V1_CACHE[key] = { value: parsed, ts: Date.now() };
-    return parsed;
-  } catch { return null; }
-}
-
-async function loadBrainFullV1Sidecars(query: string, supabaseAdmin: any): Promise<string | null> {
-  // Domain trigger: only fire for the V1 Group M / fire-protection / egress family.
-  // Conservative: false negatives are acceptable (loader silently no-ops); false
-  // positives would just append modest extra context to non-Group-M Advisory turns.
-  // Phase 3A: trigger expanded to cover egress, occupancy, mixed-use, and the
-  // small set of related Group letters. Still narrow — false negatives are
-  // acceptable (loader silently no-ops); avoid catch-all keywords like
-  // "building" or "floor" that would fire on every Advisory turn.
-  // NOTE: single-line regex required (JS does not support /x extended mode).
-  const trigger = /(mercantile|group\s+m|محلات\s+تجارية|مجموعة\s+M|sprinkler|automatic\s+sprinkler|fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|fire\s+area|occupant\s+notification|waterflow|standpipe|smoke\s+control|egress|exit\s+discharge|exit\s+access|\bexit\b|travel\s+distance|occupant\s+load|common\s+path|\bstair\b|stairs|stairway|corridor|mixed\s+occupancy|mixed-use|residential|group\s+r|group\s+r-?[1-4]|storage|group\s+s|group\s+s-?[12]|educational|group\s+e|institutional|group\s+i|group\s+i-?[1-4]|business|group\s+b|assembly|group\s+a|group\s+a-?[1-5]|high.?hazard|group\s+h|رش|إنذار|مخرج|مخارج|خروج|إخلاء|تنبيه|مسافة\s+الانتقال|مسافة\s+السفر|حمل\s+الإشغال|مسار\s+الهروب|درج|سلم|سلالم|ممر|إشغال\s+مختلط|مختلط|سكني|مبنى\s+سكني|تخزين|مستودع|تعليمي|مدارس|مبنى\s+تعليمي|طبي|مستشفى|مؤسسي)/i.test(query);
-  if (!trigger) return null;
-
-  const [chunks201, chunks801, relations, facts, tree] = await Promise.all([
-    brainV1Fetch(supabaseAdmin, "SBC201_canonical_chunks.json"),
-    brainV1Fetch(supabaseAdmin, "SBC801_canonical_chunks.json"),
-    brainV1Fetch(supabaseAdmin, "relations_v1.json"),
-    brainV1Fetch(supabaseAdmin, "facts_v1.json"),
-    brainV1Fetch(supabaseAdmin, "decision_tree_v1.json"),
-  ]);
-
-  if (!chunks201 && !chunks801 && !relations && !facts && !tree) return null;
-
-  // Curated relevant set covering Group M chain (Section 309 / 903.2.7 / 907.2.7
-  // and immediate dependencies). The loader stays narrow on purpose to keep
-  // prompt size bounded; broader sections fall back to the keyword path.
-  // Phase 3A: allowlist broadened beyond the Group M chain. Egress (1004 /
-  // 1006 / 1011 / 1014 / 1017 / 1020) and occupancy (308 / 310 / 311) added
-  // alongside the existing Group M / fire-protection set. The loader still
-  // caps total chunks/facts/relations after filtering, so prompt size stays
-  // bounded.
-  const RELEVANT = new Set([
-    // Occupancy classification family
-    "308", "309", "310", "311",
-    // Sprinkler — Group-M-anchored chain plus parents/siblings
-    "903", "903.2", "903.2.1", "903.2.6", "903.2.7", "903.2.7.1",
-    "903.2.7.2", "903.2.8", "903.2.9", "903.2.10", "903.2.11",
-    "903.3", "903.3.1.1", "903.3.1.2", "903.3.1.3",
-    // Fire alarm — Group M chain plus key siblings
-    "907", "907.2", "907.2.1", "907.2.6", "907.2.7", "907.2.7.1",
-    "907.2.8", "907.5", "907.5.2.2",
-    // Egress core
-    "1004", "1004.5", "1006", "1006.2.1", "1006.3.3", "1006.3.4",
-    "1011", "1011.2",
-    "1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6",
-    "1017", "1017.2",
-    "1020", "1020.1",
-    // Mall / cross-code anchor
-    "402",
-  ]);
-  const isRelevantSection = (ref: string) => {
-    if (!ref) return false;
-    if (RELEVANT.has(ref)) return true;
-    // Whole-tree match for the Group-M-anchored sprinkler/alarm chains and
-    // the small set of egress parents we want full sub-clause access to.
-    if (/^(903|907)\./.test(ref)) return true;
-    if (/^(1006|1014)\./.test(ref)) return true;
-    if (ref === "309" || ref === "402" || ref === "308" || ref === "310" || ref === "311") return true;
-    return false;
-  };
-
-  const cArr201 = (chunks201 && Array.isArray(chunks201.chunks)) ? chunks201.chunks : [];
-  const cArr801 = (chunks801 && Array.isArray(chunks801.chunks)) ? chunks801.chunks : [];
-  const relevantChunks = [...cArr201, ...cArr801].filter((c: any) => isRelevantSection(c.section_ref || ""));
-
-  // Facts: filter by source_refs containing any RELEVANT section
-  const stripPrefix = (s: string) => (s || "").replace(/^sbc-\d+-section-/, "");
-  const allFacts = (facts && (Array.isArray(facts) ? facts : facts.facts)) || [];
-  const relevantFacts = allFacts.filter((f: any) =>
-    Array.isArray(f.source_refs) && f.source_refs.some((r: string) => isRelevantSection(stripPrefix(r)))
-  ).slice(0, 25);
-
-  // Relations: filter by from_ref OR to_ref touching any RELEVANT section
-  const allRels = (relations && (Array.isArray(relations) ? relations : relations.edges)) || [];
-  const relevantRels = allRels.filter((r: any) => {
-    const a = stripPrefix(r.from_ref || ""); const b = stripPrefix(r.to_ref || "");
-    return isRelevantSection(a) || isRelevantSection(b);
-  }).slice(0, 25);
-
-  if (relevantChunks.length === 0 && relevantFacts.length === 0 && relevantRels.length === 0 && !tree) {
-    return null;
-  }
-
-  const lines: string[] = [];
-  lines.push("\n\n📚 BRAIN FULL V1 — REASONING AID (Advisory only):");
-  lines.push("// The text below is a curated reference for reasoning. Citations MUST still come only from the Evidence Ledger above. Relations and facts here are NOT legal sources.");
-
-  if (relevantChunks.length > 0) {
-    lines.push("\n📋 CANONICAL TEXT (verbatim — quote sparingly with proper citation):");
-    for (const c of relevantChunks.slice(0, 12)) {
-      const body = (c.content || "").slice(0, 1200);
-      lines.push(`\n=== ${c.id} | ${c.source_code} | Section ${c.section_ref} | ${c.title || ""} ===\n${body}`);
-    }
-  }
-  if (relevantFacts.length > 0) {
-    lines.push("\n📋 FACTS (citable only via source_refs that are also in the Evidence Ledger):");
-    for (const f of relevantFacts) {
-      lines.push(`- ${f.statement} (source: ${(f.source_refs || []).join(",")})`);
-    }
-  }
-  if (relevantRels.length > 0) {
-    lines.push("\n📋 RELATIONS (reasoning aid; NOT citable as legal source):");
-    for (const r of relevantRels) {
-      lines.push(`- ${r.from_ref} → ${r.to_ref} [${r.relation_type}] — ${r.reason || ""} (basis: ${r.source_basis || ""})`);
-    }
-  }
-  if (tree && Array.isArray(tree.steps)) {
-    lines.push("\n📋 DECISION TREE (Group M; use to structure your reasoning):");
-    for (let i = 0; i < tree.steps.length; i++) {
-      const s = tree.steps[i];
-      lines.push(`${i + 1}. ${s.id || ""} — ${s.title || s.use_case || s.prompt || ""}`);
-    }
-    if (Array.isArray(tree.required_inputs) && tree.required_inputs.length > 0) {
-      lines.push(`\nRequired inputs: ${tree.required_inputs.join(", ")}`);
-    }
-  }
-
-  lines.push("\nINSTRUCTION: Use this material to ground your reasoning. Citations must still be section/table tokens that the Evidence Ledger and Citation Verifier accept; if Brain V1 reveals a section that is NOT in the Evidence Ledger, you may use the phrase \"مرجع متوقع يحتاج تحقق من مصدر مطابق\" rather than fabricating a high-confidence citation.");
-  return lines.join("\n");
-}
-
-// ==================== ADVISORY CITATION VERIFIER (Step 4) ====================
-// Scan the model's final Advisory answer for `[SBC-XXX … | conf:Y]` tokens and
-// downgrade any that the ledger cannot prove. Pure transformation on the
-// assembled text — never throws, never strips tokens, only rewrites them.
-const CITATION_TOKEN_RX =
-  /\[\s*SBC[\s\-_]*?(201|801)\b([^\[\]\n]{0,300})\]/gi;
-
-function rewriteFields(inner: string, opts: { conf?: string; addLabel?: string }): string {
-  let s = inner;
-  // Strip existing conf:... and section_label:... and source_family:... pieces
-  s = s.replace(/\|\s*conf\s*:\s*(?:high|medium|low|ambiguous)/gi, "");
-  s = s.replace(/\|\s*section_label\s*:\s*[A-Za-z_]+/gi, "");
-  s = s.replace(/\|\s*source_family\s*:\s*[A-Za-z_]+/gi, "");
-  s = s.replace(/\s+\|\s*$/g, "").trim();
-  const parts: string[] = [s];
-  if (opts.conf) parts.push(`conf:${opts.conf}`);
-  if (opts.addLabel) parts.push(opts.addLabel);
-  return parts.join(" | ");
-}
-
-interface VerifierResult {
-  text: string;
-  changes: number;
-  unsupportedFamily: number;
-  unsupportedSection: number;
-  capped: number;
-}
-
-function verifyAdvisoryCitations(text: string, ledger: EvidenceLedgerEntry[]): VerifierResult {
-  const fams = ledgerFamilies(ledger);
-  let changes = 0;
-  let unsupportedFamily = 0;
-  let unsupportedSection = 0;
-  let capped = 0;
-
-  const out = text.replace(CITATION_TOKEN_RX, (full, famDigits: string, rest: string) => {
-    const fam: LedgerFamily = famDigits === "201" ? "SBC-201" : "SBC-801";
-    const innerFull = `SBC-${famDigits}${rest}`.trim();
-
-    // Parse fields out of the rest of the token
-    const secMatch = rest.match(/Section\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i);
-    const tableMatch = rest.match(/Table\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i);
-    const confMatch = rest.match(/conf\s*:\s*(high|medium|low|ambiguous)/i);
-    const sectionRef = secMatch?.[1] ?? null;
-    const tableRef = tableMatch?.[1] ?? null;
-    const conf = (confMatch?.[1] ?? "").toLowerCase();
-
-    // Provenance guard: if the ONLY retrieved evidence for this family is
-    // commentary/informative, the model must not present it as binding code.
-    const provenanceEntries = ledger.filter(e => e.sourceFamily === fam && e.origin !== "structured_table");
-    const onlyNonNormative = provenanceEntries.length > 0 && provenanceEntries.every(e => e.sourceType === "commentary" || e.sourceType === "informative");
-
-    // Case 1 — family not in ledger at all → unretrieved
-    if (!fams.has(fam)) {
-      unsupportedFamily += 1;
-      changes += 1;
-      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "source_family:unretrieved" })}]`;
-    }
-
-    // Case 1b — family is in ledger but only as commentary/informative
-    if (onlyNonNormative) {
-      changes += 1;
-      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "source_type:commentary_not_code" })}]`;
-    }
-
-    // Case 2 — family is in ledger, but specific section/table is not
-    const knownSections = ledgerSectionsFor(ledger, fam);
-    const knownTables = new Set(
-      ledger.filter(e => e.sourceFamily === fam && e.tableRef).map(e => e.tableRef as string),
-    );
-    const sectionKnown = sectionRef ? knownSections.has(sectionRef) : false;
-    const tableKnown = tableRef ? knownTables.has(tableRef) : false;
-    const familyOnly = !!(sectionRef || tableRef) && !sectionKnown && !tableKnown;
-
-    if (familyOnly) {
-      unsupportedSection += 1;
-      changes += 1;
-      return `[${rewriteFields(innerFull, { conf: "low", addLabel: "section_label:unsupported" })}]`;
-    }
-
-    // Case 3 — section is known. Cap conf:high to ledger's actual confidence.
-    if (sectionRef && sectionKnown && conf === "high") {
-      const ledgerConf = ledgerConfidenceFor(ledger, fam, sectionRef);
-      if (ledgerConf !== "high") {
-        capped += 1;
-        changes += 1;
-        return `[${rewriteFields(innerFull, { conf: "medium", addLabel: "section_label:ambiguous" })}]`;
-      }
-    }
-
-    // Case 3b (Step 4.1) — table is known via structured_table only. Cap conf:high
-    // to medium because structured tables are stored at medium confidence, never
-    // high. This prevents `[SBC-201 Table 309 | conf:high]` from passing through
-    // when the only evidence is a DB row (visible to UI as a non-clickable chip).
-    if (tableRef && tableKnown && conf === "high") {
-      const tableConf = (() => {
-        let best: SectionConfidence = null;
-        const order = (c: SectionConfidence) => c === 'high' ? 3 : c === 'medium' ? 2 : c === 'low' ? 1 : c === 'ambiguous' ? 0 : -1;
-        for (const e of ledger) {
-          if (e.sourceFamily === fam && e.tableRef === tableRef) {
-            if (order(e.sectionConfidence) > order(best)) best = e.sectionConfidence;
-          }
-        }
-        return best;
-      })();
-      if (tableConf !== "high") {
-        capped += 1;
-        changes += 1;
-        return `[${rewriteFields(innerFull, { conf: "medium", addLabel: "section_label:structured_table" })}]`;
-      }
-    }
-
-    // Otherwise — leave the token unchanged.
-    return full;
-  });
-
-  return { text: out, changes, unsupportedFamily, unsupportedSection, capped };
-}
 
 function cleanupCache() {
   if (fileCache.size <= CACHE_MAX_SIZE) return;
@@ -2006,8 +1250,12 @@ function extractAndScoreChunks(rawJson: string, fileName: string, keywords: stri
       const s = scoreChunk(text, keywords, queryMeta);
       // Only include chunks with score > 0 (skip irrelevant chunks)
       if (s > 0) {
-        const pageStart = typeof chunk !== "string" ? (chunk.page_start ?? null) : null;
-        const pageEnd = typeof chunk !== "string" ? (chunk.page_end ?? null) : null;
+        let pageStart = typeof chunk !== "string" ? (chunk.page_start ?? null) : null;
+        let pageEnd = typeof chunk !== "string" ? (chunk.page_end ?? null) : null;
+        // Normalize: ensure pageStart ≤ pageEnd by swapping if reversed
+        if (pageStart !== null && pageEnd !== null && pageStart > pageEnd) {
+          [pageStart, pageEnd] = [pageEnd, pageStart];
+        }
         scored.push({ text, score: s, source: fileName, pageStart, pageEnd });
       }
     }
@@ -2081,11 +1329,8 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
     }
   }
   
-  // Cross-referencing: include SBC801 for fire/egress queries alongside chapter 10.
-  // R26: Do NOT cross-ref SBC801 for pure occupant_load queries (Table 1004.5 is SBC201-only).
-  // Only add SBC801 chapters if egress/fire/alarm/sprinkler intent is also present.
-  const hasFireOrEgressIntent = /مخرج|egress|exit|sprinkler|رشاش|إنذار|alarm|حماية\s*حريق|fire\s*protection|standpipe|smoke\s*control/i.test(lower);
-  if (sbc201Chapters.has(9) || (sbc201Chapters.has(10) && hasFireOrEgressIntent)) {
+  // Cross-referencing: always include both codes for fire/egress
+  if (sbc201Chapters.has(9) || sbc201Chapters.has(10)) {
     sbc801Chapters.add(6);
     sbc801Chapters.add(7);
   }
@@ -2119,13 +1364,12 @@ function selectTargetPageRanges(
   return matched.size > 0 ? [...matched] : index.slice(0, 2).map(i => i.pageRange);
 }
 
-async function fetchSBCContext(query: string, extraKeywords?: string[], restrictToSBC201: boolean = false): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
+async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   const startTime = Date.now();
   const usedFiles: string[] = [];
-
+  
   // Check query cache first
-  // R26: include restrictToSBC201 in cache key to avoid returning contaminated results
-  const cacheKey = `${restrictToSBC201 ? "sbc201only:" : ""}${query.slice(0, 200).toLowerCase()}`;
+  const cacheKey = query.slice(0, 200).toLowerCase();
   const cached = queryCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < QUERY_CACHE_TTL) {
     console.log(`⚡ Query cache hit! Returning cached result (${cached.result.context.length} chars)`);
@@ -2144,7 +1388,6 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
   
   try {
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    const sourceRegistry = await loadSourceRegistry(supabaseAdmin);
     
     const { data: files, error: listError } = await supabaseAdmin.storage
       .from("ssss")
@@ -2180,13 +1423,6 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
       sbc201Chapters = [...sbc201Set];
       sbc801Chapters = [...sbc801Set];
       if (sbc201Chapters.length > 0) console.log("🔄 Secondary keyword-based chapter detection used");
-    }
-
-    // R26: SBC201-only restriction — strip ALL SBC801 chapters when caller enforces it.
-    // Applied for occupant_load workflow: Table 1004.5 is SBC201-only; SBC801 is contamination.
-    if (restrictToSBC201) {
-      sbc801Chapters = [];
-      console.log("[R26] restrictToSBC201=true — SBC801 chapters cleared, SBC801 files excluded");
     }
 
     console.log(`🎯 Target chapters - SBC 201: [${sbc201Chapters.join(",")}], SBC 801: [${sbc801Chapters.join(",")}]`);
@@ -2254,12 +1490,9 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
     // Sort and select files with smart targeting
     const scored201 = sbc201Files.map(f => ({ file: f, score: scoreFile(f, sbc201Ranges) }))
       .sort((a, b) => b.score - a.score);
-    // R26: when restrictToSBC201, skip SBC801 file scoring entirely (zero candidates)
-    const scored801 = restrictToSBC201
-      ? []
-      : sbc801Files.map(f => ({ file: f, score: scoreFile(f, sbc801Ranges) }))
-          .sort((a, b) => b.score - a.score);
-
+    const scored801 = sbc801Files.map(f => ({ file: f, score: scoreFile(f, sbc801Ranges) }))
+      .sort((a, b) => b.score - a.score);
+    
     // Select top files: when chapters are targeted, prefer only the scored files
     // (score > 0 = overlaps target ranges). Zero-score files dilute the context budget.
     const targeted201 = scored201.filter(s => s.score > 0);
@@ -2267,22 +1500,18 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
     const max201 = targeted201.length > 0
       ? Math.min(targeted201.length, 4)  // only use files that actually cover the target chapters
       : Math.min(scored201.length, 3);   // fallback: first 3
-    // R26: restrictToSBC201 forces max801 = 0 — no SBC801 files selected under any fallback
-    const max801 = restrictToSBC201 ? 0 :
-      (targeted801.length > 0
-        ? Math.min(targeted801.length, 4)
-        : Math.min(scored801.length, 3));
+    const max801 = targeted801.length > 0
+      ? Math.min(targeted801.length, 4)
+      : Math.min(scored801.length, 3);
 
     let selectedFiles = [
       ...scored201.slice(0, max201).map(s => s.file),
       ...scored801.slice(0, max801).map(s => s.file),
     ];
-
-    // Ensure at least some files (only from SBC201 side when restricted)
+    
+    // Ensure at least some files
     if (selectedFiles.length < 3) {
-      const remaining = candidateFiles
-        .filter(f => !selectedFiles.includes(f))
-        .filter(f => !restrictToSBC201 || !f.name.toLowerCase().includes("801"));
+      const remaining = candidateFiles.filter(f => !selectedFiles.includes(f));
       selectedFiles = [...selectedFiles, ...remaining.slice(0, 5 - selectedFiles.length)];
     }
 
@@ -2422,20 +1651,15 @@ async function fetchSBCContext(query: string, extraKeywords?: string[], restrict
       const sourceMeta: SourcePageMeta[] = [...sourcesUsed].map(file => {
         const m = sourceMetaMap.get(file);
         const hasPages = m && (m.minPage != null || m.maxPage != null);
-        const span = (m && m.minPage != null && m.maxPage != null) ? m.maxPage - m.minPage : 0;
         return {
           file,
           pageStart: m?.minPage ?? null,
           pageEnd: m?.maxPage ?? null,
-          precision: (hasPages && span <= 100) ? 'page_range' : 'chunk_range_only',
+          precision: hasPages ? 'page_range' : 'chunk_range_only',
         };
       });
 
-      const result = {
-        context: contextStr,
-        files: [...sourcesUsed],
-        sourceMeta: enrichSourceMetaProvenance(sourceMeta, sourceRegistry, "keyword_chunk"),
-      };
+      const result = { context: contextStr, files: [...sourcesUsed], sourceMeta };
       queryCache.set(cacheKey, { result, timestamp: Date.now() });
       cleanupQueryCache();
       return result;
@@ -2470,22 +1694,6 @@ function extractTableIds(query: string): string[] {
     found.add(m[1]);
   }
 
-  // Match clause/section/article references in Arabic and English:
-  // "الفقرة 1014.6", "القسم 903.2", "Section 1014.6", "Clause 1014.6", "Article 1014"
-  // Uses original query (not lowercased) to preserve Arabic Unicode.
-  const clauseRegex = /(?:الفقرة|القسم|section|clause|article|art\.)\s*(\d{3,4}(?:\.\d{1,3}){0,3})/gi;
-  while ((m = clauseRegex.exec(query)) !== null) {
-    found.add(m[1]);
-  }
-
-  // Match bare dotted section numbers with 2+ parts (e.g. "1014.6", "903.2.1")
-  // that appear standalone — not already caught by the keyword regexes above.
-  // Word-boundary anchored to avoid matching partial numbers inside other text.
-  const bareClauseRegex = /\b(\d{3,4}\.\d{1,3}(?:\.\d{1,3})*)\b/g;
-  while ((m = bareClauseRegex.exec(lower)) !== null) {
-    found.add(m[1]);
-  }
-
   // Also match bare section numbers when they look like table IDs that we know about
   // Keep this list in sync with the sbc_code_tables rows in the DB (currently 68 records).
   const KNOWN_TABLE_IDS = [
@@ -2501,9 +1709,7 @@ function extractTableIds(query: string): string[] {
     "705.8",
     // Chapter 10 — Means of Egress
     "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4",
-    "1008", "1009", "1010", "1011.2", "1012", "1013",
-    "1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6",
-    "1015",
+    "1008", "1009", "1010", "1011.2", "1012", "1013", "1015",
     "1017.2", "1018.1", "1020.1", "1021.2", "1024", "1029.6.3", "1030",
     // SBC 801 Chapter 9 — Fire Protection Systems
     "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3",
@@ -2550,7 +1756,6 @@ function extractTableIds(query: string): string[] {
     "1005":   ["1005.1"],
     "1006":   ["1006.2.1", "1006.3.3", "1006.3.4"],
     "1011":   ["1011.2"],
-    "1014":   ["1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6"],
     "1017":   ["1017.2"],
     "1018":   ["1018.1"],
     "1020":   ["1020.1"],
@@ -2595,13 +1800,6 @@ function extractTableIds(query: string): string[] {
     [/institutional\s+occup\w*|\bGroup\s+I[1-4]?\b|I-[1-4]\s+(?:class|occup\w*|group)|مستشفى\s+إشغال|مجموعة\s+I\b/i, ["308"]],
     // Mercantile — retail, Group M
     [/mercantile\s+occup\w*|\bGroup\s+M\b|retail\s+(?:shop\w*|store\w*|occup\w*|space\w*)|محلات\s+تجارية|مجموعة\s+(?:M|التجزئة)\b/i, ["309"]],
-    // Step 4.2 — Group M fire-protection sub-clauses (sprinkler 903.2.7 / alarm 907.2.7).
-    // Triggered only when a Mercantile/Group-M phrase co-occurs with a sprinkler or
-    // alarm phrase in the same query — narrow co-occurrence to avoid false positives.
-    [/(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)[\s\S]{0,80}(?:sprinkler|automatic\s+sprinkler|رش|رشاش)/i, ["903.2.7"]],
-    [/(?:sprinkler|automatic\s+sprinkler|رش|رشاش)[\s\S]{0,80}(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)/i, ["903.2.7"]],
-    [/(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)[\s\S]{0,80}(?:fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|إنذار)/i, ["907.2.7"]],
-    [/(?:fire\s+alarm|manual\s+fire\s+alarm|alarm\s+system|إنذار)[\s\S]{0,80}(?:mercantile|\bGroup\s+M\b|retail|محلات\s+تجارية|مجموعة\s+M)/i, ["907.2.7"]],
     // Residential — Group R, مبنى سكني
     [/residential\s+occup\w*|\bGroup\s+R[1-4]?\b|R-[1-4]\s+(?:class|occup\w*)|سكني\s+إشغال|مبنى\s+سكني|مجموعة\s+(?:R|السكني)\b/i, ["310"]],
     // Storage — Group S
@@ -2728,9 +1926,9 @@ function extractTableIds(query: string): string[] {
 async function fetchStructuredTables(
   query: string,
   supabaseAdmin: any,
-): Promise<{ context: string; matchedTableIds: string[]; entries: Array<{ tableId: string; sourceCode: string | null; sectionRef: string | null }> }> {
+): Promise<{ context: string; matchedTableIds: string[] }> {
   const tableIds = extractTableIds(query);
-  if (tableIds.length === 0) return { context: "", matchedTableIds: [], entries: [] };
+  if (tableIds.length === 0) return { context: "", matchedTableIds: [] };
 
   console.log(`[StructuredTable] Query references table IDs: ${tableIds.join(", ")}`);
 
@@ -2738,7 +1936,7 @@ async function fetchStructuredTables(
   const LEGACY_IDS = new Set(["503", "1004.1.2", "1004.1"]);
   const fetchIds = tableIds.filter(id => !LEGACY_IDS.has(id));
 
-  if (fetchIds.length === 0) return { context: "", matchedTableIds: [], entries: [] };
+  if (fetchIds.length === 0) return { context: "", matchedTableIds: [] };
 
   const { data: rows, error } = await supabaseAdmin
     .from("sbc_code_tables")
@@ -2748,12 +1946,12 @@ async function fetchStructuredTables(
 
   if (error) {
     console.error("[StructuredTable] DB error:", error.message);
-    return { context: "", matchedTableIds: [], entries: [] };
+    return { context: "", matchedTableIds: [] };
   }
 
   if (!rows || rows.length === 0) {
     console.log("[StructuredTable] No rows found for IDs:", fetchIds.join(", "));
-    return { context: "", matchedTableIds: [], entries: [] };
+    return { context: "", matchedTableIds: [] };
   }
 
   console.log(`[StructuredTable] Found ${rows.length} structured table(s): ${rows.map((r: any) => r.table_id).join(", ")}`);
@@ -2778,16 +1976,7 @@ async function fetchStructuredTables(
   context += "\n\n" + "=".repeat(60) + "\n";
   context += "END OF STRUCTURED TABLE DATA — Continue with retrieved document chunks below.\n";
 
-  // Step 4 — surface table source codes so the Evidence Ledger can include
-  // structured-table evidence in citation verification.
-  const entries = (rows as any[]).map(r => ({
-    tableId: r.table_id as string,
-    sourceCode: (r.source_code ?? null) as string | null,
-    // sbc_code_tables.table_id IS the section/table ref the model cites with.
-    sectionRef: (r.table_id ?? null) as string | null,
-  }));
-
-  return { context, matchedTableIds: rows.map((r: any) => r.table_id), entries };
+  return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
 }
 
 // ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
@@ -2795,8 +1984,7 @@ async function fetchStructuredTables(
 async function fetchSBCContextVector(
   query: string,
   mode: string,
-  extraKeywords?: string[],
-  forceFilterCode?: string | null
+  extraKeywords?: string[]
 ): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -2809,7 +1997,6 @@ async function fetchSBCContextVector(
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    const sourceRegistry = await loadSourceRegistry(supabaseAdmin);
 
     // 1. Generate query embedding
     const embResponse = await fetch(
@@ -2837,15 +2024,11 @@ async function fetchSBCContextVector(
     }
 
     // 2. Detect code type filter
-    // forceFilterCode lets a caller (e.g. Advisory's R26 occupant_load restriction)
-    // override the regex auto-detection below with an authoritative value.
-    let filterCode: string | null = forceFilterCode !== undefined ? forceFilterCode : null;
-    if (filterCode === null) {
-      if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
-        filterCode = 'SBC801';
-      } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
-        filterCode = 'SBC201';
-      }
+    let filterCode: string | null = null;
+    if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
+      filterCode = 'SBC801';
+    } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
+      filterCode = 'SBC201';
     }
 
     // 3. Vector search
@@ -2863,74 +2046,31 @@ async function fetchSBCContextVector(
 
     console.log(`[Vector RAG] Found ${matches.length} matches, top similarity: ${matches[0]?.similarity?.toFixed(3)}`);
 
-    // Build authoritative code_type lookup per file from vector match metadata.
-    const codeTypeMap = new Map<string, string>();
-    for (const match of matches) {
-      if (match.code_type && match.file_name) {
-        codeTypeMap.set(match.file_name, match.code_type);
-      }
-    }
-
     // 4. Build context
     const usedFiles = [...new Set(matches.map((m: any) => m.file_name))] as string[];
     let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
     const contextLimit = 120000;
 
-    // Build per-file page range + section labels from vector match page data
-    const vectorMetaMap = new Map<string, {
-      minPage: number | null;
-      maxPage: number | null;
-      sections: Set<string>;
-    }>();
+    // Build per-file page range from vector match page data
+    const vectorMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
     for (const match of matches) {
       const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
       if (context.length + entry.length > contextLimit) break;
       context += entry;
-      const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null, sections: new Set<string>() };
+      const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null };
       if (match.page_start != null) m.minPage = m.minPage == null ? match.page_start : Math.min(m.minPage, match.page_start);
       if (match.page_end != null) m.maxPage = m.maxPage == null ? match.page_end : Math.max(m.maxPage, match.page_end);
-      const sn = (match.section_number || '').toString().trim();
-      if (sn) m.sections.add(sn);
       vectorMetaMap.set(match.file_name, m);
     }
 
     const sourceMeta: SourcePageMeta[] = usedFiles.map(file => {
       const m = vectorMetaMap.get(file);
       const hasPages = m && (m.minPage != null || m.maxPage != null);
-      // Section ref policy (conservative): single distinct section across this
-      // file's selected chunks → confidence:medium. Multiple distinct values →
-      // ambiguous. Step 2.5 showed labels can drift, so we never emit "high"
-      // from chunk metadata alone.
-      let sectionRef: string | null = null;
-      let sectionConfidence: SectionConfidence = null;
-      if (m && m.sections.size === 1) {
-        sectionRef = [...m.sections][0];
-        sectionConfidence = 'medium';
-      } else if (m && m.sections.size > 1) {
-        // Surface the most "specific" (most dotted segments) one, marked ambiguous.
-        const sorted = [...m.sections].sort((a, b) => {
-          const da = (a.match(/\./g) || []).length;
-          const db = (b.match(/\./g) || []).length;
-          return db - da;
-        });
-        sectionRef = sorted[0];
-        sectionConfidence = 'ambiguous';
-      }
-      // Resolve provenance from source_registry using the authoritative
-      // code_type returned by match_sbc_documents for this file's chunks.
-      const codeTypeForFile = codeTypeMap.get(file);
-      const sourceId = sourceIdFromCodeType(codeTypeForFile) ?? sourceIdFromFamily(familyFromFileName(file));
-      const { sourceType, editionYear } = resolveProvenance(sourceRegistry, sourceId);
       return {
         file,
         pageStart: m?.minPage ?? null,
         pageEnd: m?.maxPage ?? null,
         precision: hasPages ? 'page_range' : 'chunk_range_only',
-        sectionRef,
-        sectionConfidence,
-        origin: "vector_chunk",
-        sourceType,
-        editionYear,
       };
     });
 
@@ -3174,8 +2314,6 @@ function getVisionAdvisoryFinalPrompt(language: string): string {
 
 ${CORE_RULES}
 
-${ADVISORY_EVIDENCE_CONFIDENCE_CAP}
-
 You are generating DESIGN ADVISORY guidance for an engineering drawing that has been processed through a multi-stage pipeline.
 
 CRITICAL FRAMING: The engineer is at the DESIGN STAGE — they need to know what to design, not whether something built is compliant.
@@ -3247,373 +2385,10 @@ CRITICAL FRAMING:
 ═══════════════════════════════════════
 EPISTEMIC STATE RULES (apply throughout):
 ═══════════════════════════════════════
-- [CONFIRMED — VISIBLE ONLY]: element is explicitly visible / readable on this drawing — confirms PRESENCE only, not code compliance
-- [CONFIRMED — SOURCE-BACKED COMPLIANCE]: presence is visible AND the governing code limit was retrieved AND the comparison is satisfied — confirms both presence and compliance
+- [CONFIRMED]: explicitly visible/readable in the drawing or from provided text
 - [INFERRED]: reasonable derivation — must be labeled as inference, not fact
 - [REQUIRES CONFIRMATION]: possible but not established — must be flagged
 - [CANNOT CONCLUDE]: impossible to judge — prohibited from compliance verdict
-
-SHORTHAND POLICY: Bare "[CONFIRMED]" is only permitted in Section I for Document Type (نوع الوثيقة) labeling where the drawing type itself is directly visible. In ALL other uses — Building Type, Gap Matrix, Compliance Table, classification — use the full compound label above.
-
-═══════════════════════════════════════
-DRAWING-TYPE-SPECIFIC GAP LANGUAGE (read documentType from the Document Intelligence Summary):
-═══════════════════════════════════════
-The absence of a fire-safety system on a single uploaded sheet does NOT, by itself, mean the system is missing from the project. Apply the rule that matches documentType:
-- **floor_plan / reflected_ceiling_plan / section_elevation** (architectural family) — Absence of fire alarm or fire-fighting elements on this sheet is EXPECTED. Mark such items "Not shown on this architectural drawing — refer to dedicated fire alarm / fire-fighting plan." Do NOT mark them ❌ Non-Compliant on this basis alone.
-- **fire_alarm_plan** — Stronger gap language is allowed. If a required alarm-related element (control panel, initiating device, notification appliance, zoning, coverage) is absent from a fire alarm plan that should have shown it, write "Not shown on the fire alarm plan where it would be expected."
-- **fire_suppression_plan** — Stronger gap language is allowed. If a required sprinkler / standpipe / FDC / hydrant / pump element is absent from a suppression plan that should have shown it, write "Not shown on the fire-fighting plan where it would be expected."
-- **mechanical_plan** — Treat fire-safety-system absence the same as architectural family above; do NOT infer non-compliance from a mechanical sheet alone.
-- **site_plan** — Focus on access roads, fire department access, hydrants, building footprint. Do NOT draw internal-system conclusions from a site plan.
-- **schedule_table / specification** — Focus on tabular equipment / schedule data. Do NOT infer SPATIAL compliance from a schedule alone (a schedule confirms equipment counts and properties, not placement).
-- **mixed** — Combined findings; for each assessment, label which visible part of the sheet supplied the evidence.
-- **unclear** — Conservative output. Most assessments must be [REQUIRES CONFIRMATION] or [CANNOT CONCLUDE]. Explicitly request a clearer drawing type or additional sheets before issuing compliance verdicts.
-
-CONDITIONAL-OCCUPANCY RULE: If the Document Intelligence Summary lists buildingType or occupancyGroup as "unknown", every required-system row in the Gap Matrix MUST be marked [REQUIRES CONFIRMATION] and the action must request occupancy confirmation. Do not silently pick a single occupancy path.
-
-═══════════════════════════════════════
-LIFE SAFETY vs FIRE-FIGHTING DOCUMENT TYPE RULES:
-═══════════════════════════════════════
-When classifying the document type from the drawing title, labels, or visible content:
-
-CLASSIFY AS "Life Safety / Egress Plan" when the sheet shows ANY of:
-- Drawing title includes: life safety, سلامة الحياة, إخلاء, هروب, egress, evacuation, exit plan
-- EL symbols (emergency lighting fixtures), T.D annotations (travel distance), "you are here" symbols
-- Evacuation route arrows, exit stairway indicators, escape route markings
-
-Do NOT classify as "Fire-fighting Plan" based on EL/T.D/exit symbols alone.
-
-CLASSIFY AS "Fire-fighting Plan" ONLY when the sheet explicitly shows at least one of:
-- Sprinkler head symbols with pipe routing or riser diagram
-- Fire hose cabinet / hose reel locations with coverage arcs
-- Hydrant layout with spacing dimensions
-- Fire pump system diagram or explicit fire-fighting drawing title
-- FDC (fire department connection) location
-- Standpipe riser or branch line diagram
-
-If the sheet shows both egress elements (EL, T.D, exits) AND fire-fighting elements (sprinkler heads, hose cabinets), classify as "mixed" and label which evidence supports each conclusion separately.
-
-PUMP ROOM INFERENCE RULE:
-A "PUMP ROOM" label on a floor plan is a mechanical infrastructure indicator.
-- Pump room is an indicator, not confirmation of system type, coverage, or code compliance.
-- Pump room alone is NOT proof of sprinkler system existence, coverage adequacy, or system design.
-ALLOWED wording when pump room is visible but no fire-fighting layout is shown:
-  "Pump room is visible; dedicated fire-fighting drawings are required to confirm system type and coverage."
-FORBIDDEN unless sprinkler heads, pipe routing, or suppression layout are explicitly visible:
-  ❌ "sprinklers likely exist"
-  ❌ "high probability of sprinkler system"
-  ❌ "sprinkler system partially shown"
-  ❌ "fire-fighting unless the sheet shows sprinkler heads, pipe routing, hose cabinets, or hydrant layout"
-  ❌ "fire suppression system suggested by pump room" used as a compliance-affecting claim
-
-═══════════════════════════════════════
-ANTI-FABRICATION RULES (apply to the entire response):
-═══════════════════════════════════════
-- Do NOT fabricate device counts, dimensions, travel distances, hose / sprinkler coverage radii, or fire-resistance ratings.
-- Do NOT fabricate code section numbers — only cite sections that appear in the SBC reference block.
-- Do NOT fabricate device locations or label content.
-- Do NOT treat "absent from this sheet" as "absent from the project" unless the drawing-type rules above support that conclusion.
-- Use "Section X" wording for code references — do not use the section symbol.
-- Unknown remains Unknown. If the drawing text layer or extraction does not confirm an element, do not invent it.
-
-═══════════════════════════════════════
-FORBIDDEN COMBINATIONS (ABSOLUTE — these produce invalid output):
-═══════════════════════════════════════
-The following combinations are structurally invalid and MUST NOT appear anywhere in this response:
-1. [NO SOURCE] + ✅ متوافق — FORBIDDEN. No source retrieved → verdict must be ⚠️ يحتاج تحقق or 🔲 غير محدد.
-2. [NO SOURCE] + ANY ❌ verdict — FORBIDDEN. This includes ❌ غير متوافق, ❌ غير متوافق (محتمل), ❌ مخالف, ❌ non-compliant, ❌ violation, and any other form. No source retrieved → no noncompliance verdict in any form, even qualified.
-3. [REQUIRES SOURCE CONFIRMATION] + ✅ متوافق — FORBIDDEN.
-4. [REQUIRES SOURCE CONFIRMATION] + ANY ❌ verdict — FORBIDDEN. Same scope as rule 2.
-5. ✅ متوافق with no Document + Section in the المرجع column — FORBIDDEN. Every ✅ row MUST cite a retrieved SBC section.
-6. ❌ غير متوافق with no Document + Section in the المرجع column — FORBIDDEN.
-7. A symbol presence (EL symbol, EXIT sign, FD 90/120 label, fire-rated wall notation) directly marked ✅ متوافق without a retrieved code limit comparison — FORBIDDEN. Symbols confirm presence, not compliance.
-8. Any Compliance Table row whose Reference cell contains [NO SOURCE] or "غير موجود في السياق المسترجع" or "not available in retrieved context" AND whose Status cell contains the words "غير متوافق", "مخالفة", "مخالف", "non-compliant", or "violation" in any form or with any qualifier — FORBIDDEN. Adding "(محتمل)" or "(possible)" does NOT make a noncompliance verdict safe without a source.
-
-When you would produce any forbidden combination: replace the verdict with ⚠️ يحتاج تحقق and set the basis to [REQUIRES SOURCE CONFIRMATION] — code basis not retrieved.
-
-═══════════════════════════════════════
-SOURCE-MISSING VERDICT RULES (apply to every Compliance Table row):
-═══════════════════════════════════════
-If a Compliance Table row contains ANY of the following in the Reference or Requirement cells:
-  • [NO SOURCE]
-  • [REQUIRES SOURCE CONFIRMATION]
-  • "not available in retrieved context"
-  • "غير موجود في السياق المسترجع"
-  • "غير متوفر في السياق المسترجع"
-
-THEN the Status cell MUST be one of:
-  ✅ ALLOWED: ⚠️ يحتاج تحقق
-  ✅ ALLOWED: 🔲 غير محدد — يتطلب تحقق مرجعي
-
-FORBIDDEN in that row regardless of qualifier:
-  ❌ ✅ متوافق
-  ❌ ❌ غير متوافق
-  ❌ ❌ غير متوافق (محتمل)
-  ❌ any word: "compliant", "non-compliant", "violation", "مخالفة", "مخالف", "غير متوافق"
-
-For suspicious drawing calculations without a retrieved code table:
-  USE: "تعارض محتمل في الحساب — يحتاج تدقيق مرجعي بعد استرجاع SBC 201 Table 1004.5"
-  USE: ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION]
-  DO NOT USE: ❌ غير متوافق (محتمل) or any ❌ verdict
-
-Exception — Pure drawing-internal contradiction (no code source needed):
-  A row may use: ⚠️ تعارض داخلي مؤكد بالمخطط
-  Basis must be: [CONFIRMED DRAWING CONFLICT]
-  Example: two room labels on the SAME space with incompatible occupant loads shown side by side on the same page.
-  This exception does NOT apply to occupant load calculations that simply look high — those require a retrieved code table to establish the threshold.
-
-HARD EXCLUSION — [CONFIRMED DRAWING CONFLICT] is FORBIDDEN for the following situations:
-  ❌ FORBIDDEN: M + S-2 occupancy appearing in separate zones / separate floors — this is a mixed-occupancy scenario, NOT a drawing conflict.
-  ❌ FORBIDDEN: M ground floor + S-2 upper floors — area boundaries may be intentional; requires code retrieval + calculation, NOT Type E.
-  ❌ FORBIDDEN: Any situation where the two occupancy labels are in different spatial zones (even if unusual).
-  ✅ ONLY ALLOWED: The EXACT SAME bounded area (same walls, same room) is simultaneously and explicitly labeled with two mutually exclusive occupancy groups on the same drawing.
-  For M + S-2 cross-zone: use ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION] + note "حالة إشغال مختلط تتطلب تحقق حدود وحسابات".
-
-═══════════════════════════════════════
-SOURCE-BACKED VERDICT ELIGIBILITY MATRIX:
-═══════════════════════════════════════
-Even when a source IS retrieved, ✅ متوافق is only valid if ALL 5 conditions below are met.
-This is DIRECT_NUMERIC_COMPARISON — the only path to ✅.
-
-DIRECT_NUMERIC_COMPARISON — 5 eligibility conditions (all required):
-1. SOURCE: The governing code limit is retrieved VERBATIM from the SBC context block.
-2. LIMIT: The exact numeric or categorical limit is clearly stated in the retrieved text.
-3. VALUE: A comparable drawing value is explicitly visible AND reliably extracted from this sheet (not estimated, not computed from uncertain area readings, not inferred from symbol counts).
-4. COMPARISON: The comparison is DIRECT and UNCONDITIONAL — no unknown modifiers remain (no "depending on construction type", no "if sprinklered", no "based on whole-building classification not yet confirmed").
-5. CONTEXT: All contextual conditions that could change the code limit are CONFIRMED from the drawing (occupancy group, building height, sprinkler presence, construction type) — not [INFERRED] or [REQUIRES CONFIRMATION].
-
-If ANY condition is NOT met: the row is NOT eligible for ✅ → use ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION].
-CRITICAL: retrieved source is not automatic compliance — a retrieved code section alone does not make a ✅ verdict valid. All 5 conditions must hold.
-
-PERMANENTLY INELIGIBLE for ✅ from a single life-safety / ground-floor sheet:
-The following items can NEVER receive ✅ متوافق from analysis of a single architectural plan sheet:
-- Emergency lighting lux level / battery duration / coverage adequacy
-- Exit sign visibility distance / mounting height / illumination level
-- Fire-rated wall / door hardware / assembly / seal details
-- Mixed-occupancy separation across the whole building
-- Automatic sprinkler system compliance (needs system drawings + hydraulic calcs)
-- Fire alarm system compliance (needs system drawings + device schedule)
-- Stairs serving upper floors (needs multi-floor verification)
-- Any requirement depending on construction type not confirmed on this sheet
-- Any requirement depending on total building height not confirmed on this sheet
-- Any item where the numeric value was uncertain during extraction (flagged as unreadable or estimated)
-
-═══════════════════════════════════════
-SBC 201-2024 REFERENCE NORMALIZATION:
-═══════════════════════════════════════
-- If you encounter "Table 1004.1.2" or "Table 1004.1" in ANY source (retrieved chunks, prior knowledge, or drawing text layer) — write "SBC 201 Table 1004.5" in all user-facing output. The old reference belongs to a superseded edition.
-- If Table 1004.5 content is NOT present in the retrieved SBC context block, write: "SBC 201 Table 1004.5 — [REQUIRES SOURCE CONFIRMATION]".
-- Do NOT write specific occupant load factor values (e.g. "18 m²/person") unless the actual Table 1004.5 row for that use is present in the retrieved SBC context block.
-- The same normalization applies to any other SBC 201 table reference that an older edition used — always prefer the 2024 edition designation.
-
-═══════════════════════════════════════
-PRESENCE vs. COMPLIANCE — SYMBOL OBSERVATION RULES:
-═══════════════════════════════════════
-A visible symbol or annotation on a drawing CONFIRMS PRESENCE only — not full code compliance.
-
-| Visible element | What it confirms | Compliance requires |
-|---|---|---|
-| EL / emergency lighting symbol | Emergency lighting fixture shown on plan | Lux level, battery duration, coverage, testing record — code retrieval required |
-| EXIT sign symbol | Exit signage shown on plan | Visibility distance, mounting height, illumination, path continuity — code retrieval required |
-| FD 90 / FD 120 door label | Fire-rated door designation is annotated | Hardware, closer, seals, certification — code retrieval required |
-| T.D = X m annotation | Travel distance value is written on plan | Whether that value satisfies the code limit for this occupancy — code retrieval required |
-| Occupant load calculation shown | Calculation method is visible | Correct occupancy group + load factor applied — code source confirmation required |
-| Fire-rated wall notation | Rating notation is shown | Assembly details, penetrations, junctions — code retrieval required |
-
-RULE: For each of the above, write "shown / presence confirmed" — NOT ✅ Compliant.
-Full compliance requires: (1) governing code limit retrieved, (2) confirmed element compared against limit, (3) all contextual conditions known.
-If SBC context for the element is NOT in the retrieved block: mark compliance as [REQUIRES SOURCE CONFIRMATION], never ✅.
-
-FORBIDDEN WORDING for presence-only elements (these phrases produce invalid output):
-- ❌ "EL symbols are compliant" / "emergency lighting complies" / "إنارة الطوارئ متوافقة"
-- ❌ "exit signs are compliant" / "لافتات الخروج متوافقة"
-- ❌ "travel distance complies" — write instead: "T.D = [X]m shown; compliance with code limit requires Table [Y] retrieval"
-- ❌ "fire-rated doors are compliant" — write instead: "FD 90/120 designations shown; hardware, closer, and seal compliance not verifiable from plan alone"
-- ❌ "occupant load is correct" — write instead: "occupant load calculation method shown; factor accuracy requires SBC 201 Table 1004.5 retrieval"
-- ❌ "fire-rated walls are compliant" — write instead: "fire-rated wall notation shown; assembly details and penetration treatment require specification retrieval"
-
-═══════════════════════════════════════
-SINGLE-SHEET CLASSIFICATION CALIBRATION:
-═══════════════════════════════════════
-When analyzing a single uploaded drawing page:
-1. Limit classification certainty to what THIS SHEET visibly proves. Do NOT state whole-building occupancy, total floor count, or total floor area as CONFIRMED unless the title block or plan labels directly confirm them on this sheet.
-2. For a ground floor plan showing shops / retail + parking + pump room / electrical room:
-   - CONFIRMED: ground floor visible uses (commercial/retail, parking, MEP rooms)
-   - NOT CONFIRMED from this sheet: upper-floor uses, residential occupancy, full building height
-   - State: "Ground floor visible uses: [list] — upper floors unknown from this single sheet"
-3. Drawing-internal classification conflict: if shop / retail labels appear alongside a Group S-2 (storage) occupant load calculation — state: "Drawing-internal classification note: shop/retail labels suggest Group M (mercantile); S-2 occupant load basis requires confirmation."
-4. Readability must match Stage 1 extraction evidence:
-   - "clear" — only if Stage 1 reports zero unreadable areas
-   - "mostly readable" — most elements legible, some minor unclear zones
-   - "partially readable" — significant unclear areas exist
-   - "unreadable areas exist" — list the specific zones from Stage 1
-   - NEVER write "all areas readable" unless Stage 1 extraction explicitly lists no unreadable areas.
-   - NEVER write "all pages readable" or "no extraction warnings" for a multi-page package review — vision/OCR analysis always has per-sheet limitations.
-   - NEVER write "high confidence all data correct" without qualifying which values need manual verification.
-   REQUIRED safer wording for multi-page packages:
-   ✅ "major drawing titles and symbols are readable across submitted sheets"
-   ✅ "some numeric values (dimensions, areas, equipment counts) require confirmation from original CAD/PDF schedules"
-   ✅ "OCR/vision extraction may require manual verification for specific dimensions, areas, and equipment counts"
-
-5. HIGH-RISE CLASSIFICATION GUARD:
-   Do NOT classify the building as "High-rise", "شاهق", or trigger SBC 201 Section 403 high-rise requirements solely from visible level annotations (e.g., "Floor 15 shown", "B2 to 14th floor") without explicit measured height comparison to the code definition.
-   ALLOWED when height is visible from annotations:
-   ✅ "height-related trigger may apply — requires confirmation of measured building height against code definition"
-   ✅ "visible height annotation suggests additional code checks (SBC 201 Section 403) — classification [REQUIRES CONFIRMATION]"
-   ✅ "building appears multi-storey — high-rise threshold requires code-defined height measurement, not floor count alone"
-   FORBIDDEN:
-   ❌ "building is high-rise" — as a confirmed classification from level labels alone
-   ❌ "شاهق" used as a confirmed classification without retrieved code height definition AND confirmed measured height
-   ❌ "Section 403 applies" stated as confirmed without both conditions above met
-   Only confirm high-rise when: (a) the retrieved code definition of high-rise height is present in the SBC context block, AND (b) the measured building height is clearly established from the drawings, AND (c) the comparison is direct and unambiguous.
-
-═══════════════════════════════════════
-MIXED-USE AND OCCUPANT-LOAD CALIBRATION:
-═══════════════════════════════════════
-RULE: parking S-2 + commercial shops M is not automatically a conflict — this is normal mixed use when the areas are separately bounded.
-
-When the ground-floor plan shows both parking (Group S-2) and commercial shops (Group M) in different labeled areas:
-1. This is NORMAL MIXED USE — do NOT label it a "major confirmed conflict", "critical violation", or ❌ غير متوافق.
-2. Use: "Mixed visible occupancies: Group M (commercial/shops) and Group S-2 (parking) observed on ground floor — mixed-use separation requirements apply and must be verified; no automatic conflict."
-   Preferred wording: "mixed visible uses require confirmation of separation boundaries and occupancy calculations."
-3. A drawing-internal conflict ONLY exists if: the SAME space or area is simultaneously labeled with two incompatible groups, OR drawing dimensions / numbers directly contradict each other within the same element.
-4. For M + S-2 in separate, clearly bounded areas: apply [INFERRED] mixed-use classification, NOT a conflict flag.
-
-FORBIDDEN wording for cross-zone M + S-2 (separate areas):
-  ❌ "direct conflict" — reserved only for same-space dual classification
-  ❌ "major conflict" — reserved only when S-2 occupant load factor is applied to a space labeled as Group M
-  ❌ "occupancy conflict confirmed" — use only when the same area carries contradictory labels or calculations
-  ❌ "not automatically a confirmed conflict" must not be reversed without direct drawing evidence
-  ❌ "تعارض جوهري" — FORBIDDEN for separate-zone M + S-2; only allowed when same area has contradictory dual classification
-  ❌ "تعارض مباشر" — FORBIDDEN for separate-zone M + S-2
-  ❌ "خطر حرج" applied to mixed M + S-2 occupancy classification — FORBIDDEN without confirmed same-area dual classification evidence
-  ❌ "تعارض في الإشغال" as a confirmed verdict — use only as a possible inconsistency note requiring designer confirmation
-
-PREFERRED wording when occupant-load or classification inconsistency is suspected:
-  ✅ "possible calculation/classification inconsistency — area labeled as [M/S-2] but calculated with [S-2/M] factor — requires designer confirmation"
-  ✅ "mixed visible uses require confirmation of boundaries and calculations"
-  ✅ "occupancy group for [area] is [INFERRED] — classification requires title-block or designer confirmation"
-  ✅ "حالة إشغال مختلط تتطلب تحقق حدود وحسابات" — use this as the standard wording for M + S-2 mixed-use packages
-  ✅ "mixed use across zones — separation and area calculation boundaries require confirmation — not a confirmed conflict"
-
-OCCUPANT LOAD CALCULATION UNCERTAINTY:
-5. If the area value used in an occupant load calculation is uncertain (unreadable, OCR-estimated, or flagged as partially legible in Stage 1 extraction), do NOT use that calculation for a source-backed compliance verdict.
-6. When extraction quality makes the exact area ambiguous (e.g., "358.1 vs 338.1 m²"), write: "Occupant load calculation uncertain — area extraction ambiguous (extracted value: [X] m²); area value should be confirmed from original CAD/PDF schedule before compliance determination." Do NOT treat the extracted value as definitive.
-7. Do NOT classify an occupant load discrepancy as a "major violation" or ❌ without: (a) a confirmed, clearly extracted area value AND (b) a retrieved code table row (SBC 201 Table 1004.5) showing the applicable occupant load factor.
-8. If the occupant load factor is NOT retrieved from SBC 201 Table 1004.5: the occupant load verdict must be ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION], not ❌.
-9. If the area value is uncertain (vision/OCR extraction), keep the occupant load row scope-limited regardless of ledger population. Write: "area value should be confirmed from original CAD/PDF schedule — calculation treated as indicative only."
-
-═══════════════════════════════════════
-FIRE-SYSTEM CODE-FAMILY RULES (fire alarm / sprinkler / suppression):
-═══════════════════════════════════════
-Fire alarm and fire suppression requirements belong to SBC 801, not SBC 201. Apply these rules to every reference in the report:
-1. Fire alarm system requirements (detectors, notification, control panel, alarm initiating devices) → cite as "SBC 801 Section 907.x". NEVER write "SBC 201 Section 907".
-2. Automatic sprinkler / fire suppression requirements → cite as "SBC 801 Section 903.x". NEVER write "SBC 201 Section 903".
-3. NEVER cite "SBC 201 Figure 903.2" — this reference does not exist. Sprinkler occupancy trigger tables are in SBC 801.
-4. Standpipe requirements → cite as "SBC 801 Section 905.x". NEVER write "SBC 201 Section 905".
-5. If the retrieved SBC context block confirms SBC 801 Section 903 or Section 907 text → cite it as "SBC 801 Section 903.x" or "SBC 801 Section 907.x".
-6. If the source family is ambiguous or the exact section was NOT retrieved → write: "Fire protection system requirement — [REQUIRES SOURCE CONFIRMATION] — source family (SBC 801 Chapter 9) not confirmed from retrieved context. Do not cite a specific section number."
-7. NEVER cite any Figure number (e.g., Figure 903.2, Figure 1006.2) unless that exact figure was retrieved verbatim in the SBC context block provided to this session.
-
-═══════════════════════════════════════
-PACKAGE-LEVEL ANALYTICAL CONTRACT
-(apply whenever the system context contains "=== PAGE INVENTORY"):
-═══════════════════════════════════════
-
-FRAMING: You are analyzing a COMPLETE safety drawing PACKAGE, not a single sheet. Use the PAGE INVENTORY to identify every sheet type, then treat them as a connected package with cross-sheet dependencies.
-
-SECTION II.A — جرد الأوراق / Page / Sheet Inventory — MANDATORY when PAGE INVENTORY is present:
-Produce a table with all pages from the inventory. Every page must have a row — even pages classified as "unknown".
-
-| الصفحة / Page | نوع الورقة المكتشف / Detected Sheet Type | عنوان المخطط / Drawing Title or Hint | الأنظمة الرئيسية الظاهرة / Main Systems Shown | دور الورقة في الحزمة / Package Role |
-|---|---|---|---|---|
-
-SECTION II.B — مصفوفة أنظمة الحزمة / Package Systems Matrix — MANDATORY when PAGE INVENTORY has 2+ pages:
-For each row, identify the coverage status across the ENTIRE package (not just one sheet).
-
-Required rows: Life Safety / Egress — Fire Alarm — Fire Fighting / Sprinkler — Standpipe / FHC — Pump Room / Tank — Fire-rated construction / FD doors — Emergency lighting / Exit signs — General site / access (if available)
-
-| النظام / System | الصفحات / Pages where shown | الدليل من الحزمة / Evidence from package | حالة التغطية / Coverage status | المستندات/الحسابات الناقصة / Missing docs or calcs | حكم الامتثال / Compliance status |
-|---|---|---|---|---|---|
-
-Allowed values — Coverage status: shown across package | partially shown | not shown in package | requires confirmation
-Allowed values — Compliance status: visible only | package completeness gap | requires code verification | cannot conclude
-
-SECTION V.B — مكونات الأنظمة المرئية / Visible System Components — MANDATORY for fire-fighting or fire alarm packages:
-Produce a component inventory table for every component type listed below that is relevant to the package type.
-
-| المكوّن / Component | الصفحات / Pages | الدليل / Evidence | الحالة / Status | يحتاج تحقق / Needs verification |
-|---|---|---|---|---|
-
-Minimum components to look for — Fire Fighting: Sprinkler heads | Pipe network / pipe diameters | Risers | FHC / Hose station | Test & drain | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve
-Minimum components to look for — Fire Alarm: Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring
-Also check details / notes pages for — Special Suppression: Kitchen hood fire suppression system | Clean agent / gaseous suppression system | Fire blanket | Portable fire extinguisher schedule or note
-Also check details / notes pages for — Installation Details: Sprinkler installation details | Pipe hangers / supports | FHC installation notes | Pump/tank assembly details | System schematic notes
-If found on details/notes pages, use status: "shown in details/notes — requires dedicated shop drawings / specifications — not final compliance"
-
-═══════════════════════════════════════
-MISSING DOCUMENTS ARE PACKAGE COMPLETENESS GAPS — NOT DESIGN NONCOMPLIANCE:
-═══════════════════════════════════════
-When the following documents are NOT included in the uploaded package:
-  hydraulic calculations | pump schedule | fire alarm riser diagram | battery calculation | cause/effect matrix | shop drawings | detailed riser schematic | system commissioning certificates
-
-DO NOT output ❌ غير متوافق.
-USE INSTEAD:
-  🔴 نقص مستندات حرج — لا يمكن إصدار حكم امتثال نهائي بدون هذا المستند
-  OR ⚠️ حزمة غير مكتملة للمراجعة
-
-RULE: ❌ غير متوافق applies ONLY when:
-  (a) the drawing itself contradicts a retrieved code requirement, OR
-  (b) a required element is clearly absent from ALL relevant package sheets AND the code basis is retrieved.
-Missing a document type from the submitted package = package completeness gap, NOT design noncompliance.
-
-═══════════════════════════════════════
-RISER WORDING CALIBRATION:
-═══════════════════════════════════════
-Do NOT write "Riser Diagram missing" broadly if riser pipes are visible on fire-fighting sheets. Use specific wording only:
-
-If fire-fighting pipe risers are visible on drawing sheets:
-  WRITE: "Fire-fighting risers shown in drawings — detailed riser schematic / hydraulic basis requires confirmation as separate document"
-  DO NOT WRITE: "Riser Diagram missing" or "no riser diagram"
-
-If fire alarm riser / schematic is not clearly shown on any fire alarm sheet:
-  WRITE: "Fire alarm riser / schematic not clearly provided in submitted package — required for full system review"
-
-If pump/tank riser connection is visible on a dedicated pump room sheet:
-  WRITE: "Pump/tank riser connection shown on [page N] — fire-fighting system riser confirmed at supply side"
-
-If hydraulic calculations are not included in the submitted package:
-  WRITE: "Hydraulic calculations not submitted — package completeness gap" + 🔴 نقص مستندات حرج
-  DO NOT WRITE: ❌ غير متوافق مع عدم توفر الحسابات الهيدروليكية
-
-═══════════════════════════════════════
-PACKAGE-LEVEL CROSS-SHEET CONNECTIONS (required in Section II.B or narrative):
-═══════════════════════════════════════
-Explicitly identify and state connections between sheets:
-  - Which life safety pages show exit routes that connect to stairwells on other pages
-  - Which fire alarm pages connect to the MFACP shown on another page
-  - Which fire-fighting pages show pipe risers that connect to the pump room page
-  - Whether the pump room / tank page confirms the water supply for the sprinkler system
-
-═══════════════════════════════════════
-REPORT STRUCTURE RULES (mandatory format — do not collapse or merge sections):
-═══════════════════════════════════════
-The final answer MUST contain all of the following visible markdown headings in order. Do not output any section as loose paragraphs without a heading. Do not merge sections. Do not skip sections.
-
-Required headings (exact text):
-  ## I. تصنيف المشروع / Project Classification
-  ## II. ملخص الاستخراج / Extraction Summary
-  ## II.A جرد الأوراق / Page / Sheet Inventory  ← REQUIRED when PAGE INVENTORY block is present
-  ## II.B مصفوفة أنظمة الحزمة / Package Systems Matrix  ← REQUIRED when PAGE INVENTORY has 2+ pages
-  ## III. مسار الكود الحاكم / Governing Code Path
-  ## IV. الاشتراطات الرئيسية / Key Requirements
-  ## IV.B 📊 الأنظمة المطلوبة ومصفوفة التغطية / Required Systems / Gap Matrix
-  ## V. جدول الامتثال / Compliance Table
-  ## V.B مكونات الأنظمة المرئية / Visible System Components  ← REQUIRED for fire-fighting or fire alarm packages
-  ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
-  ## VII. المعلومات الحرجة الناقصة / Missing Critical Information
-  ## VIII. السند التقني / Technical References
-  ## IX. حكم الامتثال / Compliance Verdict
-  ## X. الإجراءات المطلوبة / Required Actions
 
 ═══════════════════════════════════════
 YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
@@ -3622,61 +2397,20 @@ YOUR RESPONSE MUST FOLLOW THIS EXACT STRUCTURE:
 ## I. تصنيف المشروع / Project Classification
 
 - **نوع الوثيقة / Document Type:** [from extraction] — [CONFIRMED / INFERRED]
-- **الاستخدامات المرئية على الورقة / Visible sheet uses:** [list every confirmed visible use on this sheet — e.g., shops, parking, pump room, egress stairs, offices]
-- **نوع المبنى / Building Type:** [value] — [INFERRED / REQUIRES CONFIRMATION]
-  ⚠️ RULE: Building Type must NEVER be labeled [CONFIRMED] from a single sheet unless the title block or general notes explicitly prove the whole-building use. For any single ground-floor or life-safety plan, always use [INFERRED] or [REQUIRES CONFIRMATION].
-- **تصنيف المبنى الكلي / Whole-building classification:** [REQUIRES CONFIRMATION — single-sheet scope] (or state explicit justification if title block proves it)
-- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED — VISIBLE ONLY / INFERRED / REQUIRES CONFIRMATION]
-- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED]
-- **الطوابق / Stories:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED / CANNOT CONCLUDE]
-- **المساحة / Floor Area:** [value] — [CONFIRMED — VISIBLE ONLY / INFERRED / CANNOT CONCLUDE]
+- **نوع المبنى / Building Type:** [value] — [CONFIRMED / INFERRED]
+- **الإشغال / Occupancy Group:** [SBC 201 Chapter 3 classification] — [CONFIRMED / INFERRED]
+- **مستوى الخطورة / Hazard Level:** [value] — [CONFIRMED / INFERRED]
+- **الطوابق / Stories:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
+- **المساحة / Floor Area:** [value] — [CONFIRMED / INFERRED / CANNOT CONCLUDE]
 - **الرشاشات / Sprinklers:** [present / absent / not determinable]
 - **ثقة التصنيف / Classification Confidence:** [High / Medium / Low] — based on extraction quality
 
 ## II. ملخص الاستخراج / Extraction Summary
 
-- **جودة الصورة / Image Quality:** [clear / partial / low / illegible — per Stage 1; do NOT write "all pages clear" or "no warnings" for a multi-page package]
-- **المناطق المقروءة / Readable:** [list from Stage 1 — use "major drawing titles and symbols are readable" rather than absolute claims]
+- **جودة الصورة / Image Quality:** [clear / partial / low / illegible]
+- **المناطق المقروءة / Readable:** [list from Stage 1]
 - **المناطق غير المقروءة / Unreadable:** [list from Stage 1 — these create uncertainty zones]
-- **تحذير استخراج / Extraction Warning:** [ALWAYS present for multi-page packages — state: "some numeric values (dimensions, areas, equipment counts) may require confirmation from original CAD/PDF schedules; OCR/vision extraction may require manual verification"]
-- **عدد الأوراق في الحزمة / Package Sheet Count:** [N pages if PAGE INVENTORY present, otherwise "single sheet"]
-
-## II.A جرد الأوراق / Page / Sheet Inventory
-
-INCLUDE THIS SECTION ONLY IF the system context contains a "=== PAGE INVENTORY" block.
-If no PAGE INVENTORY is present in system context, write: "Section not applicable — single sheet uploaded."
-
-List ALL pages from the PAGE INVENTORY. Do not skip any page. Classify each based on what you can see:
-
-| الصفحة / Page | نوع الورقة المكتشف / Detected Sheet Type | عنوان المخطط / Drawing Title or Hint | الأنظمة الرئيسية الظاهرة / Main Systems Shown | دور الورقة في الحزمة / Package Role |
-|---|---|---|---|---|
-| [page number] | [life_safety / fire_alarm / fire_fighting / pump_room / cover / drawing_list / details / notes / general_site / unknown] | [title from sheet or "not visible"] | [list visible systems] | [primary / supporting / reference / unknown] |
-
-## II.B مصفوفة أنظمة الحزمة / Package Systems Matrix
-
-INCLUDE THIS SECTION ONLY IF the PAGE INVENTORY has 2 or more pages.
-If not applicable, write: "Section not applicable — single sheet uploaded."
-
-For each system row, assess coverage across the ENTIRE package, not per individual sheet.
-Use only what is visible across all submitted sheets — never infer presence from absence.
-
-| النظام / System | الصفحات / Pages where shown | الدليل من الحزمة / Evidence from package | حالة التغطية / Coverage status | المستندات / الحسابات الناقصة / Missing docs or calcs | حكم الامتثال / Compliance status |
-|---|---|---|---|---|---|
-| Life Safety / Egress | ... | ... | shown across package / partially shown / not shown in package / requires confirmation | ... | visible only / package completeness gap / requires code verification / cannot conclude |
-| Fire Alarm | ... | ... | ... | ... | ... |
-| Fire Fighting / Sprinkler | ... | ... | ... | ... | ... |
-| Standpipe / FHC | ... | ... | ... | ... | ... |
-| Pump Room / Tank | ... | ... | ... | ... | ... |
-| Fire-rated construction / FD doors | ... | ... | ... | ... | ... |
-| Emergency lighting / Exit signs | ... | ... | ... | ... | ... |
-| General site / access | ... | ... | ... | ... | ... |
-
-CROSS-SHEET CONNECTION NARRATIVE (required after the matrix):
-Explicitly state:
-- Which life safety pages connect exit routes to stairwells shown elsewhere in the package
-- Which fire alarm pages connect to the MFACP location
-- Whether fire-fighting pipe risers connect to the pump room sheet
-- Whether the pump/tank page confirms water supply for the sprinkler system
+- **تحذير استخراج / Extraction Warning:** [if quality is low/illegible — state that conclusions in affected areas are unreliable]
 
 ## III. مسار الكود الحاكم / Governing Code Path
 
@@ -3690,127 +2424,16 @@ Explicitly state:
 |---|---|---|---|
 | ... | ... | ... | مؤكد / يحتاج تحقق |
 
-## IV.B 📊 الأنظمة المطلوبة ومصفوفة التغطية / Required Systems / Gap Matrix
-
-Compare what the SBC likely requires against what THIS uploaded drawing actually shows. Apply the DRAWING-TYPE-SPECIFIC GAP LANGUAGE above when filling each row. For every system or requirement plausibly applicable to the building classification in the Document Intelligence Summary, fill one row of this table:
-
-| النظام أو الاشتراط / System or Requirement | لماذا قد يُطلب / Why it may be required | الدليل من المخطط / Evidence from plan | المرجع الكودي إن وُجد / Code basis (if available) | الإجراء المطلوب / Action required | الثقة / Confidence |
-|---|---|---|---|---|---|
-
-Allowed values for "Evidence from plan":
-- **Shown** — element is clearly drawn / labeled / scheduled on this sheet
-- **Not shown on this drawing** — element is absent from this sheet (apply the documentType rule above before concluding non-compliance; this does NOT mean absent from the project)
-- **Partially shown** — some indication exists but coverage / details are incomplete
-- **Unknown / not visible** — cannot be determined from the uploaded evidence
-
-Allowed values for "Confidence" (must use exact compound labels — bare [CONFIRMED] is FORBIDDEN in this column):
-- **[CONFIRMED — VISIBLE ONLY]** — Element is confirmed visible / present on this drawing. Confirms presence only, NOT code compliance.
-- **[CONFIRMED — SOURCE-BACKED COMPLIANCE]** — Element is visible AND the governing code limit was retrieved AND the comparison is satisfied. Both presence and compliance are established.
-- **[INFERRED]** — Inferred from partial evidence
-- **[REQUIRES CONFIRMATION]** — Requires confirmation from another sheet or document
-- **[CANNOT CONCLUDE]** — Cannot conclude from the uploaded evidence
-
-MANDATORY CONFIDENCE RULES for Gap Matrix:
-- EL / EXIT signs / FD 90 / FD 120 / fire-rated walls / T.D annotations: must use [CONFIRMED — VISIBLE ONLY] when only plan visibility is confirmed.
-- If the Code basis column is [NO SOURCE] or blank, the Confidence column may ONLY be [CONFIRMED — VISIBLE ONLY], [REQUIRES CONFIRMATION], or [CANNOT CONCLUDE]. Never [CONFIRMED — SOURCE-BACKED COMPLIANCE] without a retrieved source.
-- Full code compliance requires [CONFIRMED — SOURCE-BACKED COMPLIANCE] — use it only when you have both visible evidence AND retrieved code text AND a successful comparison.
-- PERFORMANCE-DEPENDENT SYSTEMS — [CONFIRMED — SOURCE-BACKED COMPLIANCE] is FORBIDDEN for these systems even when drawings show them and SBC requirement is retrieved:
-    → Automatic sprinkler system — requires hydraulic calculations + shop drawings. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — hydraulic calcs / shop drawings not submitted]
-    → Fire alarm system — requires device schedule + cause-and-effect matrix + riser diagram. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted]
-    → Standpipe system — requires hydraulic calcs + riser diagram. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — riser diagram / hydraulic calcs not submitted]
-    → Fire pump / water tank — requires pump schedule + hydraulic calcs. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — pump schedule / calcs not submitted]
-    → Emergency lighting (EL) — lux level, battery duration, coverage area cannot be confirmed from symbols alone. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — lux / battery duration / coverage not verifiable from plan]
-    → Exit signs — illumination level, mounting height, visibility distance cannot be confirmed from symbols alone. Use: [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — mounting / illumination not verifiable from plan]
-  These systems being SHOWN on drawings confirms PRESENCE only. Compliance requires performance documentation that cannot come from plan drawings alone.
-
-The Gap Matrix is REQUIRED — do not skip it. If the entire matrix would be filled with "Unknown / not visible" / [CANNOT CONCLUDE] (e.g. unclear documentType, illegible image), say so explicitly and ask for clearer drawings rather than fabricating rows.
-
 ## V. جدول الامتثال / Compliance Table
-
-Column definitions (fill each column independently — do NOT let a missing source inflate the verdict):
-- **العنصر**: What was observed on this drawing (observation fact — independent of code)
-- **المتطلب**: What the code requires — from retrieved SBC text ONLY; if not retrieved, write "غير متوفر في السياق المسترجع"
-- **المرجع**: Document + Section + Page — cite ONLY if present in the retrieved SBC context block; otherwise write [NO SOURCE]
-- **الحالة**: Verdict symbol — governed by FORBIDDEN COMBINATIONS rules above
-- **الأساس**: Epistemic label — use compound labels from Scenario A–E below; bare [CONFIRMED] is FORBIDDEN here
 
 | العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | الأساس |
 |---|---|---|---|---|
-| ... | ... | Retrieved: Document X Section Y — OR — [NO SOURCE] | Verdict per Scenario A–E (❌ requires retrieved source) | [CONFIRMED — VISIBLE ONLY] / [CONFIRMED — SOURCE-BACKED COMPLIANCE] / [REQUIRES SOURCE CONFIRMATION] / [CANNOT CONCLUDE] |
+| ... | ... | Document: X \| Section: Y | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | [CONFIRMED / INFERRED] |
 
-**مثال صحيح لصف [NO SOURCE] — Example of a correct [NO SOURCE] row:**
-| إنارة طوارئ — رموز EL مُبيَّنة على المخطط | مستوى الإضاءة + مدة البطارية + نطاق التغطية وفق SBC 801 | [NO SOURCE] — نص SBC 801 غير موجود في السياق المسترجع | ⚠️ يحتاج تحقق | [CONFIRMED — الرموز مرئية على المخطط] |
-
-**قواعد الجدول الصارمة — Compliance Table Row Types (assign exactly one type per row):**
-
-Type A — DIRECT_NUMERIC_COMPARISON:
-- Use when: a retrievable code limit exists AND all 5 SOURCE-BACKED VERDICT ELIGIBILITY conditions are met
-- الحالة: ✅ متوافق (requirement met) or ❌ غير متوافق (confirmed deficiency with retrieved source)
-- الأساس: [CONFIRMED — SOURCE-BACKED COMPLIANCE]
-- Note: ✅ is ONLY valid when all 5 DIRECT_NUMERIC_COMPARISON conditions are satisfied
-
-Type B — VISUAL_PRESENCE_ONLY:
-- Use when: element is confirmed visible on drawing but no code limit comparison is possible from this sheet alone
-- الحالة: ⚠️ يحتاج تحقق
-- الأساس: [CONFIRMED — VISIBLE ONLY]
-- Note: EL symbols, EXIT signs, FD 90/120 labels, sprinkler heads, fire alarm devices → always Type B from a single architectural plan
-
-Type C — SYSTEM_NOT_SHOWN_ON_THIS_DRAWING:
-- Use when: an applicable system or requirement is not shown on this particular sheet (may exist in other project documents)
-- الحالة: ⚠️ يحتاج تحقق or 🔲 غير محدد — يتطلب تحقق مرجعي
-- الأساس: [REQUIRES CONFIRMATION]
-- Note: "not shown on this drawing" ≠ "absent from project"
-
-Type D — WHOLE_BUILDING_DEPENDENT:
-- Use when: compliance depends on whole-building classification, total height, construction type, or multi-floor data this single sheet cannot confirm
-- الحالة: 🔲 غير محدد — يتطلب تحقق مرجعي
-- الأساس: [CANNOT CONCLUDE]
-
-Type E — DRAWING_INTERNAL_CONFLICT:
-- Use when: the drawing shows a direct contradiction WITHIN THE SAME BOUNDED SPACE (e.g., the exact same room/area is simultaneously labeled with two mutually exclusive occupancy groups on the same sheet, OR two dimensions on the same element cannot both be correct)
-- الحالة: ⚠️ تعارض داخلي مؤكد بالمخطط
-- الأساس: [CONFIRMED DRAWING CONFLICT]
-- Note: occupant load that simply looks high is NOT Type E — it requires code retrieval to establish the threshold
-- CRITICAL: M + S-2 in SEPARATE zones is NOT Type E. Mixed occupancy across zones requires code retrieval + area calculation. Use Type D ([CANNOT CONCLUDE]) or [REQUIRES SOURCE CONFIRMATION] for those cases.
-- CRITICAL: Do NOT use Type E / [CONFIRMED DRAWING CONFLICT] unless you can state the exact same bounding walls that received both conflicting labels simultaneously.
-
-حظر مطلق (Three absolute prohibitions — all apply):
-1. لا يُجوز أبداً تعيين ✅ لصف يحتوي على [NO SOURCE] في عمود المرجع.
-2. لا يُجوز أبداً تعيين أي صيغة من صيغ ❌ (بما فيها "غير متوافق (محتمل)") لصف يحتوي على [NO SOURCE] في عمود المرجع.
-3. لا يُجوز تعيين ✅ لصف من النوع B أو C أو D حتى لو تم استرجاع مرجع — هذه الأنواع لا تؤهل للامتثال من ورقة واحدة فقط.
-The word "محتمل" (potential/possible) does NOT create a safe exception — a qualified noncompliance is still a noncompliance verdict and requires a retrieved source.
-
-## V.B مكونات الأنظمة المرئية / Visible System Components
-
-INCLUDE THIS SECTION ONLY IF the package contains fire-fighting or fire alarm sheets (as indicated by PAGE INVENTORY or by the visible content of the sheets).
-If not applicable, write: "Section not applicable — no fire-fighting or fire alarm sheets in package."
-
-MANDATORY: If the PAGE INVENTORY includes any pages classified as [details] or [notes], you MUST inspect those pages for the "Special Suppression & Installation Details" component group below. Do not skip details/notes pages.
-
-For each component row, state what is VISIBLY confirmed across the package sheets. Do not infer presence; do not fabricate counts or locations.
-
-| المكوّن / Component | الصفحات / Pages | الدليل / Evidence | الحالة / Status | يحتاج تحقق / Needs verification |
-|---|---|---|---|---|
-
-Fire-Fighting components to check (plan sheets): Sprinkler heads | Pipe network / pipe diameters | Risers (pipe routing to upper floors) | FHC / Hose station | Test & drain valve | FDC / Siamese connection | Fire pumps | Fire water tank | Alarm valve / check valve | Pressure gauge / flow switch
-
-Fire Alarm components to check (plan sheets): Smoke detectors | Heat detectors | MCP (manual call point) | Sirens / sounders | MFACP (main fire alarm control panel) | EOL devices | Zone wiring / conduit | Beam detectors (if applicable)
-
-Special Suppression & Installation Details (MANDATORY — check details/notes pages from PAGE INVENTORY):
-- Kitchen hood fire suppression system — look for hood exhaust + suppression nozzle detail on any details/notes page
-- Clean agent / gaseous suppression system — server room, archive, or special hazard suppression shown in details
-- Fire blanket locations — noted in schedule or details
-- Portable fire extinguisher locations / types — shown on any plan or schedule
-- Sprinkler installation details — head type, escutcheon, deflector clearance shown in details sheet
-- Pipe hangers / supports — detail or notes showing hanger spacing, rod sizes
-- FHC installation notes — cabinet dimensions, hose reel, nozzle detail
-- Pump / tank assembly details — suction/discharge piping arrangement, valve configuration
-- System schematic / riser notes — system boundary, zones, floor-by-floor coverage summary
-
-For details/notes pages, use Status: "Shown in details/notes — requires dedicated shop drawings / specifications — not final compliance"
-
-Status values (plan pages): Shown — location confirmed | Shown — count not verifiable | Not shown on submitted sheets | Not shown — package completeness gap | Requires dedicated drawing
-Status values (details/notes pages): Shown in details/notes — requires dedicated shop drawings / specifications — not final compliance | Not visible on details pages | Details page not included in package
+**قواعد الجدول الصارمة:**
+- ✅ متوافق: فقط بنص مرجعي صريح + بيانات مستخرجة مؤكدة
+- ❌ غير متوافق: فقط بنص مرجعي صريح + دليل مستخرج مؤكد
+- ⚠️ يحتاج تحقق: بيانات غير مقروءة، مرجع غير متوفر، أو استنتاج غير مؤكد
 
 ## VI. مناطق الخطر والتعارض / Risk Areas & Conflicts
 
@@ -3824,44 +2447,20 @@ Status values (details/notes pages): Shown in details/notes — requires dedicat
 
 ## VIII. السند التقني / Technical References
 
-SECTION VIII RULES (MANDATORY — violations produce an invalid report):
-1. This section must NEVER contain only a subheading with no content underneath it.
-2. For every code section, table, or figure cited in Sections III–VII, produce one entry here.
-3. If retrieved verbatim: quote it with full Document + Section + page reference. Check STRUCTURED CODE TABLES block above first — those rows are DB-authoritative and should be cited directly.
-4. If NOT retrieved: write an explicit [NO SOURCE] entry — never silently omit it.
-5. Use the SOURCE-BACKED ANALYTICAL REQUIREMENTS PACK (if present above) as a guide: anchors marked ✅ RETRIEVED have their text in the STRUCTURED CODE TABLES block and MUST be quoted here. Anchors marked ❌ NOT RETRIEVED must produce a [NO SOURCE] entry.
-6. If no code citations were made at all in this report: write exactly "No code sections were cited in this report."
-7. If all cited sections have no retrieved text: write exactly "No source-backed quote was retrieved for the claimed code items; all related verdicts are downgraded to [REQUIRES SOURCE CONFIRMATION]."
-
-TECHNICAL REFERENCE LEDGER v1 (mandatory for every ✅ row):
-8. For EVERY row in the Compliance Table that carries ✅ متوافق or [CONFIRMED — SOURCE-BACKED COMPLIANCE], a corresponding ledger entry MUST appear in Section VIII using this exact format:
-   | Code Family | Section / Table | Source Status | What it supports | Verbatim excerpt |
-   |---|---|---|---|---|
-   | SBC 201 / SBC 801 | [exact section] | ✅ RETRIEVED | [which Compliance Table row] | "[exact English quote from retrieved context]" |
-9. If Section VIII lacks a ledger entry for a ✅ row: the verdict for that row is retroactively DOWNGRADED to ⚠️ يحتاج تحقق before the report is finalized. A missing ledger entry invalidates the ✅ verdict.
-10. Section VIII must NOT consist solely of the subheadings "SBC 201 References" / "SBC 801 References" with no content — this is an invalid report structure and triggers Rule 9 above for all ✅ rows.
-
 <details>
 <summary><strong>SBC 801 References</strong></summary>
 
-For each SBC 801 section, table, or figure cited in this report, write one entry using this format:
-- **Section:** [exact number] — **Verbatim Quote:** > [exact English text from retrieved context] — **Applicability:** [how it applies to this drawing]
-
-If a section was cited but its text was NOT in the retrieved SBC context block:
-- **Section:** [number] — [NO SOURCE] — Text not available in retrieved context. Compliance verdict for this item is downgraded to [REQUIRES SOURCE CONFIRMATION].
-
-If no SBC 801 sections were cited in this report: write "No SBC 801 sections cited."
-If SBC 801 sections were cited but none were retrieved: write "No SBC 801 source text was retrieved; all SBC 801-based verdicts in this report are [REQUIRES SOURCE CONFIRMATION]."
+For each section cited above:
+- **Section:** [exact number]
+- **Verbatim Quote:** > [exact English text]
+- **Applicability to this drawing:** [how it applies]
 
 </details>
 
 <details>
 <summary><strong>SBC 201 References</strong></summary>
 
-Apply the same format as SBC 801 above — quote verbatim from retrieved context, or produce an explicit [NO SOURCE] row. Do NOT leave this block empty if SBC 201 sections were cited.
-
-If no SBC 201 sections were cited in this report: write "No SBC 201 sections cited."
-If SBC 201 sections were cited but none were retrieved: write "No SBC 201 source text was retrieved; all SBC 201-based verdicts in this report are [REQUIRES SOURCE CONFIRMATION]."
+[Same format as SBC 801 section above]
 
 </details>
 
@@ -3869,781 +2468,16 @@ If SBC 201 sections were cited but none were retrieved: write "No SBC 201 source
 
 ⚠️ يُصدر هذا الحكم فقط إذا كانت المعطيات الحرجة مؤكدة وجودة الاستخراج كافية:
 
-- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — يتطلب تحقق مرجعي]
+- **الحكم:** [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — بيانات غير كافية]
 - **الأساس:** "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
 - **تحفظات الاستخراج:** [إذا كانت جودة الصورة تُقيّد الحكم — اذكر ذلك صراحة]
 - **ختام إلزامي:** "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
-
-VERDICT RULES:
-- Use ✅ only when: SBC source text is in the retrieved context block AND drawing element is confirmed AND all conditions are met.
-- Use ❌ only when: SBC source text is in the retrieved context block AND a confirmed drawing deficiency exists AND all conditions are met.
-- Use ⚠️ when: evidence or code source is partially available, or conditions are partially met.
-- Use 🔲 "غير محدد — يتطلب تحقق مرجعي" when: code source was NOT retrieved, classification is uncertain, or a single sheet cannot prove whole-building compliance. This is the DEFAULT when source grounding is incomplete.
-
-PACKAGE-LEVEL FINAL VERDICT CALIBRATION (applies when PAGE INVENTORY is present):
-When the report covers a multi-page drawing package, the overall verdict description MUST be calibrated:
-
-FORBIDDEN overconfident summary phrases:
-  ❌ "المخططات تظهر توافقاً مع المتطلبات الرئيسية"
-  ❌ "تغطية شاملة لأنظمة الإطفاء"
-  ❌ "نظام كامل ومتكامل"
-  ❌ "الحزمة تلبي متطلبات الكود"
-  ❌ "الأنظمة مستوفاة"
-  ❌ "package complies" or "full compliance"
-  ❌ "comprehensive coverage confirmed"
-
-REQUIRED calibrated summary phrases (choose the most applicable):
-  ✅ "المخططات تظهر تغطية تصميمية أولية للأنظمة الرئيسية"
-  ✅ "الأنظمة ظاهرة عبر الحزمة، لكن كفايتها وأداؤها يتطلبان الحسابات والمستندات الداعمة"
-  ✅ "لا يعد ذلك امتثالاً نهائياً — التحقق الكامل يستلزم الحسابات الهيدروليكية، جداول الأجهزة، ومخططات التركيب التفصيلية"
-  ✅ "The drawings show preliminary design coverage — final compliance requires hydraulic calculations, device schedules, and installation shop drawings not included in this submission."
-
-The الختام إلزامي line must always be present.
 
 ## X. الإجراءات المطلوبة / Required Actions
 
 - [ ] [الإجراء] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
 
-═══════════════════════════════════════
-MANDATORY FINAL SELF-CHECK (perform silently before writing your last word):
-═══════════════════════════════════════
-Before finalizing your response, verify each item below. If a check fails, rewrite the offending row or line conservatively before output:
-
-1. ✦ Scan every Compliance Table row: if the Reference cell contains [NO SOURCE] or "غير موجود في السياق المسترجع", the Status cell must contain ONLY ⚠️ يحتاج تحقق or 🔲 غير محدد. If it contains ✅ → replace with ⚠️. If it contains ❌ in any form (including "❌ غير متوافق (محتمل)") → replace with ⚠️ يحتاج تحقق + basis [REQUIRES SOURCE CONFIRMATION]. The word "محتمل" does NOT make ❌ safe.
-2. ✦ No Gap Matrix row uses bare [CONFIRMED] → must be [CONFIRMED — VISIBLE ONLY] or [CONFIRMED — SOURCE-BACKED COMPLIANCE]
-3. ✦ No EL / EXIT sign / FD 90 / FD 120 / fire-rated wall / T.D annotation is labeled "compliant" or given ✅ without a retrieved code limit and a successful numeric comparison
-4. ✦ Section VIII is not empty — if any code section was cited, at least one entry (quoted or [NO SOURCE]) appears under the relevant subheading; the subheading is never the last line
-5. ✦ Section I "نوع المبنى / Building Type" does NOT carry [CONFIRMED] → change to [INFERRED] or [REQUIRES CONFIRMATION] unless title block explicitly proves whole-building use
-6. ✦ Section I contains the line "Visible sheet uses:" listing ground-floor confirmed uses
-7. ✦ Section I contains the line "Whole-building classification:" with appropriate qualifier
-8. ✦ The string "Table 1004.1.2" does not appear anywhere → replace with "SBC 201 Table 1004.5"
-9. ✦ The strings "SBC 201 Section 903", "SBC 201 Section 907", "SBC 201 Section 905", "SBC 201 Figure 903" do not appear anywhere → replace with SBC 801 reference or [REQUIRES SOURCE CONFIRMATION]
-10. ✦ No Figure reference (e.g., Figure 903.2, Figure 1006.2) appears unless that figure was retrieved verbatim in the SBC context block
-11. ✦ All 11 required section headings (I through X plus IV.B) are present as ## headings in the output — no section was collapsed into a prior section or output as a bare paragraph
-12. ✦ Every ✅ متوافق row in the Compliance Table is classified as Type A DIRECT_NUMERIC_COMPARISON with all 5 eligibility conditions met. Any ✅ row that fails this check → downgrade to ⚠️ يحتاج تحقق before output.
-13. ✦ Every ✅ متوافق row has a corresponding TECHNICAL REFERENCE LEDGER v1 entry in Section VIII (the ledger table with Code Family / Section / Source Status / What it supports / Verbatim excerpt columns). Any ✅ row missing its ledger entry → downgrade to ⚠️ before output.
-14. ✦ If the drawing shows Group M (shops/commercial) and Group S-2 (parking) in SEPARATE clearly bounded areas, these are NOT labeled as a conflict or ❌. A drawing-internal conflict only applies when the same space has incompatible dual classification.
-15. ✦ If any numeric area or dimension value was uncertain during extraction, that value was NOT used to issue a ✅ verdict — extraction uncertainty forces ⚠️ + [REQUIRES SOURCE CONFIRMATION].
-16. ✦ If the system context contains "=== PAGE INVENTORY", then Section II.A and Section II.B are present in the output. If either is missing, add a placeholder row to each before output.
-17. ✦ Scan every Compliance Table row (Section V) and every Section VII bullet: if the row mentions "الحسابات الهيدروليكية", "Riser Diagram", "مخطط الناهض", "hydraulic calculations", "shop drawings", "battery calculation", "cause/effect", "pump schedule", "مستند ناقص", "fire alarm riser", or any missing document and the verdict is ❌ غير متوافق → replace with 🔴 نقص مستندات حرج and add basis [PACKAGE COMPLETENESS GAP — not final design noncompliance].
-18. ✦ Section V.B is present in the output if the package contains fire-fighting or fire alarm sheets. If missing and those sheet types are present, add a placeholder note.
-19. ✦ No row uses the phrase "Riser Diagram missing" as a standalone verdict — it must be qualified per RISER WORDING CALIBRATION rules above (distinguish: fire-fighting risers shown vs. fire alarm riser not provided vs. hydraulic schematic not submitted).
-20. ✦ Section I does NOT contain "High-rise [CONFIRMED]" or "شاهق [CONFIRMED]" or "Section 403 applies" as a confirmed classification unless both (a) retrieved SBC high-rise height definition is in the context block AND (b) measured building height is clearly established from the drawings. If either condition is absent → replace with "height-related trigger may apply — [REQUIRES CONFIRMATION]".
-21. ✦ Section V (Compliance Table) and Section II.B do NOT contain the words "تعارض جوهري", "تعارض مباشر", or "خطر حرج" applied to a cross-zone M + S-2 situation. If found → replace with "حالة إشغال مختلط تتطلب تحقق حدود وحسابات".
-22. ✦ Section II Extraction Warning is NOT left blank or written as "no warnings" for a multi-page package — always includes the OCR/vision manual verification note.
-23. ✦ No Gap Matrix row for sprinkler, fire alarm, standpipe, fire pump/tank, EL, or exit signs uses [CONFIRMED — SOURCE-BACKED COMPLIANCE] — these systems are presence-confirmed from drawings only; use [CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted].
-24. ✦ If PAGE INVENTORY is present (multi-page package), Section IX final verdict does NOT contain overconfident summary phrases: "المخططات تظهر توافقاً مع المتطلبات الرئيسية" / "تغطية شاملة" / "نظام كامل" / "package complies" / "full compliance". If found → replace with "المخططات تظهر تغطية تصميمية أولية — التحقق الكامل يستلزم الحسابات والمستندات الداعمة".
-25. ✦ If PAGE INVENTORY includes any page with drawingTypeHint=[details] or [notes], Section V.B must include a row for "Special Suppression & Installation Details" group — if no details were visible on those pages, write "Not visible on details pages" in the Status column.
-
 RESPOND IN: ${lang}`;
-}
-
-// ── Deterministic Analytical Report Validator v1.1 ───────────────────────────
-// Runs post-generation on the full assembled response text for Analytical Mode.
-// Scope-limits or downgrades ✅/❌ verdicts — scope limitation applies because a
-// single architectural sheet cannot issue final compliance approval for system-level
-// or whole-building items. numeric value is reliably extracted must hold for any
-// scope-limited numeric ✅ to survive as a conditional scope-limited finding.
-
-// Full downgrade: verdict → ⚠️ يحتاج تحقق, basis → REQUIRES SOURCE CONFIRMATION
-function downgradeRow(line: string, reason: string): string {
-  return line
-    .replace(/✅\s*متوافق/g, "⚠️ يحتاج تحقق")
-    .replace(/✅/g, "⚠️")
-    .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "⚠️ يحتاج تحقق")
-    .replace(/❌\s*مخالف[^\s|]*/g, "⚠️ يحتاج تحقق")
-    .replace(/❌/g, "⚠️")
-    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
-      `[CONFIRMED — VISIBLE ONLY] + [REQUIRES SOURCE CONFIRMATION — ${reason}]`);
-}
-
-// System/completeness downgrade: basis → scope/system completeness not verifiable from this sheet
-function downgradeToVisibleOnly(line: string): string {
-  return line
-    .replace(/✅\s*متوافق/g, "⚠️ يحتاج تحقق")
-    .replace(/✅/g, "⚠️")
-    .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "⚠️ يحتاج تحقق")
-    .replace(/❌\s*مخالف[^\s|]*/g, "⚠️ يحتاج تحقق")
-    .replace(/❌/g, "⚠️")
-    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
-      "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — scope/system completeness not verifiable from this sheet]");
-}
-
-// Scope-limit: verdict → ⚠️ مطابق حسابيًا ضمن نطاق هذه الورقة — يحتاج تحقق نهائي
-// Used for direct numeric comparisons that hold only for the single visible sheet
-function scopeLimitRow(line: string): string {
-  return line
-    .replace(/✅\s*متوافق/g, "⚠️ مطابق حسابيًا ضمن نطاق هذه الورقة — يحتاج تحقق نهائي")
-    .replace(/✅/g, "⚠️")
-    .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
-      "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — single visible sheet scope]");
-}
-
-function validateAnalyticalReport(text: string): string {
-  // Only process reports that contain a Compliance Table (Section V marker)
-  if (!text.includes("V. جدول الامتثال") && !text.includes("Compliance Table")) {
-    return text;
-  }
-
-  let result = text;
-  let changesMade = false;
-
-  // ── Step 1: Determine Section VIII ledger population status ────────────────
-  const sec8Match = result.match(/##\s*VIII\.[\s\S]*?(?=##\s*IX\.|(?=\n##\s*[^I])|$)/);
-  const sec8Text = sec8Match ? sec8Match[0] : "";
-  const ledgerPopulated = (() => {
-    for (const ln of sec8Text.split("\n")) {
-      const hasSBC = ln.includes("SBC 201") || ln.includes("SBC 801");
-      const hasRef = ln.includes("Table") || ln.includes("Section");
-      const hasDetail = /page|range|excerpt|supports|retrieved|quote|ملخص|يدعم|صفحة/i.test(ln);
-      const isTableRow = ln.trimStart().startsWith("|") && (ln.match(/\|/g) || []).length >= 5;
-      if (hasSBC && hasRef && (hasDetail || isTableRow)) return true;
-    }
-    return false;
-  })();
-
-  // ── Step 2: Locate Section V boundaries ───────────────────────────────────
-  const sec5Start = result.search(/##\s*V\.\s*(?:جدول الامتثال|Compliance Table)/);
-  const sec5End   = result.search(/##\s*VI\./);
-  if (sec5Start === -1 || sec5End === -1 || sec5Start >= sec5End) return result;
-
-  const beforeSec5 = result.slice(0, sec5Start);
-  const sec5Text   = result.slice(sec5Start, sec5End);
-  const afterSec5  = result.slice(sec5End);
-
-  // ── Step 3: Row classification patterns ───────────────────────────────────
-
-  // Missing-document pattern: these are package completeness gaps, NOT design noncompliance
-  const MISSING_DOC_RE = /الحسابات الهيدروليكية|hydraulic\s+calc|[Rr]iser\s+[Dd]iagram|مخطط\s*الناهض|ناهض\s*الحريق|shop\s+draw|battery\s+calc|cause.?effect|pump\s+schedule|fire\s+alarm\s+riser|schematic\s+not\s+provided|مستند\s+ناقص|وثيقة\s+مفقودة|حسابات\s+المضخة/i;
-
-  // Always-downgrade: system/assembly/whole-building — scope/completeness
-  // cannot be established from a single architectural plan sheet even with a ledger.
-  const ALWAYS_DOWN_RE = /لافتات الخروج|إنارة الطوارئ|\bEL\b|(?<!\w)EXIT(?!\w)|FD\s*(?:90|120)|الأبواب المقاومة|مقاومة الحريق|جدران مقاومة للحريق|fire.?rated\s+wall|fire.?rated\s+door|فصل الإشغالات|mixed\s+occupancy\s+separation|نظام الرش|[Ss]prinkler|نظام إنذار|[Ff]ire\s*[Aa]larm|المخارج من المحلات|سلالم|stairs|الطوابق العليا|كامل المبنى|construction\s+type|نوع الإنشاء|coverage|distribution|visibility|mounting|hardware|seals|certificates/i;
-
-  // Numeric uncertainty: values known or suspected to be imprecisely extracted
-  const NUMERIC_UNCERTAIN_RE = /338\.1|358\.1|O\.L\s*AREA|occupant\s+calc|حمولة الإشغال المحتملة/i;
-
-  // Scope-limitable: direct single-sheet numeric checks
-  const TRAVEL_DIST_RE = /مسافة الهروب|مسافة السفر|T\.D|travel\s+distance|1017\.2/i;
-  const OCC_LOAD_RE    = /حمل الإشغال|occupant\s+load|عدد المشغلين|1004\.5/i;
-
-  // ── Step 4: Process each table row in Section V ────────────────────────────
-  const newSec5Lines = sec5Text.split("\n").map(line => {
-    if (!line.trimStart().startsWith("|")) return line;
-
-    const hasNoSrc = line.includes("[NO SOURCE]") ||
-                     line.includes("غير موجود في السياق المسترجع") ||
-                     line.includes("not available in retrieved context") ||
-                     line.includes("غير متوفر في السياق المسترجع");
-    const hasApprove      = line.includes("✅");
-    const hasReject       = line.includes("❌");
-    const hasNonCompliant = /غير متوافق|مخالفة|مخالف|non-compliant|violation/i.test(line);
-
-    // Rule 0 — Missing document → package completeness gap, NOT design noncompliance
-    // Replace ❌ غير متوافق with 🔴 نقص مستندات حرج for any row about missing documents
-    if (hasReject && MISSING_DOC_RE.test(line)) {
-      changesMade = true;
-      return line
-        .replace(/❌\s*غير متوافق(\s*\(محتمل\))?/g, "🔴 نقص مستندات حرج")
-        .replace(/❌\s*مخالف[^\s|]*/g, "🔴 نقص مستندات حرج")
-        .replace(/❌/g, "🔴")
-        .replace(/\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
-          "[PACKAGE COMPLETENESS GAP — not final design noncompliance]");
-    }
-
-    // Rule 1 — [NO SOURCE] + unsafe verdict: always downgrade regardless of ledger
-    if (hasNoSrc && (hasApprove || hasReject || hasNonCompliant)) {
-      changesMade = true;
-      return downgradeRow(line, "source missing");
-    }
-
-    // Rule 2+3 — ✅ or SOURCE-BACKED COMPLIANCE with no populated ledger
-    if (!ledgerPopulated && (hasApprove || line.includes("SOURCE-BACKED COMPLIANCE"))) {
-      changesMade = true;
-      return downgradeRow(line, "technical reference ledger missing");
-    }
-
-    // Rule 4 — Always-downgrade: system/assembly/whole-building items
-    // Ledger existence does NOT change this — a single sheet cannot verify completeness
-    if (hasApprove && ALWAYS_DOWN_RE.test(line)) {
-      changesMade = true;
-      return downgradeToVisibleOnly(line);
-    }
-
-    // Rule 5 — Numeric extraction uncertainty guard
-    // If the numeric value is flagged or known to be unreliably extracted → downgrade
-    if (hasApprove && NUMERIC_UNCERTAIN_RE.test(line)) {
-      changesMade = true;
-      return downgradeRow(line, "numeric value reliability uncertain — extraction may be imprecise");
-    }
-
-    // Rule 6 — Travel distance: scope-limit if ledger populated + Table 1017.2 cited;
-    // otherwise full downgrade. numeric value is reliably extracted assumed here.
-    if (hasApprove && TRAVEL_DIST_RE.test(line)) {
-      changesMade = true;
-      return (ledgerPopulated && result.includes("1017.2"))
-        ? scopeLimitRow(line)
-        : downgradeRow(line, "travel distance requires populated ledger and Table 1017.2 citation");
-    }
-
-    // Rule 7 — Occupant load: scope-limit if ledger populated + Table 1004.5 cited;
-    // otherwise full downgrade.
-    if (hasApprove && OCC_LOAD_RE.test(line)) {
-      changesMade = true;
-      return (ledgerPopulated && result.includes("1004.5"))
-        ? scopeLimitRow(line)
-        : downgradeRow(line, "occupant load requires populated ledger and Table 1004.5 citation");
-    }
-
-    // Rule 8 — Default catch-all: any remaining ✅ that does not match a narrow
-    // directly-comparable numeric pattern is scope-limited.
-    // A single sheet cannot prove final compliance for arbitrary items.
-    if (hasApprove) {
-      changesMade = true;
-      return scopeLimitRow(line);
-    }
-
-    return line;
-  });
-
-  result = beforeSec5 + newSec5Lines.join("\n") + afterSec5;
-
-  // ── Step 5 — Rule 9: Soften broad mixed-use conflict wording ──────────────
-  if (result.includes("تعارض تصنيف الإشغال")) {
-    result = result.replace(/تعارض تصنيف الإشغال/g, "حالة إشغال مختلط تتطلب تحققًا");
-    changesMade = true;
-  }
-  // Rule 10: Replace overconfident occupancy conflict terms with calibrated wording
-  const MIXED_OCC_OVERCONFIDENT_RE = /تعارض جوهري|تعارض مباشر|خطر حرج.*إشغال|إشغال.*خطر حرج/g;
-  if (MIXED_OCC_OVERCONFIDENT_RE.test(result)) {
-    result = result.replace(/تعارض جوهري/g, "حالة إشغال مختلط تتطلب تحقق حدود وحسابات");
-    result = result.replace(/تعارض مباشر/g, "حالة إشغال مختلط — يتطلب تحقق");
-    result = result.replace(/خطر حرج.*?(إشغال[^.،\n]*)/g, "تنبيه — $1 — يتطلب تحقق");
-    changesMade = true;
-  }
-  // Rule 11: Soften overconfident high-rise confirmed classification
-  if (/شاهق\s*\[CONFIRMED\]|High-rise\s*\[CONFIRMED\]|Section 403 applies[^—(]/.test(result)) {
-    result = result.replace(/شاهق\s*\[CONFIRMED\]/g, "height trigger may apply [REQUIRES CONFIRMATION]");
-    result = result.replace(/High-rise\s*\[CONFIRMED\]/g, "height-related trigger may apply [REQUIRES CONFIRMATION]");
-    changesMade = true;
-  }
-
-  // ── Step 5b — Rule 10: M+S-2 occupancy conflict overconfidence ─────────────
-  // "تعارض جوهري" and "تعارض مباشر" are forbidden for separate-zone M+S-2
-  {
-    const MIXED_OCC_OVERCONFIDENT_RE = /تعارض جوهري|تعارض مباشر|خطر حرج.*إشغال|إشغال.*خطر حرج/g;
-    if (MIXED_OCC_OVERCONFIDENT_RE.test(result)) {
-      result = result
-        .replace(/تعارض جوهري/g, "حالة إشغال مختلط تتطلب تحقق حدود وحسابات")
-        .replace(/تعارض مباشر/g, "حالة إشغال مختلط — يتطلب تحقق");
-      changesMade = true;
-    }
-  }
-
-  // ── Step 5c — Rule 11: High-rise overconfidence ────────────────────────────
-  if (/شاهق\s*\[CONFIRMED\]|High-rise\s*\[CONFIRMED\]/.test(result)) {
-    result = result
-      .replace(/شاهق\s*\[CONFIRMED\]/g, "height trigger may apply [REQUIRES CONFIRMATION]")
-      .replace(/High-rise\s*\[CONFIRMED\]/g, "height-related trigger may apply [REQUIRES CONFIRMATION]");
-    changesMade = true;
-  }
-
-  // ── Step 5d — Rule 12: [CONFIRMED DRAWING CONFLICT] near M+S-2 context ─────
-  // If "[CONFIRMED DRAWING CONFLICT]" appears near M/S-2 mixed-occupancy language
-  // (and NOT within a "same space / same area" explicit statement), downgrade it.
-  {
-    const DRAWING_CONFLICT_RE = /\[CONFIRMED DRAWING CONFLICT\]/g;
-    let m: RegExpExecArray | null;
-    DRAWING_CONFLICT_RE.lastIndex = 0;
-    let tempResult = result;
-    let replaced = false;
-    while ((m = DRAWING_CONFLICT_RE.exec(result)) !== null) {
-      const ctx = result.slice(Math.max(0, m.index - 300), m.index + 100);
-      const hasMixedOcc = /\bM\b.*\bS-2\b|\bS-2\b.*\bM\b|إشغال مختلط|تجاري.*مستودع|مستودع.*تجاري|ground\s*floor.*S-2|M\s*\+\s*S/i.test(ctx);
-      const hasSameArea = /same\s+(space|area|room|zone|bounded)|نفس المساحة|نفس الحجرة|نفس الحدود/i.test(ctx);
-      if (hasMixedOcc && !hasSameArea) {
-        tempResult = tempResult.replace(
-          "[CONFIRMED DRAWING CONFLICT]",
-          "[REQUIRES SOURCE CONFIRMATION — possible classification/calculation inconsistency]"
-        );
-        replaced = true;
-      }
-    }
-    if (replaced) {
-      result = tempResult;
-      changesMade = true;
-    }
-  }
-
-  // ── Step 5e — Rule 13: Gap Matrix SOURCE-BACKED COMPLIANCE for performance-dependent systems ─
-  // These systems can only confirm PRESENCE from drawings — performance docs are always needed.
-  {
-    const PERF_DEPENDENT_SYSTEMS_RE = /نظام الرش|[Ss]prinkler|نظام الإنذار|[Ff]ire\s*[Aa]larm|إنذار الحريق|[Ss]tandpipe|أنابيب الوقوف|[Ff]ire\s*[Pp]ump|مضخة الحريق|[Ff]ire\s*[Ww]ater\s*[Tt]ank|خزان الحريق|إنارة طوارئ|\bEL\b|لافتات الخروج|[Ee]xit\s*[Ss]ign/;
-    // Process the Gap Matrix section (IV.B) separately from the Compliance Table
-    const gapMatStart = result.search(/##\s*IV\.B\s*📊/);
-    const gapMatEnd   = result.search(/##\s*V\.\s*(?:جدول الامتثال|Compliance Table)/);
-    if (gapMatStart !== -1 && gapMatEnd !== -1 && gapMatStart < gapMatEnd) {
-      const beforeGap = result.slice(0, gapMatStart);
-      const gapText   = result.slice(gapMatStart, gapMatEnd);
-      const afterGap  = result.slice(gapMatEnd);
-      const newGapLines = gapText.split("\n").map(line => {
-        if (!line.trimStart().startsWith("|")) return line;
-        if (
-          line.includes("[CONFIRMED — SOURCE-BACKED COMPLIANCE]") &&
-          PERF_DEPENDENT_SYSTEMS_RE.test(line)
-        ) {
-          changesMade = true;
-          return line.replace(
-            /\[CONFIRMED — SOURCE-BACKED COMPLIANCE\]/g,
-            "[CONFIRMED — VISIBLE ONLY] + [REQUIRES CONFIRMATION — performance docs not submitted]"
-          );
-        }
-        return line;
-      });
-      result = beforeGap + newGapLines.join("\n") + afterGap;
-    }
-  }
-
-  // ── Step 6: Append scope-limitation note before Section IX if changes made ─
-  if (changesMade) {
-    const note = "\n\n> **ملاحظة تحقق آلي:** تم تخفيض أو تقييد بعض أحكام الامتثال لأن السند التقني أو نطاق الورقة الواحدة لا يكفي لتأكيد الامتثال الكامل للمبنى.\n\n";
-    const sec9Pos = result.indexOf("## IX.");
-    result = sec9Pos !== -1
-      ? result.slice(0, sec9Pos) + note + result.slice(sec9Pos)
-      : result + note;
-  }
-
-  return result;
-}
-
-// ── analytical_plan_evidence_v1 — module-level page manifest type ───────────
-// Shared between the main handler and runVisionPipeline so the structured
-// manifest data can flow from the frontend into the evidence builder.
-type PipelinePageManifestEntry = {
-  pageNumber: number;
-  fileName: string;
-  renderStatus: string;
-  textPreview: string;
-  drawingTypeHint: string;
-};
-
-// ── analytical_plan_evidence_v1 — schema interface ──────────────────────────
-// Machine-readable evidence backbone for Analytical Mode package analysis.
-// Built from page manifests, Stage 1 classification, and anchor detection.
-// Injected into the final prompt as a structured text block that the model
-// MUST treat as authoritative — report must not contradict schema verdicts.
-interface AnalyticalPlanEvidenceV1 {
-  metadata: {
-    artifact_type: "analytical_plan_evidence_v1";
-    artifact_version: "1.0";
-    mode: string;
-    package_mode: boolean;
-    total_pages: number;
-  };
-  page_inventory: Array<{
-    page: number;
-    sheet_type: string;
-    title_hint: string;
-    systems_shown: string[];
-    package_role: string;
-    confidence: "confirmed" | "inferred" | "requires_confirmation";
-  }>;
-  project_classification: {
-    visible_uses: string[];
-    occupancy_groups: string[];
-    whole_building_classification: string;
-    confidence: "confirmed" | "inferred" | "requires_confirmation" | "cannot_conclude";
-    unknowns: string[];
-  };
-  package_systems: Array<{
-    system: string;
-    pages: number[];
-    evidence: string[];
-    coverage_status: "shown" | "partial" | "not_shown" | "unknown";
-    missing_docs: string[];
-    compliance_status: "visible_only" | "source_backed_compliant" | "package_completeness_gap" | "requires_confirmation" | "cannot_conclude";
-    confidence: "confirmed_visible" | "inferred" | "requires_confirmation" | "cannot_conclude";
-  }>;
-  visible_components: Array<{
-    component: string;
-    system: string;
-    pages: number[];
-    evidence: string;
-    status: "shown_location_confirmed" | "shown_count_not_verifiable" | "shown_details_notes" | "not_shown" | "package_completeness_gap" | "requires_dedicated_drawing";
-    needs_verification: string;
-  }>;
-  code_grounding: {
-    retrieved_references: Array<{ anchor_id: string; section: string; status: "retrieved" }>;
-    missing_references: Array<{ anchor_id: string; section: string; status: "not_retrieved" }>;
-    source_status: "full" | "partial" | "none";
-  };
-  compliance_rows: Array<{
-    item: string;
-    drawing_observation: string;
-    code_requirement: string;
-    source_status: "retrieved" | "not_retrieved" | "no_source";
-    verdict: "compliant" | "noncompliant" | "needs_verification" | "cannot_conclude" | "package_completeness_gap";
-    basis: string;
-    confidence: string;
-  }>;
-  package_gaps: Array<{
-    gap: string;
-    severity: "critical" | "high" | "medium" | "low";
-    affected_system: string;
-    why_it_matters: string;
-    required_action: string;
-  }>;
-  final_verdict_inputs: {
-    can_issue_final_compliance: false; // Always false — missing performance docs prevent final compliance
-    reason: string;
-    blockers: string[];
-  };
-}
-
-// ── buildAnalyticalPlanEvidenceV1 ───────────────────────────────────────────
-// Constructs the evidence object from available pipeline signals.
-// Rules: no fabrication — unknown fields use requires_confirmation or cannot_conclude.
-function buildAnalyticalPlanEvidenceV1(
-  manifests: PipelinePageManifestEntry[],
-  planningJSON: string,
-  analyticalAnchorIds: string[],
-  retrievedAnchorIds: string[],
-  detectedAnchorEvidence: string[],
-  mode: string,
-): AnalyticalPlanEvidenceV1 {
-  let planParsed: any = {};
-  try {
-    planParsed = JSON.parse(planningJSON.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
-  } catch { /* leave planParsed empty */ }
-
-  const totalPages = manifests.length;
-  const packageMode = totalPages >= 2;
-
-  // ── page_inventory ─────────────────────────────────────────────────────────
-  const PACKAGE_ROLE: Record<string, string> = {
-    cover: "title/metadata",
-    drawing_list: "package index",
-    general_site: "site context",
-    life_safety: "egress compliance",
-    fire_alarm: "fire alarm system layout",
-    fire_fighting: "fire fighting system layout",
-    details: "installation details",
-    notes: "general notes/legend",
-    unknown: "unclassified",
-  };
-  const pageInventory: AnalyticalPlanEvidenceV1["page_inventory"] = manifests.map(m => {
-    const systemsShown: string[] = [];
-    if (m.drawingTypeHint === "fire_fighting") systemsShown.push("fire_fighting");
-    if (m.drawingTypeHint === "fire_alarm")    systemsShown.push("fire_alarm");
-    if (m.drawingTypeHint === "life_safety")   systemsShown.push("life_safety_egress");
-    if (m.drawingTypeHint === "general_site")  systemsShown.push("site");
-    return {
-      page: m.pageNumber,
-      sheet_type: m.drawingTypeHint,
-      title_hint: m.textPreview.slice(0, 80).replace(/\n/g, " ") || "no text extracted",
-      systems_shown: systemsShown,
-      package_role: PACKAGE_ROLE[m.drawingTypeHint] ?? "unknown",
-      confidence: (m.drawingTypeHint !== "unknown" ? "inferred" : "requires_confirmation") as "inferred" | "requires_confirmation",
-    };
-  });
-
-  // ── project_classification ─────────────────────────────────────────────────
-  const visibleUses: string[] = (planParsed.roomLabels ?? []).slice(0, 10);
-  const occupancyGroups: string[] = planParsed.occupancyGroup
-    ? [String(planParsed.occupancyGroup)]
-    : [];
-  const unknowns: string[] = [];
-  if (!planParsed.buildingType  || planParsed.buildingType  === "unknown") unknowns.push("building_type");
-  if (!planParsed.occupancyGroup || planParsed.occupancyGroup === "unknown") unknowns.push("occupancy_group");
-  if (!planParsed.stories        || planParsed.stories        === "unknown") unknowns.push("stories");
-  if (!planParsed.floorArea      || planParsed.floorArea      === "unknown") unknowns.push("floor_area");
-  const projectClassification: AnalyticalPlanEvidenceV1["project_classification"] = {
-    visible_uses: visibleUses,
-    occupancy_groups: occupancyGroups,
-    whole_building_classification:
-      "requires_confirmation — single package cannot confirm whole-building classification without project specifications",
-    confidence: (unknowns.length > 2
-      ? "cannot_conclude"
-      : unknowns.length > 0 ? "requires_confirmation" : "inferred") as "confirmed" | "inferred" | "requires_confirmation" | "cannot_conclude",
-    unknowns,
-  };
-
-  // ── package_systems ────────────────────────────────────────────────────────
-  const stage1Systems = String((planParsed.visibleSystems ?? []).concat(planParsed.legendSymbols ?? []).join(" ")).toLowerCase();
-  const ffPages    = manifests.filter(m => m.drawingTypeHint === "fire_fighting").map(m => m.pageNumber);
-  const faPages    = manifests.filter(m => m.drawingTypeHint === "fire_alarm").map(m => m.pageNumber);
-  const lsPages    = manifests.filter(m => m.drawingTypeHint === "life_safety").map(m => m.pageNumber);
-  const detailPages = manifests.filter(m => m.drawingTypeHint === "details" || m.drawingTypeHint === "notes").map(m => m.pageNumber);
-
-  const hasFireFighting = ffPages.length > 0 || /sprinkler|rash|إطفاء|standpipe|pump|hose/.test(stage1Systems);
-  const hasFireAlarm    = faPages.length > 0 || /alarm|إنذار|detector|smoke|heat|\bmcp\b/.test(stage1Systems);
-  const hasLifeSafety   = lsPages.length > 0 || /egress|life.safe|إخلاء/.test(stage1Systems);
-
-  const packageSystems: AnalyticalPlanEvidenceV1["package_systems"] = [];
-
-  if (hasFireFighting) {
-    packageSystems.push({
-      system: "fire_fighting",
-      pages: ffPages,
-      evidence: ffPages.length > 0
-        ? [`Fire fighting drawings on pages: ${ffPages.join(", ")}`]
-        : ["Inferred from Stage 1 visible systems"],
-      coverage_status: ffPages.length > 0 ? "shown" : "partial",
-      missing_docs: [
-        "Hydraulic calculations",
-        "Riser diagram (fire fighting)",
-        "Pipe sizing schedule",
-        "Shop drawings (sprinkler heads, hangers, support details)",
-      ],
-      compliance_status: "visible_only",
-      confidence: ffPages.length > 0 ? "confirmed_visible" : "inferred",
-    });
-  }
-  if (hasFireAlarm) {
-    packageSystems.push({
-      system: "fire_alarm",
-      pages: faPages,
-      evidence: faPages.length > 0
-        ? [`Fire alarm drawings on pages: ${faPages.join(", ")}`]
-        : ["Inferred from Stage 1 visible systems"],
-      coverage_status: faPages.length > 0 ? "shown" : "partial",
-      missing_docs: [
-        "Fire alarm riser diagram",
-        "Device schedule (detector types, zones, quantities)",
-        "Battery backup calculations",
-        "Cause-and-effect matrix",
-      ],
-      compliance_status: "visible_only",
-      confidence: faPages.length > 0 ? "confirmed_visible" : "inferred",
-    });
-  }
-  if (hasLifeSafety) {
-    packageSystems.push({
-      system: "life_safety_egress",
-      pages: lsPages,
-      evidence: lsPages.length > 0
-        ? [`Life safety drawings on pages: ${lsPages.join(", ")}`]
-        : ["Inferred from Stage 1 or package type"],
-      coverage_status: lsPages.length > 0 ? "shown" : "unknown",
-      missing_docs: [
-        "Occupant load calculations (SBC 201 Table 1004.5)",
-        "Travel distance measurements (SBC 201 Table 1017.2)",
-        "Exit capacity verification",
-      ],
-      compliance_status: "visible_only",
-      confidence: lsPages.length > 0 ? "confirmed_visible" : "requires_confirmation",
-    });
-  }
-
-  // ── visible_components ─────────────────────────────────────────────────────
-  const visibleComponents: AnalyticalPlanEvidenceV1["visible_components"] = [];
-  if (detailPages.length > 0) {
-    visibleComponents.push({
-      component: "installation_details_notes",
-      system: "fire_fighting/fire_alarm",
-      pages: detailPages,
-      evidence: `Details/notes pages present in package (pages: ${detailPages.join(", ")})`,
-      status: "shown_details_notes",
-      needs_verification:
-        "Dedicated shop drawings and specifications required — shown in details/notes pages is not final compliance",
-    });
-  }
-
-  // ── code_grounding ─────────────────────────────────────────────────────────
-  const codeGrounding: AnalyticalPlanEvidenceV1["code_grounding"] = {
-    retrieved_references: retrievedAnchorIds.map(id => ({
-      anchor_id: id,
-      section: `SBC Table/Section ${id}`,
-      status: "retrieved" as const,
-    })),
-    missing_references: analyticalAnchorIds
-      .filter(id => !retrievedAnchorIds.includes(id))
-      .map(id => ({
-        anchor_id: id,
-        section: `SBC Table/Section ${id}`,
-        status: "not_retrieved" as const,
-      })),
-    source_status: (
-      retrievedAnchorIds.length === 0                              ? "none"    :
-      retrievedAnchorIds.length < analyticalAnchorIds.length       ? "partial" :
-                                                                     "full"
-    ) as "full" | "partial" | "none",
-  };
-
-  // ── compliance_rows (seed from anchor evidence) ────────────────────────────
-  const complianceRows: AnalyticalPlanEvidenceV1["compliance_rows"] =
-    detectedAnchorEvidence.slice(0, 8).map(ev => ({
-      item: ev,
-      drawing_observation: "Detected from Stage 1 drawing evidence",
-      code_requirement: "See retrieved SBC context block",
-      source_status: "retrieved" as const,
-      verdict: "needs_verification" as const,
-      basis: "[REQUIRES SOURCE CONFIRMATION]",
-      confidence: "inferred",
-    }));
-
-  // ── package_gaps (missing performance docs are completeness gaps) ──────────
-  // Rule: missing documents are package completeness gaps, NOT design noncompliance.
-  const packageGaps: AnalyticalPlanEvidenceV1["package_gaps"] = [];
-  for (const sys of packageSystems) {
-    for (const doc of sys.missing_docs) {
-      packageGaps.push({
-        gap: doc,
-        severity: "critical",
-        affected_system: sys.system,
-        why_it_matters: "Missing performance documents are package completeness gaps — cannot verify system adequacy without this document",
-        required_action: `Submit ${doc} for complete design review`,
-      });
-    }
-  }
-
-  // ── final_verdict_inputs ───────────────────────────────────────────────────
-  const blockers: string[] = [];
-  if (packageSystems.some(s => s.system === "fire_fighting")) {
-    blockers.push("Hydraulic calculations not submitted — fire fighting system performance cannot be verified from drawings alone");
-    blockers.push("Fire fighting riser diagram not submitted — pipe routing and zone coverage unverified");
-  }
-  if (packageSystems.some(s => s.system === "fire_alarm")) {
-    blockers.push("Fire alarm riser diagram not submitted — zone coverage and wiring unverified");
-    blockers.push("Battery backup calculations not submitted — system endurance unverified");
-    blockers.push("Cause-and-effect matrix not submitted — system logic and response unverified");
-  }
-  if (packageMode) {
-    blockers.push("Multi-sheet package shows design intent only — installation shop drawings required for final compliance determination");
-  }
-
-  return {
-    metadata: {
-      artifact_type: "analytical_plan_evidence_v1",
-      artifact_version: "1.0",
-      mode,
-      package_mode: packageMode,
-      total_pages: totalPages,
-    },
-    page_inventory: pageInventory,
-    project_classification: projectClassification,
-    package_systems: packageSystems,
-    visible_components: visibleComponents,
-    code_grounding: codeGrounding,
-    compliance_rows: complianceRows,
-    package_gaps: packageGaps,
-    final_verdict_inputs: {
-      can_issue_final_compliance: false,
-      reason: "Drawing package shows design coverage only. Performance verification documents are required for final compliance determination. Missing documents are package completeness gaps, not design noncompliance.",
-      blockers,
-    },
-  };
-}
-
-// ── normalizeAnalyticalPlanEvidence ─────────────────────────────────────────
-// Applies normalization rules post-build. Always returns a safe, valid schema.
-function normalizeAnalyticalPlanEvidence(ev: AnalyticalPlanEvidenceV1): AnalyticalPlanEvidenceV1 {
-  const result: AnalyticalPlanEvidenceV1 = {
-    ...ev,
-    package_systems: ev.package_systems.map(s => ({ ...s })),
-    visible_components: [...ev.visible_components],
-    final_verdict_inputs: { ...ev.final_verdict_inputs, blockers: [...ev.final_verdict_inputs.blockers] },
-  };
-
-  // Rule 1: No final compliance if hydraulic calculations missing for fire fighting
-  if (result.package_systems.some(s => s.system === "fire_fighting")) {
-    if (!result.final_verdict_inputs.blockers.some(b => /hydraulic/i.test(b))) {
-      result.final_verdict_inputs.blockers.push("Hydraulic calculations not submitted");
-    }
-  }
-  // Rule 2: No final compliance if fire alarm riser / battery / cause-effect missing
-  if (result.package_systems.some(s => s.system === "fire_alarm")) {
-    if (!result.final_verdict_inputs.blockers.some(b => /riser.*alarm|alarm.*riser/i.test(b))) {
-      result.final_verdict_inputs.blockers.push("Fire alarm riser diagram not submitted");
-    }
-    if (!result.final_verdict_inputs.blockers.some(b => /battery/i.test(b))) {
-      result.final_verdict_inputs.blockers.push("Battery backup calculations not submitted");
-    }
-  }
-  // Rule 3: No source-backed compliance for visible-only system components
-  result.package_systems = result.package_systems.map(s => ({
-    ...s,
-    compliance_status: s.compliance_status === "source_backed_compliant"
-      ? "visible_only"
-      : s.compliance_status,
-  }));
-  // Rule 4: M+S-2 cross-zone must not become confirmed conflict
-  // (Handled in prompt + validator; schema never sets confirmed conflict)
-  // Rule 5: Missing docs → package completeness gaps (enforced by compliance_status: visible_only)
-  // Rule 6: Details/notes pages must be represented if present
-  const detailsInInventory = ev.page_inventory.filter(p => p.sheet_type === "details" || p.sheet_type === "notes");
-  const hasDetailsInComponents = result.visible_components.some(c => c.status === "shown_details_notes");
-  if (detailsInInventory.length > 0 && !hasDetailsInComponents) {
-    result.visible_components.push({
-      component: "installation_details_notes",
-      system: "fire_fighting/fire_alarm",
-      pages: detailsInInventory.map(p => p.page),
-      evidence: "Details/notes pages present in package — content extraction required",
-      status: "shown_details_notes",
-      needs_verification: "Manual inspection of details pages required — shop drawings needed for compliance",
-    });
-  }
-  // Rule 7: Every page in manifest appears in page_inventory (guaranteed by build — 1:1 mapping)
-  // Final: can_issue_final_compliance is always false (literal type enforcement)
-  result.final_verdict_inputs.can_issue_final_compliance = false;
-  return result;
-}
-
-// ── formatEvidenceForPrompt ──────────────────────────────────────────────────
-// Compact text serialization for system prompt injection.
-// Keeps token footprint small while preserving all normalization verdicts.
-function formatEvidenceForPrompt(ev: AnalyticalPlanEvidenceV1): string {
-  if (ev.metadata.total_pages === 0 && ev.package_systems.length === 0) return "";
-
-  const lines: string[] = [
-    "=== ANALYTICAL PLAN EVIDENCE v1 (structural backbone — authoritative for this report) ===",
-    `Artifact: ${ev.metadata.artifact_type} | Mode: ${ev.metadata.mode} | Package: ${ev.metadata.package_mode} | Pages: ${ev.metadata.total_pages}`,
-    "",
-    "─── PAGE INVENTORY SUMMARY ───",
-    ...ev.page_inventory.map(p =>
-      `  p${p.page}: [${p.sheet_type}] role=${p.package_role}${p.title_hint !== "no text extracted" ? ` | hint="${p.title_hint.slice(0, 60)}"` : ""}`
-    ),
-    "",
-    "─── PROJECT CLASSIFICATION ───",
-    `  whole_building: ${ev.project_classification.whole_building_classification}`,
-    `  confidence: ${ev.project_classification.confidence}`,
-    ...(ev.project_classification.unknowns.length > 0
-      ? [`  unknowns: ${ev.project_classification.unknowns.join(", ")}`]
-      : []),
-    "",
-    "─── PACKAGE SYSTEMS ───",
-    ...ev.package_systems.flatMap(s => [
-      `  ${s.system}: coverage=${s.coverage_status} | compliance_status=${s.compliance_status} | confidence=${s.confidence}`,
-      `    pages: [${s.pages.join(", ") || "none identified from hints"}]`,
-      `    missing_docs (package completeness gaps): ${s.missing_docs.join(" | ")}`,
-    ]),
-    "",
-    "─── VISIBLE COMPONENTS ───",
-    ...(ev.visible_components.length > 0
-      ? ev.visible_components.map(c => `  ${c.component} [${c.system}] pages=[${c.pages.join(", ")}] status=${c.status}`)
-      : ["  none identified from page manifest hints"]),
-    "",
-    "─── CODE GROUNDING ───",
-    `  source_status: ${ev.code_grounding.source_status}`,
-    `  retrieved: ${ev.code_grounding.retrieved_references.map(r => r.anchor_id).join(", ") || "none"}`,
-    `  missing (use [REQUIRES SOURCE CONFIRMATION]): ${ev.code_grounding.missing_references.map(r => r.anchor_id).join(", ") || "none"}`,
-    "",
-    "─── FINAL VERDICT INPUTS ───",
-    `  can_issue_final_compliance: ${ev.final_verdict_inputs.can_issue_final_compliance}`,
-    `  reason: ${ev.final_verdict_inputs.reason}`,
-    "  blockers:",
-    ...ev.final_verdict_inputs.blockers.map(b => `    - ${b}`),
-    "",
-    "INSTRUCTIONS TO MODEL (derive report from this schema — do not contradict):",
-    "  1. compliance_status=visible_only → use [CONFIRMED — VISIBLE ONLY], NOT [CONFIRMED — SOURCE-BACKED COMPLIANCE]",
-    "  2. missing_docs → list in Section VII as 🔴 نقص مستندات حرج (package completeness gaps, not design noncompliance)",
-    "  3. can_issue_final_compliance=false → Section IX MUST use conditional/preliminary verdict only",
-    "  4. details/notes pages in page_inventory → Section V.B MUST include Special Suppression & Installation Details rows",
-    "  5. unknowns in project_classification → Section I MUST mark those fields [REQUIRES CONFIRMATION]",
-    "  6. code_grounding.missing → those compliance rows MUST use ⚠️ يحتاج تحقق + [REQUIRES SOURCE CONFIRMATION]",
-    "=== END ANALYTICAL PLAN EVIDENCE v1 ===",
-  ];
-  return lines.join("\n");
 }
 
 async function runVisionPipeline(
@@ -4652,22 +2486,15 @@ async function runVisionPipeline(
   userQuery: string,
   language: string,
   mode: string = "analysis",
-  drawingTextLayer: string = "",
-  pageInventory: string = "",
-  pageManifestEntries: PipelinePageManifestEntry[] = [],
 ): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
-  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)", "| Drawing text layer chars:", drawingTextLayer.length, "| Page inventory chars:", pageInventory.length);
+  console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)");
   const pipelineStart = Date.now();
 
-  // Stage 1: Planning Agent — include drawing text layer and page inventory (when available)
-  // so Gemini understands the full package structure and can read lossless room labels,
-  // sheet titles, and notes from CAD-exported PDFs.
+  // Stage 1: Planning Agent
   console.log("📋 Stage 1: Planning Agent...");
   const planningPrompt = getVisionPlanningPrompt(language);
   const imageContent: any[] = [
     ...imageBase64s.map((url: string) => ({ type: "image_url", image_url: { url } })),
-    ...(pageInventory ? [{ type: "text", text: pageInventory }] : []),
-    ...(drawingTextLayer ? [{ type: "text", text: drawingTextLayer }] : []),
     { type: "text", text: userQuery || (language === "en" ? "Analyze this engineering drawing for fire safety compliance." : "حلل هذا المخطط الهندسي من ناحية الامتثال للسلامة من الحرائق.") },
   ];
   
@@ -4705,133 +2532,9 @@ async function runVisionPipeline(
     cotResult = '{"checklist":[],"searchKeywords":[]}';
   }
 
-  // ── ANALYTICAL REQUIREMENT ANCHOR DETECTION (Analytical/Primary mode only) ──
-  // Map Stage 1 drawing evidence to required SBC anchors, then force-retrieve
-  // them via fetchStructuredTables (deterministic DB lookup) before vector search.
-  // This closes the gap where vector recall misses specific section chunks.
-  let analyticalAnchorIds: string[] = [];
-  let detectedAnchorEvidence: string[] = [];
-  let analyticalTableContext = "";
-  let retrievedAnchorIds: string[] = [];
-
-  if (mode !== "standard") {
-    try {
-      const planParsedAnchors = JSON.parse(
-        planningResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-      );
-      const docType = String(planParsedAnchors.documentType || "").toLowerCase();
-      const systems = [...(planParsedAnchors.visibleSystems || []), ...(planParsedAnchors.legendSymbols || [])].join(" ").toLowerCase();
-      const rooms   = (planParsedAnchors.roomLabels || []).join(" ").toLowerCase();
-      const allEv   = [docType, systems, rooms, drawingTextLayer.slice(0, 2000)].join(" ").toLowerCase();
-      const anchorSet = new Set<string>();
-
-      // Floor plan / life safety / egress / architectural → occupant load + exits + travel distance
-      if (/floor.plan|life.safe|egress|architectural|mixed|مسقط|مخطط|طابق|ground.floor/.test(docType) ||
-          /floor.plan|life.safe|egress|مسقط/.test(allEv)) {
-        anchorSet.add("1004.5");
-        anchorSet.add("1006.2.1");
-        anchorSet.add("1006.3.3");
-        anchorSet.add("1017.2");
-        detectedAnchorEvidence.push(`documentType '${docType}' → occupant load (1004.5), exit count (1006.2.1/3.3), travel distance (1017.2)`);
-      }
-
-      // Emergency lighting (EL symbol, إنارة طوارئ)
-      if (/\bel\b|emergency.light|إنارة.طوارئ|إضاءة.طوارئ/.test(allEv)) {
-        anchorSet.add("1008");
-        detectedAnchorEvidence.push("EL / emergency lighting detected → Section 1008");
-      }
-
-      // Exit signs
-      if (/exit.sign|مخرج|إشارة.خروج|لافتة.خروج/.test(allEv)) {
-        anchorSet.add("1013");
-        detectedAnchorEvidence.push("EXIT signs detected → Section 1013");
-      }
-
-      // T.D / travel distance annotation
-      if (/\bt\.?d\b|travel.dist|مسافة.(?:سفر|هروب)/.test(allEv)) {
-        anchorSet.add("1017.2");
-        detectedAnchorEvidence.push("T.D annotation detected → Table 1017.2");
-      }
-
-      // Mixed occupancy: shops + parking combination
-      if (/(shop|retail|محل|تجاري)/.test(allEv) && /(park|وقوف|سيارات)/.test(allEv) ||
-          /mixed.occup|إشغال.مختلط/.test(allEv)) {
-        anchorSet.add("508.4");
-        anchorSet.add("508.5");
-        detectedAnchorEvidence.push("Mixed occupancy (commercial + parking) → Tables 508.4, 508.5");
-      }
-
-      // Sprinklers
-      if (/sprinkler|رشاش|إطفاء/.test(allEv)) {
-        anchorSet.add("903.2");
-        detectedAnchorEvidence.push("Sprinkler reference detected → SBC 801 Section 903.2");
-      }
-
-      // Fire alarm
-      if (/fire.alarm|إنذار.حريق|\bfa\b|\bfacp\b/.test(allEv)) {
-        anchorSet.add("907.2");
-        anchorSet.add("907.3");
-        detectedAnchorEvidence.push("Fire alarm reference detected → SBC 801 Sections 907.2/907.3");
-      }
-
-      analyticalAnchorIds = [...anchorSet];
-      console.log(`[Analytical Anchors] Detected ${analyticalAnchorIds.length} anchors: ${analyticalAnchorIds.join(", ")}`);
-    } catch (anchorErr) {
-      console.warn("[Analytical Anchors] Detection error:", anchorErr);
-    }
-
-    // Fetch structured DB rows for detected anchors
-    if (analyticalAnchorIds.length > 0) {
-      try {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        if (supabaseUrl && serviceRoleKey) {
-          const supabaseAdminAnchors = createClient(supabaseUrl, serviceRoleKey);
-          const anchorFetchQuery = analyticalAnchorIds.map(id => `Table ${id} Section ${id}`).join(" ");
-          const { context: tblCtx, matchedTableIds } = await fetchStructuredTables(anchorFetchQuery, supabaseAdminAnchors);
-          analyticalTableContext = tblCtx;
-          retrievedAnchorIds = matchedTableIds;
-          console.log(`[Analytical Anchors] Retrieved ${matchedTableIds.length}/${analyticalAnchorIds.length}: ${matchedTableIds.join(", ")}`);
-        }
-      } catch (tblErr) {
-        console.error("[Analytical Anchors] Structured table fetch error:", tblErr);
-      }
-    }
-  }
-
-  // Build SOURCE-BACKED REQUIREMENTS PACK — injected into final prompt context
-  let sourceBackedRequirementsPack = "";
-  if (mode !== "standard" && analyticalAnchorIds.length > 0) {
-    const packRows = analyticalAnchorIds.map(id => {
-      const retrieved = retrievedAnchorIds.includes(id);
-      const status = retrieved
-        ? "✅ RETRIEVED — cite verbatim from STRUCTURED CODE TABLES block"
-        : "❌ NOT RETRIEVED — mark compliance row ⚠️ [REQUIRES SOURCE CONFIRMATION]";
-      return `| ${id} | ${status} |`;
-    });
-    sourceBackedRequirementsPack = [
-      "\n=== SOURCE-BACKED ANALYTICAL REQUIREMENTS PACK v1 ===",
-      "Deterministic SBC anchors identified from Stage 1 drawing evidence and fetched from the structured database.",
-      "INSTRUCTION: If anchor is RETRIEVED, cite its text from STRUCTURED CODE TABLES verbatim in compliance rows and Section VIII.",
-      "If NOT RETRIEVED: mark that compliance row as ⚠️ يحتاج تحقق with [REQUIRES SOURCE CONFIRMATION] basis.",
-      "",
-      "| SBC Anchor | Retrieval Status |",
-      "|---|---|",
-      ...packRows,
-      "",
-      "Drawing evidence that triggered these anchors:",
-      ...detectedAnchorEvidence.map(e => `- ${e}`),
-      "=== END REQUIREMENTS PACK ===\n",
-    ].join("\n");
-  }
-
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
-  // Augment vector query with anchor references for better semantic recall
-  const anchorSuffix = analyticalAnchorIds.length > 0
-    ? " " + analyticalAnchorIds.map(id => `Table ${id} Section ${id}`).join(" ")
-    : "";
-  const enhancedQuery = `${userQuery} ${planningResult}${anchorSuffix}`;
+  const enhancedQuery = `${userQuery} ${planningResult}`;
   const { context: sbcContext, files: usedFiles, sourceMeta } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
   console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
@@ -4859,17 +2562,12 @@ async function runVisionPipeline(
       ? `\n⚠️ EXTRACTION WARNING: Image quality is "${quality}". Conclusions in unreadable areas are UNRELIABLE. Do NOT fabricate elements not confirmed by extraction. Downgrade compliance confidence accordingly.`
       : "";
 
-    const textLayerStatus = drawingTextLayer
-      ? `Present (${drawingTextLayer.length} chars) — use it as the authoritative source of any room labels, sheet titles, schedules, dimensions, or notes that are printed on the drawing.`
-      : "Not available — the uploaded drawing has no native text layer (likely scanned or image-only). All text evidence must come from visual interpretation of the rendered images.";
-
     docIntelSummary = `
 === DOCUMENT INTELLIGENCE SUMMARY (Stage 1 Extraction) ===
 Input Type: ${docType}
 Sheet: ${sheetCtx.title || "unknown"} | Number: ${sheetCtx.number || "N/A"} | Scale: ${sheetCtx.scale || "N/A"}
 Image Quality: ${quality}
 Classification Confidence: ${confidence}
-Drawing Text Layer (PDF native text): ${textLayerStatus}
 Readable Areas: ${readableAreas.length > 0 ? readableAreas.join("; ") : "not specified"}
 Unreadable Areas: ${unreadableAreas.length > 0 ? unreadableAreas.join("; ") : "none reported"}
 Room Labels Extracted: ${roomLabels.length > 0 ? roomLabels.join(", ") : "none"}
@@ -4896,43 +2594,12 @@ Classification Confidence: low
     console.warn("[DocIntel] Failed to parse Stage 1 JSON for summary");
   }
 
-  // ── Build analytical_plan_evidence_v1 (Analytical mode with manifests or anchors) ──
-  // Constructed after all three pipeline stages complete so it has access to:
-  // Stage 1 planning JSON, detected anchors, retrieved anchor IDs, and page manifests.
-  let analyticalPlanEvidenceBlock = "";
-  if (mode !== "standard" && (pageManifestEntries.length > 0 || analyticalAnchorIds.length > 0)) {
-    try {
-      const rawEvidence = buildAnalyticalPlanEvidenceV1(
-        pageManifestEntries,
-        planningResult,
-        analyticalAnchorIds,
-        retrievedAnchorIds,
-        detectedAnchorEvidence,
-        mode,
-      );
-      const normalizedEvidence = normalizeAnalyticalPlanEvidence(rawEvidence);
-      analyticalPlanEvidenceBlock = formatEvidenceForPrompt(normalizedEvidence);
-      console.log(
-        "[Evidence] analytical_plan_evidence_v1 built |",
-        "pages=", normalizedEvidence.metadata.total_pages,
-        "| systems=", normalizedEvidence.package_systems.length,
-        "| gaps=", normalizedEvidence.package_gaps.length,
-        "| can_issue_final_compliance=", normalizedEvidence.final_verdict_inputs.can_issue_final_compliance,
-      );
-    } catch (evidenceErr) {
-      console.warn("[Evidence] Build error:", evidenceErr);
-    }
-  }
-
   // Advisory mode (standard) → design guidance framing; Analytical (analysis) or Primary → compliance audit framing
   const finalSystemPrompt = mode === "standard"
     ? getVisionAdvisoryFinalPrompt(language)
     : getVisionFinalPrompt(language);
 
   const extraContext = `
-${sourceBackedRequirementsPack}
-${analyticalTableContext}
-${analyticalPlanEvidenceBlock}
 ${docIntelSummary}
 === PIPELINE STAGE 1: PLANNING AGENT CLASSIFICATION (raw) ===
 ${planningResult}
@@ -4941,101 +2608,11 @@ ${planningResult}
 ${cotResult}
 
 ${sbcContext}
-${drawingTextLayer ? `\n${drawingTextLayer}\n` : ""}
 `;
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
 
   return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta };
-}
-
-// ==================== ADVISORY INTENT GATE ====================
-// Deterministic, dependency-free classifier that decides whether an Advisory
-// (mode === "standard") message warrants SBC retrieval, structured-table
-// lookup, Brain sidecar download, Evidence Ledger building, and a Gemini call.
-//
-// Returns one of:
-//   "code_domain"          — message has project / code / fire-safety intent.
-//                            Existing pipeline runs unchanged.
-//   "casual"               — greeting / chat-only message with no project terms.
-//                            Caller must bypass retrieval and emit a short
-//                            friendly canned reply (no sources, no citations).
-//   "empty_or_ambiguous"   — empty, pure punctuation, or a very short message
-//                            with no domain keywords. Caller must bypass
-//                            retrieval and emit a clarifying canned reply.
-//
-// Order of checks: domain hits win over casual hits, so a greeting that also
-// references a project term (e.g. "كيفك مع المشروع") is treated as code_domain.
-function classifyAdvisoryIntent(userText: string): "code_domain" | "casual" | "empty_or_ambiguous" {
-  const raw = (userText ?? "").trim();
-  if (!raw) return "empty_or_ambiguous";
-
-  // Strip common punctuation and whitespace (incl. Arabic question mark and
-  // Arabic comma) to detect punctuation-only messages and to measure the
-  // residual content length for the post-keyword ambiguity check.
-  const stripped = raw.replace(/[?؟.,،!\s‌‍]+/g, "").trim();
-  if (!stripped) return "empty_or_ambiguous";
-
-  const lower = raw.toLowerCase();
-
-  // Word-boundary test for ASCII keywords (so "fire" doesn't match "firefox"
-  // and "hi" doesn't match "this"/"his"). Arabic substring check is fine
-  // because Arabic words are not delimited by ASCII letters.
-  const hasWord = (kw: string): boolean =>
-    new RegExp(`(^|[^a-z0-9])${kw}([^a-z0-9]|$)`, "i").test(lower);
-
-  // 1. CODE-DOMAIN keywords (checked first so domain wins over casual).
-  const arabicDomain = [
-    "كود", "الحريق", "حريق", "رش", "إنذار", "انذار",
-    "مخارج", "مخرج", "إشغال", "اشغال",
-    "مبنى", "مبني", "مشروع", "مساحة", "مساحه",
-    "طابق", "طوابق", "بدروم",
-    "مكاتب", "مكتب", "محلات", "محل",
-    "مستودع", "مخزن", "سكني", "تحليلي",
-    "مخطط", "مخططات",
-  ];
-  for (const kw of arabicDomain) {
-    if (lower.includes(kw)) return "code_domain";
-  }
-
-  const englishDomain = [
-    "sbc", "code", "fire", "sprinkler", "alarm", "egress", "occupancy",
-    "building", "project", "floor", "area", "basement",
-    "office", "mercantile", "warehouse", "residential",
-    "plan", "drawing",
-  ];
-  for (const kw of englishDomain) {
-    if (hasWord(kw)) return "code_domain";
-  }
-
-  // 2. CASUAL — greeting / chat-only with no domain content.
-  const arabicCasual = [
-    "كيفك", "كيف الحال", "كيف حالك",
-    "مرحبا", "مرحبًا", "السلام عليكم",
-    "صباح الخير", "مساء الخير",
-    "شكرا", "شكرًا", "تمام",
-  ];
-  for (const kw of arabicCasual) {
-    if (lower.includes(kw)) return "casual";
-  }
-
-  const englishCasualPhrases = ["how are you", "good morning", "good evening", "thank you"];
-  for (const ph of englishCasualPhrases) {
-    if (lower.includes(ph)) return "casual";
-  }
-  const englishCasualWords = ["hi", "hello", "hey", "thanks"];
-  for (const w of englishCasualWords) {
-    if (hasWord(w)) return "casual";
-  }
-
-  // 3. Short text with no domain hits → ambiguous (forces clarifying reply).
-  if (stripped.length < 10) return "empty_or_ambiguous";
-
-  // 4. Default for medium/long messages: code_domain. Existing retrieval +
-  //    relevance scoring decide what (if anything) to surface. Erring toward
-  //    code_domain for substantive messages avoids silently blocking
-  //    legitimate follow-up questions that don't repeat domain keywords.
-  return "code_domain";
 }
 
 // ==================== MAIN HANDLER ====================
@@ -5075,93 +2652,16 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, pageManifests, output_format, preferred_standards } = await req.json();
+    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
     const resolvedImages: string[] = images ?? (image ? [image] : []);
-    // documentTexts may contain two kinds of items:
-    //   1. CSV/TXT files extracted by the frontend (treated as user-supplied
-    //      project documents — schedules, specifications, etc.).
-    //   2. Native PDF text layers extracted by pdfjs `getTextContent()` on the
-    //      frontend, tagged with a "[PDF_TEXT_LAYER]" name prefix. These are
-    //      drawing evidence — what is actually printed on the uploaded sheets —
-    //      and must NOT be conflated with user-supplied documents.
-    // We split them here so each can be routed to its appropriate context block.
-    const _rawDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
-    const resolvedDocTexts: Array<{ name: string; content: string }> = [];
-    const resolvedDrawingTextLayer: Array<{ name: string; content: string }> = [];
-    for (const item of _rawDocTexts) {
-      if (!item || typeof item !== "object") continue;
-      const name = typeof item.name === "string" ? item.name : "";
-      const content = typeof item.content === "string" ? item.content : "";
-      if (!content) continue;
-      if (name.startsWith("[PDF_TEXT_LAYER]")) {
-        resolvedDrawingTextLayer.push({
-          name: name.replace(/^\[PDF_TEXT_LAYER\]\s*/, "").slice(0, 200) || "drawing",
-          content,
-        });
-      } else {
-        resolvedDocTexts.push({ name: name.slice(0, 200) || "document", content });
-      }
-    }
-    // Build a safely-capped drawing-text-layer block to feed into the vision
-    // pipeline. Capped at 20,000 chars total; do not log content.
-    const drawingTextLayerBlock: string = (() => {
-      if (resolvedDrawingTextLayer.length === 0) return "";
-      const MAX_CHARS = 20_000;
-      let total = 0;
-      const parts: string[] = [];
-      for (const d of resolvedDrawingTextLayer) {
-        const remaining = MAX_CHARS - total;
-        if (remaining <= 0) break;
-        const chunk = d.content.slice(0, remaining);
-        parts.push(`--- ${d.name} (drawing text layer) ---\n${chunk}`);
-        total += chunk.length;
-      }
-      return `=== DRAWING TEXT LAYER (extracted from uploaded PDFs) ===\nThis text was extracted from the native PDF text layer of the uploaded engineering drawing. Treat it as DRAWING EVIDENCE — what is actually printed on the sheets. It is NOT an authoritative code source.\n\n${parts.join("\n\n")}`;
-    })();
-    console.log(
-      "documentTexts split:",
-      "user_docs=", resolvedDocTexts.length,
-      "| drawing_text_layer_files=", resolvedDrawingTextLayer.length,
-      "| drawing_text_layer_chars=", drawingTextLayerBlock.length,
-    );
-
-    // Build page inventory block from the page manifest sent by the frontend.
-    // Used in Analytical Mode to give the model a structural overview of the package
-    // before it processes individual sheet images.
-    // Type is PipelinePageManifestEntry (module-level — shared with runVisionPipeline).
-    const resolvedPageManifests: PipelinePageManifestEntry[] = Array.isArray(pageManifests)
-      ? (pageManifests as any[]).filter(
-          (e): e is PipelinePageManifestEntry =>
-            e && typeof e === "object" && typeof e.pageNumber === "number",
-        )
-      : [];
-    const pageInventoryBlock: string = (() => {
-      if (resolvedPageManifests.length === 0) return "";
-      const rows = resolvedPageManifests.map(e =>
-        `  Page ${e.pageNumber}: [${e.drawingTypeHint}] ${e.fileName}${e.textPreview ? ` — "${e.textPreview.slice(0, 120).replace(/\n/g, " ")}"` : ""}`
-      );
-      return `=== PAGE INVENTORY (${resolvedPageManifests.length} pages) ===\n${rows.join("\n")}\n=== END PAGE INVENTORY ===`;
-    })();
-    console.log("[PageManifest] pages=", resolvedPageManifests.length, "| inventory_chars=", pageInventoryBlock.length);
-
+    // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
+    const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
       throw new Error("GOOGLE_GEMINI_API_KEY is not configured");
     }
 
-    // Budget log: record file intake metrics for every analytical vision request
-    if (resolvedImages.length > 0) {
-      const estimatedImageBytes = resolvedImages.reduce((sum, img) => sum + img.length * 0.75, 0);
-      console.log(
-        "[Budget]",
-        "mode=", mode,
-        "| total_images=", resolvedImages.length,
-        "| estimated_image_bytes=", Math.round(estimatedImageBytes),
-        "| text_layer_chars=", drawingTextLayerBlock.length,
-        "| page_manifest_entries=", resolvedPageManifests.length,
-      );
-    }
     console.log("Chat mode:", mode, "| Language:", language, "| Images:", resolvedImages.length);
 
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
@@ -5175,16 +2675,8 @@ serve(async (req) => {
       const CAMPAIGN_END_TS = new Date("2026-04-28T00:00:00.000Z");
       const TRIAL_DAYS_NUM  = 7;
 
-      const ADMIN_EMAILS  = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
-      const isAdminEmail  = !!(userEmail && ADMIN_EMAILS.includes(userEmail));
-      // Admin entitlement override — honored only for admin emails, never written to DB
-      const FSC_VALID_OVERRIDES = ["free", "engineer", "pro", "enterprise", "owner"] as const;
-      const rawFscOverride = req.headers.get("X-ConsultX-Admin-Entitlement-Override");
-      const fscOverride = (isAdminEmail && rawFscOverride && FSC_VALID_OVERRIDES.includes(rawFscOverride as any))
-        ? rawFscOverride as typeof FSC_VALID_OVERRIDES[number]
-        : null;
-      // isAdmin: bypass ALL limits — disabled when override active so admins can test gated states
-      const isAdmin = isAdminEmail && !fscOverride;
+      const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
+      const isAdmin      = userEmail && ADMIN_EMAILS.includes(userEmail);
 
       // Fetch profile (fix: use user_id column, not id)
       const { data: profile } = await adminClient
@@ -5193,32 +2685,11 @@ serve(async (req) => {
         .eq("user_id", userId)
         .maybeSingle();
 
-      // E6: Enterprise org seat check — owner/admin/head_of_department/engineer in active/trial org
-      const FSC_AI_ACCESS_ROLES = ["owner", "admin", "head_of_department", "engineer"];
-      let isOrgEnterpriseSeat = false;
-      if (!isAdmin) {
-        const { data: orgMember } = await adminClient
-          .from("org_members")
-          .select("role, organizations!inner(status)")
-          .eq("user_id", userId)
-          .eq("status", "active")
-          .maybeSingle();
-        if (orgMember) {
-          const orgStatus = (orgMember.organizations as any)?.status;
-          if ((orgStatus === "active" || orgStatus === "trial") && FSC_AI_ACCESS_ROLES.includes(orgMember.role)) {
-            isOrgEnterpriseSeat = true;
-          }
-        }
-      }
+      const isUnlimitedPlan = profile?.plan_type === "enterprise";
+      const isLimitedPaidPlan = profile?.plan_type === "engineer" || profile?.plan_type === "pro";
+      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan, "| isLimitedPaid:", isLimitedPaidPlan);
 
-      const isUnlimitedPlan   = profile?.plan_type === "enterprise" || isOrgEnterpriseSeat;
-      const isLimitedPaidPlan = profile?.plan_type === "engineer"   || profile?.plan_type === "pro";
-      // Override adjustments — admin test only, never writes to DB
-      const effectiveUnlimited   = isUnlimitedPlan   || fscOverride === "enterprise" || fscOverride === "owner";
-      const effectiveLimitedPaid = isLimitedPaidPlan || fscOverride === "engineer"   || fscOverride === "pro";
-      console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isAdminEmail:", isAdminEmail, "| fscOverride:", fscOverride, "| isUnlimited:", effectiveUnlimited, "| isLimitedPaid:", effectiveLimitedPaid, "| isOrgEnterpriseSeat:", isOrgEnterpriseSeat);
-
-      if (!isAdmin && !effectiveUnlimited) {
+      if (!isAdmin && !isUnlimitedPlan) {
         // ── Check active paid subscription ────────────────────────────────────
         const { data: sub } = await adminClient
           .from("user_subscriptions")
@@ -5255,18 +2726,8 @@ serve(async (req) => {
           }
         }
 
-        // Inject mock plan values for admin override testing (engineer/pro only)
-        if (fscOverride === "engineer" || fscOverride === "pro") {
-          hasPaidAccess = true;
-          dailyLimit    = 9999;
-          planSlug      = fscOverride;
-          planFeatures  = fscOverride === "engineer"
-            ? { advisory_limit: 20, analysis_limit: 10 }
-            : { advisory_limit: 100, analysis_limit: 50 };
-        }
-
         // ── Per-mode enforcement for Engineer/Pro paid plans (not Enterprise) ──
-        if (hasPaidAccess && effectiveLimitedPaid && !isTrialing) {
+        if (hasPaidAccess && isLimitedPaidPlan && !isTrialing) {
           // primary mode: unlimited, no counter needed
           if (mode === "primary") {
             // pass through without incrementing any counter
@@ -5449,15 +2910,7 @@ serve(async (req) => {
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
     let usedSourceMeta: SourcePageMeta[] = [];
-    let advisoryLedger: EvidenceLedgerEntry[] = [];
     let finalMessages = [...messages];
-    // ── B2 state vars (outer scope; populated in advisory branch, read in SSE branch) ─
-    let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
-    let _routerResultB2: RouterResult | null = null;
-    let _augmentationB2: AugmentationResult | null = null;
-    let _thinkingEventsB2: ThinkingEvent[] = [];
-    // Advisory Vector Retrieval flag (outer scope; populated in retrieval branch, read in SSE branch)
-    let _retrievalEngine: "vector" | "keyword" = "keyword";
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -5472,16 +2925,9 @@ serve(async (req) => {
         userQuery,
         language,
         visionMode,
-        drawingTextLayerBlock,
-        pageInventoryBlock,
-        resolvedPageManifests,
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
-      // Inject page inventory for multi-page packages (analytical mode)
-      if (pageInventoryBlock && mode === "analysis") {
-        fullSystemPrompt += `\n\n${pageInventoryBlock}\n\nINSTRUCTION: The images you are about to receive are pages from a multi-page safety drawing package. The PAGE INVENTORY above lists every sheet in order with its drawing type. Treat them as a CONNECTED PACKAGE — identify cross-sheet system connections (e.g. life safety plan references a stairwell on another sheet, fire-fighting plan references a pump room). Your compliance report must cover the package as a whole, not each page in isolation. When a requirement cannot be verified from any single sheet, state clearly which sheet it was not found on.\n`;
-      }
       usedFiles = visionFiles;
       usedSourceMeta = visionMeta;
 
@@ -5510,14 +2956,15 @@ serve(async (req) => {
 
 === هوية ConsultX التقنية ===
 أنت واجهة منظومة من 12 وكيلاً ذكياً متخصصاً بقيادة وكيل الأوركسترا.
-تعتمد على تقنية GraphRAG لفهم الروابط المعقدة بين مجلدات الكود السعودي.
 
 قواعدك الصارمة:
-- سياسة صفر هلوسة: إذا لم تكن متأكداً من إجابة تتعلق بفقرة محددة، قل ذلك بصراحة واقترح الانتقال للوضع الاستشاري حيث تنشط وكلاء مراجعة الكود وGraphRAG
+- سياسة صفر هلوسة: إذا لم تكن متأكداً من إجابة تتعلق بفقرة محددة، اقترح الانتقال للوضع الاستشاري حيث تنشط وكلاء مراجعة الكود
 - مصدر الحقيقة الوحيد: الكود السعودي (إصدار 2024) ومعايير NFPA/SFPE حصرياً
 - سيادة الدفاع المدني: عند أي توصية تقنية، ذكّر أن الكود هو الحد الأدنى الفني وأن الدفاع المدني يملك حق التعديل ميدانياً
 
-قاعدة إضافية صارمة: إذا سُئلت عن رقم فقرة محددة أو متطلب تقني دقيق، لا تجب من ذاكرتك العامة. قل: "للحصول على إجابة مرجعية دقيقة مع نص الكود الأصلي، أنصحك بالانتقال للوضع الاستشاري." ثم أضف [SWITCH:استشاري]`;
+ملاحظة صادقة عن الإجابات المحددة: عندما تجيب على سؤال محدد جداً عن مادة أو فقرة أو متطلب معين من الكود (مثل "ما هي متطلبات SBC 201 القسم 312؟")، أضف تنبيهاً واضحاً يقول: "للاطلاع على النص الكامل والمراجع المفصلة من الكود الأصلي، أنصحك بالانتقال للوضع الاستشاري." ثم أضف [SWITCH:استشاري]. هذا لا ينطبق على الأسئلة العامة (مثل شرح المفاهيم أو المقارنات) — فقط على الأسئلة المحددة جداً حول نصوص وفقرات معينة.
+
+قاعدة إضافية صارمة: إذا سُئلت عن رقم فقرة محددة أو متطلب تقني دقيق ولم تكن متأكداً من الإجابة، اقترح الانتقال للوضع الاستشاري من خلال إضافة [SWITCH:استشاري] في نهاية ردك.`;
       usedFiles = [];
       console.log("Primary mode: using lightweight prompt with escalation rules, no document loading");
     } else {
@@ -5525,59 +2972,7 @@ serve(async (req) => {
       const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
       const userQuery = lastUserMessage?.content || "";
 
-      // ── ADVISORY INTENT GATE ────────────────────────────────────────────────
-      // Casual greetings, single punctuation marks, and very short messages
-      // with no project/code/fire-safety intent must NOT trigger SBC retrieval,
-      // structured-table lookup, Brain sidecar download, Evidence Ledger
-      // building, or a Gemini call. Bypass everything and emit a short canned
-      // SSE response so the frontend renders nothing in the source panel.
-      // Only applied to mode === "standard" (Advisory). Analytical text mode
-      // continues unchanged so code-only analysis still retrieves sources.
-      if (mode === "standard") {
-        const intent = classifyAdvisoryIntent(userQuery);
-        if (intent !== "code_domain") {
-          const cannedText = intent === "casual"
-            ? (language === "en"
-                ? "Hi! I'm ready to help with any Saudi Building Code or fire-safety question. Describe your project or technical question and I'll start the analysis."
-                : "أهلاً بك، أنا جاهز لمساعدتك في أي سؤال عن الكود السعودي أو متطلبات الحماية من الحريق. اكتب وصف المشروع أو السؤال الفني وسأبدأ التحليل.")
-            : (language === "en"
-                ? "Please write your question or describe the project — for example, occupancy type, area, and number of floors — and I'll analyze it according to the Saudi Building Code."
-                : "اكتب سؤالك أو وصف المشروع، مثل نوع الإشغال والمساحة وعدد الطوابق، وسأحلله لك وفق الكود السعودي.");
-
-          console.log(`[IntentGate] Bypassing retrieval | intent=${intent} | query="${userQuery.slice(0, 60).replace(/\s+/g, " ")}"`);
-
-          // Single-chunk SSE in the same OpenAI-style format the Advisory
-          // re-streamer uses (see the validateAnalyticalReport / advisoryStream
-          // emitters), so the frontend's existing event parser handles it.
-          const cannedStream = new ReadableStream({
-            start(controller) {
-              const enc = new TextEncoder();
-              controller.enqueue(enc.encode(
-                `data: ${JSON.stringify({ choices: [{ delta: { content: cannedText } }] })}\n\n`
-              ));
-              controller.enqueue(enc.encode("data: [DONE]\n\n"));
-              controller.close();
-            },
-          });
-
-          return new Response(cannedStream, {
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "text/event-stream",
-              "X-SBC-Sources": "",
-              "X-SBC-Source-Meta": "[]",
-            },
-          });
-        }
-      }
-
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
-
-      // ── B2 state vars (declared early; populated after admin client is ready) ─
-      let _advisoryBrainB2: AdvisoryBrainB1 | null = null;
-      let _routerResultB2: RouterResult | null = null;
-      let _augmentationB2: AugmentationResult | null = null;
-      let _thinkingEventsB2: ThinkingEvent[] = [];
 
       // ── 1. Structured Table Path (DB-first, highest priority) ─────────────
       // If the query references a known SBC table ID, fetch its exact structured
@@ -5586,21 +2981,7 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
-
-      // ── B2.1 Brain bootstrap + B2.2 Router (right after admin client, before retrieval) ─
-      // B2.1: When ADVISORY_BRAIN_B2_ENABLED=1: loads B1 brain into memory cache.
-      // B2.2: When ADVISORY_BRAIN_B2_ROUTER_ENABLED=1: classifies query; diagnostics only.
-      // Advisory-only (mode === "standard"). Never changes Main or Analytical paths.
-      // Both flags default OFF → no-op; no retrieval/prompt/answer change.
-      if (mode === "standard") {
-        try {
-          _advisoryBrainB2 = await loadAdvisoryBrainB1(supabaseAdminForTables);
-        } catch (e) {
-          console.warn("[AdvisoryBrainB2] Load error (non-fatal):", e instanceof Error ? e.message : e);
-        }
-        _routerResultB2 = routeAdvisoryQuery(userQuery, _advisoryBrainB2);
-      }
-      const { context: structuredTableContext, matchedTableIds, entries: structuredTableEntries } =
+      const { context: structuredTableContext, matchedTableIds } =
         await fetchStructuredTables(userQuery, supabaseAdminForTables);
 
       if (matchedTableIds.length > 0) {
@@ -5608,50 +2989,11 @@ serve(async (req) => {
       }
 
       // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
-      // R26: restrict to SBC201 for occupant_load — prevents SBC801_Ch10 contamination
-      const _restrictToSBC201 = _routerResultB2?.workflow_id === "wf_occupant_load";
-
-      // ── Advisory Vector Retrieval flag (P0 remediation, docs/audits/truth-layer-baseline.md) ──
-      // Default OFF → byte-identical to prior behavior (keyword/storage path only).
-      // When "1" AND mode === "standard": try match_sbc_documents (pgvector) first;
-      // fall back to the keyword/storage path on any error OR on an empty result set.
-      // fetchSBCContext is NEVER removed — it remains the fallback and the sole path
-      // when the flag is off. This is reversible by unsetting the env var.
-      const ADVISORY_VECTOR_RETRIEVAL_ENABLED = Deno.env.get("ADVISORY_VECTOR_RETRIEVAL_ENABLED") === "1";
-      let sbcContext: string;
-      let files: string[];
-      let keywordMeta: SourcePageMeta[];
-      if (mode === "standard" && ADVISORY_VECTOR_RETRIEVAL_ENABLED) {
-        try {
-          const forcedCode = _restrictToSBC201 ? "SBC201" : null;
-          const vec = await fetchSBCContextVector(userQuery, "primary", undefined, forcedCode);
-          if (vec.context && vec.context.trim().length > 0) {
-            sbcContext = vec.context;
-            files = vec.files;
-            keywordMeta = vec.sourceMeta;
-            _retrievalEngine = "vector";
-          } else {
-            const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
-            sbcContext = kw.context;
-            files = kw.files;
-            keywordMeta = kw.sourceMeta;
-          }
-        } catch (e) {
-          console.warn("[AdvisoryVectorRetrieval] Error, falling back to keyword:", e instanceof Error ? e.message : e);
-          const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
-          sbcContext = kw.context;
-          files = kw.files;
-          keywordMeta = kw.sourceMeta;
-        }
-      } else {
-        const kw = await fetchSBCContext(userQuery, undefined, _restrictToSBC201);
-        sbcContext = kw.context;
-        files = kw.files;
-        keywordMeta = kw.sourceMeta;
-      }
+      // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
+      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery);
       usedFiles = files;
       usedSourceMeta = keywordMeta;
-      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${_retrievalEngine}]`);
+      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
@@ -5669,39 +3011,21 @@ serve(async (req) => {
       if (sbcContext) {
         fullSystemPrompt += sbcContext;
         const warningMsg = language === "en"
-          ? `\n\n⚠️ EXACT-REFERENCE CITATION RULES (binding — three tiers):
-1. If the EXACT clause text is present in the documents above — quote it verbatim with Document + Section number. This is the required response.
-2. If the exact clause is NOT present verbatim but the same document/chapter IS loaded above — state: "The verbatim text of [clause X] is not in the current structured index. The nearest available content from this section is:" then provide the adjacent content that is present. Do NOT say the document is unavailable.
-3. If NO content from the relevant document is present at all — state: "Clause [X] is not currently indexed. You can navigate to it directly using the Sources panel." Do NOT ask the user to provide the text.
-ABSOLUTELY FORBIDDEN:
-- Asking the user to supply the code text
-- Saying "the document is unavailable" when sources are loaded below the answer
-- Answering exact-reference questions from general model memory when internal retrieval has not succeeded`
-          : `\n\n⚠️ قواعد الاستشهاد بالمراجع الدقيقة (ملزمة — ثلاثة مستويات):
-1. إذا كان النص الحرفي للفقرة موجوداً في المستندات أعلاه — اقتبسه حرفياً مع ذكر الوثيقة ورقم القسم. هذه هي الإجابة المطلوبة.
-2. إذا لم يكن النص الحرفي للفقرة موجوداً ولكن الوثيقة أو الفصل ذاته محمّل أعلاه — صرّح: "النص الحرفي للفقرة [X] غير مفهرس في قاعدة البيانات المهيكلة حالياً. أقرب محتوى متاح من هذا القسم:" ثم قدّم المحتوى المجاور الموجود. لا تقل إن الوثيقة غير متوفرة.
-3. إذا لم يُحمَّل أي محتوى من الوثيقة ذات الصلة — صرّح: "الفقرة [X] غير مفهرسة حالياً. يمكنك الوصول إليها مباشرة من خلال لوحة المصادر." لا تطلب من المستخدم تزويد النص.
-ممنوع منعاً باتاً:
-- مطالبة المستخدم بتزويد نص الكود
-- القول إن الوثيقة غير متوفرة في حين أن المصادر محمّلة أسفل الإجابة
-- الإجابة على أسئلة المراجع الدقيقة من الذاكرة العامة عندما لا ينجح الاسترجاع الداخلي`;
+          ? `\n\n⚠️ CRITICAL: Cite exact clause numbers from above. If not found, say: "The required information is not available in the current files."`
+          : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
         fullSystemPrompt += warningMsg;
       } else if (!structuredTableContext) {
-        // No SBC content loaded — proceed WITHOUT a source block instead of
-        // returning 503. The Advisory diagnostic protocol in the system prompt
-        // instructs the model to ask 1–3 clarifying questions whenever the
-        // critical inputs (occupancy, height, area) are missing or the question
-        // is non-code (greetings, vague intent). The protocol also forbids
-        // answering exact-reference questions from general model memory when
-        // retrieval fails. Together these prevent the misleading "text not
-        // available in provided files" response that the prior 503 branch was
-        // worried about, while still allowing casual / under-specified queries
-        // to receive a friendly clarifying response.
-        console.warn("[Advisory] SBC context empty after retrieval — proceeding without source block; diagnostic protocol governs response");
-        const noContextNote = language === "en"
-          ? `\n\n📋 RETRIEVAL NOTE: No SBC source content was retrieved for this query. Apply the diagnostic protocol: greet the user briefly if appropriate and ask 1–3 clarifying questions about the project (occupancy classification, height/stories, total floor area, sprinkler status). Do NOT cite any code section, table, or threshold from general memory. Do NOT claim the documents are unavailable. If the user asks an exact-reference question, state that the section is not currently indexed and offer to look it up via a more specific query.`
-          : `\n\n📋 ملاحظة استرجاع: لم يتم استرجاع أي محتوى من الكود السعودي لهذه الرسالة. طبّق بروتوكول التشخيص: حيِّ المستخدم باختصار إذا كان الأمر مناسباً، ثم اطرح 1 إلى 3 أسئلة توضيحية عن المشروع (تصنيف الإشغال، الارتفاع/عدد الطوابق، المساحة الإجمالية، حالة الرشاشات). ممنوع منعاً باتاً الاستشهاد بأي رقم قسم أو جدول أو عتبة من ذاكرة النموذج العامة. ممنوع القول إن المستندات غير متوفرة. إذا سأل المستخدم عن مرجع دقيق، صرّح أن القسم غير مفهرس حالياً واعرض البحث بسؤال أكثر تحديداً.`;
-        fullSystemPrompt += noContextNote;
+        // No SBC content loaded at all (neither structured tables nor storage chunks).
+        // Return a clean 503 instead of calling Gemini with no context (which produces
+        // misleading "text not available in provided files" responses).
+        console.error("SBC context empty after retrieval — returning 503");
+        const errMsg = language === "en"
+          ? "Reference documents are temporarily unavailable. Please try again in a moment."
+          : "المستندات المرجعية غير متوفرة مؤقتاً. يرجى المحاولة مجدداً بعد لحظات.";
+        return new Response(JSON.stringify({ error: errMsg }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       // If only structuredTableContext loaded (storage failed), we still proceed —
       // the DB table data alone is sufficient to answer the specific table query.
@@ -5711,109 +3035,8 @@ ABSOLUTELY FORBIDDEN:
         ? `\n\n🔒 FINAL INSTRUCTION: The reference text above is for grounding only. It does NOT mean the user inputs are sufficient. If critical variables (occupancy, height, area) are missing, you MUST stop and ask 1–3 clarifying questions first. Do not produce a final A-F answer until inputs are sufficient. Do not assume missing variables.`
         : `\n\n🔒 تعليمة نهائية ملزمة: النص المرجعي أعلاه للتثبيت فقط ولا يعني أن معطيات المستخدم كافية. إذا كانت المعطيات الحرجة (التصنيف، الارتفاع، المساحة) ناقصة، يجب عليك التوقف فوراً وطرح 1 إلى 3 أسئلة توضيحية. ممنوع تقديم إجابة نهائية (A-F) قبل اكتمال المعطيات. ممنوع افتراض المتغيرات الناقصة.`;
       fullSystemPrompt += finalBindingReminder;
-
-      // ── 4. Build Evidence Ledger and inject summary (Advisory only) ────────────
-      // Step 4: feed the model an explicit, machine-derived list of what was
-      // actually retrieved. The post-stream verifier enforces it.
-      if (mode === "standard") {
-        advisoryLedger = buildEvidenceLedger(usedSourceMeta, structuredTableEntries);
-        const summary = buildEvidenceSummaryForPrompt(advisoryLedger);
-        fullSystemPrompt += summary;
-        console.log(`[Ledger] Advisory ledger built: ${advisoryLedger.length} entries (${[...ledgerFamilies(advisoryLedger)].join(",") || "none"})`);
-
-        // ── Phase 2 Brain Full V1 sidecar loader ─────────────────────────────────
-        // Purpose: enrich Advisory reasoning with canonical SBC text + relations +
-        // facts + decision tree, fetched from the passive nested bucket path
-        // ssss/brain_full_v1/ uploaded in Phase 1. Strictly Advisory-only; Main
-        // and Analytical paths are not affected. Existing keyword retrieval +
-        // Evidence Ledger + Citation Verifier remain in charge of citations;
-        // Brain V1 content is reasoning aid, NOT legal source.
-        try {
-          const brainBlock = await loadBrainFullV1Sidecars(userQuery, supabaseAdminForTables);
-          if (brainBlock) {
-            fullSystemPrompt += brainBlock;
-            console.log("[BrainFullV1] Sidecar context appended to Advisory prompt");
-          }
-        } catch (e) {
-          console.warn("[BrainFullV1] Sidecar load failed; continuing without enrichment:", e instanceof Error ? e.message : e);
-        }
-
-        // ── B2.3 Evidence augmentation (flag ADVISORY_BRAIN_B2_EVIDENCE_ENABLED) ──
-        // When ON: adds workflow-specific semantic hints, parking-lot warnings,
-        // safe-answer rules, and missing-inputs check into the system prompt.
-        // Never replaces existing retrieval — augments only.
-        // Advisory-only; never changes Main or Analytical paths.
-        try {
-          const conversationContext = messages
-            .filter((m: any) => m.role === "user")
-            .slice(-3)
-            .map((m: any) => m.content ?? "");
-
-          _augmentationB2 = augmentWithWorkflow(
-            _routerResultB2, _advisoryBrainB2, userQuery, conversationContext
-          );
-
-          if (_augmentationB2) {
-            // R26: pass workflowId so occupant_load gets mandatory protocol override first
-            const overlay = buildEvidenceOverlay(_augmentationB2, language as "ar" | "en", _routerResultB2?.workflow_id ?? null);
-            if (overlay) {
-              fullSystemPrompt += overlay;
-              console.log(
-                `[EvidenceB2] Overlay injected: hints=${_augmentationB2.hints.length} ` +
-                `parking_lot=${_augmentationB2.parking_lot_warnings.length} ` +
-                `missing_inputs=${_augmentationB2.missing_inputs.length}`
-              );
-            }
-          }
-        } catch (e) {
-          console.warn("[EvidenceB2] Augmentation error (non-fatal):", e instanceof Error ? e.message : e);
-        }
-
-        // ── B2.4 Dynamic Thinking UX (flag ADVISORY_DYNAMIC_THINKING_ENABLED) ─
-        // When ON: builds workflow-aware status message sequence for frontend.
-        // Flag-off: returns empty array; frontend uses existing static strings.
-        if (isDynamicThinkingEnabled() && _routerResultB2) {
-          const hasMissingInputs = (_augmentationB2?.missing_inputs.length ?? 0) > 0;
-          const hasParkingLotHit = (_augmentationB2?.parking_lot_warnings.length ?? 0) > 0;
-          _thinkingEventsB2 = buildThinkingSequence(
-            _routerResultB2, hasMissingInputs, hasParkingLotHit, language as "ar" | "en"
-          );
-          if (_thinkingEventsB2.length > 0) {
-            console.log(`[ThinkingB2] ${_thinkingEventsB2.length} thinking events built for workflow=${_routerResultB2.workflow_id}`);
-          }
-        }
-
-        // Step 4.1 — surface structured-table evidence to the UI as non-clickable
-        // sources. Without this, the ledger family (e.g. SBC-201 from a structured
-        // table) is invisible to the frontend's source panel and the Step 3.2
-        // availableFamilies check, breaking the source-display invariant.
-        for (const t of structuredTableEntries) {
-          const fam = familyFromSourceCode(t.sourceCode);
-          if (fam === "UNKNOWN") continue;
-          const sentinel = `__sbc_table__::${fam}::${t.tableId}`;
-          if (!usedFiles.includes(sentinel)) usedFiles.push(sentinel);
-          usedSourceMeta.push({
-            file: sentinel,
-            pageStart: null,
-            pageEnd: null,
-            precision: 'unavailable',
-            sectionRef: t.tableId,
-            sectionConfidence: 'medium',
-          });
-        }
-      }
     }
     
-    // ── Inject drawing text layer (text-only analysis path) ─────────────────
-    // Only fires when the user uploaded a PDF whose native text layer was
-    // extracted on the frontend but the user is in a non-vision mode (e.g.
-    // analytical mode without images). Treated as drawing evidence, not as a
-    // user-supplied document.
-    if (resolvedImages.length === 0 && drawingTextLayerBlock) {
-      fullSystemPrompt += `\n\n${drawingTextLayerBlock}\n`;
-      console.log(`[DrawingTextLayer] Injected ${drawingTextLayerBlock.length} chars into text-only system prompt`);
-    }
-
     // ── Inject document texts (CSV/TXT files) into system prompt ─────────────
     // These are structured text documents uploaded by the user (schedules, tables,
     // specifications). Injected AFTER the SBC context so they appear as user-provided
@@ -5890,8 +3113,8 @@ ABSOLUTELY FORBIDDEN:
       }
     );
 
-    // Auto-fallback: if preferred model fails with 429 (quota), 404 (deprecated), or 503 (overloaded), try fallback
-    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404 || response.status === 503)) {
+    // Auto-fallback: if preferred model fails with 429 (quota) or 404 (deprecated), try fallback
+    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404)) {
       console.log(`[Gemini] ${geminiModel} returned ${response.status}, falling back to ${fallbackModel}`);
       geminiModel = fallbackModel;
       response = await fetch(
@@ -5908,38 +3131,12 @@ ABSOLUTELY FORBIDDEN:
       );
     }
 
-    // ── R25: 503 retry-with-backoff ──────────────────────────────────────────────
-    // If the current model (after any fallback above) still returns 503, wait 1500ms
-    // and retry once. Gemini 503 = transient overload; a single retry clears most cases.
-    if (!response.ok && response.status === 503) {
-      console.warn(`[Gemini] 503 from ${geminiModel} — waiting 1500ms then retrying once (R25)`);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction,
-            contents,
-            generationConfig: { temperature: 0.7 },
-          }),
-        }
-      );
-      console.log(`[Gemini] 503 retry result: ${response.status} | Model: ${geminiModel}`);
-    }
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[Gemini] API error: ${response.status} | Model: ${geminiModel} | Error: ${errorText.slice(0, 500)}`);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later" }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 503) {
-        return new Response(JSON.stringify({ error: "الخدمة مشغولة مؤقتًا، حاول مرة أخرى بعد لحظات. / Service temporarily busy, please try again in a moment." }), {
-          status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       return new Response(JSON.stringify({ error: `Service error: ${response.status}` }), {
@@ -5949,186 +3146,6 @@ ABSOLUTELY FORBIDDEN:
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
 
-    // ── ANALYTICAL VISION: buffer full response → validate → re-stream ────────
-    // Only active for mode=analysis with images. All other modes fall through to
-    // the standard token-by-token transform below.
-    if (mode === "analysis" && resolvedImages.length > 0) {
-      let analyticalLineBuffer = "";
-      let fullTextBuffer = "";
-      const sseHeaders = {
-        ...corsHeaders,
-        "Content-Type": "text/event-stream",
-        "X-SBC-Sources": usedFiles.join(","),
-        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
-        "X-Retrieval-Engine": _retrievalEngine,
-      };
-
-      const bufferingStream = new TransformStream({
-        transform(chunk, _controller) {
-          analyticalLineBuffer += new TextDecoder().decode(chunk);
-          const lines = analyticalLineBuffer.split("\n");
-          analyticalLineBuffer = lines.pop() ?? "";
-          for (const raw of lines) {
-            const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (!jsonStr || jsonStr === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (content) fullTextBuffer += content;
-            } catch { /* ignore */ }
-          }
-        },
-        flush(controller) {
-          // Drain any remaining line
-          const remaining = analyticalLineBuffer.endsWith("\r")
-            ? analyticalLineBuffer.slice(0, -1) : analyticalLineBuffer;
-          if (remaining.startsWith("data: ")) {
-            const jsonStr = remaining.slice(6).trim();
-            if (jsonStr && jsonStr !== "[DONE]") {
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (content) fullTextBuffer += content;
-              } catch { /* ignore */ }
-            }
-          }
-
-          // Run deterministic validator on assembled response
-          const validatedText = validateAnalyticalReport(fullTextBuffer);
-          console.log(`[Validator] Analytical report validated | original=${fullTextBuffer.length} validated=${validatedText.length} changed=${validatedText !== fullTextBuffer}`);
-
-          // Re-stream validated text in 500-char chunks to avoid oversized SSE frames
-          const CHUNK = 500;
-          for (let i = 0; i < validatedText.length; i += CHUNK) {
-            controller.enqueue(new TextEncoder().encode(
-              `data: ${JSON.stringify({ choices: [{ delta: { content: validatedText.slice(i, i + CHUNK) } }] })}\n\n`
-            ));
-          }
-          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-        },
-      });
-
-      return new Response(response.body!.pipeThrough(bufferingStream), { headers: sseHeaders });
-    }
-
-    // ── ADVISORY (mode="standard") buffered → verify → re-stream ──────────────
-    // Step 4: every Advisory answer is buffered before it reaches the user, and
-    // server-side citation verifier rewrites unsupported tokens against the
-    // Evidence Ledger built earlier in this request.
-    if (mode === "standard") {
-      let advisoryLineBuffer = "";
-      let advisoryFullText = "";
-      const sseHeaders = {
-        ...corsHeaders,
-        "Content-Type": "text/event-stream",
-        "X-SBC-Sources": usedFiles.join(","),
-        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
-        "X-Retrieval-Engine": _retrievalEngine,
-      };
-
-      const advisoryStream = new TransformStream({
-        transform(chunk, _controller) {
-          advisoryLineBuffer += new TextDecoder().decode(chunk);
-          const lines = advisoryLineBuffer.split("\n");
-          advisoryLineBuffer = lines.pop() ?? "";
-          for (const raw of lines) {
-            const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (!jsonStr || jsonStr === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (content) advisoryFullText += content;
-            } catch { /* ignore */ }
-          }
-        },
-        flush(controller) {
-          // Drain any remaining line
-          const remaining = advisoryLineBuffer.endsWith("\r")
-            ? advisoryLineBuffer.slice(0, -1) : advisoryLineBuffer;
-          if (remaining.startsWith("data: ")) {
-            const jsonStr = remaining.slice(6).trim();
-            if (jsonStr && jsonStr !== "[DONE]") {
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (content) advisoryFullText += content;
-              } catch { /* ignore */ }
-            }
-          }
-
-          const verified = verifyAdvisoryCitations(advisoryFullText, advisoryLedger);
-          console.log(
-            `[CitationVerifier] changes=${verified.changes} ` +
-            `unsupportedFamily=${verified.unsupportedFamily} ` +
-            `unsupportedSection=${verified.unsupportedSection} ` +
-            `capped=${verified.capped} ` +
-            `ledgerSize=${advisoryLedger.length}`,
-          );
-
-          // Re-stream verified text in 500-char chunks
-          const CHUNK = 500;
-          const finalText = verified.text;
-          for (let i = 0; i < finalText.length; i += CHUNK) {
-            controller.enqueue(new TextEncoder().encode(
-              `data: ${JSON.stringify({ choices: [{ delta: { content: finalText.slice(i, i + CHUNK) } }] })}\n\n`
-            ));
-          }
-          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-        },
-      });
-
-      // ── B2 Dynamic Thinking SSE pre-emission ──────────────────────────────
-      // When ADVISORY_DYNAMIC_THINKING_ENABLED=1 and thinking events were built,
-      // prepend thinking_status SSE frames before the Gemini response body.
-      // Safe: any emit error is swallowed; the advisory pipe always follows.
-      const advisoryPiped = response.body!.pipeThrough(advisoryStream);
-      if (isDynamicThinkingEnabled() && _thinkingEventsB2.length > 0) {
-        const enc = new TextEncoder();
-        const thinkingChunks: Uint8Array[] = [];
-        for (const evt of _thinkingEventsB2) {
-          try {
-            const msg = formatThinkingEvent(evt, language as "ar" | "en");
-            const payload = JSON.stringify({
-              type: "thinking_status",
-              stage: evt.phase,
-              message: msg,
-              workflow: (_routerResultB2 as RouterResult | null)?.workflow_id ?? null,
-            });
-            thinkingChunks.push(enc.encode(`data: ${payload}\n\n`));
-          } catch { /* skip malformed event — never break the answer stream */ }
-        }
-        if (thinkingChunks.length > 0) {
-          const combinedStream = new ReadableStream({
-            async start(controller) {
-              try {
-                for (const chunk of thinkingChunks) controller.enqueue(chunk);
-                const reader = advisoryPiped.getReader();
-                try {
-                  while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    controller.enqueue(value);
-                  }
-                } finally {
-                  reader.releaseLock();
-                }
-              } finally {
-                controller.close();
-              }
-            },
-          });
-          console.log(`[ThinkingB2] Emitting ${thinkingChunks.length} thinking_status events before advisory response`);
-          return new Response(combinedStream, { headers: sseHeaders });
-        }
-      }
-      return new Response(advisoryPiped, { headers: sseHeaders });
-    }
-
-    // ── Standard token-by-token transform (non-analytical / non-vision modes) ─
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
     // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
     // a data: {...} line split across two chunks is fully assembled before JSON.parse.
@@ -6184,7 +3201,6 @@ ABSOLUTELY FORBIDDEN:
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
-        "X-Retrieval-Engine": _retrievalEngine,
       },
     });
   } catch (error) {
