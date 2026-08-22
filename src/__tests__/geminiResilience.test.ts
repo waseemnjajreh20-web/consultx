@@ -129,6 +129,21 @@ describe("fetchGeminiStreamWithRetry", () => {
     expect(result.response.status).toBe(200);
   });
 
+  it("does not consume the response body on success", async () => {
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+
+    fetchMock.mockResolvedValueOnce(new Response("stream-body", { status: 200 }));
+
+    const result = await fetchGeminiStreamWithRetry("key", "gemini-2.5-pro", {}, []);
+
+    expect(result.response.status).toBe(200);
+    expect(result.errorText).toBe("");
+    // If the helper had consumed the body, this would throw "ReadableStream is already locked".
+    const text = await result.response.text();
+    expect(text).toBe("stream-body");
+  });
+
   it("does not retry 400 errors", async () => {
     const fetchMock = vi.fn();
     global.fetch = fetchMock;

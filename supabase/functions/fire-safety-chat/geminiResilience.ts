@@ -179,8 +179,6 @@ export async function fetchGeminiStreamWithRetry(
       }
     );
     const latency = Date.now() - start;
-    const errorText = await resp.text();
-    lastErrorText = errorText;
 
     if (resp.ok) {
       console.log(
@@ -189,6 +187,8 @@ export async function fetchGeminiStreamWithRetry(
       return { response: resp, errorText: "" };
     }
 
+    const errorText = await resp.text();
+    lastErrorText = errorText;
     const retryable = isRetryableStatus(resp.status);
     console.log(
       `[Gemini] ${model} attempt ${attempt}/${maxAttempts} status=${resp.status} latency=${latency}ms retryable=${retryable}`
@@ -235,8 +235,6 @@ export async function fetchGeminiNonStreamingWithRetry(
       }
     );
     const latency = Date.now() - start;
-    const errorText = await resp.text();
-    lastErrorText = errorText;
 
     if (resp.ok) {
       console.log(
@@ -245,6 +243,8 @@ export async function fetchGeminiNonStreamingWithRetry(
       return { response: resp, errorText: "" };
     }
 
+    const errorText = await resp.text();
+    lastErrorText = errorText;
     const retryable = isRetryableStatus(resp.status);
     console.log(
       `[Gemini] ${model} non-stream attempt ${attempt}/${maxAttempts} status=${resp.status} latency=${latency}ms retryable=${retryable}`
