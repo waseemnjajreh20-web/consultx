@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Clock, HelpCircle, FileSearch, ArrowRight, CheckCircle, LucideIcon } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import type { TranslationKey } from "@/lib/translations";
@@ -9,12 +9,12 @@ const painItems: { icon: LucideIcon; titleKey: TranslationKey; descKey: Translat
   { icon: FileSearch, titleKey: "pain3Title", descKey: "pain3Desc" },
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.15 } },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };

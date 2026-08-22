@@ -101,7 +101,7 @@ const Subscribe = () => {
         .order("price_amount", { ascending: true });
       if (data && data.length > 0) {
         // Hide free + legacy 'enterprise' from public checkout.
-        const visible: Plan[] = (data as Plan[]).filter((p) => !HIDDEN_PUBLIC_SLUGS.has(p.slug));
+        const visible: Plan[] = (data as unknown as Plan[]).filter((p) => !HIDDEN_PUBLIC_SLUGS.has(p.slug));
         // For EID50, restrict visible plans to "pro" only (enterprise deferred)
         const campaignVisible = eid50Active
           ? visible.filter((p) => p.slug === "pro")

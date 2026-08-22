@@ -8,7 +8,6 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import AppShell from "@/components/AppShell";
-import Founding10Banner from "@/components/campaigns/Founding10Banner";
 import { CLOSED_PANEL } from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
 import type { SourceMeta } from "@/utils/sourceMetadata";
@@ -111,8 +110,6 @@ const Workspace = () => {
           </div>
         </div>
       )}
-
-      <Founding10Banner />
 
       {welcomeTrialEnd && (
         <WelcomeEngineerModal

@@ -522,8 +522,9 @@ function SubscriptionSection({ lang }: { lang: "ar" | "en" }) {
     ? (ar ? "تجربة مجانية" : "Trial Active")
     : (ar ? "مجاني" : "Free");
 
-  const planName = subscription?.plan_name
-    || (isTrialActive ? (ar ? "تجربة المهندسين" : "Engineer Trial") : (ar ? "المجاني" : "Free"));
+  const planName = subscription?.plan
+    ? (ar ? subscription.plan.name_ar : subscription.plan.name_en)
+    : (isTrialActive ? (ar ? "تجربة المهندسين" : "Engineer Trial") : (ar ? "المجاني" : "Free"));
 
   return (
     <div className="p-4 space-y-4">
@@ -569,10 +570,10 @@ function SubscriptionSection({ lang }: { lang: "ar" | "en" }) {
         )}
 
         {/* Expiry */}
-        {subscription?.current_period_end && (
+        {subscription?.expires_at && (
           <p className="text-xs text-muted-foreground">
             {ar ? "ينتهي في" : "Renews"}{" "}
-            {new Date(subscription.current_period_end).toLocaleDateString(ar ? "ar-SA" : "en-US", { month: "long", day: "numeric", year: "numeric" })}
+            {new Date(subscription.expires_at).toLocaleDateString(ar ? "ar-SA" : "en-US", { month: "long", day: "numeric", year: "numeric" })}
           </p>
         )}
       </div>

@@ -262,7 +262,7 @@ export function planHasFeature(slug: PlanSlug, feature: keyof typeof PLAN_CONFIG
 
 /** Get available upgrade plans for current plan */
 export function getUpgradePaths(slug: PlanSlug): PlanSlug[] {
-  return PLAN_CONFIG.upgradePaths[slug] ?? [];
+  return [...(PLAN_CONFIG.upgradePaths[slug] ?? [])];
 }
 
 /** Compare two plans by tier (returns positive if a > b) */

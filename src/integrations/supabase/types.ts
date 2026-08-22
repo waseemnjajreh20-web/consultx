@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -1669,6 +1694,7 @@ export type Database = {
           name: string
           owner_user_id: string
           status: string
+          subscription_id: string | null
           trial_end: string
           trial_start: string
           updated_at: string
@@ -1679,6 +1705,7 @@ export type Database = {
           name: string
           owner_user_id: string
           status?: string
+          subscription_id?: string | null
           trial_end?: string
           trial_start?: string
           updated_at?: string
@@ -1689,11 +1716,20 @@ export type Database = {
           name?: string
           owner_user_id?: string
           status?: string
+          subscription_id?: string | null
           trial_end?: string
           trial_start?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_history: {
         Row: {
@@ -1828,6 +1864,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_memory_level: string | null
           billing_cycle: string | null
           corporate_domain: string | null
           created_at: string
@@ -1839,7 +1876,10 @@ export type Database = {
           launch_trial_end: string | null
           launch_trial_start: string | null
           launch_trial_status: string | null
+          launch_trial_welcomed: boolean
+          output_format: string | null
           plan_type: string
+          preferred_standards: string[] | null
           role: string
           subscription_end: string | null
           subscription_start: string | null
@@ -1852,6 +1892,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_memory_level?: string | null
           billing_cycle?: string | null
           corporate_domain?: string | null
           created_at?: string
@@ -1863,7 +1904,10 @@ export type Database = {
           launch_trial_end?: string | null
           launch_trial_start?: string | null
           launch_trial_status?: string | null
+          launch_trial_welcomed?: boolean
+          output_format?: string | null
           plan_type?: string
+          preferred_standards?: string[] | null
           role?: string
           subscription_end?: string | null
           subscription_start?: string | null
@@ -1876,6 +1920,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_memory_level?: string | null
           billing_cycle?: string | null
           corporate_domain?: string | null
           created_at?: string
@@ -1887,7 +1932,10 @@ export type Database = {
           launch_trial_end?: string | null
           launch_trial_start?: string | null
           launch_trial_status?: string | null
+          launch_trial_welcomed?: boolean
+          output_format?: string | null
           plan_type?: string
+          preferred_standards?: string[] | null
           role?: string
           subscription_end?: string | null
           subscription_start?: string | null
@@ -2167,10 +2215,12 @@ export type Database = {
           features_access: Json | null
           id: string
           is_active: boolean
+          min_seats: number
           name_ar: string
           name_en: string
           plan_type: string | null
           price_amount: number
+          price_per_seat: number | null
           slug: string | null
           target: string
           trial_period_days: number | null
@@ -2184,10 +2234,12 @@ export type Database = {
           features_access?: Json | null
           id?: string
           is_active?: boolean
+          min_seats?: number
           name_ar: string
           name_en: string
           plan_type?: string | null
           price_amount: number
+          price_per_seat?: number | null
           slug?: string | null
           target?: string
           trial_period_days?: number | null
@@ -2201,10 +2253,12 @@ export type Database = {
           features_access?: Json | null
           id?: string
           is_active?: boolean
+          min_seats?: number
           name_ar?: string
           name_en?: string
           plan_type?: string | null
           price_amount?: number
+          price_per_seat?: number | null
           slug?: string | null
           target?: string
           trial_period_days?: number | null
@@ -2260,10 +2314,12 @@ export type Database = {
           dunning_notified_at: string | null
           id: string
           moyasar_card_token: string | null
+          moyasar_given_id: string | null
           moyasar_payment_id: string | null
           next_billing_date: string | null
           past_due_since: string | null
           plan_id: string
+          seat_count: number
           status: string
           tap_card_id: string | null
           tap_customer_id: string | null
@@ -2284,10 +2340,12 @@ export type Database = {
           dunning_notified_at?: string | null
           id?: string
           moyasar_card_token?: string | null
+          moyasar_given_id?: string | null
           moyasar_payment_id?: string | null
           next_billing_date?: string | null
           past_due_since?: string | null
           plan_id: string
+          seat_count?: number
           status?: string
           tap_card_id?: string | null
           tap_customer_id?: string | null
@@ -2308,10 +2366,12 @@ export type Database = {
           dunning_notified_at?: string | null
           id?: string
           moyasar_card_token?: string | null
+          moyasar_given_id?: string | null
           moyasar_payment_id?: string | null
           next_billing_date?: string | null
           past_due_since?: string | null
           plan_id?: string
+          seat_count?: number
           status?: string
           tap_card_id?: string | null
           tap_customer_id?: string | null
@@ -2463,6 +2523,28 @@ export type Database = {
         }
         Returns: string
       }
+      create_org_invitation_enforced: {
+        Args: { p_email: string; p_org_id: string; p_role: string }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          created_by: string
+          email: string
+          expires_at: string
+          id: string
+          org_id: string
+          role: string
+          status: string
+          token: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "org_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_organization_with_owner: {
         Args: { p_name: string }
         Returns: string
@@ -2527,6 +2609,20 @@ export type Database = {
       get_org_member_role: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: string
+      }
+      get_org_seat_usage: {
+        Args: { p_org_id: string }
+        Returns: {
+          active_members_count: number
+          available_seats: number
+          is_enforced: boolean
+          min_seats: number
+          org_id: string
+          pending_invitations_count: number
+          plan_slug: string
+          seat_count: number
+          subscription_id: string
+        }[]
       }
       get_unindexed_chunks: {
         Args: { p_batch_size?: number }
@@ -2690,6 +2786,41 @@ export type Database = {
       update_org_member_status: {
         Args: { p_member_id: string; p_status: string }
         Returns: undefined
+      }
+      update_subscription_seat_count: {
+        Args: { p_seat_count: number; p_subscription_id: string }
+        Returns: {
+          cancel_at_period_end: boolean
+          cancelled_at: string | null
+          card_brand: string | null
+          card_last_four: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          dunning_notified_at: string | null
+          id: string
+          moyasar_card_token: string | null
+          moyasar_given_id: string | null
+          moyasar_payment_id: string | null
+          next_billing_date: string | null
+          past_due_since: string | null
+          plan_id: string
+          seat_count: number
+          status: string
+          tap_card_id: string | null
+          tap_customer_id: string | null
+          tap_payment_agreement_id: string | null
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       upsert_case_client_contact: {
         Args: {
@@ -2865,6 +2996,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
