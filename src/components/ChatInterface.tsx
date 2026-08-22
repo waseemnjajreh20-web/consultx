@@ -674,18 +674,22 @@ async function streamChat({
   });
   if (!resp.ok) {
     const errorData = await resp.json().catch(() => ({}));
-    if (resp.status === 429) {
-      onError(errorData.error || "Daily message limit exceeded");
+    const errorCode = errorData.error_code as string | undefined;
+    const backendMessage = errorData.error as string | undefined;
+
+    if (errorCode === "CONSULTX_DAILY_LIMIT" || resp.status === 429) {
+      onError(backendMessage || "Daily message limit exceeded");
       return;
     }
-    // R19: friendly 503 message — overrides bilingual edge-function string
-    if (resp.status === 503) {
-      onError(language === "en"
+
+    if (errorCode === "GEMINI_RATE_LIMIT" || errorCode === "GEMINI_PROVIDER_ERROR" || resp.status === 503) {
+      onError(backendMessage || (language === "en"
         ? "Service temporarily busy, please try again in a moment."
-        : "الخدمة مشغولة مؤقتًا، حاول مرة أخرى بعد لحظات.");
+        : "الخدمة مشغولة مؤقتًا، حاول مرة أخرى بعد لحظات."));
       return;
     }
-    onError(errorData.error || (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
+
+    onError(backendMessage || (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
     return;
   }
   const sourcesHeader = resp.headers.get("X-SBC-Sources");

@@ -1,5 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  buildModelChain,
+  classifyGeminiError,
+  clearQuotaIncrement,
+  fetchAvailableGeminiModels,
+  fetchGeminiNonStreamingWithRetry,
+  fetchGeminiStreamWithRetry,
+  recordQuotaIncrement,
+  rollbackQuotaIfNeeded,
+} from "./geminiResilience.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2126,36 +2136,27 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
     { role: "user", content: userContent },
   ]);
 
-  // Try gemini-2.5-pro first, fallback to flash if quota exceeded
-  const models = ["gemini-2.5-pro", "gemini-2.5-flash"];
-  for (const model of models) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: { temperature: 0.7 },
-        }),
-      }
-    );
+  const available = await fetchAvailableGeminiModels(apiKey);
+  const models = buildModelChain("gemini-2.5-pro", "gemini-2.5-flash", available);
+  console.log(`[Gemini] Non-streaming model chain: ${models.join(" -> ")}`);
 
+  let lastErrorText = "";
+  let lastStatus = 0;
+
+  for (const model of models) {
+    const { response, errorText } = await fetchGeminiNonStreamingWithRetry(apiKey, model, systemInstruction, contents);
     if (response.ok) {
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
-
-    const errorText = await response.text();
-    if ((response.status === 429 || response.status === 404) && model !== models[models.length - 1]) {
-      console.log(`[Gemini] Non-streaming ${model} returned ${response.status}, trying next model`);
-      continue;
-    }
-    console.error(`[Gemini] Non-streaming error: ${response.status} | Model: ${model} | ${errorText.slice(0, 300)}`);
-    throw new Error(`AI call failed: ${response.status}`);
+    lastErrorText = errorText;
+    lastStatus = response.status;
+    console.error(`[Gemini] Non-streaming ${model} failed: ${response.status} | ${errorText.slice(0, 300)}`);
   }
-  throw new Error("All Gemini models failed");
+
+  const classified = classifyGeminiError(lastStatus, lastErrorText);
+  console.error(`[Gemini] Non-streaming all models exhausted | ${classified.logSafe}`);
+  throw new Error(`AI call failed: ${classified.classification}`);
 }
 
 function getVisionPlanningPrompt(language: string): string {
@@ -2621,6 +2622,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Declared outside try so the catch block can read them for error messages
+  // and quota rollback. Use `any` to avoid brittle Supabase client typing.
+  let adminClient: any;
+  let language: "en" | "ar" = "en";
+
   try {
     let userId: string;
     let userEmail = "";
@@ -2652,7 +2658,9 @@ serve(async (req) => {
     console.log(`✅ Authenticated user: ${userId}`);
 
     // Parse body first — mode is needed for per-mode trial limit checks
-    const { messages, retry, mode = "standard", language = "ar", image, images, documentTexts, output_format, preferred_standards } = await req.json();
+    const body = await req.json();
+    const { messages, retry, mode = "standard", image, images, documentTexts, output_format, preferred_standards } = body;
+    language = body.language === "en" ? "en" : "ar";
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
     const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
@@ -2664,10 +2672,12 @@ serve(async (req) => {
 
     console.log("Chat mode:", mode, "| Language:", language, "| Images:", resolvedImages.length);
 
+    // Service-role client used for quota enforcement and rollback.
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
     {
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const adminClient    = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
       const now            = new Date();
 
       // Launch-trial constants (must match launch-trial-activate)
@@ -2739,6 +2749,9 @@ serve(async (req) => {
               p_user_id: userId,
               p_mode: "standard"
             });
+            if (newCount && newCount <= advisoryLimit) {
+              recordQuotaIncrement("mode", userId, "standard");
+            }
             if (newCount && newCount > advisoryLimit) {
               // Rollback the increment
               await adminClient.rpc("decrement_mode_daily_count", { p_user_id: userId, p_mode: "standard" });
@@ -2759,6 +2772,9 @@ serve(async (req) => {
               p_user_id: userId,
               p_mode: "analysis"
             });
+            if (newCount && newCount <= analysisLimit) {
+              recordQuotaIncrement("mode", userId, "analysis");
+            }
             if (newCount && newCount > analysisLimit) {
               // Rollback the increment
               await adminClient.rpc("decrement_mode_daily_count", { p_user_id: userId, p_mode: "analysis" });
@@ -2777,6 +2793,9 @@ serve(async (req) => {
         else if (hasPaidAccess && isTrialing) {
           if (dailyLimit < 9999) {
             const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
+            if (currentCount && currentCount <= dailyLimit) {
+              recordQuotaIncrement("daily", userId);
+            }
             if (currentCount && currentCount > dailyLimit) {
               return new Response(
                 JSON.stringify({ error: "تجاوزت الحد اليومي للرسائل / Daily message limit exceeded", limit: dailyLimit }),
@@ -2865,6 +2884,9 @@ serve(async (req) => {
           // 20260328000002 and must not be called.
           const trialDailyLimit = 20;
           const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
+          if (currentCount && currentCount <= trialDailyLimit) {
+            recordQuotaIncrement("daily", userId);
+          }
           if (currentCount && currentCount > trialDailyLimit) {
             return new Response(
               JSON.stringify({
@@ -2892,6 +2914,9 @@ serve(async (req) => {
           // Free daily limit (10 messages / 24h) — applies to all non-paid,
           // non-trial users regardless of why their access lapsed.
           const { data: currentCount } = await adminClient.rpc("increment_daily_usage", { p_user_id: userId });
+          if (currentCount && currentCount <= dailyLimit) {
+            recordQuotaIncrement("daily", userId);
+          }
           if (currentCount && currentCount > dailyLimit) {
             return new Response(
               JSON.stringify({
@@ -3097,54 +3122,42 @@ serve(async (req) => {
       ...finalMessages,
     ]);
 
-    console.log(`[Gemini] Model: ${preferredModel} | Mode: ${mode} | Messages: ${contents.length} | API Key exists: ${!!GEMINI_API_KEY}`);
+    console.log(`[Gemini] Mode: ${mode} | Messages: ${contents.length} | API Key exists: ${!!GEMINI_API_KEY}`);
+
+    const availableModels = await fetchAvailableGeminiModels(GEMINI_API_KEY);
+    const modelChain = buildModelChain(preferredModel, fallbackModel, availableModels);
+    console.log(`[Gemini] Streaming model chain: ${modelChain.join(" -> ")}`);
 
     let geminiModel = preferredModel;
-    let response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: { temperature: 0.7 },
-        }),
-      }
-    );
+    let response: Response | null = null;
+    let lastErrorText = "";
+    let lastStatus = 0;
 
-    // Auto-fallback: if preferred model fails with 429 (quota) or 404 (deprecated), try fallback
-    if (!response.ok && geminiModel !== fallbackModel && (response.status === 429 || response.status === 404)) {
-      console.log(`[Gemini] ${geminiModel} returned ${response.status}, falling back to ${fallbackModel}`);
-      geminiModel = fallbackModel;
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction,
-            contents,
-            generationConfig: { temperature: 0.7 },
-          }),
-        }
+    for (const model of modelChain) {
+      geminiModel = model;
+      const result = await fetchGeminiStreamWithRetry(GEMINI_API_KEY, model, systemInstruction, contents);
+      if (result.response.ok) {
+        response = result.response;
+        break;
+      }
+      lastErrorText = result.errorText;
+      lastStatus = result.response.status;
+      console.error(`[Gemini] ${model} failed: ${result.response.status} | ${result.errorText.slice(0, 300)}`);
+    }
+
+    if (!response || !response.ok) {
+      await rollbackQuotaIfNeeded(adminClient);
+      const classified = classifyGeminiError(lastStatus, lastErrorText);
+      console.error(`[Gemini] All models exhausted | ${classified.logSafe}`);
+      const userMessage = language === "en" ? classified.userMessage : classified.userMessageAr;
+      return new Response(
+        JSON.stringify({ error: userMessage, error_code: classified.classification, provider: "gemini" }),
+        { status: classified.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[Gemini] API error: ${response.status} | Model: ${geminiModel} | Error: ${errorText.slice(0, 500)}`);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: `Service error: ${response.status}` }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
+    clearQuotaIncrement();
 
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
     // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
@@ -3204,8 +3217,33 @@ serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error("Fire safety chat error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    // If a quota was incremented but the AI request never produced a response,
+    // roll it back so the user is not charged for a failed message.
+    await rollbackQuotaIfNeeded(adminClient);
+
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Fire safety chat error:", errorMessage);
+
+    // callAINonStreaming throws `AI call failed: ${classification}`
+    if (errorMessage.startsWith("AI call failed:")) {
+      const classification = errorMessage.replace("AI call failed: ", "").trim();
+      const status = classification === "GEMINI_RATE_LIMIT" || classification === "GEMINI_PROVIDER_ERROR" ? 503 : 500;
+      const isRateLimit = classification === "GEMINI_RATE_LIMIT";
+      const userMessage =
+        language === "en"
+          ? (isRateLimit
+              ? "AI provider is temporarily busy. Please try again in a minute."
+              : "Service error occurred")
+          : (isRateLimit
+              ? "الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة."
+              : "حدث خطأ في الخدمة");
+      return new Response(
+        JSON.stringify({ error: userMessage, error_code: classification, provider: "gemini" }),
+        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

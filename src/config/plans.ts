@@ -199,7 +199,7 @@ export const PLAN_CONFIG = {
     enterprise: ["enterprise_team", "enterprise_office"],
     enterprise_team: ["enterprise_office"],
     enterprise_office: [],
-    owner: [], // Admin override — top tier, nothing to upgrade to
+    owner: [],
   } as const,
 
   /** Default plan for new users */
@@ -237,12 +237,12 @@ export function getPlanTier(slug: PlanSlug): number {
 
 /** Check if plan is enterprise tier */
 export function isEnterprisePlan(slug: PlanSlug): boolean {
-  return (PLAN_CONFIG.enterpriseSlugs as readonly string[]).includes(slug);
+  return PLAN_CONFIG.enterpriseSlugs.includes(slug as any);
 }
 
 /** Check if plan is paid (non-free) */
 export function isPaidPlan(slug: PlanSlug): boolean {
-  return (PLAN_CONFIG.paidSlugs as readonly string[]).includes(slug);
+  return PLAN_CONFIG.paidSlugs.includes(slug as any);
 }
 
 /** Get daily message limits for a plan */
