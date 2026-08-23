@@ -1,0 +1,46 @@
+-- ConsultX 2026-08-23 — flip source-pdfs to private, behind signed URLs.
+--
+-- *** APPLY THIS LAST. ***
+-- This migration MUST be applied only AFTER the frontend build that fetches
+-- signed URLs via the get-source-pdf-url edge function
+-- (src/utils/sourcePdfUrl.ts's fetchSignedPdfUrl + src/components/
+-- SourcePanel.tsx) is deployed and live.
+--
+-- NOTE: fetchSignedPdfUrl lives in src/utils/sourcePdfUrl.ts, NOT in
+-- src/utils/sourceMetadata.ts. It was split out so sourceMetadata.ts keeps
+-- zero side-effectful imports (the supabase client touches localStorage at
+-- module top level, which throws under vitest).
+--
+-- WHAT BREAKS IF APPLIED EARLY:
+-- The currently-deployed SourcePanel.tsx (pre-signed-URL-refactor) builds a
+-- direct public URL of the form
+--   {SUPABASE_URL}/storage/v1/object/public/source-pdfs/sbc/sbc-201/...pdf
+-- and loads it straight into an <iframe> for the PDF viewer, and into the
+-- "Open in new tab" / print <a href>. Once `public = false` is set below,
+-- every one of those requests gets Supabase Storage's 400/403 "Bucket not
+-- found"/"not public" response instead of the PDF. Concretely: the source
+-- citation panel's PDF preview goes blank (PdfFrame's onError fires -> "Could
+-- not load PDF in panel"), and "Open in new tab" opens a broken link, for
+-- every user, on every SBC-201/SBC-801 source citation, immediately.
+--
+-- WHY THIS CHANGE AT ALL:
+-- The "source-pdfs" bucket holds ~229 MB of copyrighted Saudi Building Code
+-- (SBC) PDFs. The Saudi Building Code National Committee (SBCNC) prohibits
+-- redistribution of these documents. A public bucket means anyone with the
+-- URL — scraped, shared, or guessed from the predictable filename pattern —
+-- can download the full text with no authentication. Making the bucket
+-- private and serving reads only through short-lived signed URLs minted by
+-- an authenticated edge function closes that redistribution exposure.
+--
+-- Idempotent: setting `public = false` on an already-private bucket is a
+-- no-op; safe to re-run.
+--
+-- The edge function (get-source-pdf-url) reads via the service role, which
+-- bypasses RLS entirely. No RLS policy on storage.objects is required for
+-- the app to keep working, so none is added here — an "allow service role"
+-- policy would be redundant (service role already bypasses RLS) and any
+-- broader policy would reopen exactly the exposure this migration closes.
+
+UPDATE storage.buckets
+SET public = false
+WHERE id = 'source-pdfs';

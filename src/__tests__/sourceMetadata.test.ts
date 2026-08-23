@@ -2,19 +2,25 @@
  * Regression tests for sourceMetadata.ts
  *
  * Guards against:
- * - PDF URL construction errors (wrong bucket path, wrong file extension)
+ * - pdfPath / pdfUrl-marker construction errors (wrong bucket path, wrong file extension)
  * - Page range extraction failures
  * - Deduplication of _extracted vs _extracted_chunks variants pointing to same PDF
  * - Graceful handling of unrecognised filenames
+ * - The 18-path allow-list rejecting anything not in the confirmed production set
+ *   (2026-08-23 signed-URL refactor — the source-pdfs bucket is no longer public,
+ *   so pdfUrl is a synchronous non-null marker equal to pdfPath, not a fetchable
+ *   public URL; see src/utils/sourceMetadata.ts header comment for the contract)
  */
 import { describe, it, expect } from 'vitest';
-import { resolveSourceMeta, resolveAllSources, formatSourceLabel } from '../utils/sourceMetadata';
-
-const SUPABASE_URL = 'https://hrnltxmwoaphgejckutk.supabase.co';
-const PDF_BUCKET   = 'source-pdfs';
+import {
+  resolveSourceMeta,
+  resolveAllSources,
+  formatSourceLabel,
+} from '../utils/sourceMetadata';
+import { isKnownSbcPdfPath, KNOWN_SBC_PDF_PATHS } from '../utils/sourcePdfUrl';
 
 describe('resolveSourceMeta', () => {
-  it('resolves SBC 201 _extracted_chunks.json to correct PDF URL and path', () => {
+  it('resolves SBC 201 _extracted_chunks.json to correct pdfPath, and pdfUrl marker equal to it', () => {
     const meta = resolveSourceMeta(
       'SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json'
     );
@@ -26,10 +32,14 @@ describe('resolveSourceMeta', () => {
     expect(meta.pdfPath).toBe(
       'sbc/sbc-201/SBC 201 - The Saudi General Building Code-1-250.pdf'
     );
-    // pdfUrl has each path segment percent-encoded
-    expect(meta.pdfUrl).toBe(
-      `${SUPABASE_URL}/storage/v1/object/public/${PDF_BUCKET}/sbc/sbc-201/SBC%20201%20-%20The%20Saudi%20General%20Building%20Code-1-250.pdf`
-    );
+    // pdfUrl is NOT a real, fetchable URL anymore (bucket is private) — it is
+    // a synchronous non-null marker, currently equal to pdfPath, that every
+    // truthiness/equality check in SourcePanel and ChatInterface relies on.
+    expect(meta.pdfUrl).toBe(meta.pdfPath);
+    expect(meta.pdfUrl).not.toBeNull();
+    // Never regress back to producing a public storage URL.
+    expect(meta.pdfUrl).not.toContain('object/public');
+    expect(meta.pdfUrl).not.toContain('http');
   });
 
   it('resolves SBC 201 _extracted.json (non-chunk variant) to same PDF', () => {
@@ -88,6 +98,7 @@ describe('resolveSourceMeta', () => {
       expect(meta.pdfUrl).not.toBeNull();
       expect(meta.pdfUrl).toContain('sbc/sbc-201/');
       expect(meta.pdfUrl).toContain('.pdf');
+      expect(isKnownSbcPdfPath(meta.pdfPath)).toBe(true);
     }
   });
 
@@ -109,6 +120,7 @@ describe('resolveSourceMeta', () => {
       expect(meta.pdfUrl).not.toBeNull();
       expect(meta.pdfUrl).toContain('sbc/sbc-801/');
       expect(meta.pdfUrl).toContain('.pdf');
+      expect(isKnownSbcPdfPath(meta.pdfPath)).toBe(true);
     }
   });
 
@@ -171,5 +183,46 @@ describe('formatSourceLabel', () => {
     );
     const label = formatSourceLabel(meta, 'en');
     expect(label).toBe('📖 SBC 801 — Pages 201–400');
+  });
+});
+
+describe('isKnownSbcPdfPath — frontend allow-list guard', () => {
+  it('accepts all 18 valid SBC 201 / SBC 801 pdfPath values', () => {
+    expect(KNOWN_SBC_PDF_PATHS.size).toBe(18);
+    for (const p of KNOWN_SBC_PDF_PATHS) {
+      expect(isKnownSbcPdfPath(p)).toBe(true);
+    }
+  });
+
+  it('accepts every pdfPath resolveSourceMeta actually produces for known filenames', () => {
+    const files = [
+      'SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json',
+      'SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json',
+    ];
+    for (const f of files) {
+      const meta = resolveSourceMeta(f);
+      expect(isKnownSbcPdfPath(meta.pdfPath)).toBe(true);
+    }
+  });
+
+  it('rejects traversal into the private bucket\'s non-PDF prefixes', () => {
+    expect(isKnownSbcPdfPath('index/manifest.json')).toBe(false);
+    expect(isKnownSbcPdfPath('text_pages/SBC201/0001.txt')).toBe(false);
+    expect(isKnownSbcPdfPath('../index/manifest.json')).toBe(false);
+    expect(isKnownSbcPdfPath('sbc/sbc-201/../../index/manifest.json')).toBe(false);
+  });
+
+  it('rejects a path for a page range that does not exist in production', () => {
+    expect(isKnownSbcPdfPath('sbc/sbc-201/SBC 201 - The Saudi General Building Code-9999-9999.pdf')).toBe(false);
+  });
+
+  it('rejects an already-private-style path (caller must not guess the private naming scheme)', () => {
+    expect(isKnownSbcPdfPath('SBC201/pp_0001-0250.pdf')).toBe(false);
+  });
+
+  it('rejects null, undefined and empty string', () => {
+    expect(isKnownSbcPdfPath(null)).toBe(false);
+    expect(isKnownSbcPdfPath(undefined)).toBe(false);
+    expect(isKnownSbcPdfPath('')).toBe(false);
   });
 });

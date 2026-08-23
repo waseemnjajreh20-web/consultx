@@ -1,18 +1,41 @@
 /**
- * sourceMetadata.ts — pure resolver (no React, no side effects)
+ * sourceMetadata.ts — pure resolver (no React, no side effects, no
+ * side-effectful imports)
  *
  * Maps chunk/JSON source filenames emitted by the fire-safety-chat edge function
- * to their canonical uploaded PDFs in the source-pdfs Supabase Storage bucket.
+ * to their canonical uploaded PDFs, which live in the PRIVATE "sbc_pdfs_private"
+ * Supabase Storage bucket (the "source-pdfs" bucket that used to serve these
+ * publicly is being retired — see supabase/migrations/20260823000010_source_pdfs_private.sql).
  *
  * Mapping rule (100% deterministic, no ambiguity):
  *   "{base}_extracted_chunks.json"  → "{base}.pdf"
  *   "{base}_extracted.json"         → "{base}.pdf"
  *   SBC 201 filenames               → sbc/sbc-201/{base}.pdf
  *   SBC 801 filenames               → sbc/sbc-801/{base}.pdf
+ *
+ * ── pdfUrl / pdfPath contract (2026-08-23 signed-URL refactor) ─────────────
+ * `resolveSourceMeta` MUST stay pure and synchronous — SourcePanel calls it
+ * (via resolveAllSources) on every render and relies on it never throwing,
+ * never awaiting, and never changing `pdfPath` (it's the dedup key in
+ * resolveAllSources and a React `key` in SourcePanel). This module
+ * deliberately imports NOTHING that constructs a Supabase client or touches
+ * `localStorage` at load time — that dependency lives in the separate
+ * `./sourcePdfUrl.ts` module instead, precisely so this file (and every test
+ * that imports it) keeps working outside a browser.
+ *
+ * Because of that purity requirement, `pdfUrl` can NO LONGER hold a real,
+ * fetchable public URL — minting one now requires an authenticated call to
+ * the get-source-pdf-url edge function, which is async. Instead:
+ *   - `pdfUrl` is a synchronous, non-null MARKER for mappable sources (it is
+ *     currently set equal to `pdfPath`, the storage-relative path) and stays
+ *     `null` for anything that can't be mapped to a PDF. SourcePanel keeps
+ *     using its truthiness exactly as before for clickability, disabled
+ *     state, colour, filtering and index lookup — none of that logic needs a
+ *     real URL, only "is this mappable".
+ *   - To get an actual, short-lived, authenticated URL suitable for an
+ *     <iframe src> or a download link, call `fetchSignedPdfUrl(pdfPath)`
+ *     from `./sourcePdfUrl.ts`.
  */
-
-const SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co";
-const PDF_BUCKET = "source-pdfs";
 
 import sourceRegistry from "../data/sourceRegistry.json";
 
@@ -64,7 +87,11 @@ export interface SourceMeta {
   pageStart: number | null;
   /** Last page of displayed range */
   pageEnd: number | null;
-  /** Public PDF URL (null if source cannot be mapped) */
+  /**
+   * Synchronous mappability marker — equal to `pdfPath` for mappable
+   * sources, null if the source cannot be mapped to a PDF. NOT a fetchable
+   * URL; call `fetchSignedPdfUrl(pdfPath)` to get one. See file header.
+   */
   pdfUrl: string | null;
   /** Storage path within source-pdfs bucket */
   pdfPath: string | null;
@@ -159,15 +186,17 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
       : "";
   const title = `${codeLabel} — The Saudi ${is201 ? "General Building" : "Fire Protection"} Code${pageLabel}`;
 
-  // Build storage path and public URL
+  // Build storage path (this is the ALLOWED_PDF_PATHS key the edge function
+  // validates against — see get-source-pdf-url/index.ts).
   const pdfFileName = `${base}.pdf`;
   const pdfPath = `${folder}/${pdfFileName}`;
-  // URL-encode each path segment individually to handle spaces and parentheses
-  const encodedPath = pdfPath
-    .split("/")
-    .map((seg) => encodeURIComponent(seg))
-    .join("/");
-  const pdfUrl = `${SUPABASE_URL}/storage/v1/object/public/${PDF_BUCKET}/${encodedPath}`;
+  // `pdfUrl` is intentionally NOT a real, fetchable URL anymore (the bucket
+  // it used to point at is private now). It is a synchronous, non-null
+  // marker equal to `pdfPath`, kept so every existing truthiness check
+  // ("is this source mappable to a PDF") across SourcePanel and
+  // ChatInterface keeps working unchanged. Call `fetchSignedPdfUrl(pdfPath)`
+  // to get a real, short-lived signed URL.
+  const pdfUrl = pdfPath;
 
   return {
     sourceFile,
@@ -274,3 +303,6 @@ export function formatSourceLabel(meta: SourceMeta, lang: "ar" | "en" = "ar"): s
   }
   return `📖 ${code}`;
 }
+
+// Signed PDF URL resolution (fetchSignedPdfUrl, KNOWN_SBC_PDF_PATHS,
+// isKnownSbcPdfPath) lives in ./sourcePdfUrl.ts, not here — see file header.

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
+import { fetchSignedPdfUrl } from "@/utils/sourcePdfUrl";
 
 // ── Visual constants matching ConsultX dark identity ─────────────────────────
 const PANEL_BG    = "rgba(10, 14, 20, 0.97)";
@@ -177,17 +178,21 @@ function PanelHeader({
         </div>
       )}
 
-      {/* External link — only in PDF view */}
+      {/* External link — only in PDF view. Opening in a new tab now requires
+          fetching a fresh short-lived signed URL (the underlying storage
+          bucket is private), so this is a button with an async click
+          handler rather than a plain <a href>. */}
       {!isListView && activeMeta?.pdfUrl && (
-        <a
-          href={activeMeta.pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={async () => {
+            const result = await fetchSignedPdfUrl(activeMeta.pdfPath);
+            if (result) window.open(result.url, "_blank", "noopener,noreferrer");
+          }}
           className={iconBtn}
           aria-label={isRtl ? "فتح في نافذة جديدة" : "Open in new tab"}
         >
           <ExternalLink className="w-3.5 h-3.5" />
-        </a>
+        </button>
       )}
 
       {/* Print — only in PDF view */}
@@ -356,18 +361,42 @@ function PanelBody({
 }
 
 // ── PDF iframe with load / error handling ─────────────────────────────────────
+// The underlying PDF now lives behind a signed URL (the bucket is private),
+// so the actual URL must be fetched asynchronously per source. `status`
+// covers both "fetching the signed URL" and "loading it into the iframe" —
+// both show the same loading overlay; only a genuine failure (unknown/
+// rejected path, network error, or the iframe itself failing) shows the
+// error overlay.
 function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
-  // Reset on src change — use full src (including page anchor) so page jumps also reset
-  const src = `${meta.pdfUrl}#page=${meta.pageStart ?? 1}`;
-  const prevSrcRef = useRef(src);
+  // Re-fetch whenever the underlying source (identified by pdfPath) changes,
+  // including page jumps within the same source (pageStart changes the anchor
+  // but not pdfPath, so we key on both).
+  const src = signedUrl ? `${signedUrl}#page=${meta.pageStart ?? 1}` : null;
+  const requestKey = `${meta.pdfPath ?? ""}#page=${meta.pageStart ?? 1}`;
+  const prevKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (prevSrcRef.current !== src) {
-      prevSrcRef.current = src;
-      setStatus("loading");
-    }
-  }, [src]);
+    if (prevKeyRef.current === requestKey) return;
+    prevKeyRef.current = requestKey;
+
+    let cancelled = false;
+    setStatus("loading");
+    setSignedUrl(null);
+
+    fetchSignedPdfUrl(meta.pdfPath).then((result) => {
+      if (cancelled) return;
+      if (!result) {
+        setStatus("error");
+        return;
+      }
+      setSignedUrl(result.url);
+    });
+
+    return () => { cancelled = true; };
+  }, [requestKey, meta.pdfPath]);
 
   return (
     <div className="relative w-full h-full overflow-hidden">
@@ -396,32 +425,37 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
           <p className="text-sm text-center" style={{ color: "rgba(255,255,255,0.55)" }}>
             {isRtl ? "تعذّر تحميل PDF داخل اللوحة." : "Could not load PDF in panel."}
           </p>
-          <a
-            href={meta.pdfUrl!}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={async () => {
+              // We may already have a signed URL (iframe itself failed to
+              // render it) or may not (the fetch itself failed) — cover both.
+              const url = signedUrl ?? (await fetchSignedPdfUrl(meta.pdfPath))?.url;
+              if (url) window.open(url, "_blank", "noopener,noreferrer");
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 hover:opacity-90 active:scale-95"
             style={{ background: "rgba(0,212,255,0.15)", color: ACCENT, border: `1px solid rgba(0,212,255,0.3)` }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             {isRtl ? "فتح في نافذة جديدة" : "Open in new tab"}
-          </a>
+          </button>
         </div>
       )}
 
-      <iframe
-        key={src}
-        src={src}
-        className="w-full h-full border-0"
-        title={meta.title}
-        allow="fullscreen"
-        onLoad={() => setStatus("loaded")}
-        onError={() => setStatus("error")}
-        style={{
-          opacity: status === "loaded" ? 1 : 0.08,
-          transition: "opacity 0.3s ease",
-        }}
-      />
+      {src && (
+        <iframe
+          key={src}
+          src={src}
+          className="w-full h-full border-0"
+          title={meta.title}
+          allow="fullscreen"
+          onLoad={() => setStatus("loaded")}
+          onError={() => setStatus("error")}
+          style={{
+            opacity: status === "loaded" ? 1 : 0.08,
+            transition: "opacity 0.3s ease",
+          }}
+        />
+      )}
     </div>
   );
 }
