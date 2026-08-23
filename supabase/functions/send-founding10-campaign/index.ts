@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 // ============================================================
 // send-founding10-campaign
@@ -31,7 +32,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 //   { mode: "export" }                   — return CSV of eligible emails
 //
 // Required secrets:
-//   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+//   SUPABASE_URL, plus the service-role and anon/publishable keys resolved via
+//   _shared/supabaseKeys.ts (SUPABASE_SECRET_KEYS / SUPABASE_PUBLISHABLE_KEYS
+//   when configured, else the legacy SUPABASE_SERVICE_ROLE_KEY /
+//   SUPABASE_ANON_KEY),
 //   RESEND_API_KEY  (only needed for non-dry-run sends)
 //   FROM_EMAIL      (optional; defaults to "ConsultX <noreply@consultx.app>")
 //   REPLY_TO        (optional; defaults to "ConsultX <support@consultx.app>")
@@ -550,8 +554,8 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = getPublishableKey();
+    const serviceRoleKey = getSecretKey();
 
     // ── Verify caller is admin ────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
