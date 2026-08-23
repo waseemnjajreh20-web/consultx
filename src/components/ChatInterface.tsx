@@ -2056,6 +2056,12 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                           }
                           language={language}
                         />
+                        {/* AI disclaimer — shown under every assistant answer */}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {language === "ar"
+                            ? "أداة مساعدة مرجعية — القرار الهندسي مسؤولية المهندس المرخّص. تحقّق من نص الكود الأصلي قبل الاعتماد."
+                            : "Reference assistant — the engineering decision remains the licensed engineer's responsibility. Verify against the original code text before relying on it."}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -2165,6 +2171,13 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
               <Send className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Upload notice — files are processed by Google Gemini */}
+          <p className="text-xs text-muted-foreground mt-2">
+            {language === "ar"
+              ? "تُعالج الملفات المرفوعة بواسطة Google Gemini لتحليلها. لا ترفع مستندات سرية بدون إذن صاحبها."
+              : "Uploaded files are processed by Google Gemini for analysis. Do not upload confidential documents without the owner's permission."}
+          </p>
 
           {/* Daily usage counter + Mode indicator */}
           <div className="flex items-center justify-between mt-2 px-1">

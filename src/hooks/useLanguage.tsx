@@ -52,6 +52,29 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = language;
   }, [language, dir]);
 
+  // Update document title + meta description/og tags to follow the UI language
+  useEffect(() => {
+    const title =
+      language === "ar"
+        ? "ConsultX | مستشارك الهندسي الذكي للحماية من الحرائق"
+        : "ConsultX | AI Fire-Safety Code Assistant for Saudi Building Code";
+    const description =
+      language === "ar"
+        ? "احصل على إجابات دقيقة وموثقة حول الكود السعودي للحماية من الحرائق SBC 201 و SBC 801 مع تحليل المخططات الهندسية باستخدام الذكاء الاصطناعي"
+        : "Cited answers from Saudi Building Code SBC 201 and SBC 801 for fire and life safety compliance. Built for engineering consultancies.";
+
+    document.title = title;
+
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag) descTag.setAttribute("content", description);
+
+    const ogTitleTag = document.querySelector('meta[property="og:title"]');
+    if (ogTitleTag) ogTitleTag.setAttribute("content", title);
+
+    const ogDescTag = document.querySelector('meta[property="og:description"]');
+    if (ogDescTag) ogDescTag.setAttribute("content", description);
+  }, [language]);
+
   // Context value only changes when language changes — forces global re-render
   const contextValue = useMemo(
     () => ({ language, setLanguage, t, dir }),
