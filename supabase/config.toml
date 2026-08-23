@@ -89,3 +89,12 @@ verify_jwt = false
 
 [functions.get-public-case-tracking]
 verify_jwt = false
+
+# delete-account verifies the JWT itself (auth.getUser on the caller's token)
+# and additionally requires an explicit { "confirm": "DELETE" } body, matching
+# the convention used by the other functions in this project.
+[functions.delete-account]
+verify_jwt = false
+
+[functions.send-contact-message]
+verify_jwt = false

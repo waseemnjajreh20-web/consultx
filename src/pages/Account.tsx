@@ -580,9 +580,6 @@ const Account = () => {
                   {(subscription.plan.price_amount / 100).toFixed(0)}{" "}
                   {t("sar")}
                 </p>
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                  {language === "ar" ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
-                </p>
               </div>
             </div>
           )}
@@ -770,20 +767,9 @@ const Account = () => {
                       {tx.failure_code}
                     </p>
                   )}
-                  {(() => {
-                    // amount_base / amount_vat land once the billing 2026-08-23 migration
-                    // (docs/launch/billing-contract-20260823.md Section 8) is applied.
-                    // Until then, derive the split from amount the same way the backend does.
-                    const base = tx.amount_base ?? Math.round(tx.amount / 1.15);
-                    const vat = tx.amount_vat ?? (tx.amount - base);
-                    return (
-                      <p className="text-[11px] text-muted-foreground/60 mt-0.5" dir="ltr">
-                        {language === "ar" ? "الأساس" : "Base"} {(base / 100).toFixed(2)} ·{" "}
-                        {language === "ar" ? "الضريبة" : "VAT"} {(vat / 100).toFixed(2)} ·{" "}
-                        {language === "ar" ? "الإجمالي" : "Total"} {(tx.amount / 100).toFixed(2)}
-                      </p>
-                    );
-                  })()}
+                  {/* No tax breakdown is shown: the seller is not VAT-registered,
+                      so the charged amount is the whole consideration. The amount
+                      is rendered once, on the right of this row. */}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="font-medium">

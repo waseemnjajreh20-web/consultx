@@ -68,8 +68,6 @@ type SeatState = Record<string, number>;
 type CheckoutQuote = {
   flow: string;
   amount: number;
-  amount_base: number;
-  amount_vat: number;
   plan_price: number;
   verification_credit: number;
   description: string;
@@ -218,11 +216,6 @@ const Subscribe = () => {
           ? {
               flow: String(data.flow ?? ""),
               amount: data.amount,
-              amount_base: typeof data.amount_base === "number" ? data.amount_base : Math.round(data.amount / 1.15),
-              amount_vat:
-                typeof data.amount_vat === "number"
-                  ? data.amount_vat
-                  : data.amount - Math.round(data.amount / 1.15),
               plan_price: typeof data.plan_price === "number" ? data.plan_price : data.amount,
               verification_credit: typeof data.verification_credit === "number" ? data.verification_credit : 0,
               description: data.description,
@@ -364,7 +357,8 @@ const Subscribe = () => {
   const currentPlan = plans.find((p) => p.id === selectedPlan);
 
   // Billing contract 2026-08-23 (docs/launch/billing-contract-20260823.md Section 1):
-  // prices are VAT-inclusive. base = round(total / 1.15), vat = total - base.
+  // the seller is NOT VAT-registered, so the plan price is the whole amount
+  // charged — no tax component is computed, displayed, or implied here.
   const isPerSeatSelected = currentPlan ? PER_SEAT_SLUGS.has(currentPlan.slug) : false;
   const selectedSeatCount = currentPlan && isPerSeatSelected
     ? (seatCounts[currentPlan.id] ?? Math.max(1, currentPlan.min_seats ?? 1))
@@ -372,8 +366,6 @@ const Subscribe = () => {
   const selectedTotalHalalas = currentPlan
     ? (isPerSeatSelected ? (currentPlan.price_per_seat ?? 0) * selectedSeatCount : currentPlan.price_amount)
     : 0;
-  const vatBaseHalalas = Math.round(selectedTotalHalalas / 1.15);
-  const vatAmountHalalas = selectedTotalHalalas - vatBaseHalalas;
   const selectedTotalSar = selectedTotalHalalas / 100;
 
   // Billing contract Section 6: once moyasar-create-subscription has answered,
@@ -386,8 +378,6 @@ const Subscribe = () => {
     ? checkoutQuote.flow === "trial_card_verification"
     : isTrialActive;
   const displayTotalHalalas = checkoutQuote ? checkoutQuote.amount : selectedTotalHalalas;
-  const displayBaseHalalas = checkoutQuote ? checkoutQuote.amount_base : vatBaseHalalas;
-  const displayVatHalalas = checkoutQuote ? checkoutQuote.amount_vat : vatAmountHalalas;
   const displayTotalSar = displayTotalHalalas / 100;
   const displayDescription = checkoutQuote?.description ?? null;
 
@@ -563,9 +553,6 @@ const Subscribe = () => {
                             ? `الإجمالي: ${monthlyTotalSar.toFixed(0)} ريال / شهر`
                             : `Total: ${monthlyTotalSar.toFixed(0)} SAR / month`}
                         </div>
-                        <div className="text-[11px] text-muted-foreground/70 mt-0.5">
-                          {language === "ar" ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
-                        </div>
                       </>
                     ) : (
                       <div className="text-3xl font-bold text-primary">
@@ -575,11 +562,6 @@ const Subscribe = () => {
                         {plan.price_amount > 0 && (
                           <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
                         )}
-                      </div>
-                    )}
-                    {!isPerSeat && plan.price_amount > 0 && (
-                      <div className="text-[11px] text-muted-foreground/70 -mt-2 mb-1">
-                        {language === "ar" ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
                       </div>
                     )}
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
@@ -646,18 +628,11 @@ const Subscribe = () => {
                         ? `سيتم خصم ${displayTotalSar.toFixed(2)} ريال للتحقق من البطاقة، ويُخصم من أول فاتورة`
                         : `SAR ${displayTotalSar.toFixed(2)} will be charged to verify the card — deducted from your first invoice`)
                     : (language === "ar"
-                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%)`
-                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now (incl. 15% VAT)`)}
+                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now`)}
                 </p>
                 {displayDescription && (
                   <p className="mt-1 text-xs text-muted-foreground/80" dir="ltr">{displayDescription}</p>
-                )}
-                {displayTotalHalalas > 0 && (
-                  <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground/80" dir="ltr">
-                    <span>{language === "ar" ? "الأساس" : "Base"}: {(displayBaseHalalas / 100).toFixed(2)} SAR</span>
-                    <span>{language === "ar" ? "الضريبة" : "VAT"}: {(displayVatHalalas / 100).toFixed(2)} SAR</span>
-                    <span>{language === "ar" ? "الإجمالي" : "Total"}: {displayTotalSar.toFixed(2)} SAR</span>
-                  </div>
                 )}
               </div>
 
@@ -725,8 +700,8 @@ const Subscribe = () => {
                         ? `سيتم خصم ${displayTotalSar.toFixed(2)} ريال للتحقق من البطاقة، ويُخصم من أول فاتورة.`
                         : `SAR ${displayTotalSar.toFixed(2)} will be charged to verify the card — deducted from your first invoice.`)
                     : (language === "ar"
-                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%).`
-                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now (incl. 15% VAT).`)}
+                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن.`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now.`)}
                   {displayDescription && (
                     <span className="block mt-1 text-xs" dir="ltr">{displayDescription}</span>
                   )}

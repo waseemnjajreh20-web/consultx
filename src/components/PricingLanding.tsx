@@ -208,17 +208,11 @@ const PricingLanding = () => {
                         ? `حد أدنى ${plan.minSeats} مستخدمين — يبدأ من ${startingTotal.toLocaleString()} ريال / شهر`
                         : `Minimum ${plan.minSeats} users — starts at ${startingTotal.toLocaleString()} SAR / month`}
                     </div>
-                    <div className="text-[11px] text-muted-foreground/70 mt-1">
-                      {isAr ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
-                    </div>
                   </div>
                 ) : (
                   <div className="mb-6">
                     <span className="text-3xl font-black text-foreground">{plan.price}</span>
                     <span className="text-sm text-muted-foreground ms-1">{t("perMonth")}</span>
-                    <div className="text-[11px] text-muted-foreground/70 mt-1">
-                      {isAr ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
-                    </div>
                   </div>
                 )}
 

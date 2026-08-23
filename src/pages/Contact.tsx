@@ -4,10 +4,38 @@ import SiteFooter from "@/components/SiteFooter";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Mail, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+type SubmitState = "idle" | "submitting" | "success" | "error";
+
+// Local copy for this page only — Contact.tsx does not touch src/lib/translations.ts.
+const CONTACT_LOCAL_COPY = {
+  errorFallback: {
+    ar: "تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى، أو راسلنا مباشرة على",
+    en: "We couldn't send your message. Please try again, or email us directly at",
+  },
+  sending: {
+    ar: "جارٍ الإرسال...",
+    en: "Sending...",
+  },
+  successTitle: {
+    ar: "تم إرسال رسالتك بنجاح",
+    en: "Your message was sent successfully",
+  },
+  successBody: {
+    ar: "وصلتنا رسالتك وسنرد عليك قريبًا على بريدك الإلكتروني.",
+    en: "We've received your message and will get back to you by email soon.",
+  },
+  sendAnother: {
+    ar: "إرسال رسالة أخرى",
+    en: "Send another message",
+  },
+};
 
 export default function Contact() {
   const { t, language } = useLanguage();
   const isAr = language === "ar";
+  const copyLang = isAr ? "ar" : "en";
 
   const [formState, setFormState] = useState({
     name: "",
@@ -15,19 +43,41 @@ export default function Contact() {
     subject: "",
     message: "",
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Open mail client as fallback (no backend email endpoint yet)
-    const body = encodeURIComponent(
-      `Name: ${formState.name}\nEmail: ${formState.email}\n\n${formState.message}`
-    );
-    window.open(
-      `mailto:info@consultx.app?subject=${encodeURIComponent(formState.subject)}&body=${body}`,
-      "_blank"
-    );
-    setSubmitted(true);
+    if (submitState === "submitting") return; // guard against double-submit
+
+    setSubmitState("submitting");
+    setErrorMessage(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("send-contact-message", {
+        body: formState,
+      });
+
+      if (error || !data?.success) {
+        setErrorMessage(
+          (data && typeof data.error === "string" && data.error) ||
+            (error instanceof Error ? error.message : null),
+        );
+        setSubmitState("error");
+        return;
+      }
+
+      setSubmitState("success");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : null);
+      setSubmitState("error");
+    }
+  };
+
+  const handleSendAnother = () => {
+    setFormState({ name: "", email: "", subject: "", message: "" });
+    setSubmitState("idle");
+    setErrorMessage(null);
   };
 
   return (
@@ -42,77 +92,127 @@ export default function Contact() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
           {/* Left: Contact Form */}
           <div>
-            {submitted ? (
+            {submitState === "success" ? (
               <div
                 className="p-6 rounded-2xl text-center"
                 style={{
                   background: "rgba(0,212,255,0.04)",
                   border: "1px solid rgba(0,212,255,0.2)",
                 }}
+                role="status"
               >
                 <p className="text-foreground font-semibold text-lg mb-2">
-                  {isAr
-                    ? "تم فتح برنامج البريد — أرسل الرسالة لإتمام التواصل"
-                    : "Your email app was opened — send the message to complete"}
+                  {CONTACT_LOCAL_COPY.successTitle[copyLang]}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {isAr
-                    ? "إذا لم يفتح تطبيق البريد تلقائياً، راسلنا مباشرة على info@consultx.app. نرد عادةً خلال 24 ساعة."
-                    : "If your email app didn't open automatically, reach us directly at info@consultx.app. We usually respond within 24 hours."}
+                <p className="text-sm text-muted-foreground mb-4">
+                  {CONTACT_LOCAL_COPY.successBody[copyLang]}
                 </p>
+                <Button type="button" variant="outline" onClick={handleSendAnother}>
+                  {CONTACT_LOCAL_COPY.sendAnother[copyLang]}
+                </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+                {submitState === "error" && (
+                  <div
+                    className="p-4 rounded-xl text-sm"
+                    style={{
+                      background: "rgba(239,68,68,0.06)",
+                      border: "1px solid rgba(239,68,68,0.25)",
+                    }}
+                    role="alert"
+                  >
+                    {errorMessage && (
+                      <p className="text-foreground mb-1">{errorMessage}</p>
+                    )}
+                    <p className="text-muted-foreground">
+                      {CONTACT_LOCAL_COPY.errorFallback[copyLang]}{" "}
+                      <a href="mailto:info@consultx.app" className="text-primary hover:underline">
+                        info@consultx.app
+                      </a>
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm text-muted-foreground">{t("contactFormName")}</label>
+                  <label htmlFor="contact-name" className="text-sm text-muted-foreground">
+                    {t("contactFormName")}
+                  </label>
                   <input
+                    id="contact-name"
                     type="text"
                     required
+                    maxLength={200}
+                    disabled={submitState === "submitting"}
                     value={formState.name}
                     onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors disabled:opacity-50"
                     placeholder={isAr ? "اسمك الكامل" : "Your full name"}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm text-muted-foreground">{t("contactFormEmail")}</label>
+                  <label htmlFor="contact-email" className="text-sm text-muted-foreground">
+                    {t("contactFormEmail")}
+                  </label>
                   <input
+                    id="contact-email"
                     type="email"
                     required
+                    maxLength={254}
+                    disabled={submitState === "submitting"}
                     value={formState.email}
                     onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors disabled:opacity-50"
                     placeholder={isAr ? "بريدك الإلكتروني" : "your@email.com"}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm text-muted-foreground">{t("contactFormSubject")}</label>
+                  <label htmlFor="contact-subject" className="text-sm text-muted-foreground">
+                    {t("contactFormSubject")}
+                  </label>
                   <input
+                    id="contact-subject"
                     type="text"
                     required
+                    maxLength={300}
+                    disabled={submitState === "submitting"}
                     value={formState.subject}
                     onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors disabled:opacity-50"
                     placeholder={isAr ? "موضوع الرسالة" : "Message subject"}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm text-muted-foreground">{t("contactFormMessage")}</label>
+                  <label htmlFor="contact-message" className="text-sm text-muted-foreground">
+                    {t("contactFormMessage")}
+                  </label>
                   <textarea
+                    id="contact-message"
                     required
+                    minLength={10}
+                    maxLength={5000}
                     rows={5}
+                    disabled={submitState === "submitting"}
                     value={formState.message}
                     onChange={(e) => setFormState({ ...formState, message: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent border border-border/40 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors resize-none disabled:opacity-50"
                     placeholder={isAr ? "اكتب رسالتك هنا..." : "Write your message here..."}
                   />
                 </div>
 
-                <Button type="submit" variant="hero" className="w-full mt-1">
-                  {t("contactFormSubmit")}
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="w-full mt-1"
+                  disabled={submitState === "submitting"}
+                  aria-busy={submitState === "submitting"}
+                >
+                  {submitState === "submitting"
+                    ? CONTACT_LOCAL_COPY.sending[copyLang]
+                    : t("contactFormSubmit")}
                 </Button>
               </form>
             )}

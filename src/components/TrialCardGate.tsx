@@ -109,7 +109,6 @@ export function TrialCardBanner({
                 {" "}
                 — عند انتهائها في {expiresAtLabel} سنحصّل {firstChargeSar.toFixed(2)} ريال (سعر
                 الخطة {planPriceSar!.toFixed(0)} ريال ناقص 1.00 ريال التحقق المخصوم من أول فاتورة).
-                الأسعار شاملة ضريبة القيمة المضافة 15%.
               </>
             )}
           </>
@@ -121,7 +120,7 @@ export function TrialCardBanner({
                 {" "}
                 — when it ends on {expiresAtLabel} we will charge SAR {firstChargeSar.toFixed(2)}{" "}
                 (plan price SAR {planPriceSar!.toFixed(0)} minus the SAR 1.00 verification,
-                deducted from your first invoice). Prices include 15% VAT.
+                deducted from your first invoice).
               </>
             )}
           </>

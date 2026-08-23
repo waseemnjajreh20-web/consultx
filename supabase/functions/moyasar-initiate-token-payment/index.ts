@@ -19,7 +19,7 @@ const corsHeaders = {
 // row (see docs/launch/billing-contract-20260823.md, Section 2):
 //   - inside the trial window  -> 1.00 SAR card verification,
 //                                 deducted from the first invoice
-//   - no active trial          -> full VAT-inclusive plan price,
+//   - no active trial          -> full plan price,
 //                                 activated immediately
 // The client never supplies an amount.
 //

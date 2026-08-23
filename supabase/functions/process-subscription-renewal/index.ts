@@ -5,7 +5,7 @@ import {
   isUndefinedColumnError,
   OPTIONAL_TRANSACTION_COLUMNS,
   planPriceFor,
-  splitVat,
+  chargeSplit,
   withoutKeys,
 } from "../_shared/billing.ts";
 
@@ -279,7 +279,8 @@ serve(async (req) => {
     // Trial conversions are recorded as payment_type "renewal" too, so the
     // dunning / retry machinery and the "was this sub ever really paid?"
     // counter treat them uniformly.
-    const vatSplit = splitVat(chargeAmount);
+    // chargeSplit() records vat = 0 while VAT_REGISTERED is false (seller is not VAT-registered).
+    const vatSplit = chargeSplit(chargeAmount);
     const txPayload: Record<string, any> = {
       user_id: sub.user_id,
       subscription_id: sub.id,

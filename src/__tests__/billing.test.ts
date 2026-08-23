@@ -7,7 +7,10 @@
  * Owner decisions encoded here:
  *   1. A card is required to start the free trial (1.00 SAR verification).
  *   2. No active trial  -> full plan price charged immediately.
- *   3. subscription_plans prices are VAT-INCLUSIVE (15% KSA VAT).
+ *   3. The seller is NOT VAT-REGISTERED. No charge carries a tax component,
+ *      so every live charge records amount_base = amount and amount_vat = 0.
+ *      `splitVat` is retained and tested as ready-for-registration arithmetic
+ *      only — `chargeSplit` is what live code applies.
  *   4. The 1.00 SAR verification is DEDUCTED from the first real invoice.
  *      There is no refund.
  */
@@ -20,6 +23,7 @@ import {
   EID50_PRO_AMOUNT,
   expectedAmountsFor,
   FOUNDING10_AMOUNT,
+  chargeSplit,
   isUndefinedColumnError,
   isInTrial,
   parseFlow,
@@ -46,7 +50,7 @@ const PRO: PlanLike = {
   slug: "pro",
   name_en: "Pro",
   currency: "SAR",
-  price_amount: 24500, // 245.00 SAR incl. VAT
+  price_amount: 24500, // 245.00 SAR — the whole price, no tax component
   price_per_seat: null,
   min_seats: 1,
   duration_days: 30,
@@ -99,9 +103,9 @@ const returningSub = (over: Partial<SubLike> = {}): SubLike => ({
   ...over,
 });
 
-// ── splitVat ─────────────────────────────────────────────────────────────────
+// ── splitVat (NOT APPLIED TO LIVE CHARGES) ───────────────────────────────────
 
-describe("splitVat", () => {
+describe("splitVat — dormant arithmetic, not applied while the seller is not VAT-registered", () => {
   it("splits the Pro plan price into base 21304 / vat 3196", () => {
     expect(splitVat(24500)).toEqual({ base: 21304, vat: 3196, total: 24500 });
   });
@@ -123,6 +127,34 @@ describe("splitVat", () => {
   it("treats zero and negative totals as zero", () => {
     expect(splitVat(0)).toEqual({ base: 0, vat: 0, total: 0 });
     expect(splitVat(-500)).toEqual({ base: 0, vat: 0, total: 0 });
+  });
+});
+
+// ── chargeSplit (what live charges actually record) ──────────────────────────
+
+describe("chargeSplit — the split recorded against a real charge", () => {
+  it("records no tax component: the whole amount is the base", () => {
+    expect(chargeSplit(24500)).toEqual({ base: 24500, vat: 0, total: 24500 });
+    expect(chargeSplit(100)).toEqual({ base: 100, vat: 0, total: 100 });
+  });
+
+  it("never equals the dormant splitVat result for a non-zero amount", () => {
+    for (const total of [100, 9900, 12250, 24500, 54900, 274500]) {
+      expect(chargeSplit(total).vat).toBe(0);
+      expect(splitVat(total).vat).toBeGreaterThan(0);
+    }
+  });
+
+  it("still reconstructs the total exactly", () => {
+    for (const total of [1, 99, 100, 9900, 24500, 439200]) {
+      const { base, vat } = chargeSplit(total);
+      expect(base + vat).toBe(total);
+    }
+  });
+
+  it("treats zero and negative totals as zero", () => {
+    expect(chargeSplit(0)).toEqual({ base: 0, vat: 0, total: 0 });
+    expect(chargeSplit(-500)).toEqual({ base: 0, vat: 0, total: 0 });
   });
 });
 
@@ -208,11 +240,11 @@ describe("computeCharge — trial card verification", () => {
     expect(d.planPrice).toBe(439200); // full price still reported for display
   });
 
-  it("records the VAT split of the verification charge", () => {
+  it("records NO tax on the verification charge", () => {
     const d = computeCharge(PRO, trialingSub(), null, 0, NOW);
-    expect(d.base).toBe(87);
-    expect(d.vat).toBe(13);
-    expect(d.base + d.vat).toBe(d.amount);
+    expect(d.amount).toBe(100);
+    expect(d.base).toBe(100);
+    expect(d.vat).toBe(0);
   });
 });
 
@@ -240,11 +272,11 @@ describe("computeCharge — immediate charge", () => {
     expect(d8.effectiveSeats).toBe(8);
   });
 
-  it("records the VAT split of the full price", () => {
+  it("records NO tax on the full price", () => {
     const d = computeCharge(PRO, returningSub(), null, 0, NOW);
-    expect(d.base).toBe(21304);
-    expect(d.vat).toBe(3196);
-    expect(d.base + d.vat).toBe(24500);
+    expect(d.amount).toBe(24500);
+    expect(d.base).toBe(24500);
+    expect(d.vat).toBe(0);
   });
 });
 
@@ -294,10 +326,11 @@ describe("computeCharge — post-trial first charge", () => {
     expect(d.amount).toBe(274400); // 274500 - 100
   });
 
-  it("VAT-splits the discounted first invoice, not the list price", () => {
+  it("records the discounted first invoice as base, with no tax component", () => {
     const d = computeCharge(PRO, lapsedTrialSub(), null, 0, NOW);
-    expect(d.base + d.vat).toBe(24400);
-    expect(d.base).toBe(splitVat(24400).base);
+    expect(d.amount).toBe(24400);
+    expect(d.base).toBe(24400);
+    expect(d.vat).toBe(0);
   });
 });
 
@@ -403,7 +436,7 @@ describe("isUndefinedColumnError / withoutKeys", () => {
   });
 
   it("strips only the requested keys", () => {
-    const payload = { amount: 100, amount_base: 87, amount_vat: 13, currency: "SAR" };
+    const payload = { amount: 100, amount_base: 100, amount_vat: 0, currency: "SAR" };
     expect(withoutKeys(payload, ["amount_base", "amount_vat"])).toEqual({ amount: 100, currency: "SAR" });
   });
 });

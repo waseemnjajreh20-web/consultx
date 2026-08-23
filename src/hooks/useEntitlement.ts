@@ -19,6 +19,9 @@ import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
  * "subscribed"       → active paid subscription
  * "trial_active"     → free launch trial currently in progress
  * "trial_pending"    → existing user eligible for launch trial but not yet activated
+ * "trial_conversion_pending"
+ *                    → trial window closed WITH a card on file: not active, and a
+ *                      first charge is armed. Must never be presented as plain "free".
  * "trial_expired"    → trial ended, not subscribed
  * "free"             → authenticated, no active access
  */
@@ -31,8 +34,27 @@ export type EntitlementState =
   | "subscribed"
   | "trial_active"
   | "trial_pending"
+  | "trial_conversion_pending"
   | "trial_expired"
   | "free";
+
+/**
+ * Copy for the `trial_conversion_pending` state (finding H5).
+ *
+ * Defined here rather than in src/lib/translations.ts so this state can be
+ * surfaced without touching the shared translation table. Account.tsx should
+ * render `TRIAL_CONVERSION_PENDING_COPY[language]` next to the cancel button.
+ */
+export const TRIAL_CONVERSION_PENDING_COPY = {
+  ar: {
+    title: "انتهت تجربتك المجانية وبطاقتك مسجلة لدينا",
+    body: "اشتراكك لم يُفعّل بعد، وأول فاتورة مجدولة على بطاقتك. إذا لم ترغب في المتابعة، ألغِ الآن قبل تنفيذ الخصم.",
+  },
+  en: {
+    title: "Your free trial has ended and your card is on file",
+    body: "Your subscription is not active yet, and the first invoice is scheduled against your card. If you do not want to continue, cancel now before it is charged.",
+  },
+} as const;
 
 export interface UseEntitlementResult {
   // Discriminant state — prefer switching on this
@@ -91,6 +113,12 @@ export interface UseEntitlementResult {
   // status === "trialing", trial_end has passed, card on file: not active, and
   // the hourly renewal job still owes this user the post-trial first charge.
   isTrialConversionPending: boolean;
+  // Whether the "cancel my subscription" affordance must be offered.
+  // MUST include isTrialConversionPending: that user is not active, so a gate of
+  // `isTrialActive || isPaidActive` hides the cancel button at exactly the moment
+  // a charge is armed against their card (finding H5). Gate the cancel UI on this
+  // flag, never on active-access booleans.
+  canCancelSubscription: boolean;
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -149,6 +177,9 @@ export function useEntitlement(): UseEntitlementResult {
     : null;
 
   const hasActiveAccess = isPaidActive || isTrialActive || hasEnterpriseAccess;
+  // H5: a trial_conversion_pending user has NO active access but DOES have a
+  // charge armed against a stored card, so they must still be able to cancel.
+  const canCancelSubscription = isPaidActive || isTrialActive || isTrialConversionPending;
   // isFreeLoggedIn: authenticated user with no active paid/trial/enterprise access.
   const isFreeLoggedIn = !isLoading && !!user && !isAdmin && !hasActiveAccess;
   // canAccessChat: any authenticated user may enter the workspace.
@@ -159,8 +190,37 @@ export function useEntitlement(): UseEntitlementResult {
     subscription?.status === "cancelled" ||
     rawAccessState === "trial_expired";
 
-  const trialDaysRemaining = subscription?.launch_trial_days_remaining ?? 0;
-  const trialHoursRemaining = subscription?.launch_trial_hours_remaining ?? 0;
+  // ── Trial countdown (finding M11) ────────────────────────────────────────
+  // These two numbers feed every trial countdown in the product: AppShell's
+  // header pill, TrialCardBanner (which renders them right next to "we will
+  // charge SAR X when it ends"), Account and Subscribe.
+  //
+  // They used to read ONLY `launch_trial_*`, which is the LAUNCH CAMPAIGN
+  // counter (profiles.launch_trial_end, campaign closed 2026-04-28). For a
+  // paid-plan trial — the only kind that exists now — check-subscription
+  // returns 0 in those fields, so every trialing user was told
+  // "0 hrs remaining" beside a promise to charge their card.
+  //
+  // `trial_days_remaining` is the paid-subscription counter: check-subscription
+  // computes it as ceil((trial_end - now) / 1 day) and it is > 0 for the whole
+  // live trial window. Prefer it; fall back to the launch field so any surviving
+  // launch-trial user still sees a real number.
+  //
+  // check-subscription returns no hours field for the paid trial, so derive it
+  // locally from trial_end — the same source it uses for trial_days_remaining.
+  const launchTrialDaysRemaining = subscription?.launch_trial_days_remaining ?? 0;
+  const launchTrialHoursRemaining = subscription?.launch_trial_hours_remaining ?? 0;
+
+  const subTrialMsRemaining =
+    subTrialLive && Number.isFinite(subTrialEndMs) ? subTrialEndMs - Date.now() : 0;
+  const paidTrialDaysRemaining = subscription?.trial_days_remaining ?? 0;
+  const paidTrialHoursRemaining =
+    subTrialMsRemaining > 0 ? Math.floor(subTrialMsRemaining / 3_600_000) : 0;
+
+  const trialDaysRemaining =
+    paidTrialDaysRemaining > 0 ? paidTrialDaysRemaining : launchTrialDaysRemaining;
+  const trialHoursRemaining =
+    paidTrialHoursRemaining > 0 ? paidTrialHoursRemaining : launchTrialHoursRemaining;
 
   // Billing contract 2026-08-23 (docs/launch/billing-contract-20260823.md Sections 4-5):
   // a card is required to start/keep any trial. Gate strictly on card_on_file — never on
@@ -178,6 +238,9 @@ export function useEntitlement(): UseEntitlementResult {
     if (hasEnterpriseAccess)                             return "enterprise";
     if (isPaidActive)                                    return "subscribed";
     if (isTrialActive)                                   return "trial_active";
+    // Before trial_expired on purpose: a lapsed trial WITH a card on file is a
+    // different (and more urgent) fact than a lapsed trial without one.
+    if (isTrialConversionPending)                        return "trial_conversion_pending";
     if (isTrialExpired)                                  return "trial_expired";
     if (rawAccessState === "eligible_existing_pending")  return "trial_pending";
     return "free";
@@ -223,5 +286,6 @@ export function useEntitlement(): UseEntitlementResult {
     needsTrialCard,
     hasTrialCard,
     isTrialConversionPending,
+    canCancelSubscription,
   };
 }

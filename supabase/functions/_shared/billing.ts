@@ -7,7 +7,12 @@
 // `src/__tests__/billing.test.ts` (vitest / Node).
 //
 // Money is ALWAYS an integer number of halalas (1 SAR = 100).
-// Prices in `subscription_plans` are VAT-INCLUSIVE (15% KSA VAT).
+//
+// The selling entity (مؤسسة العباقرة الأوائل لتقنية نظم المعلومات, CR 7042173794)
+// is NOT VAT-registered. A non-registered seller in KSA must not charge VAT,
+// must not present a price as VAT-inclusive, and must not issue a tax invoice.
+// Prices in `subscription_plans` are therefore the WHOLE consideration, with no
+// tax component. See `VAT_REGISTERED` / `chargeSplit` below.
 //
 // Contract: docs/launch/billing-contract-20260823.md
 // ============================================================
@@ -15,8 +20,23 @@
 /** The card-verification charge, in halalas. 1.00 SAR. Never refunded — credited to the first invoice. */
 export const CARD_VERIFICATION_AMOUNT = 100;
 
-/** KSA VAT rate. Plan prices already include it. */
+/**
+ * KSA standard VAT rate. Kept for the day the seller registers.
+ * It is NOT applied to any live charge while `VAT_REGISTERED` is false.
+ */
 export const VAT_RATE = 0.15;
+
+/**
+ * Whether the selling entity is registered for VAT with ZATCA.
+ *
+ * FALSE today. A seller below the mandatory registration threshold may not
+ * charge or display VAT, so every live charge records the full amount as base
+ * with a zero tax component. Flipping this to `true` (after registration) is
+ * the single switch that turns `chargeSplit` back into `splitVat` — but the
+ * customer-facing copy, receipts and ZATCA e-invoicing must be handled in the
+ * same change. See docs/launch/billing-contract-20260823.md Section 1.
+ */
+export const VAT_REGISTERED: boolean = false;
 
 /** FOUNDING10 first-month price, in halalas. */
 export const FOUNDING10_AMOUNT = 1000;
@@ -82,11 +102,11 @@ export interface SubLike {
 }
 
 export interface VatSplit {
-  /** VAT-exclusive base, halalas. */
+  /** Tax-exclusive base, halalas. Equals `total` while the seller is not VAT-registered. */
   base: number;
-  /** VAT component, halalas. */
+  /** Tax component, halalas. Always 0 while the seller is not VAT-registered. */
   vat: number;
-  /** VAT-inclusive total, halalas (echoes the input). */
+  /** Total actually charged, halalas (echoes the input). */
   total: number;
 }
 
@@ -94,7 +114,7 @@ export interface ChargeDecision {
   flow: BillingFlow;
   /** Amount to charge now, halalas. */
   amount: number;
-  /** Full VAT-inclusive plan price for this subscription, halalas (before promo / credit). */
+  /** Full plan price for this subscription, halalas (before promo / credit). */
   planPrice: number;
   /** Seats actually billed. 1 for flat plans. */
   effectiveSeats: number;
@@ -106,7 +126,7 @@ export interface ChargeDecision {
   description: string;
   /** Moyasar `metadata.purpose`. */
   purpose: string;
-  /** VAT split of `amount`. */
+  /** Recorded split of `amount`. While the seller is not VAT-registered: base = amount, vat = 0. */
   base: number;
   vat: number;
 }
@@ -118,12 +138,32 @@ export interface ChargeDecision {
  *   base = round(total / 1.15)
  *   vat  = total - base
  * Guarantees base + vat === total exactly (no rounding leak).
+ *
+ * NOT APPLIED TO LIVE CHARGES. The seller is not VAT-registered, so no charge
+ * carries a tax component today. This function is kept (and unit-tested) so the
+ * arithmetic is ready and proven for the day registration happens; live code
+ * must call `chargeSplit`, never this directly.
  */
 export function splitVat(total: number): VatSplit {
   const safeTotal = Number.isFinite(total) ? Math.round(total) : 0;
   if (safeTotal <= 0) return { base: 0, vat: 0, total: Math.max(0, safeTotal) };
   const base = Math.round(safeTotal / (1 + VAT_RATE));
   return { base, vat: safeTotal - base, total: safeTotal };
+}
+
+/**
+ * The split ACTUALLY recorded against a live charge.
+ *
+ * The seller is not VAT-registered, so there is no tax component: the whole
+ * amount is the base and `vat` is 0. `amount_base` / `amount_vat` stay
+ * populated (rather than null) so the columns keep an unambiguous meaning —
+ * "0.00 tax was charged" — instead of "not recorded". When `VAT_REGISTERED`
+ * becomes true this returns `splitVat(total)` and nothing else has to move.
+ */
+export function chargeSplit(total: number): VatSplit {
+  if (VAT_REGISTERED) return splitVat(total);
+  const safeTotal = Number.isFinite(total) ? Math.max(0, Math.round(total)) : 0;
+  return { base: safeTotal, vat: 0, total: safeTotal };
 }
 
 // ── Plan pricing ──────────────────────────────────────────────────────────────
@@ -150,7 +190,7 @@ export function effectiveSeats(plan: PlanLike | null | undefined, sub: SubLike |
 }
 
 /**
- * Full VAT-inclusive price for one billing period.
+ * Full price for one billing period.
  * Per-seat plans (price_per_seat != null) multiply by effective seats;
  * flat plans use price_amount unchanged.
  */
@@ -289,7 +329,7 @@ export function computeCharge(
 
   // 1. Inside the trial window → 1 SAR card verification. Promos never apply.
   if (flow === "trial_card_verification") {
-    const split = splitVat(CARD_VERIFICATION_AMOUNT);
+    const split = chargeSplit(CARD_VERIFICATION_AMOUNT);
     return {
       flow,
       amount: CARD_VERIFICATION_AMOUNT,
@@ -309,7 +349,7 @@ export function computeCharge(
   if (flow === "post_trial_first_charge") {
     const credit = verificationCreditOwed(sub) && priorPaidCount === 0 ? CARD_VERIFICATION_AMOUNT : 0;
     const amount = Math.max(0, planPrice - credit);
-    const split = splitVat(amount);
+    const split = chargeSplit(amount);
     return {
       flow,
       amount,
@@ -330,7 +370,7 @@ export function computeCharge(
   const promoPrice = promoAmountFor(plan, promo, nowMs);
   const appliedPromo = promoPrice != null ? String(promo).trim().toUpperCase() : null;
   const amount = promoPrice ?? planPrice;
-  const split = splitVat(amount);
+  const split = chargeSplit(amount);
 
   let description = `ConsultX subscription — ${planName}`;
   let purpose = "immediate_charge";

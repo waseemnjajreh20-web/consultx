@@ -2,7 +2,8 @@
 
 **Date:** 2026-08-23
 **Branch:** `recovery/stabilization-2026-08-23`
-**Owner decisions applied:** card required to start trial · full price charged at trial end · prices are VAT-inclusive (15% KSA VAT) · 1 SAR card verification kept and deducted from the first invoice (no refund)
+**Owner decisions applied:** card required to start trial · full price charged at trial end · **the seller is NOT VAT-registered — no VAT is charged, displayed, or recorded** · 1 SAR card verification kept and deducted from the first invoice (no refund)
+**Correction 2026-08-23:** an earlier revision of this file stated prices were VAT-inclusive. That was wrong and has been reversed everywhere (see Section 1 and Section 11).
 **Status:** backend implemented, migration pending owner application (see "Migration (owner applies)")
 
 This file is the single source of truth for the payment/subscription contract. The frontend
@@ -14,16 +15,39 @@ must read field names from here — they are fixed and will not change without a
 
 All amounts are integers in **halalas** (1 SAR = 100 halalas). Currency is always `SAR`.
 
-Prices stored in `subscription_plans.price_amount` / `price_per_seat` are **VAT-inclusive**.
-Every charge records the split:
+### 1.1 VAT — the seller is NOT registered
+
+The selling entity is **مؤسسة العباقرة الأوائل لتقنية نظم المعلومات**, CR `7042173794`. It is **not
+registered for VAT with ZATCA**. A non-registered seller in Saudi Arabia must not:
+
+- charge VAT,
+- present a price as "VAT-inclusive" or "VAT-exclusive",
+- describe itself as "VAT exempt" (the service is not exempt — the seller is simply not registered),
+- issue a tax invoice or anything that resembles one.
+
+**Therefore:** `subscription_plans.price_amount` / `price_per_seat` is the **whole consideration**.
+There is no tax component. **No customer-facing surface may show any tax line**; the price is
+rendered bare (99 / 245 / 399 / 549 SAR, unchanged).
+
+Every charge records `chargeSplit(total)` — `_shared/billing.ts`:
 
 ```
-base = Math.round(total / 1.15)
-vat  = total - base
+base = total
+vat  = 0
 ```
 
-Example: Pro at `price_amount = 24500` (245.00 SAR incl. VAT)
-→ `base = 21304` (213.04 SAR) · `vat = 3196` (31.96 SAR) · `total = 24500`.
+Example: Pro at `price_amount = 24500` (245.00 SAR)
+→ `amount_base = 24500` · `amount_vat = 0` · `amount = 24500`.
+
+`amount_base` / `amount_vat` are kept populated (rather than left NULL) so the columns carry an
+unambiguous meaning — "0.00 tax was charged on this transaction" — instead of the ambiguous
+"not recorded". They are never displayed to the customer.
+
+`splitVat(total)` (the 15% arithmetic) is **retained, exported and unit-tested** but is **not applied
+to any live charge**. It exists ready for the day the owner registers. The single switch is
+`export const VAT_REGISTERED: boolean = false` in `_shared/billing.ts`; see Section 11.
+
+**No amount charged changed with this correction.** Pro is still 24500 halalas.
 
 Per-seat plans (`enterprise_team`, `enterprise_office`) have `price_per_seat != null`:
 
@@ -35,7 +59,7 @@ plan_price      = price_per_seat * effective_seats
 Flat plans (`engineer`, `pro`, legacy `enterprise`) have `price_per_seat = null` and use `price_amount`.
 
 **Card verification amount:** `100` halalas (1.00 SAR). It is a real charge, never refunded, and is
-**credited against the first real invoice**.
+**credited against the first real invoice**. Recorded as `amount_base = 100`, `amount_vat = 0`.
 
 ---
 
@@ -173,12 +197,15 @@ Do **not** say "refunded" / "يُسترد" anywhere. There is no refund. The wor
 Full trial access. Show the trial countdown (`trial_days_remaining`, `expires_at`) and the
 scheduled first charge. Copy:
 
-> **AR:** تجربتك المجانية فعّالة. عند انتهائها في {expires_at} سنحصّل **{plan_price − 1.00} ريال** (سعر الخطة {plan_price} ريال ناقص 1.00 ريال التحقق المخصوم من أول فاتورة). الأسعار شاملة ضريبة القيمة المضافة 15%.
-> **EN:** Your free trial is active. When it ends on {expires_at} we will charge **SAR {plan_price − 1.00}** (plan price SAR {plan_price} minus the SAR 1.00 verification, deducted from your first invoice). Prices include 15% VAT.
+> **AR:** تجربتك المجانية فعّالة. عند انتهائها في {expires_at} سنحصّل **{plan_price − 1.00} ريال** (سعر الخطة {plan_price} ريال ناقص 1.00 ريال التحقق المخصوم من أول فاتورة).
+> **EN:** Your free trial is active. When it ends on {expires_at} we will charge **SAR {plan_price − 1.00}** (plan price SAR {plan_price} minus the SAR 1.00 verification, deducted from your first invoice).
+
+No tax line follows the amount. See Section 1.1.
 
 ### 5.3 `active`
 `status === "active"`. Normal paid state. Show `expires_at` as the next billing date and the
-VAT-inclusive plan price. Always render "شامل ضريبة القيمة المضافة 15%" / "Includes 15% VAT".
+plan price **bare**. Never render any tax line — no "شامل ضريبة القيمة المضافة", no "Includes VAT",
+no "excluding VAT", no "VAT exempt", and no base/tax/total breakdown.
 
 ### 5.4 `past_due`
 `status === "past_due"`. Access continues until `past_due_since + 7 days` (`expires_at` already
@@ -195,7 +222,7 @@ carries the grace end). Show the update-card CTA. A dunning email has already be
 | Step | Amount shown | Moyasar `description` |
 |---|---|---|
 | Add card to start trial | `1.00 SAR` | `ConsultX card verification (deducted from first invoice)` |
-| Checkout with no active trial | full plan price incl. VAT | `ConsultX subscription — {plan.name_en}` |
+| Checkout with no active trial | full plan price | `ConsultX subscription — {plan.name_en}` |
 | Checkout with `FOUNDING10` | `10.00 SAR` | `ConsultX Founding Engineers Offer — First Month` |
 | Checkout with `EID50` (Pro only) | `122.50 SAR` | `ConsultX Eid Offer — First Month at 50% Off` |
 | First invoice at trial end | plan price − `1.00 SAR` | `ConsultX subscription — {plan.name_en} (first invoice, less 1.00 SAR card verification)` |
@@ -218,8 +245,8 @@ charged amount cannot diverge.
   "flow": "trial_card_verification" | "immediate_charge" | "post_trial_first_charge" | "renewal",
   "purpose": "card_verification" | "immediate_charge" | "founding10_first_month" | "eid50_first_month" | "post_trial_first_charge" | "renewal",
   "expected_amount": 100,          // halalas, string-or-number tolerant on read
-  "amount_base": 87,               // halalas, VAT-exclusive base
-  "amount_vat": 13,                // halalas, 15% VAT component
+  "amount_base": 100,              // halalas, equals expected_amount (no tax component)
+  "amount_vat": 0,                 // halalas, always 0 while the seller is not VAT-registered
   "promo_code": "EID50"            // only when a promo was applied
 }
 ```
@@ -239,7 +266,7 @@ here. It is idempotent and safe to re-run. Apply it in the Supabase SQL Editor.
 Verified against `src/integrations/supabase/types.ts`: all three columns are currently **missing**.
 
 ```sql
--- ConsultX billing 2026-08-23 — VAT split + card verification stamp
+-- ConsultX billing 2026-08-23 — amount split + card verification stamp
 -- Idempotent. Safe to re-run.
 
 ALTER TABLE public.user_subscriptions
@@ -254,9 +281,9 @@ ALTER TABLE public.payment_transactions
 COMMENT ON COLUMN public.user_subscriptions.card_verified_at IS
   'Timestamp of the successful 1.00 SAR card-verification charge. Presence means the 100-halala credit is owed against the first real invoice.';
 COMMENT ON COLUMN public.payment_transactions.amount_base IS
-  'VAT-exclusive base in halalas. base = round(amount / 1.15).';
+  'Tax-exclusive base in halalas. The seller is NOT VAT-registered, so base = amount and no tax is charged. Becomes round(amount / 1.15) only if/when the seller registers for VAT.';
 COMMENT ON COLUMN public.payment_transactions.amount_vat IS
-  '15% KSA VAT component in halalas. vat = amount - amount_base.';
+  'Tax component in halalas. Always 0 while the seller is not VAT-registered.';
 ```
 
 ### 8.1 Verification-credit predicate before the migration
@@ -278,17 +305,21 @@ most 1.00 SAR once; erring the other way overcharges every converting customer.
 
 **Until this is applied:** the backend writes these columns *optimistically* and silently retries
 without them when PostgREST reports an undefined column (`PGRST204` / SQLSTATE `42703`). Nothing
-breaks; the VAT split and `card_verified_at` are simply not persisted. `check-subscription` returns
+breaks; the amount split and `card_verified_at` are simply not persisted. `check-subscription` returns
 `card_verified_at: null` in that state, which is why gating must use `card_on_file`.
 
-After applying, no backfill is required for correctness. Optional backfill of historical rows:
+After applying, no backfill is required for correctness. Optional backfill of historical rows —
+**no VAT was ever charged on them, so the base is the full amount**:
 
 ```sql
 UPDATE public.payment_transactions
-   SET amount_base = round(amount / 1.15),
-       amount_vat  = amount - round(amount / 1.15)
+   SET amount_base = amount,
+       amount_vat  = 0
  WHERE amount_base IS NULL;
 ```
+
+Do **not** run the old `round(amount / 1.15)` backfill — it would fabricate a tax split that was
+never charged.
 
 ---
 
@@ -296,7 +327,7 @@ UPDATE public.payment_transactions
 
 | File | Role |
 |---|---|
-| `supabase/functions/_shared/billing.ts` | `computeCharge`, `splitVat`, `expectedAmountsFor`, `deriveFlow`, `isUndefinedColumnError` — pure, unit-tested |
+| `supabase/functions/_shared/billing.ts` | `computeCharge`, `chargeSplit` (applied to live charges), `splitVat` (dormant, kept for future registration), `expectedAmountsFor`, `deriveFlow`, `isUndefinedColumnError` — pure, unit-tested |
 | `supabase/functions/moyasar-create-subscription/index.ts` | returns the honest checkout `amount` / `description` for display |
 | `supabase/functions/moyasar-initiate-token-payment/index.ts` | decides the flow server-side and creates the Moyasar charge |
 | `supabase/functions/moyasar-webhook/index.ts` | verifies HMAC + re-verifies via API, then applies the flow-specific state transition |
@@ -329,5 +360,61 @@ UPDATE public.payment_transactions
    Edit/Write to `supabase/functions/process-subscription-renewal/`. Owner must apply
    it or lift the guard for this file. The exact patch is in the fix report.
 
-4. **No invoice / ZATCA e-invoicing.** The VAT split is recorded, but no invoice document is issued
-   and no receipt email is sent. Separate work item.
+4. **No receipt document.** No receipt is issued and no receipt email is sent. A
+   **non-VAT-registered** seller must issue a plain commercial receipt, **never** a tax invoice, and
+   it must carry no VAT line and no VAT number. ZATCA e-invoicing (Fatoora) does **not** apply while
+   the seller is not registered. Separate work item.
+
+5. **NOT VERIFIED — registration threshold.** See Section 11. The 375,000 SAR figure recorded there
+   is an ASSUMPTION for planning; it has not been confirmed with an accountant.
+
+6. **OPEN — `process-subscription-renewal` still applies the 15% split.** That file is behind
+   `.claude/hooks/guard-migrations.js` and could not be edited. It still calls `splitVat` instead of
+   `chargeSplit`, so renewal and trial-conversion rows keep recording a VAT split that was never
+   charged. The charged amount is unaffected. Two-line patch in Section 11.1.
+
+---
+
+## Section 11. When the owner registers for VAT
+
+**Nothing in this section is active today.** It is the checklist for the day
+مؤسسة العباقرة الأوائل لتقنية نظم المعلومات registers for VAT with ZATCA.
+
+**ASSUMPTION — CONFIRM WITH AN ACCOUNTANT.** Mandatory VAT registration in Saudi Arabia is
+understood to be triggered at **375,000 SAR of taxable revenue over 12 months** (voluntary
+registration is possible from a lower figure). That number is recorded here for planning only. It
+has **not** been verified against a current ZATCA source, thresholds and measurement windows can
+change, and the decision must be taken on an accountant's advice — not on this document.
+
+Also decide, at that moment, the commercial question this file cannot answer: does the current price
+become **VAT-inclusive** (the customer keeps paying 245.00 SAR and the seller absorbs the tax), or is
+VAT **added on top** (the customer starts paying 281.75 SAR)? That choice changes the charged amount
+and is an owner decision requiring advance customer notice.
+
+### What must change
+
+| # | Area | Change |
+|---|---|---|
+| 1 | `_shared/billing.ts` | Flip `VAT_REGISTERED` to `true`. `chargeSplit` then returns `splitVat(total)` and every write path records a real split with no other code change. |
+| 2 | Price basis | Apply the inclusive-vs-additive decision above to `subscription_plans.price_amount` / `price_per_seat`. If VAT is added on top, the stored prices must be raised and every existing customer notified before their next renewal. |
+| 3 | Customer-facing display | Re-add an accurate tax line at every price: `PricingLanding.tsx`, `Subscribe.tsx` (plan grid, checkout copy, payment dialog), `Account.tsx`, `TrialCardGate.tsx`, `translations.ts` (`verificationChargeReturning`). Wording must match the basis chosen in row 2. |
+| 4 | Checkout breakdown | Re-add the base / VAT / total block in `Subscribe.tsx` and the per-transaction split in `Account.tsx`. Both were removed by this correction. |
+| 5 | Receipts | Switch from a plain commercial receipt to a compliant **tax invoice**: seller name, CR, **VAT registration number**, invoice date, taxable amount, VAT rate, VAT amount, total. |
+| 6 | ZATCA e-invoicing (Fatoora) | Registration brings the e-invoicing obligation: the generation phase (structured XML / PDF-A3, QR code, UUID, hash chain) and, per ZATCA's wave assignment for this taxpayer, the integration phase (clearance / reporting to the ZATCA platform). This is an integration project, not a copy change. Confirm the applicable wave and dates with ZATCA or the accountant. |
+| 7 | Historical data | Do **not** retro-split past transactions. Rows charged before registration genuinely carried no VAT; rewriting them would misstate closed periods. |
+| 8 | Tests | `src/__tests__/billing.test.ts` — the `chargeSplit` describe block asserts `vat === 0`. It must be updated in the same change, not after. |
+
+### 11.1 Outstanding patch — `process-subscription-renewal`
+
+Blocked by `.claude/hooks/guard-migrations.js`. Owner applies, or lifts the guard for this file.
+Two lines, no change to any charged amount:
+
+```diff
+-  splitVat,
++  chargeSplit,
+```
+
+```diff
+-    const vatSplit = splitVat(chargeAmount);
++    const vatSplit = chargeSplit(chargeAmount);
+```

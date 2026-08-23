@@ -8,7 +8,7 @@ import {
   OPTIONAL_SUBSCRIPTION_COLUMNS,
   OPTIONAL_TRANSACTION_COLUMNS,
   parseFlow,
-  splitVat,
+  chargeSplit,
   withoutKeys,
 } from "../_shared/billing.ts";
 
@@ -413,8 +413,9 @@ serve(async (req) => {
 
     const mappedStatus = status === "paid" ? "captured" : "failed";
 
-    // VAT split — plan prices are VAT-INCLUSIVE (15% KSA VAT).
-    const vatSplit = splitVat(verifiedAmount);
+    // The seller is NOT VAT-registered: no tax component is charged, so the
+    // whole amount is recorded as base and amount_vat is 0.
+    const vatSplit = chargeSplit(verifiedAmount);
 
     // payment_type mirrors the flow so the renewal machinery and the
     // "has this subscription ever been really paid?" checks stay correct.
@@ -438,7 +439,7 @@ serve(async (req) => {
       };
       const { error: txErr } = await adminClient.from("payment_transactions").insert(txInsert);
       if (txErr && isUndefinedColumnError(txErr)) {
-        // Section 8 migration not applied yet — persist without the VAT columns.
+        // Section 8 migration not applied yet — persist without the split columns.
         await adminClient
           .from("payment_transactions")
           .insert(withoutKeys(txInsert, OPTIONAL_TRANSACTION_COLUMNS));

@@ -280,7 +280,7 @@ export const translations = {
     activateAndAddCard: "تفعيل الاشتراك وإضافة البطاقة",
     cardSaved: "تم حفظ بطاقتك بنجاح",
     subscriptionWillStart: "سيبدأ اشتراكك تلقائياً بعد انتهاء الفترة التجريبية",
-    verificationChargeReturning: "سيتم تحصيل سعر الخطة كاملاً الآن (شامل ضريبة القيمة المضافة 15%) لتفعيل الاشتراك فوراً",
+    verificationChargeReturning: "سيتم تحصيل سعر الخطة كاملاً الآن لتفعيل الاشتراك فوراً",
 
     // Preferences Hub
     prefsTab_account: "الحساب",
@@ -695,7 +695,7 @@ export const translations = {
     activateAndAddCard: "Activate & Add Card",
     cardSaved: "Your card has been saved successfully",
     subscriptionWillStart: "Your subscription will auto-start after the trial ends",
-    verificationChargeReturning: "The full plan price (incl. 15% VAT) will be charged now to activate your subscription immediately",
+    verificationChargeReturning: "The full plan price will be charged now to activate your subscription immediately",
 
     // Preferences Hub
     prefsTab_account: "Account",
