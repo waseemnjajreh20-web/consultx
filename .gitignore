@@ -48,3 +48,9 @@ opencode.json
 # TestSprite generated artifacts (tool output, not source)
 testsprite_tests/
 
+
+# E2E test state: JWTs, anon keys, per-run state with credentials (never commit)
+.verdent/testing/e2e/.anon_key
+.verdent/testing/e2e/.user_jwt
+.verdent/testing/e2e/*_state.json
+.verdent/testing/e2e/*_results.json

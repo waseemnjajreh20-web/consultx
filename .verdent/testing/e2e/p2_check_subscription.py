@@ -4,8 +4,12 @@ import re
 import httpx
 
 BASE_URL = "https://www.consultx.app"
-EMAIL = "njajrehwaseem+consultxinvite1@gmail.com"
-PASSWORD = "Phase2Invite!2026"
+import os
+
+EMAIL = os.environ.get("CONSULTX_TEST_EMAIL", "")
+PASSWORD = os.environ.get("CONSULTX_TEST_PASSWORD", "")
+if not EMAIL or not PASSWORD:
+    raise SystemExit("Set CONSULTX_TEST_EMAIL and CONSULTX_TEST_PASSWORD (never hardcode credentials).")
 
 
 def get_anon_key():
