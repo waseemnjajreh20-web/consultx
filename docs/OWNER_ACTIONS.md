@@ -80,6 +80,52 @@ tables plus `user_public_profiles.phone` are readable by any signed-in user.
 
 ---
 
+## Cron secret mismatch — LAUNCH BLOCKER (found 2026-08-23)
+
+**CONFIRMED in production.** The hourly pg_cron job `process-subscription-renewal`
+exists, is active, and fires on schedule, but every recorded HTTP response in
+`net._http_response` is `401 {"error":"Unauthorized"}` (six consecutive hourly
+runs verified directly, 05:00-10:00 UTC on 2026-08-23).
+
+Cause: the job sends the Vault secret named `cron_secret` in the `x-cron-secret`
+header; the edge function compares it to the `CRON_SECRET` edge-function secret.
+The two values do not match. Consequence: **no trial has ever converted to paid
+and no renewal has ever charged.** Nothing in the billing layer works until this
+is reconciled.
+
+### Fix (owner, two steps, ORDER MATTERS)
+
+**Step 0 - do NOT fix the secret yet.** Production still runs April-May billing
+code. The renewal function deployed today contains the runaway-recharge bug that
+commit 462ded7 fixed. If the cron starts succeeding before the fixed functions
+are deployed, that bug goes live against real saved cards. Deploy first
+(see the release checklist), then:
+
+**Step 1 - generate ONE new value** (never reuse an old one, never paste it in
+chat or commit it). Example: `openssl rand -hex 32`.
+
+**Step 2 - set it in BOTH places with the same value:**
+
+  a) Edge-function secret (terminal, value read from an env var, not typed
+     inline into history):
+       npx supabase secrets set CRON_SECRET="$env:NEW_CRON_SECRET" --project-ref hrnltxmwoaphgejckutk
+
+  b) Vault secret (Supabase SQL Editor). Replace <VALUE> by hand in the editor:
+       select vault.update_secret(
+         (select id from vault.secrets where name = 'cron_secret'),
+         '<VALUE>'
+       );
+
+**Step 3 - verify** (read-only, the orchestrator can run this):
+       select status_code, created from net._http_response
+       order by created desc limit 3;
+   The next hourly run must show `200`. Then confirm the function log shows
+   `Renewal job:` lines rather than `rejected`.
+
+Status: `[ ]` pending
+
+---
+
 ## Repository visibility — CLOSED 2026-08-23
 
 The GitHub repository `waseemnjajreh20-web/consultx` was **PUBLIC** until
