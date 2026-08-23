@@ -10,7 +10,7 @@ SUPABASE_URL = "https://hrnltxmwoaphgejckutk.supabase.co"
 USER_A_EMAIL = "njajrehwaseem+consultxrelease1@gmail.com"
 USER_A_PASSWORD = os.environ["CONSULTX_TEST_PASSWORD"]
 USER_B_EMAIL = "njajrehwaseem+consultxrelease2@gmail.com"
-USER_B_PASSWORD = "Phase2Release!2026"
+USER_B_PASSWORD = os.environ["CONSULTX_TEST_PASSWORD_B"]
 
 
 def get_anon_key():
