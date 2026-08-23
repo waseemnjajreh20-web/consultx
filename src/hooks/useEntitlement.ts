@@ -88,6 +88,9 @@ export interface UseEntitlementResult {
   cardVerifiedAt: string | null; // subscription?.card_verified_at — null-safe, may lag card_on_file
   needsTrialCard: boolean;       // trialing AND no card on file — must block chat (UX state 5.1)
   hasTrialCard: boolean;         // trialing AND card on file — non-blocking banner (UX state 5.2)
+  // status === "trialing", trial_end has passed, card on file: not active, and
+  // the hourly renewal job still owes this user the post-trial first charge.
+  isTrialConversionPending: boolean;
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -102,8 +105,30 @@ export function useEntitlement(): UseEntitlementResult {
 
   const isPaidActive =
     rawAccessState === "paid_active" || subscription?.status === "active";
-  const isTrialActive =
-    rawAccessState === "trial_active" || subscription?.status === "trialing";
+  // A `trialing` subscription row is only in trial while trial_end is still in
+  // the future. Status alone is NOT enough: check-subscription deliberately
+  // leaves a lapsed `trialing` row untouched when a card is on file so the
+  // hourly renewal job can convert it, so the row sits in status "trialing"
+  // with a past trial_end. Treating that as an active trial made the checkout
+  // render "SAR 1.00" while the server computed the full post_trial_first_charge.
+  //
+  // This mirrors isInTrial() in supabase/functions/_shared/billing.ts — the two
+  // definitions must stay identical.
+  //
+  // Fallback: when trial_end is absent from the response (older deployed
+  // check-subscription), fall back to the server's own `active` flag, which is
+  // already gated on trial_end > now for the trialing branch. Never fall back
+  // to status alone.
+  const subTrialEndMs = subscription?.trial_end ? Date.parse(subscription.trial_end) : NaN;
+  const subTrialLive =
+    subscription?.status === "trialing" &&
+    (Number.isFinite(subTrialEndMs)
+      ? subTrialEndMs > Date.now()
+      : subscription?.active === true);
+  const isTrialActive = rawAccessState === "trial_active" || subTrialLive;
+  // status === "trialing" but the window has closed and a card is on file:
+  // the renewal cron still owes this user their first real invoice.
+  const isTrialConversionPending = subscription?.trial_conversion_pending === true;
   const isTrialExpired = rawAccessState === "trial_expired";
 
   // E6: Enterprise org access — derived from check-subscription response
@@ -197,5 +222,6 @@ export function useEntitlement(): UseEntitlementResult {
     cardVerifiedAt,
     needsTrialCard,
     hasTrialCard,
+    isTrialConversionPending,
   };
 }

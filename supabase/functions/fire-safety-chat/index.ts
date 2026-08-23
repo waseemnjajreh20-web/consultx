@@ -2703,7 +2703,7 @@ serve(async (req) => {
         // ── Check active paid subscription ────────────────────────────────────
         const { data: sub } = await adminClient
           .from("user_subscriptions")
-          .select("status, trial_end, current_period_end, past_due_since, subscription_plans(features, slug)")
+          .select("status, trial_end, current_period_end, past_due_since, moyasar_card_token, subscription_plans(features, slug)")
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -2721,6 +2721,16 @@ serve(async (req) => {
         }
 
         if (sub?.status === "trialing" && sub.trial_end && now < new Date(sub.trial_end)) {
+          // Billing contract Section 5.1: a card is REQUIRED to start/keep the
+          // free trial. The Workspace gate is a UX layer only — without this
+          // server check anyone could call this function directly and get the
+          // full 7-day trial with no card on file.
+          if (!sub.moyasar_card_token) {
+            return new Response(
+              JSON.stringify({ error: "trial_card_required" }),
+              { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
           dailyLimit    = 20;
           hasPaidAccess = true;
           isTrialing    = true;

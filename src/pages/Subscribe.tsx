@@ -59,6 +59,23 @@ const HIDDEN_PUBLIC_SLUGS = new Set(["free", "enterprise"]);
 const PER_SEAT_SLUGS = new Set(["enterprise_team", "enterprise_office"]);
 
 type SeatState = Record<string, number>;
+
+/**
+ * Exactly the pricing fields moyasar-create-subscription returns
+ * (supabase/functions/moyasar-create-subscription/index.ts). Amounts are
+ * halalas and are produced by the same helper that produces the real charge.
+ */
+type CheckoutQuote = {
+  flow: string;
+  amount: number;
+  amount_base: number;
+  amount_vat: number;
+  plan_price: number;
+  verification_credit: number;
+  description: string;
+  promo_code: string | null;
+};
+
 const Subscribe = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -74,6 +91,11 @@ const Subscribe = () => {
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  // Server-computed checkout quote (billing contract Section 6). The amount the
+  // user sees must be the amount the server will charge, so once
+  // moyasar-create-subscription has answered we render ITS amount/description
+  // and stop recomputing anything locally.
+  const [checkoutQuote, setCheckoutQuote] = useState<CheckoutQuote | null>(null);
 
   const promoCode = searchParams.get("promo");
   const founding10Active = promoCode === FOUNDING10_CODE && isFounding10Active();
@@ -93,6 +115,12 @@ const Subscribe = () => {
   useEffect(() => {
     if (!subLoading && isPaidActive) navigate("/");
   }, [isPaidActive, subLoading, navigate]);
+
+  // A quote is only valid for the plan + seat count it was requested with.
+  // Drop it the moment either changes so a stale amount can never be displayed.
+  useEffect(() => {
+    setCheckoutQuote(null);
+  }, [selectedPlan, seatCounts]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -183,6 +211,25 @@ const Subscribe = () => {
       }
       setPendingGivenId(data.given_id);
       setPendingSubscriptionId(data.subscription_id);
+      // Billing contract Section 6: display the server's amount + description,
+      // never a locally recomputed one. Only accept a well-formed quote.
+      setCheckoutQuote(
+        typeof data.amount === "number" && Number.isFinite(data.amount) && typeof data.description === "string"
+          ? {
+              flow: String(data.flow ?? ""),
+              amount: data.amount,
+              amount_base: typeof data.amount_base === "number" ? data.amount_base : Math.round(data.amount / 1.15),
+              amount_vat:
+                typeof data.amount_vat === "number"
+                  ? data.amount_vat
+                  : data.amount - Math.round(data.amount / 1.15),
+              plan_price: typeof data.plan_price === "number" ? data.plan_price : data.amount,
+              verification_credit: typeof data.verification_credit === "number" ? data.verification_credit : 0,
+              description: data.description,
+              promo_code: typeof data.promo_code === "string" ? data.promo_code : null,
+            }
+          : null,
+      );
       resetCardState();
       setPaymentModalOpen(true);
     } catch (err) {
@@ -328,6 +375,21 @@ const Subscribe = () => {
   const vatBaseHalalas = Math.round(selectedTotalHalalas / 1.15);
   const vatAmountHalalas = selectedTotalHalalas - vatBaseHalalas;
   const selectedTotalSar = selectedTotalHalalas / 100;
+
+  // Billing contract Section 6: once moyasar-create-subscription has answered,
+  // the screen renders ITS amount and description. The local figures above are
+  // only a pre-checkout estimate for the plan grid, used until the quote exists.
+  // Never decide the trial copy from `isTrialActive` when a quote is available —
+  // the server's `flow` is the authority (a lapsed `trialing` row is charged
+  // post_trial_first_charge, not 1.00 SAR).
+  const quoteIsCardVerification = checkoutQuote
+    ? checkoutQuote.flow === "trial_card_verification"
+    : isTrialActive;
+  const displayTotalHalalas = checkoutQuote ? checkoutQuote.amount : selectedTotalHalalas;
+  const displayBaseHalalas = checkoutQuote ? checkoutQuote.amount_base : vatBaseHalalas;
+  const displayVatHalalas = checkoutQuote ? checkoutQuote.amount_vat : vatAmountHalalas;
+  const displayTotalSar = displayTotalHalalas / 100;
+  const displayDescription = checkoutQuote?.description ?? null;
 
   const getPriceLabel = (type: string) => {
     if (type === "weekly") return t("sarWeek");
@@ -579,19 +641,22 @@ const Subscribe = () => {
               {/* Honest trial/immediate-charge copy — billing contract 2026-08-23 Section 5 */}
               <div className="mb-4 rounded-lg border border-border/40 bg-card/40 p-4 text-sm text-center text-muted-foreground">
                 <p>
-                  {isTrialActive
+                  {quoteIsCardVerification
                     ? (language === "ar"
-                        ? "سيتم خصم 1 ريال للتحقق من البطاقة، ويُخصم من أول فاتورة"
-                        : "SAR 1.00 will be charged to verify the card — deducted from your first invoice")
+                        ? `سيتم خصم ${displayTotalSar.toFixed(2)} ريال للتحقق من البطاقة، ويُخصم من أول فاتورة`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged to verify the card — deducted from your first invoice`)
                     : (language === "ar"
-                        ? `سيتم تحصيل ${selectedTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%)`
-                        : `SAR ${selectedTotalSar.toFixed(2)} will be charged now (incl. 15% VAT)`)}
+                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%)`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now (incl. 15% VAT)`)}
                 </p>
-                {selectedTotalHalalas > 0 && (
+                {displayDescription && (
+                  <p className="mt-1 text-xs text-muted-foreground/80" dir="ltr">{displayDescription}</p>
+                )}
+                {displayTotalHalalas > 0 && (
                   <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground/80" dir="ltr">
-                    <span>{language === "ar" ? "الأساس" : "Base"}: {(vatBaseHalalas / 100).toFixed(2)} SAR</span>
-                    <span>{language === "ar" ? "الضريبة" : "VAT"}: {(vatAmountHalalas / 100).toFixed(2)} SAR</span>
-                    <span>{language === "ar" ? "الإجمالي" : "Total"}: {selectedTotalSar.toFixed(2)} SAR</span>
+                    <span>{language === "ar" ? "الأساس" : "Base"}: {(displayBaseHalalas / 100).toFixed(2)} SAR</span>
+                    <span>{language === "ar" ? "الضريبة" : "VAT"}: {(displayVatHalalas / 100).toFixed(2)} SAR</span>
+                    <span>{language === "ar" ? "الإجمالي" : "Total"}: {displayTotalSar.toFixed(2)} SAR</span>
                   </div>
                 )}
               </div>
@@ -623,12 +688,12 @@ const Subscribe = () => {
               >
                 {processing ? (
                   <>
-                    {isTrialActive ? t("activateAndAddCard") : t("startSubscription")}
+                    {quoteIsCardVerification ? t("activateAndAddCard") : t("startSubscription")}
                     <Loader2 className="w-5 h-5 ms-2 animate-spin" />
                   </>
                 ) : (
                   <>
-                    {isTrialActive ? t("activateAndAddCard") : t("startSubscription")}
+                    {quoteIsCardVerification ? t("activateAndAddCard") : t("startSubscription")}
                     {dir === "rtl"
                       ? <ArrowLeft className="w-5 h-5 me-2" />
                       : <ArrowRight className="w-5 h-5 ms-2" />}
@@ -646,6 +711,7 @@ const Subscribe = () => {
               if (!open) {
                 setPendingGivenId(null);
                 setPendingSubscriptionId(null);
+                setCheckoutQuote(null);
                 resetCardState();
               }
             }}
@@ -654,13 +720,16 @@ const Subscribe = () => {
               <DialogHeader>
                 <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
                 <DialogDescription>
-                  {isTrialActive
+                  {quoteIsCardVerification
                     ? (language === "ar"
-                        ? "سيتم خصم 1 ريال للتحقق من البطاقة، ويُخصم من أول فاتورة."
-                        : "SAR 1.00 will be charged to verify the card — deducted from your first invoice.")
+                        ? `سيتم خصم ${displayTotalSar.toFixed(2)} ريال للتحقق من البطاقة، ويُخصم من أول فاتورة.`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged to verify the card — deducted from your first invoice.`)
                     : (language === "ar"
-                        ? `سيتم تحصيل ${selectedTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%).`
-                        : `SAR ${selectedTotalSar.toFixed(2)} will be charged now (incl. 15% VAT).`)}
+                        ? `سيتم تحصيل ${displayTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%).`
+                        : `SAR ${displayTotalSar.toFixed(2)} will be charged now (incl. 15% VAT).`)}
+                  {displayDescription && (
+                    <span className="block mt-1 text-xs" dir="ltr">{displayDescription}</span>
+                  )}
                 </DialogDescription>
               </DialogHeader>
 

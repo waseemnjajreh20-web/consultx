@@ -1273,6 +1273,21 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             });
             return;
           }
+          if (error === "trial_card_required") {
+            // Server-side card gate (billing contract Section 5.1). The Workspace
+            // normally blocks this case before a message can be sent; reaching
+            // here means the client state was stale or the call was made directly.
+            setLocalMessagesUsed(prev => Math.max(0, prev - 1));
+            stopLoading();
+            toast({
+              title: currentLanguage === "en" ? "Card required" : "البطاقة مطلوبة",
+              description: currentLanguage === "en"
+                ? "Add your card to start your free trial. We charge SAR 1.00 to verify the card — it is deducted from your first invoice."
+                : "لبدء تجربتك المجانية أضف بطاقتك. سنخصم 1.00 ريال للتحقق من البطاقة فقط، يُخصم من أول فاتورة.",
+              variant: "destructive",
+            });
+            return;
+          }
           if (error === "trial_expired") {
             stopLoading();
             setChatItems(prev => [

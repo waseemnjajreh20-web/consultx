@@ -483,16 +483,30 @@ serve(async (req) => {
       const periodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
       if (flow === "trial_card_verification") {
-        // 1.00 SAR card verification inside a live trial window.
-        // Stay trialing. The card token is now on file, the verification is
-        // stamped (credited against the first invoice), and the first real
-        // charge is scheduled for the moment the trial ends.
-        updateData.status = "trialing";
+        // 1.00 SAR card verification. The card token and the verification stamp
+        // are always safe to record.
         updateData.card_verified_at = now.toISOString();
-        if (trialEndDate) updateData.next_billing_date = trialEndDate.toISOString();
-        updateData.past_due_since = null;
-        updateData.dunning_notified_at = null;
-        console.log("Payment paid — card verified, trial continues:", sub.id);
+
+        if (sub.status === "trialing") {
+          // Normal case: still inside the trial. Stay trialing and schedule the
+          // first real charge for the moment the trial ends.
+          updateData.status = "trialing";
+          if (trialEndDate) updateData.next_billing_date = trialEndDate.toISOString();
+          updateData.past_due_since = null;
+          updateData.dunning_notified_at = null;
+          console.log("Payment paid — card verified, trial continues:", sub.id);
+        } else {
+          // A late/retried delivery of the FIRST verification webhook, arriving
+          // after the renewal cron already converted this subscription (or after
+          // it was cancelled/expired). Writing status = "trialing" here would
+          // demote a paying customer back into a trial and set next_billing_date
+          // to a date in the past, so the conversion pass would charge them the
+          // full plan price a second time. Lifecycle stays untouched.
+          console.warn(
+            `Late trial_card_verification webhook for sub ${sub.id} in status ${sub.status} — ` +
+            `card recorded, subscription lifecycle left untouched`,
+          );
+        }
       } else {
         // immediate_charge / post_trial_first_charge / renewal — a real
         // invoice was paid. Activate and open a new billing period.

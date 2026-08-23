@@ -26,7 +26,12 @@ import {
   planPriceFor,
   promoAmountFor,
   splitVat,
+  verificationCreditOwed,
   withoutKeys,
+  FOUNDING10_PLAN_SLUG,
+  FOUNDING10_WINDOW_START_MS,
+  FOUNDING10_WINDOW_END_MS,
+  MAX_BILLABLE_SEATS,
   type PlanLike,
   type SubLike,
 } from "../../supabase/functions/_shared/billing.ts";
@@ -261,10 +266,27 @@ describe("computeCharge — post-trial first charge", () => {
     expect(d.description).not.toContain("less 1.00 SAR");
   });
 
-  it("does not credit anything when no verification was ever stamped", () => {
-    const d = computeCharge(PRO, lapsedTrialSub({ card_verified_at: null }), null, 0, NOW);
+  it("does not credit anything when there is NO evidence of a verification", () => {
+    // No card_verified_at stamp, no counted verification transaction, and no
+    // stored card token: nothing was ever charged, so nothing is owed back.
+    const d = computeCharge(
+      PRO,
+      lapsedTrialSub({ card_verified_at: null, moyasar_card_token: null }),
+      null,
+      0,
+      NOW,
+    );
     expect(d.amount).toBe(24500);
     expect(d.verificationCredit).toBe(0);
+  });
+
+  it("DOES credit a pre-migration row, where the token is the only evidence", () => {
+    // card_verified_at does not exist in production yet. Gating on it alone
+    // charged every converting customer the full price while the trial banner
+    // promised them "plan price minus 1.00 SAR". See verificationCreditOwed.
+    const d = computeCharge(PRO, lapsedTrialSub({ card_verified_at: null }), null, 0, NOW);
+    expect(d.verificationCredit).toBe(CARD_VERIFICATION_AMOUNT);
+    expect(d.amount).toBe(24400);
   });
 
   it("deducts once from a per-seat first invoice", () => {
@@ -409,6 +431,317 @@ describe("regression — the defects this change fixes", () => {
     ];
     for (const d of descriptions) {
       expect(d.toLowerCase()).not.toContain("refund");
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cases the adversarial review named as missing. Every one of these is a real
+// production input shape, not a synthetic edge case.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TEAM: PlanLike = {
+  slug: "enterprise_team",
+  name_en: "Team",
+  currency: "SAR",
+  price_amount: 119600,
+  price_per_seat: 39900,
+  min_seats: 3,
+  duration_days: 30,
+};
+
+// ── deriveFlow: degenerate trial_end values ──────────────────────────────────
+
+describe("deriveFlow — degenerate trial_end", () => {
+  it("a trialing row with trial_end null is NOT in trial and NOT a 1 SAR charge", () => {
+    const sub: SubLike = { status: "trialing", trial_end: null };
+    expect(isInTrial(sub, NOW)).toBe(false);
+    // Still `trialing`, so the cron owns it: post_trial_first_charge, never
+    // trial_card_verification. A null trial_end must never buy free access.
+    expect(deriveFlow(sub, NOW)).toBe("post_trial_first_charge");
+    expect(computeCharge(PRO, sub, null, 0, NOW).amount).not.toBe(CARD_VERIFICATION_AMOUNT);
+  });
+
+  it("a malformed trial_end is treated as not-in-trial, not as an open trial", () => {
+    for (const bad of ["", "not-a-date", "2026-13-45T99:99:99Z", "0000-00-00T00:00:61Z"]) {
+      const sub: SubLike = { status: "trialing", trial_end: bad };
+      expect(isInTrial(sub, NOW)).toBe(false);
+      expect(deriveFlow(sub, NOW)).toBe("post_trial_first_charge");
+    }
+  });
+
+  it("a trialing row whose trial_end is exactly now is over (strict >)", () => {
+    const sub: SubLike = { status: "trialing", trial_end: new Date(NOW).toISOString() };
+    expect(isInTrial(sub, NOW)).toBe(false);
+  });
+});
+
+// ── computeCharge: degenerate plan prices ────────────────────────────────────
+
+describe("computeCharge — degenerate plan prices", () => {
+  it("does not go negative when planPrice < the 1.00 SAR credit", () => {
+    const d = computeCharge({ ...PRO, price_amount: 50 }, lapsedTrialSub(), null, 0, NOW);
+    expect(d.amount).toBe(0);
+    expect(d.amount).toBeGreaterThanOrEqual(0);
+    expect(d.base + d.vat).toBe(0);
+  });
+
+  it("planPrice exactly 100 nets to zero, never to a negative charge", () => {
+    expect(computeCharge({ ...PRO, price_amount: 100 }, lapsedTrialSub(), null, 0, NOW).amount).toBe(0);
+  });
+
+  it("a null price_amount produces 0, not NaN", () => {
+    const d = computeCharge({ ...PRO, price_amount: null }, returningSub(), null, 0, NOW);
+    expect(d.amount).toBe(0);
+    expect(Number.isNaN(d.amount)).toBe(false);
+    expect(Number.isNaN(d.base)).toBe(false);
+    expect(Number.isNaN(d.vat)).toBe(false);
+  });
+
+  it("a zero price_amount produces 0, not NaN", () => {
+    const d = computeCharge({ ...PRO, price_amount: 0 }, returningSub(), null, 0, NOW);
+    expect(d.amount).toBe(0);
+    expect(d.base + d.vat).toBe(0);
+  });
+
+  it("a per-seat plan with price_per_seat 0 produces 0, not NaN", () => {
+    const d = computeCharge({ ...OFFICE, price_per_seat: 0 }, returningSub({ seat_count: 9 }), null, 0, NOW);
+    expect(d.amount).toBe(0);
+    expect(Number.isNaN(d.amount)).toBe(false);
+    // price_per_seat = 0 is NOT null, so it must NOT fall back to price_amount.
+    expect(d.amount).not.toBe(54900);
+  });
+});
+
+// ── effectiveSeats: hostile seat counts ──────────────────────────────────────
+
+describe("effectiveSeats — hostile seat counts", () => {
+  it("floors zero and negative seat counts at the plan minimum", () => {
+    expect(effectiveSeats(OFFICE, { seat_count: 0 })).toBe(5);
+    expect(effectiveSeats(OFFICE, { seat_count: -10 })).toBe(5);
+    expect(effectiveSeats(PRO, { seat_count: 0 })).toBe(1);
+    expect(effectiveSeats(PRO, { seat_count: -3 })).toBe(1);
+  });
+
+  it("treats NaN / non-numeric / non-finite seat counts as the plan minimum", () => {
+    for (const bad of [NaN, "abc" as unknown as number, Infinity, -Infinity]) {
+      expect(effectiveSeats(PRO, { seat_count: bad })).toBe(1);
+      expect(effectiveSeats(OFFICE, { seat_count: bad })).toBe(5);
+    }
+    expect(effectiveSeats(PRO, { seat_count: null })).toBe(1);
+    expect(effectiveSeats(PRO, { seat_count: undefined })).toBe(1);
+  });
+
+  it("never produces a fractional charge from a fractional seat count", () => {
+    expect(Number.isInteger(effectiveSeats(OFFICE, { seat_count: 2.5 }))).toBe(true);
+    // Fractional seats floor DOWN (corruption may only ever under-bill).
+    expect(effectiveSeats(OFFICE, { seat_count: 7.9 })).toBe(7);
+    expect(Number.isInteger(computeCharge(OFFICE, returningSub({ seat_count: 2.5 }), null, 0, NOW).amount)).toBe(true);
+  });
+
+  it("caps seats at MAX_BILLABLE_SEATS, matching create-subscription's SEAT_CAP", () => {
+    // create-subscription rejects seat_count > 100 at the door, but the cron
+    // re-prices from the STORED row, which had no such guard.
+    expect(MAX_BILLABLE_SEATS).toBe(100);
+    expect(effectiveSeats(OFFICE, { seat_count: 1_000_000 })).toBe(MAX_BILLABLE_SEATS);
+    expect(effectiveSeats(OFFICE, { seat_count: Number.MAX_SAFE_INTEGER })).toBe(MAX_BILLABLE_SEATS);
+    const d = computeCharge(OFFICE, returningSub({ seat_count: 1_000_000 }), null, 0, NOW);
+    expect(d.amount).toBe(54900 * MAX_BILLABLE_SEATS);
+    expect(Number.isSafeInteger(d.amount)).toBe(true);
+  });
+
+  it("every hostile seat count still yields a finite, bounded, integer charge", () => {
+    for (const seats of [0, -1, NaN, 2.5, Infinity, 1e12, Number.MAX_SAFE_INTEGER]) {
+      const n = effectiveSeats(OFFICE, { seat_count: seats });
+      expect(Number.isInteger(n)).toBe(true);
+      expect(n).toBeGreaterThanOrEqual(1);
+      expect(n).toBeLessThanOrEqual(MAX_BILLABLE_SEATS);
+    }
+  });
+
+  it("a legal seat count inside the cap is untouched", () => {
+    expect(effectiveSeats(OFFICE, { seat_count: 100 })).toBe(100);
+    expect(effectiveSeats(OFFICE, { seat_count: 7 })).toBe(7);
+  });
+});
+
+// ── promoAmountFor: normalisation, plan restriction, window ──────────────────
+
+describe("promoAmountFor — normalisation and restrictions", () => {
+  const IN_WINDOW = FOUNDING10_WINDOW_START_MS + 1000;
+
+  it("normalises surrounding whitespace and case", () => {
+    expect(promoAmountFor(PRO, " founding10 ", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
+    expect(promoAmountFor(PRO, "FoUnDiNg10", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
+    expect(promoAmountFor(PRO, "\tFOUNDING10\n", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
+    expect(promoAmountFor(PRO, "  eid50  ", IN_WINDOW)).toBe(EID50_PRO_AMOUNT);
+  });
+
+  it("returns null for null / undefined / non-string promo input", () => {
+    expect(promoAmountFor(PRO, null, IN_WINDOW)).toBeNull();
+    expect(promoAmountFor(PRO, undefined, IN_WINDOW)).toBeNull();
+    expect(promoAmountFor(PRO, 1000 as unknown as string, IN_WINDOW)).toBeNull();
+  });
+
+  it("FOUNDING10 is restricted to the pro plan", () => {
+    expect(FOUNDING10_PLAN_SLUG).toBe("pro");
+    expect(promoAmountFor(PRO, "FOUNDING10", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
+    expect(promoAmountFor(ENGINEER, "FOUNDING10", IN_WINDOW)).toBeNull();
+    expect(promoAmountFor(TEAM, "FOUNDING10", IN_WINDOW)).toBeNull();
+    expect(promoAmountFor(OFFICE, "FOUNDING10", IN_WINDOW)).toBeNull();
+    expect(promoAmountFor(null, "FOUNDING10", IN_WINDOW)).toBeNull();
+  });
+
+  it("FOUNDING10 never discounts an enterprise plan at any seat count", () => {
+    // Pre-fix behaviour: 100 seats of enterprise_office for 10.00 SAR.
+    const d = computeCharge(OFFICE, returningSub({ seat_count: 100 }), "FOUNDING10", 0, IN_WINDOW);
+    expect(d.amount).toBe(54900 * 100);
+    expect(d.appliedPromo).toBeNull();
+  });
+
+  it("FOUNDING10 is inert outside its server-side window", () => {
+    expect(promoAmountFor(PRO, "FOUNDING10", FOUNDING10_WINDOW_START_MS - 1)).toBeNull();
+    expect(promoAmountFor(PRO, "FOUNDING10", FOUNDING10_WINDOW_END_MS)).toBeNull();
+    expect(promoAmountFor(PRO, "FOUNDING10", FOUNDING10_WINDOW_END_MS + 86_400_000)).toBeNull();
+    // Boundaries: start inclusive, end exclusive.
+    expect(promoAmountFor(PRO, "FOUNDING10", FOUNDING10_WINDOW_START_MS)).toBe(FOUNDING10_AMOUNT);
+    expect(promoAmountFor(PRO, "FOUNDING10", FOUNDING10_WINDOW_END_MS - 1)).toBe(FOUNDING10_AMOUNT);
+  });
+
+  it("computeCharge outside the window bills the full Pro price", () => {
+    const d = computeCharge(PRO, returningSub(), "FOUNDING10", 0, FOUNDING10_WINDOW_END_MS + 1);
+    expect(d.amount).toBe(24500);
+    expect(d.appliedPromo).toBeNull();
+  });
+
+  it("webhook validation keeps the plan restriction but ignores the window", () => {
+    // A payment created seconds before the window closed must not be stranded
+    // when its webhook lands seconds after.
+    expect(expectedAmountsFor(PRO, returningSub(), "immediate_charge", "FOUNDING10")).toContain(FOUNDING10_AMOUNT);
+    // ...but the plan restriction is never relaxed.
+    expect(expectedAmountsFor(OFFICE, returningSub(), "immediate_charge", "FOUNDING10")).not.toContain(
+      FOUNDING10_AMOUNT,
+    );
+  });
+});
+
+// ── expectedAmountsFor: null plan ────────────────────────────────────────────
+
+describe("expectedAmountsFor — missing plan row", () => {
+  it("never returns NaN for a null plan", () => {
+    for (const flow of ["trial_card_verification", "immediate_charge", "renewal", "post_trial_first_charge"] as const) {
+      const allowed = expectedAmountsFor(null, returningSub(), flow, null);
+      expect(allowed.every((a) => Number.isFinite(a))).toBe(true);
+    }
+  });
+
+  it("a null plan never widens what the webhook will accept", () => {
+    expect(expectedAmountsFor(null, returningSub(), "renewal", null)).toEqual([0]);
+    expect(expectedAmountsFor(null, returningSub(), "immediate_charge", null)).toEqual([0]);
+    // A null plan must not make FOUNDING10 acceptable — the plan restriction
+    // cannot be satisfied by an absent plan.
+    expect(expectedAmountsFor(null, returningSub(), "immediate_charge", "FOUNDING10")).toEqual([0]);
+    // Only the verification flow has a plan-independent fixed amount.
+    expect(expectedAmountsFor(null, trialingSub(), "trial_card_verification", null)).toEqual([100]);
+  });
+
+  it("a null subscription still yields finite amounts", () => {
+    expect(expectedAmountsFor(PRO, null, "immediate_charge", null)).toEqual([24500]);
+  });
+});
+
+// ── Verification-credit predicate (pre-migration) ────────────────────────────
+
+describe("verificationCreditOwed — works before the card_verified_at migration", () => {
+  it("honours card_verified_at when the column exists", () => {
+    expect(verificationCreditOwed({ card_verified_at: new Date(NOW).toISOString() })).toBe(true);
+  });
+
+  it("honours a counted captured verification transaction", () => {
+    expect(verificationCreditOwed({ card_verified_at: null, has_captured_verification: true })).toBe(true);
+  });
+
+  it("infers the credit from a card token on a still-trialing row", () => {
+    // Pre-migration production shape: the column does not exist at all, so the
+    // only evidence is the stored token, which during a trial can only have
+    // been written by the captured 1.00 SAR verification webhook.
+    expect(
+      verificationCreditOwed({ status: "trialing", moyasar_card_token: "tok_live_x", card_verified_at: null }),
+    ).toBe(true);
+  });
+
+  it("does not invent a credit with no evidence at all", () => {
+    expect(verificationCreditOwed(null)).toBe(false);
+    expect(verificationCreditOwed({})).toBe(false);
+    expect(verificationCreditOwed({ status: "trialing", moyasar_card_token: null })).toBe(false);
+    // A token on an already-active row is not proof of a trial verification.
+    expect(verificationCreditOwed({ status: "active", moyasar_card_token: "tok_live_x" })).toBe(false);
+  });
+
+  it("a pre-migration lapsed trial is charged price minus 1.00 SAR, not full price", () => {
+    const preMigration = lapsedTrialSub({ card_verified_at: null }); // token still set
+    const d = computeCharge(PRO, preMigration, null, 0, NOW);
+    expect(d.verificationCredit).toBe(CARD_VERIFICATION_AMOUNT);
+    expect(d.amount).toBe(24400);
+  });
+
+  it("the credit is still consumed exactly once", () => {
+    const preMigration = lapsedTrialSub({ card_verified_at: null });
+    const d = computeCharge(PRO, preMigration, null, 1, NOW);
+    expect(d.verificationCredit).toBe(0);
+    expect(d.amount).toBe(24500);
+  });
+});
+
+// ── The single highest-value invariant ───────────────────────────────────────
+
+describe("INVARIANT — a trial_card_verification payment can never buy a paid period", () => {
+  const ALL_PLANS = [PRO, ENGINEER, TEAM, OFFICE, null];
+  const ALL_SEATS = [1, 5, 100, 0, -1, NaN];
+  const ALL_PROMOS = [null, "FOUNDING10", "EID50", "  founding10  ", "NOPE"];
+
+  it("every trial_card_verification decision charges exactly 100 and opens no period", () => {
+    for (const plan of ALL_PLANS) {
+      for (const seats of ALL_SEATS) {
+        for (const promo of ALL_PROMOS) {
+          const d = computeCharge(plan, trialingSub({ seat_count: seats }), promo, 0, NOW);
+          expect(d.flow).toBe("trial_card_verification");
+          // 1. The amount is always exactly the verification amount.
+          expect(d.amount).toBe(CARD_VERIFICATION_AMOUNT);
+          // 2. No promo can ever be applied to it.
+          expect(d.appliedPromo).toBeNull();
+          // 3. purpose marks it a verification, so the webhook records
+          //    payment_type "verification" and takes the trial branch, which
+          //    never sets current_period_start / current_period_end.
+          expect(d.purpose).toBe("card_verification");
+          // 4. It never carries a credit it has not yet earned.
+          expect(d.verificationCredit).toBe(0);
+        }
+      }
+    }
+  });
+
+  it("100 halalas is never an acceptable amount for any period-opening flow", () => {
+    for (const plan of ALL_PLANS) {
+      for (const flow of ["immediate_charge", "renewal", "post_trial_first_charge"] as const) {
+        for (const promo of ALL_PROMOS) {
+          expect(expectedAmountsFor(plan, lapsedTrialSub(), flow, promo)).not.toContain(CARD_VERIFICATION_AMOUNT);
+        }
+      }
+    }
+  });
+
+  it("the verification flow accepts nothing except 100", () => {
+    for (const plan of ALL_PLANS) {
+      expect(expectedAmountsFor(plan, trialingSub(), "trial_card_verification", "FOUNDING10")).toEqual([
+        CARD_VERIFICATION_AMOUNT,
+      ]);
+    }
+  });
+
+  it("a live trial can never derive any flow other than the verification flow", () => {
+    for (const seats of ALL_SEATS) {
+      expect(deriveFlow(trialingSub({ seat_count: seats }), NOW)).toBe("trial_card_verification");
     }
   });
 });

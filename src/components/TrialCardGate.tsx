@@ -69,7 +69,24 @@ export function TrialCardBanner({
       })
     : null;
 
-  const planPriceSar = subscription?.plan ? subscription.plan.price_amount / 100 : null;
+  // Per-seat plans (enterprise_team / enterprise_office) bill
+  // price_per_seat * seat_count. plan.price_amount is only the DISPLAY total at
+  // min_seats, so quoting it told a 10-seat enterprise_team trial "1196 SAR"
+  // while the server charged 3990 SAR. Billing contract Section 1.
+  const pricePerSeat = subscription?.price_per_seat ?? null;
+  const seatCount = Math.max(
+    1,
+    Number.isFinite(Number(subscription?.seat_count)) ? Number(subscription?.seat_count) : 1,
+    Number.isFinite(Number(subscription?.min_seats)) ? Number(subscription?.min_seats) : 1,
+  );
+  const planTotalHalalas =
+    pricePerSeat != null && Number.isFinite(Number(pricePerSeat))
+      ? Number(pricePerSeat) * seatCount
+      : Number(subscription?.plan?.price_amount);
+  // Never render NaN: a missing plan or price_amount must hide the amount copy,
+  // not print "SAR NaN".
+  const planPriceSar =
+    Number.isFinite(planTotalHalalas) && planTotalHalalas > 0 ? planTotalHalalas / 100 : null;
   const firstChargeSar = planPriceSar != null ? Math.max(0, planPriceSar - 1) : null;
 
   const countdownLabel =

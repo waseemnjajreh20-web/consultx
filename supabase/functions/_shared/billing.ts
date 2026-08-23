@@ -21,6 +21,29 @@ export const VAT_RATE = 0.15;
 /** FOUNDING10 first-month price, in halalas. */
 export const FOUNDING10_AMOUNT = 1000;
 
+/**
+ * FOUNDING10 is a 10.00 SAR key. Without a plan restriction it applied to ANY
+ * plan, including `enterprise_office` at 100 seats (5,490.00 SAR of value for
+ * 10.00 SAR), and it was repeatable by cancel-and-resubscribe.
+ *
+ * The campaign is Pro-only by construction: src/lib/campaigns/founding10.ts
+ * builds its subscribe URL as `?plan=pro&promo=FOUNDING10`, and the campaign
+ * email (src/lib/emailTemplates/founding10.ts) sells "your first month of
+ * ConsultX Pro for 10 SAR". Nothing else was ever offered at this price.
+ */
+export const FOUNDING10_PLAN_SLUG = "pro";
+
+/**
+ * Server-side redemption window. Outside it the code is inert.
+ *
+ * OWNER ACTION: confirm/adjust the end date before the campaign is sent. The
+ * default is deliberately bounded rather than open-ended — an unbounded 10.00
+ * SAR key to a paid plan is the higher risk. Outside the window the checkout
+ * simply charges the full plan price.
+ */
+export const FOUNDING10_WINDOW_START_MS = Date.parse("2026-08-23T00:00:00.000Z");
+export const FOUNDING10_WINDOW_END_MS = Date.parse("2026-09-23T00:00:00.000Z");
+
 /** EID50 first-month price for the `pro` plan, in halalas (50% of 24500). */
 export const EID50_PRO_AMOUNT = 12250;
 
@@ -44,8 +67,18 @@ export interface SubLike {
   status?: string | null;
   trial_end?: string | null;
   seat_count?: number | null;
+  /** Only exists after the Section 8 migration. Null/undefined before it. */
   card_verified_at?: string | null;
   moyasar_card_token?: string | null;
+  /**
+   * Migration-independent proof that the 1.00 SAR card verification was
+   * actually captured for this subscription: set by the caller from
+   *   payment_transactions where subscription_id = ? and status = 'captured'
+   *                            and payment_type = 'verification'.
+   * Used as the credit predicate while `card_verified_at` does not exist in
+   * production. See `verificationCreditOwed`.
+   */
+  has_captured_verification?: boolean | null;
 }
 
 export interface VatSplit {
@@ -95,15 +128,25 @@ export function splitVat(total: number): VatSplit {
 
 // ── Plan pricing ──────────────────────────────────────────────────────────────
 
-/** Seats actually billed: max(seat_count, plan.min_seats, 1). */
+/**
+ * Hard ceiling on billable seats. Mirrors SEAT_CAP in
+ * moyasar-create-subscription, which rejects seat_count > 100 at checkout.
+ * effectiveSeats had NO upper bound, so the cron re-priced from the stored row
+ * with nothing stopping a corrupted seat_count from billing an unbounded
+ * amount. Raising the limit means raising BOTH constants.
+ */
+export const MAX_BILLABLE_SEATS = 100;
+
+/** Seats actually billed: clamp(max(seat_count, plan.min_seats, 1), .., MAX_BILLABLE_SEATS). */
 export function effectiveSeats(plan: PlanLike | null | undefined, sub: SubLike | null | undefined): number {
-  const seatCount = Number(sub?.seat_count ?? 1);
-  const minSeats = Number(plan?.min_seats ?? 1);
-  return Math.max(
-    Number.isFinite(seatCount) ? seatCount : 1,
-    Number.isFinite(minSeats) ? minSeats : 1,
-    1,
-  );
+  const rawSeats = Number(sub?.seat_count ?? 1);
+  const rawMin = Number(plan?.min_seats ?? 1);
+  // Non-finite (NaN / Infinity / non-numeric) values are data corruption, never
+  // a real order: fall back to 1 and let plan.min_seats do the real flooring.
+  // Fractional seats are floored so corruption can only ever UNDER-bill.
+  const seatCount = Number.isFinite(rawSeats) ? Math.floor(rawSeats) : 1;
+  const minSeats = Number.isFinite(rawMin) ? Math.floor(rawMin) : 1;
+  return Math.min(Math.max(seatCount, minSeats, 1), MAX_BILLABLE_SEATS);
 }
 
 /**
@@ -133,6 +176,33 @@ export function isInTrial(sub: SubLike | null | undefined, nowMs: number = Date.
 }
 
 /**
+ * True when the 100-halala card-verification credit is owed against the FIRST
+ * real invoice for this subscription.
+ *
+ * Three predicates, in order of authority:
+ *   1. `card_verified_at` is set — the exact stamp. Only exists after the
+ *      Section 8 migration.
+ *   2. `has_captured_verification` — the caller counted a captured
+ *      `verification` transaction for this subscription. Needs no new column.
+ *   3. A stored `moyasar_card_token` on a `trialing` row. During a trial the
+ *      ONLY code path that stores a token is the captured 1.00 SAR
+ *      verification webhook, so a trialing row holding a token has, by
+ *      construction, already paid the 1.00 SAR.
+ *
+ * Before the Section 8 migration lands, predicate 1 is always false in
+ * production. Without 2 and 3 every converting customer is charged the full
+ * plan price while TrialCardBanner promised them "plan price minus 1.00 SAR".
+ * Erring toward granting the credit undercharges by at most 1.00 SAR once;
+ * erring the other way overcharges every single converting customer.
+ */
+export function verificationCreditOwed(sub: SubLike | null | undefined): boolean {
+  if (!sub) return false;
+  if (sub.card_verified_at) return true;
+  if (sub.has_captured_verification === true) return true;
+  return sub.status === "trialing" && !!sub.moyasar_card_token;
+}
+
+/**
  * Server-side flow decision for a user-initiated checkout.
  * NEVER derived from client input.
  */
@@ -157,9 +227,37 @@ export function parseFlow(raw: unknown): BillingFlow | null {
  * Promo price for an immediate charge, or null when the promo does not apply.
  * Promotions apply to `immediate_charge` ONLY.
  */
-export function promoAmountFor(plan: PlanLike | null | undefined, promo: string | null | undefined): number | null {
+export function promoAmountFor(
+  plan: PlanLike | null | undefined,
+  promo: string | null | undefined,
+  nowMs: number = Date.now(),
+): number | null {
   const code = typeof promo === "string" ? promo.trim().toUpperCase() : "";
-  if (code === "FOUNDING10") return FOUNDING10_AMOUNT;
+  if (code === "FOUNDING10") {
+    // Pro only, and only inside the campaign window. Both checks are
+    // server-side: the code arrives as client-supplied text.
+    if (plan?.slug !== FOUNDING10_PLAN_SLUG) return null;
+    if (!(nowMs >= FOUNDING10_WINDOW_START_MS && nowMs < FOUNDING10_WINDOW_END_MS)) return null;
+    return FOUNDING10_AMOUNT;
+  }
+  if (code === "EID50" && plan?.slug === "pro") return EID50_PRO_AMOUNT;
+  return null;
+}
+
+/**
+ * The promo price ignoring the campaign window, for webhook amount validation
+ * ONLY. A payment created seconds before the window closed is still a
+ * legitimate payment when its webhook lands seconds after; rejecting it would
+ * strand a real charge. The plan restriction is NOT relaxed here.
+ */
+function promoAmountForValidation(
+  plan: PlanLike | null | undefined,
+  promo: string | null | undefined,
+): number | null {
+  const code = typeof promo === "string" ? promo.trim().toUpperCase() : "";
+  if (code === "FOUNDING10") {
+    return plan?.slug === FOUNDING10_PLAN_SLUG ? FOUNDING10_AMOUNT : null;
+  }
   if (code === "EID50" && plan?.slug === "pro") return EID50_PRO_AMOUNT;
   return null;
 }
@@ -209,7 +307,7 @@ export function computeCharge(
   // 2. Trial has lapsed but the row is still `trialing` → first real invoice,
   //    less the already-charged card verification (once, and only once).
   if (flow === "post_trial_first_charge") {
-    const credit = sub?.card_verified_at && priorPaidCount === 0 ? CARD_VERIFICATION_AMOUNT : 0;
+    const credit = verificationCreditOwed(sub) && priorPaidCount === 0 ? CARD_VERIFICATION_AMOUNT : 0;
     const amount = Math.max(0, planPrice - credit);
     const split = splitVat(amount);
     return {
@@ -229,7 +327,7 @@ export function computeCharge(
   }
 
   // 3. No active trial → charge the full plan price immediately. Promos apply here only.
-  const promoPrice = promoAmountFor(plan, promo);
+  const promoPrice = promoAmountFor(plan, promo, nowMs);
   const appliedPromo = promoPrice != null ? String(promo).trim().toUpperCase() : null;
   const amount = promoPrice ?? planPrice;
   const split = splitVat(amount);
@@ -283,7 +381,7 @@ export function expectedAmountsFor(
       return unique([planPrice, Math.max(0, planPrice - CARD_VERIFICATION_AMOUNT)]);
     case "immediate_charge":
     default: {
-      const promoPrice = promoAmountFor(plan, promo);
+      const promoPrice = promoAmountForValidation(plan, promo);
       return unique(promoPrice != null ? [promoPrice, planPrice] : [planPrice]);
     }
   }

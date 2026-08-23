@@ -48,11 +48,47 @@ the Moyasar payment `metadata.flow` and re-read from the Moyasar API by the webh
 |---|---|---|---|
 | `trial_card_verification` | `status = "trialing"` AND `trial_end > now` | `100` (1.00 SAR) | stays `trialing`, card stored, `next_billing_date = trial_end` |
 | `immediate_charge` | no active trial (expired trial, returning user, `pending_activation`, plan change) | full `plan_price` (or promo price) | `active`, new 30-day period |
-| `post_trial_first_charge` | cron converts a trialing sub whose `trial_end` has passed and that has a saved card token | `plan_price - 100` on the first paid invoice (when `card_verified_at` is set and no prior non-verification captured transaction exists), otherwise full `plan_price` | `active` on success, `past_due` on failure |
+| `post_trial_first_charge` | cron converts a trialing sub whose `trial_end` has passed and that has a saved card token | `plan_price - 100` on the first paid invoice (see the credit predicate below), otherwise full `plan_price` | `active` on success, `past_due` on failure |
 | `renewal` | `status = "active"` and `next_billing_date` reached, or `past_due` retry inside the grace window | full `plan_price` | `active` on success, `past_due` on failure |
 
 **Promotions** (`FOUNDING10`, `EID50`) apply to **`immediate_charge` only**. They are ignored for
 `trial_card_verification`, `post_trial_first_charge`, and `renewal` (renewals always bill the full plan price).
+
+**Promo restrictions (server-side, `_shared/billing.ts`):**
+
+| code | plan restriction | window | first-month price |
+|---|---|---|---|
+| `FOUNDING10` | `pro` only (`FOUNDING10_PLAN_SLUG`) | `FOUNDING10_WINDOW_START_MS` .. `FOUNDING10_WINDOW_END_MS` | 10.00 SAR |
+| `EID50` | `pro` only | none | 122.50 SAR |
+
+The promo code is client-supplied text, so both checks run server-side in `promoAmountFor`.
+Outside the window (or on any other plan) the code is inert and the full plan price is charged.
+Webhook amount validation (`expectedAmountsFor`) keeps the plan restriction but deliberately
+ignores the window, so a payment created just before the window closed is not stranded when its
+webhook lands just after.
+
+**OPEN REQUIREMENT — per-user redemption ledger (NOT implemented).** `FOUNDING10` and `EID50`
+are still repeatable by the same user via cancel-and-resubscribe: each cycle creates a new
+`immediate_charge` and nothing records that the user already redeemed the offer. Closing this
+needs a new table, which is out of scope for a code-only change:
+
+```sql
+-- NOT APPLIED. Owner decision + migration required.
+CREATE TABLE IF NOT EXISTS public.promo_redemptions (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  promo_code   text NOT NULL,
+  subscription_id uuid REFERENCES public.user_subscriptions(id) ON DELETE SET NULL,
+  redeemed_at  timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, promo_code)
+);
+ALTER TABLE public.promo_redemptions ENABLE ROW LEVEL SECURITY;
+-- service-role only; no client policy.
+```
+
+Until it exists, the plan restriction plus the date window are the only bounds on repeat
+redemption. The exposure per repeat is capped at (Pro price − 10.00 SAR) rather than the
+previous (enterprise_office at 100 seats − 10.00 SAR).
 
 ---
 
@@ -84,7 +120,9 @@ Three fields are **added**. Every pre-existing field is unchanged.
 
   "trial_requires_card": true,          // constant. A card is required to start/keep the trial.
   "card_on_file": false,                // boolean. true when user_subscriptions.moyasar_card_token IS NOT NULL
-  "card_verified_at": null              // ISO 8601 string | null. When the 1 SAR verification succeeded.
+  "card_verified_at": null,             // ISO 8601 string | null. When the 1 SAR verification succeeded.
+  "trial_end": null,                    // ISO 8601 string | null. Raw user_subscriptions.trial_end.
+  "trial_conversion_pending": false     // boolean. Lapsed trial + card on file, waiting for the cron.
 }
 ```
 
@@ -94,8 +132,23 @@ Notes:
 - `card_on_file` is `true` for any subscription row that has a stored Moyasar card token — trial or paid.
 - `card_verified_at` is `null` until the migration in Section 8 is applied; treat `null` as
   "unknown, fall back to `card_on_file`". Never gate on `card_verified_at` alone.
-- Admin-override responses also carry these three fields (`card_on_file: true`,
-  `card_verified_at: null`) so the frontend never has to special-case admins.
+- Admin-override responses also carry these fields (`card_on_file: true`,
+  `card_verified_at: null`, `trial_end: null`, `trial_conversion_pending: false`) so the
+  frontend never has to special-case admins.
+- `trial_end` is the RAW trial window end. **The frontend must never treat
+  `status === "trialing"` alone as "trial is active".** A lapsed trial with a card on file
+  is deliberately left in status `trialing` (see below), so the only correct test is
+  `status === "trialing" && trial_end > now` — identical to `isInTrial()` in
+  `_shared/billing.ts`. `useEntitlement.isTrialActive` implements exactly this.
+- `trial_conversion_pending` is `true` only when `status === "trialing"` AND
+  `trial_end <= now` AND a card token is on file. The user is **not** active; the hourly
+  `process-subscription-renewal` pass owes them a `post_trial_first_charge`.
+
+**`check-subscription` must NOT expire a lapsed `trialing` row that has a card token.**
+Doing so removes the row from the renewal job's `status = "trialing"` work queue, so the
+conversion never fires, the customer is never charged, and the 1.00 SAR they already paid
+buys them nothing. A lapsed `trialing` row is only expired when
+`moyasar_card_token IS NULL` (nothing can ever be charged).
 
 ---
 
@@ -206,6 +259,23 @@ COMMENT ON COLUMN public.payment_transactions.amount_vat IS
   '15% KSA VAT component in halalas. vat = amount - amount_base.';
 ```
 
+### 8.1 Verification-credit predicate before the migration
+
+`card_verified_at` does not exist in production yet, so gating the 100-halala credit on it alone
+charges **every** converting customer the full plan price while `TrialCardBanner` promised them
+"plan price minus 1.00 SAR". `verificationCreditOwed(sub)` in `_shared/billing.ts` therefore
+accepts three predicates, in order of authority:
+
+1. `card_verified_at` is set (exact; post-migration only).
+2. `has_captured_verification` — the caller counted a `captured` transaction with
+   `payment_type = 'verification'` for this subscription. Needs no new column.
+3. A stored `moyasar_card_token` on a row still in status `trialing`. During a trial the only
+   code path that stores a token is the captured 1.00 SAR verification webhook.
+
+The credit is still applied at most once: `priorPaidCount === 0` (no captured non-verification
+transaction) remains a hard requirement. Erring toward granting the credit undercharges by at
+most 1.00 SAR once; erring the other way overcharges every converting customer.
+
 **Until this is applied:** the backend writes these columns *optimistically* and silently retries
 without them when PostgREST reports an undefined column (`PGRST204` / SQLSTATE `42703`). Nothing
 breaks; the VAT split and `card_verified_at` are simply not persisted. `check-subscription` returns
@@ -246,5 +316,18 @@ UPDATE public.payment_transactions
    The code treats that as "awaiting webhook", which for an unattended cron charge means the user
    never completes 3DS and the payment stalls. Confirm with Moyasar that recurring MIT charges on a
    saved token are exempt from 3DS for this merchant account.
-3. **No invoice / ZATCA e-invoicing.** The VAT split is recorded, but no invoice document is issued
+3. **UNFIXED — renewal idempotency inverts into runaway charging.**
+   `process-subscription-renewal/index.ts` (~line 238) uses `.maybeSingle()` for the
+   renewal idempotency check and discards the error. PostgREST returns
+   `{data: null, error: PGRST116}` when MORE than one row matches, so two matching
+   `renewal` rows make `existingTx` null and the job charges — every hour, forever.
+   Two rows is reachable: the trial-conversion pass writes `payment_type = "renewal"`
+   and its 24h retry window deliberately creates a second `initiated` row.
+   **Required fix:** `.limit(1)` with an array result, and treat ANY query error as
+   "skip this subscription", never as "proceed to charge".
+   **Why it is not applied:** `.claude/hooks/guard-migrations.js` blocks all
+   Edit/Write to `supabase/functions/process-subscription-renewal/`. Owner must apply
+   it or lift the guard for this file. The exact patch is in the fix report.
+
+4. **No invoice / ZATCA e-invoicing.** The VAT split is recorded, but no invoice document is issued
    and no receipt email is sent. Separate work item.

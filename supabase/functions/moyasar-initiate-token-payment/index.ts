@@ -179,16 +179,47 @@ serve(async (req) => {
     }
 
     // Prior non-verification captured transactions consume the 1 SAR credit.
-    const { count: priorPaidCount } = await adminClient
+    const { count: priorPaidCount, error: priorPaidError } = await adminClient
       .from("payment_transactions")
       .select("id", { count: "exact", head: true })
       .eq("subscription_id", sub.id)
       .eq("status", "captured")
       .neq("payment_type", "verification");
 
+    if (priorPaidError) {
+      // Unknown payment history means an unknown correct amount. Never guess.
+      console.error("Prior-paid count failed; refusing to charge", { sub_id: sub.id });
+      return new Response(JSON.stringify({ error: "Could not determine the amount to charge" }), {
+        status: 503,
+        headers: corsHeaders,
+      });
+    }
+
+    // A captured 1.00 SAR verification is the migration-independent proof that
+    // the credit is owed — card_verified_at does not exist in production until
+    // the Section 8 migration is applied.
+    const { count: verificationCount, error: verificationError } = await adminClient
+      .from("payment_transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("subscription_id", sub.id)
+      .eq("status", "captured")
+      .eq("payment_type", "verification");
+
+    if (verificationError) {
+      console.error("Verification count failed; refusing to charge", { sub_id: sub.id });
+      return new Response(JSON.stringify({ error: "Could not determine the amount to charge" }), {
+        status: 503,
+        headers: corsHeaders,
+      });
+    }
+
     const decision = computeCharge(
       planRow as any,
-      { ...(sub as any), card_verified_at: cardVerifiedAt },
+      {
+        ...(sub as any),
+        card_verified_at: cardVerifiedAt,
+        has_captured_verification: (verificationCount ?? 0) > 0,
+      },
       promoCode,
       priorPaidCount ?? 0,
     );

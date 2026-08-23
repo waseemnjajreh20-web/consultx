@@ -101,6 +101,8 @@ serve(async (req) => {
         trial_requires_card: true,
         card_on_file: true,
         card_verified_at: null,
+        trial_end: null,
+        trial_conversion_pending: false,
       };
 
       if (override === "free") {
@@ -198,6 +200,8 @@ serve(async (req) => {
           trial_requires_card: true,
           card_on_file: true,
           card_verified_at: null,
+          trial_end: null,
+          trial_conversion_pending: false,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -320,6 +324,11 @@ serve(async (req) => {
     let trialDaysRemaining = 0;
     let expiresAt: string | null = null;
     let dailyLimit        = 10;
+    // True when the row is still `trialing`, trial_end has passed, and a card
+    // token is on file — i.e. process-subscription-renewal still owes this user
+    // a post_trial_first_charge. Read-only state: this function must NOT expire
+    // such a row (doing so deletes the cron's work queue).
+    let trialConversionPending = false;
 
     if (subscription) {
       if (subscription.status === "pending_activation") {
@@ -336,8 +345,25 @@ serve(async (req) => {
           trialDaysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
           expiresAt          = subscription.trial_end;
           dailyLimit         = 20;
+        } else if (subscription.moyasar_card_token) {
+          // Trial window has closed but a card token IS on file. This row is the
+          // renewal cron's work item: process-subscription-renewal pass 0 charges
+          // the post_trial_first_charge and flips it to `active`.
+          //
+          // Do NOT touch status or profiles.plan_type here. Flipping it to
+          // `expired` (what this branch used to do unconditionally) removes the
+          // row from the cron's `status = trialing` query, so the conversion
+          // never fires, the customer is never charged, and the 1.00 SAR card
+          // verification they already paid buys them nothing.
+          //
+          // Report them as not-active with an explicit pending-conversion flag
+          // and let the cron own the transition.
+          active                 = false;
+          trialConversionPending = true;
+          dailyLimit             = 10;
         } else {
-          // Trial expired — mark it and sync plan entitlement to free
+          // Trial expired with NO card on file — nothing can ever be charged.
+          // Mark it and sync plan entitlement to free.
           await Promise.all([
             adminClient.from("user_subscriptions").update({ status: "expired" }).eq("id", subscription.id),
             adminClient.from("profiles").update({ plan_type: "free" }).eq("user_id", userId),
@@ -563,6 +589,15 @@ serve(async (req) => {
         trial_requires_card: true,
         card_on_file:        !!subscription?.moyasar_card_token,
         card_verified_at:    (subscription as any)?.card_verified_at ?? null,
+        // Raw trial window end (null when there is no trial row). The client
+        // MUST gate "trial is active" on status === "trialing" AND
+        // trial_end > now — status alone is not enough, because a lapsed
+        // trialing row is left untouched here while the renewal cron converts it.
+        trial_end:                subscription?.trial_end ?? null,
+        // True only for: status === "trialing" AND trial_end <= now AND a card
+        // token is on file. The user is NOT active; the hourly renewal job owes
+        // them a post_trial_first_charge.
+        trial_conversion_pending: trialConversionPending,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

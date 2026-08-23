@@ -82,6 +82,13 @@ export interface SubscriptionStatus {
   trial_requires_card?: boolean; // constant true — card required to start/keep the trial
   card_on_file?: boolean;        // true when a Moyasar card token is stored (trial or paid)
   card_verified_at?: string | null; // ISO 8601 | null — null until migration lands; fall back to card_on_file
+  // Raw trial-window end. "Trial is active" MUST be status === "trialing" AND
+  // trial_end > now — a lapsed trialing row is deliberately left in status
+  // "trialing" until the renewal cron converts it.
+  trial_end?: string | null;
+  // true when status === "trialing", trial_end <= now and a card token is on
+  // file: not active, waiting for the hourly post_trial_first_charge.
+  trial_conversion_pending?: boolean;
 }
 
 export function useSubscription() {
