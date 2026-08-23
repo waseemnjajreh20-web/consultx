@@ -1,4 +1,25 @@
 -- ============================================================
+-- STALE -- DOES NOT MATCH PRODUCTION. DO NOT RE-RUN THIS FILE TO
+-- RE-ARM THE CRON.
+--
+-- CONFIRMED 2026-08-23 (docs/audits/production-truth-20260823.md,
+-- Section 1): this file schedules the job reading the secret via
+-- current_setting('app.cron_secret', true), and that database
+-- setting is NOT SET in production. The job actually running
+-- (jobid 4) was hand-modified to read the secret from Postgres
+-- Vault (vault.decrypted_secrets where name = 'cron_secret')
+-- instead.
+--
+-- CONSEQUENCE OF RE-RUNNING IT: the job would send a null/empty
+-- x-cron-secret header, get HTTP 401 forever, while
+-- cron.job_run_details keeps reporting "succeeded" -- a silent,
+-- symptomless re-introduction of the current launch blocker.
+--
+-- To re-arm the cron, follow docs/launch/deploy-runbook-20260823.md,
+-- the "cron charging unexpectedly" rollback section, which
+-- reproduces the LIVE job definition.
+-- ============================================================
+-- ============================================================
 -- Renewal Scheduler
 -- Enables pg_cron + pg_net and schedules the
 -- process-subscription-renewal Edge Function to run every hour.

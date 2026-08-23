@@ -21,6 +21,9 @@ import {
   deriveFlow,
   effectiveSeats,
   EID50_PRO_AMOUNT,
+  EID50_PLAN_SLUG,
+  EID50_WINDOW_START_MS,
+  EID50_WINDOW_END_MS,
   expectedAmountsFor,
   FOUNDING10_AMOUNT,
   chargeSplit,
@@ -351,7 +354,9 @@ describe("promotions apply to immediate charges only", () => {
   });
 
   it("EID50 halves the immediate Pro first month", () => {
-    const d = computeCharge(PRO, returningSub(), "EID50", 0, NOW);
+    // R3-C4: EID50 now has a server-side window, so this must be evaluated
+    // INSIDE it. NOW (2026-08-23) is three months after the campaign closed.
+    const d = computeCharge(PRO, returningSub(), "EID50", 0, EID50_WINDOW_START_MS + 1000);
     expect(d.amount).toBe(EID50_PRO_AMOUNT);
     expect(d.amount).toBe(12250);
   });
@@ -613,7 +618,8 @@ describe("promoAmountFor — normalisation and restrictions", () => {
     expect(promoAmountFor(PRO, " founding10 ", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
     expect(promoAmountFor(PRO, "FoUnDiNg10", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
     expect(promoAmountFor(PRO, "\tFOUNDING10\n", IN_WINDOW)).toBe(FOUNDING10_AMOUNT);
-    expect(promoAmountFor(PRO, "  eid50  ", IN_WINDOW)).toBe(EID50_PRO_AMOUNT);
+    // EID50 has its own window (R3-C4), so it is normalised against that one.
+    expect(promoAmountFor(PRO, "  eid50  ", EID50_WINDOW_START_MS + 1000)).toBe(EID50_PRO_AMOUNT);
   });
 
   it("returns null for null / undefined / non-string promo input", () => {
@@ -919,10 +925,15 @@ describe("trialChargeAuthorized — C1: the cron may only bill the plan the card
     expect(trialChargeAuthorized(null, { plan_id: "p", seat_count: 1 }).authorized).toBe(false);
   });
 
-  it("allows a legacy payment that carries no plan metadata", () => {
+  // H9 (2026-08-23): this assertion was inverted with the fix. It used to
+  // require `authorized === true` for a payment with no plan metadata, which is
+  // the fail-OPEN hole: with nothing to compare against, the cron charged the
+  // stored card for whatever the row currently held. See the fail-closed
+  // describe block at the end of this file.
+  it("REFUSES a payment that carries no plan metadata (fails closed)", () => {
     for (const ref of [null, undefined, { plan_id: null, seat_count: null }]) {
       const d = trialChargeAuthorized({ plan_id: "p", seat_count: 1 }, ref as any);
-      expect(d.authorized).toBe(true);
+      expect(d.authorized).toBe(false);
       expect(d.reason).toBe("no_verified_plan_metadata");
     }
   });
@@ -1002,5 +1013,1071 @@ describe("isUniqueViolationError — C2: paid but never activated", () => {
     // subscription, no dead letter, no retry.
     expect(isUndefinedColumnError({ code: "23505" })).toBe(false);
     expect(isUniqueViolationError({ code: "23505" })).toBe(true);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// R3-C2 — no activation after cancellation
+//
+// The race:
+//   09:00  process-subscription-renewal creates the post-trial charge
+//   09:02  the customer cancels
+//   09:05  Moyasar delivers the `paid` webhook for the 09:00 charge
+// The webhook used to set status = "active" unconditionally, reviving a
+// cancelled subscription and keeping the money.
+//
+// The decision is a pure function so it can be tested without Deno. It lives in
+// supabase/functions/_shared/webhookDecisions.ts and NOT inside
+// moyasar-webhook/index.ts, because index.ts imports remote "https://deno.land/..." URLs and
+// calls serve() at module scope — importing it from Vitest fails with
+// "Only URLs with a scheme in: file and data are supported by the default ESM
+// loader". Same split as fire-safety-chat/geminiResilience.ts.
+// ═════════════════════════════════════════════════════════════════════════════
+import { readFileSync } from "node:fs";
+import {
+  CLOCK_SKEW_TOLERANCE_MS,
+  decideActivation,
+  parseTimestampMs,
+  RESUBSCRIBE_WINDOW_MS,
+  type ActivationInput,
+} from "../../supabase/functions/_shared/webhookDecisions.ts";
+
+describe("R3-C2 activation guard — parseTimestampMs", () => {
+  it("parses ISO 8601", () => {
+    expect(parseTimestampMs("2026-08-23T09:00:00.000Z")).toBe(
+      Date.parse("2026-08-23T09:00:00.000Z"),
+    );
+  });
+  it("passes through finite epoch-ms numbers", () => {
+    expect(parseTimestampMs(1_700_000_000_000)).toBe(1_700_000_000_000);
+  });
+  it("returns null for anything unusable", () => {
+    expect(parseTimestampMs(null)).toBeNull();
+    expect(parseTimestampMs(undefined)).toBeNull();
+    expect(parseTimestampMs("")).toBeNull();
+    expect(parseTimestampMs("not-a-date")).toBeNull();
+    expect(parseTimestampMs(Number.NaN)).toBeNull();
+    expect(parseTimestampMs({})).toBeNull();
+  });
+});
+
+describe("R3-C2 activation guard — decideActivation", () => {
+  const T0900 = Date.parse("2026-08-23T09:00:00.000Z");
+  const T0902 = Date.parse("2026-08-23T09:02:00.000Z");
+  const T0905 = Date.parse("2026-08-23T09:05:00.000Z");
+
+  const base: ActivationInput = {
+    subStatus: "active",
+    cancelAtPeriodEnd: false,
+    cancelledAtMs: null,
+    flow: "renewal",
+    paymentCreatedAtMs: T0900,
+    nowMs: T0905,
+  };
+  const at = (o: Partial<ActivationInput>): ActivationInput => ({ ...base, ...o });
+
+  // ── The reported race ──────────────────────────────────────────────────────
+
+  it("REFUSES the 09:00 / 09:02 / 09:05 race on a trialing row (post-Fix-2 shape)", () => {
+    // cancel-subscription now leaves a trialing cancellation as
+    // status = "trialing" + cancel_at_period_end = true.
+    const d = decideActivation(at({
+      subStatus: "trialing",
+      cancelAtPeriodEnd: true,
+      cancelledAtMs: T0902,
+      flow: "post_trial_first_charge",
+      paymentCreatedAtMs: T0900,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  it("REFUSES the same race in the pre-Fix-2 shape (status already 'cancelled')", () => {
+    // Rows cancelled by the OLD cancel-subscription already exist in production.
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelAtPeriodEnd: false,
+      cancelledAtMs: T0902,
+      flow: "post_trial_first_charge",
+      paymentCreatedAtMs: T0900,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  it("REFUSES a renewal landing on an active row already cancelled at period end", () => {
+    const d = decideActivation(at({
+      subStatus: "active",
+      cancelAtPeriodEnd: true,
+      cancelledAtMs: T0902,
+      flow: "renewal",
+      paymentCreatedAtMs: T0900,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  // ── Resubscribe must NOT be broken ─────────────────────────────────────────
+
+  it("ACTIVATES a genuine resubscribe: cancelled row + fresh immediate_charge", () => {
+    const cancelledYesterday = T0905 - 26 * 60 * 60 * 1000;
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelAtPeriodEnd: false,
+      cancelledAtMs: cancelledYesterday,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 - 3 * 60 * 1000, // paid 3 minutes ago
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(true);
+  });
+
+  it("ACTIVATES a resubscribe on an expired row (no cancelled_at recorded)", () => {
+    const d = decideActivation(at({
+      subStatus: "expired",
+      cancelAtPeriodEnd: false,
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 - 60_000,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(true);
+  });
+
+  it("ACTIVATES a resubscribe on a trialing row the user had scheduled to end", () => {
+    // User cancels during the trial, changes their mind, and checks out again.
+    const d = decideActivation(at({
+      subStatus: "trialing",
+      cancelAtPeriodEnd: true,
+      cancelledAtMs: T0902,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 - 30_000, // created AFTER the cancellation
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(true);
+  });
+
+  // ── The freshness bound ────────────────────────────────────────────────────
+
+  it("REFUSES an immediate_charge created BEFORE the cancellation", () => {
+    // This is the discriminator: in the race the payment predates the cancel.
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: T0902,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0900,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  it("REFUSES an immediate_charge created exactly AT cancelled_at (boundary)", () => {
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: T0902,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0902,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+  });
+
+  it("REFUSES a stale immediate_charge older than the 24h resubscribe window", () => {
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 - RESUBSCRIBE_WINDOW_MS - 1,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+  });
+
+  it("ACTIVATES just inside the 24h resubscribe window (boundary)", () => {
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 - RESUBSCRIBE_WINDOW_MS + 1,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(true);
+  });
+
+  it("REFUSES when the payment timestamp is missing or unparseable (fail closed)", () => {
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: null,
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  it("tolerates small upstream clock skew but not large skew", () => {
+    const within = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 + CLOCK_SKEW_TOLERANCE_MS - 1000,
+      nowMs: T0905,
+    }));
+    expect(within.activate).toBe(true);
+
+    const beyond = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: null,
+      flow: "immediate_charge",
+      paymentCreatedAtMs: T0905 + CLOCK_SKEW_TOLERANCE_MS + 1000,
+      nowMs: T0905,
+    }));
+    expect(beyond.activate).toBe(false);
+  });
+
+  // ── The guard must not fire on healthy subscriptions ───────────────────────
+
+  it("ACTIVATES every healthy (non-cancelled) combination", () => {
+    const healthyStatuses = ["active", "trialing", "past_due", "pending_activation"];
+    const flows = ["immediate_charge", "post_trial_first_charge", "renewal"] as const;
+    for (const subStatus of healthyStatuses) {
+      for (const flow of flows) {
+        const d = decideActivation(at({
+          subStatus,
+          cancelAtPeriodEnd: false,
+          cancelledAtMs: null,
+          flow,
+          // Deliberately unusable: a healthy row must never depend on it.
+          paymentCreatedAtMs: null,
+        }));
+        expect(subStatus + "/" + flow + "=" + d.activate).toBe(subStatus + "/" + flow + "=true");
+      }
+    }
+  });
+
+  it("ACTIVATES when cancel_at_period_end is null/undefined (column absent)", () => {
+    expect(decideActivation(at({ cancelAtPeriodEnd: null })).activate).toBe(true);
+    expect(decideActivation(at({ cancelAtPeriodEnd: undefined })).activate).toBe(true);
+  });
+
+  it("REFUSES an unattended cron flow on a cancelled row even when it is fresh", () => {
+    // Only a deliberate checkout (immediate_charge) may revive a closed row.
+    for (const flow of ["post_trial_first_charge", "renewal"] as const) {
+      const d = decideActivation(at({
+        subStatus: "cancelled",
+        cancelledAtMs: T0902,
+        flow,
+        paymentCreatedAtMs: T0905 - 1000, // created AFTER the cancel, still refused
+        nowMs: T0905,
+      }));
+      expect(flow + "=" + d.activate).toBe(flow + "=false");
+    }
+  });
+});
+
+describe("R3-C2 cancel-subscription — trialing cancellation is scheduled, not immediate", () => {
+  // The handler body lives inside Deno's serve() with remote URL imports, so it
+  // cannot be imported here (see the note above). These are SOURCE-CONTRACT
+  // assertions: they cannot prove runtime behaviour, but they do fail loudly if
+  // the immediate-cancel regression is reintroduced.
+  const SRC = readFileSync(
+    new URL("../../supabase/functions/cancel-subscription/index.ts", import.meta.url),
+    "utf8",
+  );
+
+  it("never writes status = 'cancelled'", () => {
+    expect(SRC).not.toMatch(/status:\s*["']cancelled["']/);
+  });
+
+  it("writes cancel_at_period_end = true and cancelled_at on the cancel path", () => {
+    expect(SRC).toMatch(/cancel_at_period_end:\s*true/);
+    expect(SRC).toMatch(/cancelled_at:\s*now/);
+  });
+
+  it("selects trial_end so access_until can report the trial horizon", () => {
+    expect(SRC).toMatch(/\.select\(\s*["'][^"']*trial_end[^"']*["']\s*\)/);
+  });
+
+  it("reports access_until from trial_end for a trialing row", () => {
+    expect(SRC).toMatch(/status\s*===\s*["']trialing["']/);
+    expect(SRC).toMatch(/access_until:\s*accessUntil/);
+  });
+
+  it("keeps the response keys the frontend reads (Account.tsx)", () => {
+    expect(SRC).toMatch(/cancelled_immediately/);
+    expect(SRC).toMatch(/already_scheduled/);
+    expect(SRC).toMatch(/access_until/);
+  });
+
+  it("no longer downgrades profiles.plan_type on cancel (access continues)", () => {
+    expect(SRC).not.toMatch(/plan_type:\s*["']free["']/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R3-C1 — the seat RPC bypass, and H9 — trialChargeAuthorized fails closed.
+// Appended 2026-08-23 (sub-agent A1). Do not reorder the blocks above.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("R3-C1 — seat counts above MAX_BILLABLE_SEATS are rejected, not clamped-and-granted", () => {
+  // The SQL side of this defect lives in
+  // supabase/migrations/20260823000002_seat_rpc_hardening.sql, which cannot be
+  // executed from this test runner. These assertions pin the TypeScript half of
+  // the coupling: the SQL constant `c_max_billable_seats` MUST equal
+  // MAX_BILLABLE_SEATS, so a change here is a change there.
+  const OVER_CAP = 5000;
+
+  it("MAX_BILLABLE_SEATS is 100 — the value the SQL cap must mirror", () => {
+    expect(MAX_BILLABLE_SEATS).toBe(100);
+    expect(OVER_CAP).toBeGreaterThan(MAX_BILLABLE_SEATS);
+  });
+
+  it("a payment claiming 5000 seats is refused outright by parsePaidPlanRef", () => {
+    // Refused (null), never silently clamped to 100: a clamp would let the
+    // webhook promote a seat count nobody paid for.
+    expect(parsePaidPlanRef({ plan_id: "p", seat_count: OVER_CAP }).seat_count).toBeNull();
+  });
+
+  it("REGRESSION: a stored seat_count of 5000 can never price above the cap", () => {
+    // Before the migration, update_subscription_seat_count would happily store
+    // 5000. effectiveSeats is the only thing that stopped 5000 x 549.00 SAR
+    // from being charged — and it does not stop seat ENFORCEMENT from granting
+    // 5000 seats, which is why the cap had to move into SQL as well.
+    expect(effectiveSeats(OFFICE, { seat_count: OVER_CAP })).toBe(MAX_BILLABLE_SEATS);
+    expect(planPriceFor(OFFICE, { seat_count: OVER_CAP })).toBe(54900 * MAX_BILLABLE_SEATS);
+  });
+});
+
+describe("H9 — trialChargeAuthorized fails CLOSED when the verification metadata is missing", () => {
+  const ESCALATED_ROW = { plan_id: "enterprise-office-uuid", seat_count: 100 };
+
+  it("REGRESSION: an escalated row with NO verification metadata is not authorized", () => {
+    // The exploit this closes: the row was escalated to enterprise_office at
+    // 100 seats, the verification payment carries no plan metadata, and the old
+    // code returned authorized:true — arming an unattended charge of
+    // 100 x 549.00 SAR on a card that was only ever verified for 1.00 SAR.
+    for (const ref of [null, undefined, {}, { plan_id: null, seat_count: null }, { plan_id: "   ", seat_count: 100 }]) {
+      const d = trialChargeAuthorized(ESCALATED_ROW, parsePaidPlanRef(ref));
+      expect(d.authorized).toBe(false);
+      expect(d.reason).toBe("no_verified_plan_metadata");
+      // No clamp can be offered either: the historical plan is unknowable here.
+      expect(d.clampedPlanId).toBeNull();
+      expect(d.maxSeats).toBeNull();
+    }
+  });
+
+  it("REGRESSION: the escalated amount is never the authorized amount", () => {
+    const escalatedAmount = planPriceFor(OFFICE, ESCALATED_ROW); // 5,490,000 halalas
+    expect(escalatedAmount).toBe(54900 * 100);
+
+    const d = trialChargeAuthorized(ESCALATED_ROW, { plan_id: null, seat_count: null });
+    // The caller (process-subscription-renewal) skips on !authorized, so the
+    // amount actually charged is 0, not escalatedAmount.
+    const charged = d.authorized ? escalatedAmount : 0;
+    expect(charged).toBe(0);
+    expect(charged).not.toBe(escalatedAmount);
+  });
+
+  it("still authorizes an exact plan + seat match, and now returns the clamp", () => {
+    const d = trialChargeAuthorized(
+      { plan_id: "office-uuid", seat_count: 5 },
+      { plan_id: "office-uuid", seat_count: 5 },
+    );
+    expect(d.authorized).toBe(true);
+    expect(d.reason).toBe("match");
+    expect(d.clampedPlanId).toBe("office-uuid");
+    expect(d.maxSeats).toBe(5);
+  });
+
+  it("still allows billing FEWER seats than verified, clamped to the verified count", () => {
+    const d = trialChargeAuthorized(
+      { plan_id: "office-uuid", seat_count: 3 },
+      { plan_id: "office-uuid", seat_count: 5 },
+    );
+    expect(d.authorized).toBe(true);
+    expect(d.maxSeats).toBe(5);
+    // The caller prices with min(row seats, maxSeats) -> 3 seats, an undercharge.
+    expect(Math.min(3, d.maxSeats!)).toBe(3);
+  });
+
+  it("still refuses a plan mismatch and a seat escalation, and names the verified reference", () => {
+    const mismatch = trialChargeAuthorized(ESCALATED_ROW, { plan_id: "pro-uuid", seat_count: 1 });
+    expect(mismatch.authorized).toBe(false);
+    expect(mismatch.reason).toBe("plan_mismatch");
+    expect(mismatch.clampedPlanId).toBe("pro-uuid");
+    expect(mismatch.maxSeats).toBe(1);
+
+    const escalation = trialChargeAuthorized(
+      { plan_id: "office-uuid", seat_count: 100 },
+      { plan_id: "office-uuid", seat_count: 5 },
+    );
+    expect(escalation.authorized).toBe(false);
+    expect(escalation.reason).toBe("seat_escalation");
+    expect(escalation.maxSeats).toBe(5);
+  });
+
+  it("refuses when there is no subscription row at all", () => {
+    const d = trialChargeAuthorized(null, { plan_id: "p", seat_count: 1 });
+    expect(d.authorized).toBe(false);
+    expect(d.reason).toBe("no_subscription");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R3-C4 — EID50 had NO server-side window, so a campaign advertised as
+// "valid only from 26 to 30 May 2026" was a permanent, repeatable 50% key to
+// the Pro plan. `promoAmountFor` now enforces a window mirroring FOUNDING10;
+// `promoAmountForValidation` (reached through `expectedAmountsFor`) stays
+// window-free so a payment created just before the close is not stranded when
+// its webhook lands just after.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("R3-C4 — EID50 server-side window", () => {
+  const IN_EID_WINDOW = EID50_WINDOW_START_MS + 1000;
+
+  it("the window is the advertised 26-30 May 2026, anchored to Arabia Standard Time", () => {
+    // Start inclusive: 26 May 2026 00:00 AST === 2026-05-25T21:00:00Z.
+    expect(new Date(EID50_WINDOW_START_MS).toISOString()).toBe("2026-05-25T21:00:00.000Z");
+    // End EXCLUSIVE: "to 30 May" includes the whole of the 30th, so the boundary
+    // is the START of 31 May — 31 May 2026 00:00 AST === 2026-05-30T21:00:00Z.
+    expect(new Date(EID50_WINDOW_END_MS).toISOString()).toBe("2026-05-30T21:00:00.000Z");
+    // Exactly the 5 days the campaign copy promises.
+    expect(EID50_WINDOW_END_MS - EID50_WINDOW_START_MS).toBe(5 * 86_400_000);
+  });
+
+  it("returns the discounted Pro price INSIDE the window", () => {
+    expect(promoAmountFor(PRO, "EID50", IN_EID_WINDOW)).toBe(EID50_PRO_AMOUNT);
+    expect(promoAmountFor(PRO, "EID50", IN_EID_WINDOW)).toBe(12250);
+  });
+
+  it("returns null OUTSIDE the window, on both sides", () => {
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_START_MS - 1)).toBeNull();
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_START_MS - 86_400_000)).toBeNull();
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_END_MS)).toBeNull();
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_END_MS + 86_400_000)).toBeNull();
+  });
+
+  it("boundaries: start inclusive, end exclusive — the same shape as FOUNDING10", () => {
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_START_MS)).toBe(EID50_PRO_AMOUNT);
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_END_MS - 1)).toBe(EID50_PRO_AMOUNT);
+    expect(promoAmountFor(PRO, "EID50", EID50_WINDOW_END_MS)).toBeNull();
+  });
+
+  it("is refused on every non-pro plan even INSIDE the window", () => {
+    expect(EID50_PLAN_SLUG).toBe("pro");
+    expect(promoAmountFor(ENGINEER, "EID50", IN_EID_WINDOW)).toBeNull();
+    expect(promoAmountFor(TEAM, "EID50", IN_EID_WINDOW)).toBeNull();
+    expect(promoAmountFor(OFFICE, "EID50", IN_EID_WINDOW)).toBeNull();
+    expect(promoAmountFor(null, "EID50", IN_EID_WINDOW)).toBeNull();
+  });
+
+  it("never discounts an enterprise plan at any seat count, inside or outside the window", () => {
+    const inside = computeCharge(OFFICE, returningSub({ seat_count: 100 }), "EID50", 0, IN_EID_WINDOW);
+    expect(inside.amount).toBe(54900 * 100);
+    expect(inside.appliedPromo).toBeNull();
+
+    const outside = computeCharge(OFFICE, returningSub({ seat_count: 100 }), "EID50", 0, NOW);
+    expect(outside.amount).toBe(54900 * 100);
+    expect(outside.appliedPromo).toBeNull();
+  });
+
+  it("computeCharge bills the full Pro price outside the window", () => {
+    const d = computeCharge(PRO, returningSub(), "EID50", 0, EID50_WINDOW_END_MS + 1);
+    expect(d.amount).toBe(24500);
+    expect(d.appliedPromo).toBeNull();
+    expect(d.purpose).toBe("immediate_charge");
+  });
+
+  it("computeCharge applies the promo purpose and description inside the window", () => {
+    const d = computeCharge(PRO, returningSub(), "EID50", 0, IN_EID_WINDOW);
+    expect(d.amount).toBe(EID50_PRO_AMOUNT);
+    expect(d.appliedPromo).toBe("EID50");
+    expect(d.purpose).toBe("eid50_first_month");
+    expect(d.description.toLowerCase()).not.toContain("refund");
+  });
+
+  it("PINNED TO THE REAL CLOCK — EID50 is inert right now", () => {
+    // No injected clock: this is the live production behaviour today. Before
+    // R3-C4 this returned 12250 forever.
+    expect(promoAmountFor(PRO, "EID50")).toBeNull();
+    expect(computeCharge(PRO, returningSub(), "EID50").amount).toBe(24500);
+    expect(computeCharge(PRO, returningSub(), "EID50").appliedPromo).toBeNull();
+    // Sanity: the campaign really is in the past relative to the real clock.
+    expect(Date.now()).toBeGreaterThan(EID50_WINDOW_END_MS);
+  });
+
+  it("webhook validation keeps the plan restriction but ignores the window", () => {
+    // A payment created seconds before the window closed must still validate
+    // when its webhook lands seconds after.
+    const allowedPro = expectedAmountsFor(PRO, returningSub(), "immediate_charge", "EID50");
+    expect(allowedPro).toContain(EID50_PRO_AMOUNT);
+    expect(allowedPro).toContain(24500);
+    // ...but the plan restriction is never relaxed, window or no window.
+    expect(
+      expectedAmountsFor(OFFICE, returningSub(), "immediate_charge", "EID50"),
+    ).not.toContain(EID50_PRO_AMOUNT);
+    expect(
+      expectedAmountsFor(TEAM, returningSub(), "immediate_charge", "EID50"),
+    ).not.toContain(EID50_PRO_AMOUNT);
+  });
+
+  it("promos are still ignored entirely outside an immediate charge", () => {
+    // The shared fixtures are dated relative to NOW (August), so the trial_end
+    // has to be re-anchored to the May window for these two flows to be real.
+    const lapsedInWindow = lapsedTrialSub({
+      trial_end: new Date(IN_EID_WINDOW - 86_400_000).toISOString(),
+    });
+    expect(computeCharge(PRO, trialingSub(), "EID50", 0, IN_EID_WINDOW).amount).toBe(100);
+    expect(computeCharge(PRO, trialingSub(), "EID50", 0, IN_EID_WINDOW).appliedPromo).toBeNull();
+    expect(computeCharge(PRO, lapsedInWindow, "EID50", 0, IN_EID_WINDOW).amount).toBe(24400);
+    expect(computeCharge(PRO, lapsedInWindow, "EID50", 0, IN_EID_WINDOW).appliedPromo).toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// moyasar-webhook hardening — H8 / M10 / M13 / M17 / L18 and the currency of
+// the plan actually paid for. Appended 2026-08-23 (sub-agent A5).
+// Do not reorder the blocks above.
+//
+// The pure decisions live in supabase/functions/_shared/webhookDecisions.ts for
+// the reason stated at the top of that file: moyasar-webhook/index.ts imports
+// remote "https://deno.land/..." URLs and calls serve() at module scope, so it
+// cannot be imported by Vitest. What can only be pinned by reading the source
+// text is marked SOURCE-CONTRACT below: those assertions cannot prove runtime
+// behaviour, only that the shape has not regressed.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import {
+  decideExpectedAmount,
+  decideTrialCancelClear,
+  isDuplicateTransactionInsert,
+  isOneLiveRowPerUserViolation,
+  ONE_LIVE_ROW_CONSTRAINT,
+  parseExpectedAmount,
+  TRANSACTION_PAYMENT_ID_CONSTRAINT,
+  type TrialCancelClearInput,
+} from "../../supabase/functions/_shared/webhookDecisions.ts";
+
+const WEBHOOK_SRC = readFileSync(
+  new URL("../../supabase/functions/moyasar-webhook/index.ts", import.meta.url),
+  "utf8",
+);
+
+describe("M17 — retirement of other live rows keys off the NAMED constraint", () => {
+  const OTHER_CONSTRAINT_MESSAGE =
+    'duplicate key value violates unique constraint "payment_transactions_moyasar_payment_id_key"';
+  const THIS_CONSTRAINT_MESSAGE =
+    `duplicate key value violates unique constraint "${ONE_LIVE_ROW_CONSTRAINT}"`;
+
+  it("matches a 23505 whose message names user_subscriptions_one_live_row_per_user", () => {
+    expect(isOneLiveRowPerUserViolation({ code: "23505", message: THIS_CONSTRAINT_MESSAGE })).toBe(true);
+  });
+
+  it("matches a 23505 whose `constraint` field names it", () => {
+    expect(
+      isOneLiveRowPerUserViolation({ code: "23505", constraint: ONE_LIVE_ROW_CONSTRAINT }),
+    ).toBe(true);
+  });
+
+  it("matches when the name arrives in `details` instead of `message`", () => {
+    expect(
+      isOneLiveRowPerUserViolation({
+        code: "23505",
+        message: "duplicate key value",
+        details: `Key (user_id)=(u1) already exists in ${ONE_LIVE_ROW_CONSTRAINT}.`,
+      }),
+    ).toBe(true);
+  });
+
+  it("REFUSES a 23505 raised by a DIFFERENT unique constraint", () => {
+    // This is the whole point of M17: the retirement below EXPIRES the user's
+    // other trialing / past_due rows. Running it for an unrelated collision
+    // destroys live subscriptions for a reason that has nothing to do with them.
+    expect(isOneLiveRowPerUserViolation({ code: "23505", message: OTHER_CONSTRAINT_MESSAGE })).toBe(false);
+    expect(
+      isOneLiveRowPerUserViolation({
+        code: "23505",
+        constraint: "payment_transactions_moyasar_payment_id_key",
+      }),
+    ).toBe(false);
+  });
+
+  it("REFUSES anything that is not SQLSTATE 23505", () => {
+    for (const bad of [
+      null,
+      undefined,
+      "23505",
+      23505,
+      {},
+      { code: "PGRST204" },
+      { code: "42703" },
+      { code: "23503", message: "insert violates foreign key constraint" },
+      new Error("boom"),
+    ]) {
+      expect(isOneLiveRowPerUserViolation(bad as any)).toBe(false);
+    }
+  });
+
+  it("REFUSES a 23505 with no recoverable constraint name — the safe default is 'do not retire'", () => {
+    // Fail-closed choice, stated explicitly: an unknown 23505 falls through to
+    // the subscription_update_failed_on_paid path (dead letter + non-2xx), so
+    // the payment is stranded LOUDLY instead of live rows being deleted
+    // silently. Stranding is recoverable from the dead letter; deletion is not.
+    expect(isOneLiveRowPerUserViolation({ code: "23505" })).toBe(false);
+    expect(isOneLiveRowPerUserViolation({ code: "23505", message: "duplicate key value" })).toBe(false);
+  });
+
+  it("REGRESSION: the generic helper it replaced matched all of those", () => {
+    // isUniqueViolationError stays in _shared/billing.ts and is still correct
+    // for its own purpose — it is simply too broad to gate a destructive write.
+    expect(isUniqueViolationError({ code: "23505", message: OTHER_CONSTRAINT_MESSAGE })).toBe(true);
+    expect(isOneLiveRowPerUserViolation({ code: "23505", message: OTHER_CONSTRAINT_MESSAGE })).toBe(false);
+  });
+
+  it("SOURCE-CONTRACT: the webhook gates the retirement on the narrow predicate", () => {
+    expect(WEBHOOK_SRC).toMatch(/isOneLiveRowPerUserViolation\(subUpdateError\)/);
+    // The broad predicate must no longer be reachable in this function at all.
+    expect(WEBHOOK_SRC).not.toMatch(/isUniqueViolationError\(/);
+  });
+
+  it("the two named-constraint predicates never answer for each other", () => {
+    const thisOne = { code: "23505", constraint: ONE_LIVE_ROW_CONSTRAINT };
+    const thatOne = { code: "23505", constraint: TRANSACTION_PAYMENT_ID_CONSTRAINT };
+    expect(isOneLiveRowPerUserViolation(thisOne)).toBe(true);
+    expect(isDuplicateTransactionInsert(thisOne)).toBe(false);
+    expect(isDuplicateTransactionInsert(thatOne)).toBe(true);
+    expect(isOneLiveRowPerUserViolation(thatOne)).toBe(false);
+  });
+});
+
+describe("a concurrent delivery that already wrote the transaction row is not a write failure", () => {
+  it("recognises the unique index on payment_transactions(moyasar_payment_id)", () => {
+    // Confirmed present in docs/audits/schema-baseline-20260501/indexes.json:
+    // CREATE UNIQUE INDEX payment_transactions_moyasar_payment_id_key ...
+    expect(TRANSACTION_PAYMENT_ID_CONSTRAINT).toBe("payment_transactions_moyasar_payment_id_key");
+    expect(
+      isDuplicateTransactionInsert({
+        code: "23505",
+        message: `duplicate key value violates unique constraint "${TRANSACTION_PAYMENT_ID_CONSTRAINT}"`,
+      }),
+    ).toBe(true);
+  });
+
+  it("an unnamed or unrelated 23505 is still treated as a real write failure", () => {
+    // Fail-closed and self-healing: it is dead-lettered with a non-2xx, and the
+    // redelivery finds the row through `existingTx` and takes the update path.
+    expect(isDuplicateTransactionInsert({ code: "23505" })).toBe(false);
+    expect(isDuplicateTransactionInsert({ code: "23505", constraint: ONE_LIVE_ROW_CONSTRAINT })).toBe(false);
+    expect(isDuplicateTransactionInsert({ code: "23503" })).toBe(false);
+    expect(isDuplicateTransactionInsert(null)).toBe(false);
+  });
+
+  it("SOURCE-CONTRACT: it acks with 200 and files no dead letter", () => {
+    const i = WEBHOOK_SRC.indexOf("isDuplicateTransactionInsert(txWriteError)");
+    const j = WEBHOOK_SRC.indexOf('reason: "transaction_write_failed"');
+    expect(i).toBeGreaterThan(-1);
+    // The duplicate check runs BEFORE the fatal branch...
+    expect(i).toBeLessThan(j);
+    // ...and its own block ends where the fatal branch begins.
+    const blockEnd = WEBHOOK_SRC.indexOf("if (txWriteError) {", i);
+    expect(blockEnd).toBeGreaterThan(i);
+    expect(blockEnd).toBeLessThan(j);
+    const block = WEBHOOK_SRC.slice(i, blockEnd);
+    expect(block).toMatch(/status: 200/);
+    // ...and files nothing.
+    expect(block).not.toMatch(/insertDeadLetter/);
+  });
+});
+
+describe("M13 — metadata.expected_amount is validated against the RE-VERIFIED payment", () => {
+  it("parseExpectedAmount is string-or-number tolerant (contract Section 7)", () => {
+    expect(parseExpectedAmount(100)).toBe(100);
+    expect(parseExpectedAmount("100")).toBe(100);
+    expect(parseExpectedAmount("  24500  ")).toBe(24500);
+    expect(parseExpectedAmount("100.0")).toBe(100);
+    expect(parseExpectedAmount(0)).toBe(0);
+  });
+
+  it("parseExpectedAmount rejects everything that is not a whole non-negative amount", () => {
+    for (const bad of [null, undefined, "", "   ", "abc", "1e", true, false, [], {}, 1.5, "1.5", -1, "-1", Number.NaN, Infinity]) {
+      expect(parseExpectedAmount(bad as any)).toBeNull();
+    }
+    // Number([]) is 0 and Number(true) is 1 — a bare Number() coercion would
+    // have invented an expectation out of those two.
+    expect(parseExpectedAmount([] as any)).toBeNull();
+    expect(parseExpectedAmount(true as any)).toBeNull();
+  });
+
+  it("skips LEGACY payments that carry no metadata.flow", () => {
+    // Same fallback the flow derivation makes: a payment created before this
+    // scheme has neither `flow` nor `expected_amount` and must not be stranded.
+    const d = decideExpectedAmount({ rawFlow: undefined, rawExpectedAmount: undefined, verifiedAmount: 24500 });
+    expect(d.ok).toBe(true);
+    expect(d.reason).toBe("legacy_payment_no_flow_metadata");
+  });
+
+  it("accepts a payment whose expected_amount equals the re-verified amount", () => {
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: 24500, verifiedAmount: 24500 }),
+    ).toEqual({ ok: true, reason: "match", expected: 24500 });
+    // Moyasar may echo metadata values back as strings.
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: "24500", verifiedAmount: 24500 }),
+    ).toEqual({ ok: true, reason: "match", expected: 24500 });
+  });
+
+  it("REFUSES a captured amount that is not the amount the server created the payment for", () => {
+    const d = decideExpectedAmount({
+      rawFlow: "immediate_charge",
+      rawExpectedAmount: 24500,
+      verifiedAmount: 1000,
+    });
+    expect(d.ok).toBe(false);
+    expect(d.reason).toBe("expected_amount_mismatch");
+  });
+
+  it("REFUSES a present-flow payment with a missing or unusable expected_amount", () => {
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: undefined, verifiedAmount: 24500 }).reason,
+    ).toBe("expected_amount_missing");
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: null, verifiedAmount: 24500 }).reason,
+    ).toBe("expected_amount_missing");
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: "not-a-number", verifiedAmount: 24500 }).reason,
+    ).toBe("expected_amount_unparseable");
+  });
+
+  it("REFUSES a non-numeric verified amount even when expected_amount parses", () => {
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: 24500, verifiedAmount: "24500" }).ok,
+    ).toBe(false);
+  });
+
+  it("an empty or whitespace flow is treated as LEGACY, not as a present marker", () => {
+    expect(decideExpectedAmount({ rawFlow: "", rawExpectedAmount: undefined, verifiedAmount: 1 }).ok).toBe(true);
+    expect(decideExpectedAmount({ rawFlow: "   ", rawExpectedAmount: undefined, verifiedAmount: 1 }).ok).toBe(true);
+  });
+
+  it("is ADDITIVE to expectedAmountsFor, not a replacement", () => {
+    // A payment created for 1000 and captured at 1000 passes the expected_amount
+    // check, and is still refused by the plan-price check: the Pro plan was
+    // never worth 1000 (FOUNDING10 aside, which is a separate allowed amount).
+    expect(
+      decideExpectedAmount({ rawFlow: "renewal", rawExpectedAmount: 1000, verifiedAmount: 1000 }).ok,
+    ).toBe(true);
+    expect(expectedAmountsFor(PRO, returningSub(), "renewal", null)).not.toContain(1000);
+  });
+
+  it("SOURCE-CONTRACT: the webhook reads expected_amount from the RE-VERIFIED payment only", () => {
+    expect(WEBHOOK_SRC).toMatch(/rawExpectedAmount:\s*verifiedPayment\?\.metadata\?\.expected_amount/);
+    expect(WEBHOOK_SRC).toMatch(/verifiedAmount:\s*verifiedPayment\?\.amount/);
+    // Never from the webhook body.
+    expect(WEBHOOK_SRC).not.toMatch(/payload\.metadata\?\.expected_amount/);
+  });
+});
+
+describe("currency is validated against the plan actually PAID FOR", () => {
+  it("SOURCE-CONTRACT: the currency check sits after the paid-plan resolution and before the amount check", () => {
+    const idxPaidPlan = WEBHOOK_SRC.indexOf("const paidPlanRef = parsePaidPlanRef(");
+    const idxSwitchedPlan = WEBHOOK_SRC.indexOf("paidPlanRow = switchedPlan;");
+    const idxCurrency = WEBHOOK_SRC.indexOf("const expectedCurrency =");
+    const idxAmount = WEBHOOK_SRC.indexOf("const allowedAmounts = expectedAmountsFor(");
+
+    expect(idxPaidPlan).toBeGreaterThan(-1);
+    expect(idxSwitchedPlan).toBeGreaterThan(-1);
+    expect(idxCurrency).toBeGreaterThan(-1);
+    expect(idxAmount).toBeGreaterThan(-1);
+
+    // After the plan this payment actually bought is known...
+    expect(idxCurrency).toBeGreaterThan(idxSwitchedPlan);
+    // ...and before any comparison of integer halalas, which only means
+    // something once the currency is known to match.
+    expect(idxCurrency).toBeLessThan(idxAmount);
+  });
+
+  it("SOURCE-CONTRACT: it reads paidPlanRow first, then the stored plan, then SAR", () => {
+    expect(WEBHOOK_SRC).toMatch(
+      /const expectedCurrency =\s*\n?\s*paidPlanRow\?\.currency \|\| \(sub as any\)\?\.subscription_plans\?\.currency \|\| "SAR";/,
+    );
+    // The old shape read the stored plan and nothing else.
+    expect(WEBHOOK_SRC).not.toMatch(/const planCurrency = \(sub as any\)\?\.subscription_plans\?\.currency/);
+  });
+
+  it("SOURCE-CONTRACT: the plan-switch select still carries the currency column", () => {
+    // If `currency` were dropped from this select, paidPlanRow.currency would be
+    // undefined and the check would silently fall back to the stored plan.
+    expect(WEBHOOK_SRC).toMatch(/\.select\("id, slug, name_en, currency,[^"]*"\)/);
+  });
+
+  it("a currency mismatch is fail-closed: dead letter plus 200", () => {
+    const idx = WEBHOOK_SRC.indexOf('reason: "verification_currency_mismatch"');
+    expect(idx).toBeGreaterThan(-1);
+    expect(WEBHOOK_SRC.slice(idx, idx + 400)).toMatch(/status: 200/);
+  });
+});
+
+describe("H8 — dead letters are deduped on (charge_id, reason)", () => {
+  const HELPER = WEBHOOK_SRC.slice(WEBHOOK_SRC.indexOf("async function insertDeadLetter("));
+
+  it("SOURCE-CONTRACT: looks for an existing row on BOTH charge_id and reason before inserting", () => {
+    const idxLookup = HELPER.indexOf('.from("webhook_dead_letters")');
+    const idxInsert = HELPER.indexOf(".insert({");
+    expect(idxLookup).toBeGreaterThan(-1);
+    expect(idxInsert).toBeGreaterThan(idxLookup);
+    expect(HELPER).toMatch(/\.eq\("charge_id", params\.paymentId\)/);
+    expect(HELPER).toMatch(/\.eq\("reason", params\.reason\)/);
+    // A hit returns before the insert — no second row for a redelivery.
+    expect(HELPER.slice(0, idxInsert)).toMatch(/return;/);
+  });
+
+  it("SOURCE-CONTRACT: a lookup error falls through to the insert (a duplicate beats a lost letter)", () => {
+    expect(HELPER).toMatch(/Dead-letter dedupe lookup failed — inserting anyway/);
+  });
+
+  it("SOURCE-CONTRACT: the whole helper — lookup included — stays inside one try/catch and never throws", () => {
+    const idxTry = HELPER.indexOf("try {");
+    const idxLookup = HELPER.indexOf('.select("id")');
+    const idxCatch = HELPER.indexOf("} catch (err)");
+    expect(idxTry).toBeGreaterThan(-1);
+    expect(idxLookup).toBeGreaterThan(idxTry);
+    expect(idxCatch).toBeGreaterThan(idxLookup);
+    expect(HELPER).toMatch(/Promise<void>/);
+  });
+
+  it("SOURCE-CONTRACT: the dedupe is unbounded in time — no created_at window", () => {
+    // A window would let a redelivery arriving after it write a second letter,
+    // which is exactly the failure H8 exists to prevent. (charge_id, reason)
+    // identifies a fact, not an occurrence.
+    const upToInsert = HELPER.slice(0, HELPER.indexOf(".insert({"));
+    expect(upToInsert).not.toMatch(/created_at/);
+  });
+});
+
+describe("M10 — every return path is classified transient or permanent", () => {
+  /** The text following a dead-letter reason, where its HTTP status is decided. */
+  const after = (marker: string, span = 700): string => {
+    const i = WEBHOOK_SRC.indexOf(marker);
+    expect(i, `marker not found: ${marker}`).toBeGreaterThan(-1);
+    return WEBHOOK_SRC.slice(i, i + span);
+  };
+
+  it("TRANSIENT: a payment_transactions write failure on any event is fatal (dead letter + non-2xx)", () => {
+    // The hole this closes: the insert/update error was console.error'd and the
+    // run continued into activation — money captured with no transaction row,
+    // while priorPaidCount, the renewal idempotency guards,
+    // has_captured_verification and the C3 retry cap all read that table.
+    expect(after('reason: "transaction_write_failed"')).toMatch(/status: 500/);
+    expect(WEBHOOK_SRC).toMatch(/if \(txWriteError\) \{/);
+    // The retry that drops the optional Section 8 columns no longer discards
+    // its own error.
+    expect(WEBHOOK_SRC).toMatch(/txWriteError = retryTx\.error \?\? null;/);
+  });
+
+  it("TRANSIENT: the failed-event subscription re-read no longer swallows its error (L18)", () => {
+    expect(WEBHOOK_SRC).toMatch(/const \{ data: subForFailure, error: subForFailureError \}/);
+    expect(after('reason: "failure_lookup_error"')).toMatch(/status: 500/);
+  });
+
+  it("TRANSIENT: 401 / 403 / 408 / 429 from the Moyasar verification API are redelivered, not acked", () => {
+    expect(WEBHOOK_SRC).toMatch(/verifyResponse\.status === 401/);
+    expect(WEBHOOK_SRC).toMatch(/verifyResponse\.status === 429/);
+    expect(after('reason: transientVerify', 900)).toMatch(/status: 500/);
+  });
+
+  it("TRANSIENT: an unparseable verification response is redelivered", () => {
+    expect(after('reason: "verification_invalid_json"')).toMatch(/status: 500/);
+  });
+
+  it("PERMANENT: a decided refusal is acked with 200 and always leaves a dead letter", () => {
+    for (const reason of [
+      'reason: "verification_id_mismatch"',
+      'reason: "verification_status_mismatch"',
+      'reason: "verification_subscription_mismatch"',
+      'reason: "verification_currency_mismatch"',
+      'reason: "verification_amount_mismatch"',
+      'reason: "verification_given_id_mismatch"',
+      'reason: "subscription_not_found"',
+      'reason: "missing_subscription_id"',
+      'reason: "missing_payment_id"',
+    ]) {
+      expect(after(reason), reason).toMatch(/status: 200/);
+    }
+  });
+
+  it("PERMANENT: expected_amount refusals are acked with 200", () => {
+    const i = WEBHOOK_SRC.indexOf("reason: expectedAmountDecision.reason");
+    expect(i).toBeGreaterThan(-1);
+    expect(WEBHOOK_SRC.slice(i, i + 700)).toMatch(/status: 200/);
+  });
+
+  it("the verification 4xx split: transient first with 500, permanent ack with 200", () => {
+    const i = WEBHOOK_SRC.indexOf(': "verification_api_error_4xx"');
+    expect(i).toBeGreaterThan(-1);
+    const tail = WEBHOOK_SRC.slice(i, i + 900);
+    const idx500 = tail.indexOf("status: 500");
+    const idx200 = tail.indexOf("status: 200");
+    expect(idx500).toBeGreaterThan(-1);
+    // The 200 is the fall-through for everything that is NOT 401/403/408/429.
+    expect(idx200).toBeGreaterThan(idx500);
+    expect(tail).toMatch(/if \(transientVerify\) \{/);
+  });
+
+  it("PERMANENT: an authenticated event with no payment id is acked and recorded, not retried", () => {
+    // It used to return 400: Moyasar redelivered an event that can never be
+    // processed, and ops had nothing to look at.
+    const i = WEBHOOK_SRC.indexOf('reason: "missing_payment_id"');
+    expect(i).toBeGreaterThan(-1);
+    expect(WEBHOOK_SRC.slice(i - 900, i)).toMatch(/if \(!paymentId\)/);
+    expect(WEBHOOK_SRC.slice(i, i + 400)).toMatch(/status: 200/);
+  });
+
+  it("UNCHANGED: paid_after_cancel stays 200 + dead letter, and its guard is untouched", () => {
+    expect(after('reason: "paid_after_cancel"', 1400)).toMatch(/status: 200/);
+    expect(WEBHOOK_SRC).toMatch(/const activation = decideActivation\(\{/);
+    expect(WEBHOOK_SRC).toMatch(/if \(!activation\.activate\) \{/);
+    expect(WEBHOOK_SRC).toMatch(/cancelAtPeriodEnd: \(sub as any\)\.cancel_at_period_end \?\? null,/);
+  });
+
+  it("UNCHANGED: a failed activation on a paid event stays dead letter + non-2xx", () => {
+    expect(after('reason: "subscription_update_failed_on_paid"')).toMatch(/status: 500/);
+  });
+
+  it("the signature gate still answers 401 before any database call", () => {
+    const idxSig = WEBHOOK_SRC.indexOf("computedSignature !== receivedSignature");
+    const idxFirstDb = WEBHOOK_SRC.indexOf("adminClient");
+    expect(idxSig).toBeGreaterThan(-1);
+    expect(idxSig).toBeLessThan(idxFirstDb);
+    expect(WEBHOOK_SRC.slice(idxSig, idxSig + 300)).toMatch(/status: 401/);
+  });
+});
+
+describe("loop safety — a redelivered event repeats no side effect", () => {
+  it("the transaction write is decided BEFORE any subscription mutation", () => {
+    // So a redelivery after a write failure cannot find a half-applied state.
+    const idxTxGuard = WEBHOOK_SRC.indexOf('reason: "transaction_write_failed"');
+    const idxPaidBranch = WEBHOOK_SRC.indexOf('if (status === "paid") {');
+    expect(idxTxGuard).toBeGreaterThan(-1);
+    expect(idxTxGuard).toBeLessThan(idxPaidBranch);
+  });
+
+  it("the dunning email stays behind its atomic claim, so redelivery cannot re-send it", () => {
+    const i = WEBHOOK_SRC.indexOf("dunning_notified_at: new Date().toISOString()");
+    expect(i).toBeGreaterThan(-1);
+    expect(WEBHOOK_SRC.slice(i, i + 300)).toMatch(/\.is\("dunning_notified_at", null\)/);
+  });
+
+  it("re-applying a captured payment stays bounded to Moyasar's 24h redelivery window", () => {
+    expect(WEBHOOK_SRC).toMatch(/const REPROCESS_WINDOW_MS = 24 \* 60 \* 60 \* 1000;/);
+    expect(RESUBSCRIBE_WINDOW_MS).toBe(24 * 60 * 60 * 1000);
+  });
+});
+
+describe("resubscribing inside the trial withdraws the scheduled cancellation", () => {
+  const T0900 = Date.parse("2026-08-23T09:00:00.000Z");
+  const T0902 = Date.parse("2026-08-23T09:02:00.000Z");
+  const T0905 = Date.parse("2026-08-23T09:05:00.000Z");
+
+  const base: TrialCancelClearInput = {
+    subStatus: "trialing",
+    cancelAtPeriodEnd: true,
+    cancelledAtMs: T0900,
+    paymentCreatedAtMs: T0902,
+    nowMs: T0905,
+  };
+  const at = (o: Partial<TrialCancelClearInput>): TrialCancelClearInput => ({ ...base, ...o });
+
+  it("CLEARS for a fresh verification created AFTER the cancellation", () => {
+    // The customer cancelled at 09:00 and checked out again at 09:02, paying a
+    // second 1.00 SAR. Without the clear the conversion passes in
+    // process-subscription-renewal (which filter cancel_at_period_end = false)
+    // skip the row and the subscription still closes at trial_end.
+    expect(decideTrialCancelClear(base)).toEqual({
+      clear: true,
+      reason: "resubscribed_after_cancel",
+    });
+  });
+
+  it("REFUSES the 09:00 payment / 09:02 cancel / 09:05 webhook race", () => {
+    const d = decideTrialCancelClear(at({ cancelledAtMs: T0902, paymentCreatedAtMs: T0900 }));
+    expect(d.clear).toBe(false);
+    expect(d.reason).toBe("payment_predates_cancel");
+  });
+
+  it("REFUSES a payment created exactly AT cancelled_at (boundary)", () => {
+    expect(decideTrialCancelClear(at({ paymentCreatedAtMs: T0900 })).clear).toBe(false);
+  });
+
+  it("does nothing when there is no cancellation pending", () => {
+    expect(decideTrialCancelClear(at({ cancelAtPeriodEnd: false }))).toEqual({
+      clear: false,
+      reason: "nothing_to_clear",
+    });
+    expect(decideTrialCancelClear(at({ cancelAtPeriodEnd: null })).reason).toBe("nothing_to_clear");
+  });
+
+  it("REFUSES on any row that is not trialing", () => {
+    for (const s of ["active", "past_due", "cancelled", "expired", "pending_activation", null]) {
+      expect(decideTrialCancelClear(at({ subStatus: s })).reason).toBe("not_trialing");
+    }
+  });
+
+  it("fails CLOSED on unknown timestamps", () => {
+    expect(decideTrialCancelClear(at({ paymentCreatedAtMs: null })).reason).toBe("unknown_payment_time");
+    expect(decideTrialCancelClear(at({ cancelledAtMs: null })).reason).toBe("unknown_cancel_time");
+  });
+
+  it("REFUSES a stale payment older than the resubscribe window", () => {
+    const d = decideTrialCancelClear(at({
+      paymentCreatedAtMs: T0905 - RESUBSCRIBE_WINDOW_MS,
+      cancelledAtMs: T0905 - RESUBSCRIBE_WINDOW_MS - 1000,
+    }));
+    expect(d.reason).toBe("stale_payment");
+  });
+
+  it("REFUSES an implausible future payment beyond the clock-skew tolerance", () => {
+    const d = decideTrialCancelClear(at({
+      paymentCreatedAtMs: T0905 + CLOCK_SKEW_TOLERANCE_MS + 1000,
+    }));
+    expect(d.reason).toBe("stale_payment");
+  });
+
+  it("tolerates ordinary clock skew on an otherwise valid resubscribe", () => {
+    const d = decideTrialCancelClear(at({
+      paymentCreatedAtMs: T0905 + 60_000,
+      cancelledAtMs: T0900,
+    }));
+    expect(d.clear).toBe(true);
+  });
+
+  it("SOURCE-CONTRACT: the clear happens ONLY in the trial_card_verification branch", () => {
+    const idxTrialBranch = WEBHOOK_SRC.indexOf('if (flow === "trial_card_verification") {');
+    const idxElse = WEBHOOK_SRC.indexOf("// immediate_charge / post_trial_first_charge / renewal — a real");
+    const clears = [...WEBHOOK_SRC.matchAll(/updateData\.cancel_at_period_end = false;/g)].map((m) => m.index!);
+
+    // Exactly two, and neither is unconditional:
+    //   1. inside the trial branch, behind decideTrialCancelClear
+    //   2. inside the activation branch, behind the R3-C2 decideActivation guard
+    expect(clears).toHaveLength(2);
+    expect(clears[0]).toBeGreaterThan(idxTrialBranch);
+    expect(clears[0]).toBeLessThan(idxElse);
+    expect(clears[1]).toBeGreaterThan(idxElse);
+
+    expect(WEBHOOK_SRC.slice(idxTrialBranch, clears[0])).toMatch(/const trialCancelClear = decideTrialCancelClear\(\{/);
+    expect(WEBHOOK_SRC.slice(idxTrialBranch, clears[0])).toMatch(/if \(trialCancelClear\.clear\) \{/);
+  });
+
+  it("SOURCE-CONTRACT: a refused clear leaves a deduped dead letter and still acks", () => {
+    const i = WEBHOOK_SRC.indexOf('reason: "verification_paid_on_cancelled_trial"');
+    expect(i).toBeGreaterThan(-1);
+    // No early return: the card is still recorded and the event is acked by the
+    // handler's normal 200 at the end.
+    expect(WEBHOOK_SRC.slice(i, i + 900)).not.toMatch(/return new Response/);
+    expect(WEBHOOK_SRC).toMatch(/trialCancelClear\.reason !== "nothing_to_clear"/);
   });
 });

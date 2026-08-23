@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { computeCharge, type ChargeDecision, type SubLike } from "../_shared/billing.ts";
+import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,8 +20,10 @@ const corsHeaders = {
 // Does NOT call Moyasar API — the frontend Moyasar.js form
 // handles payment initiation using the publishable key.
 //
-// Required secrets: SUPABASE_URL, SUPABASE_ANON_KEY,
-//                   SUPABASE_SERVICE_ROLE_KEY
+// Required secrets: SUPABASE_URL, plus the service-role and anon/publishable
+// keys resolved via _shared/supabaseKeys.ts (SUPABASE_SECRET_KEYS /
+// SUPABASE_PUBLISHABLE_KEYS when configured, else the legacy
+// SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY).
 // ============================================================
 
 serve(async (req) => {
@@ -38,8 +41,8 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = getPublishableKey();
+    const serviceRoleKey = getSecretKey();
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -122,12 +125,23 @@ serve(async (req) => {
       computeCharge(plan as any, { ...subLike, seat_count: seatCount }, promo_code, 0);
 
     // ── Block double-active subscriptions ────────────────────────────────────
-    const { data: activeSub } = await adminClient
+    // A query error is NOT "no active subscription" — conflating the two is
+    // fail-open: a transient DB error would let the request fall through as if
+    // the user had no active subscription. Fail closed with a retryable 503.
+    const { data: activeSub, error: activeSubError } = await adminClient
       .from("user_subscriptions")
       .select("id, status")
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
+
+    if (activeSubError) {
+      console.error("moyasar-create-subscription: active-subscription lookup failed", activeSubError);
+      return new Response(
+        JSON.stringify({ error: "Could not verify subscription status. Please try again." }),
+        { status: 503, headers: corsHeaders },
+      );
+    }
 
     if (activeSub) {
       return new Response(
@@ -142,7 +156,10 @@ serve(async (req) => {
     //
     // `past_due` is included so a customer whose card is failing can start a
     // fresh payment session and update their card (billing contract 5.4).
-    const { data: existingPendingSub } = await adminClient
+    // Same fail-closed reasoning as above: a query error must never be read as
+    // "no in-flight row", or a transient DB blip would let a brand-new
+    // trialing/pending_activation/past_due row be created alongside a live one.
+    const { data: existingPendingSub, error: existingPendingSubError } = await adminClient
       .from("user_subscriptions")
       .select("id, status, trial_end, created_at, moyasar_card_token")
       .eq("user_id", userId)
@@ -150,6 +167,14 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (existingPendingSubError) {
+      console.error("moyasar-create-subscription: existing-subscription lookup failed", existingPendingSubError);
+      return new Response(
+        JSON.stringify({ error: "Could not verify subscription status. Please try again." }),
+        { status: 503, headers: corsHeaders },
+      );
+    }
 
     if (existingPendingSub?.status === "pending_activation") {
       // No live trial — immediate charge at the full (or promo) plan price.

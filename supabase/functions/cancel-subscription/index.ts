@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,18 +11,39 @@ const corsHeaders = {
 // ============================================================
 // cancel-subscription
 //
-// Business rules:
-//   TRIALING  → cancel immediately (no paid period was charged)
-//   ACTIVE    → cancel at period end (user keeps access until current_period_end)
-//   PAST_DUE  → cancel at period end (honours any remaining access)
+// Business rules — cancelling NEVER destroys access already paid for:
+//   TRIALING  -> cancel at trial end   (access kept until trial_end)
+//   ACTIVE    -> cancel at period end  (access kept until current_period_end)
+//   PAST_DUE  -> cancel at period end  (honours any remaining grace access)
 //
-// Lifecycle columns written:
-//   cancel_at_period_end = true  (active/past_due — blocks renewal job)
-//   cancelled_at         = now() (all paths)
-//   status = "cancelled"         (trialing only — immediate)
+// R3-C2 (2026-08-23). TRIALING used to be cancelled IMMEDIATELY
+// (status = "cancelled"). That was wrong twice over:
+//   1. The customer paid 1.00 SAR to verify their card and the product promises
+//      "cancel anytime" — it does not promise "forfeit the rest of your trial".
+//   2. It opened the activation race: the renewal cron creates the post-trial
+//      charge at 09:00, the customer cancels at 09:02, and the webhook for that
+//      charge lands at 09:05 on a row that is now `cancelled` — and the webhook
+//      activated it anyway. (The webhook side is closed by
+//      _shared/webhookDecisions.ts.)
 //
-// Side effects:
-//   - Syncs profiles.plan_type = "free" on immediate cancel (trialing)
+// The status now stays `trialing`; only `cancel_at_period_end` is set. The row
+// therefore stays in process-subscription-renewal's trialing work queue, and
+// that job owns expiring it at trial_end WITHOUT charging it.
+//
+// Lifecycle columns written (every path, no exceptions):
+//   cancel_at_period_end = true    (blocks the renewal / conversion charge)
+//   cancelled_at         = now()
+//   status               = UNCHANGED
+//
+// No path cancels immediately any more, so profiles.plan_type is never synced
+// to "free" here — the user still has access. check-subscription and
+// process-subscription-renewal perform that sync when access actually ends.
+//
+// Response contract (consumed by src/pages/Account.tsx):
+//   { success, cancelled_immediately, access_until, already_scheduled? }
+//   access_until = trial_end for a `trialing` row, current_period_end otherwise.
+//   cancelled_immediately is retained (always false) so the existing frontend
+//   toast keeps working unchanged.
 // ============================================================
 
 serve(async (req) => {
@@ -39,8 +61,8 @@ serve(async (req) => {
     }
 
     const supabaseUrl     = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = getPublishableKey();
+    const serviceRoleKey  = getSecretKey();
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -58,9 +80,11 @@ serve(async (req) => {
     // ── Find the specific subscription to cancel ─────────────────────────────
     // Target the single most recent active, trialing, or past_due row.
     // past_due is included: the user may want to cancel before a retry succeeds.
+    // trial_end is selected because it is the access horizon reported for a
+    // trialing row (see the accessUntil derivation below).
     const { data: sub, error: subError } = await adminClient
       .from("user_subscriptions")
-      .select("id, status, current_period_end, cancel_at_period_end")
+      .select("id, status, current_period_end, trial_end, cancel_at_period_end")
       .eq("user_id", user.id)
       .in("status", ["active", "trialing", "past_due"])
       .order("created_at", { ascending: false })
@@ -81,47 +105,40 @@ serve(async (req) => {
       });
     }
 
-    // Already scheduled — idempotent: return success without re-processing
+    // The date the customer keeps access until. A trialing row has not opened a
+    // paid period yet, so current_period_end is meaningless (and often null) for
+    // it — trial_end is the real horizon.
+    const accessUntil: string | null =
+      sub.status === "trialing"
+        ? ((sub as any).trial_end ?? sub.current_period_end ?? null)
+        : (sub.current_period_end ?? null);
+
+    // Already scheduled — idempotent: return success without re-processing.
     if (sub.cancel_at_period_end) {
       return new Response(
         JSON.stringify({
           success: true,
           already_scheduled: true,
           cancelled_immediately: false,
-          access_until: sub.current_period_end,
+          access_until: accessUntil,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const now = new Date().toISOString();
-    let updatePayload: Record<string, any>;
-    let cancelledImmediately: boolean;
 
-    if (sub.status === "trialing") {
-      // Trialing subscriptions have not yet been charged for a real period.
-      // The 1 SAR verification is a hold, not a subscription fee.
-      // Cancel immediately — no access to preserve.
-      updatePayload = {
-        status: "cancelled",
-        cancelled_at: now,
-        cancel_at_period_end: false,
-      };
-      cancelledImmediately = true;
-    } else {
-      // Active or past_due: the user has paid for the current period.
-      // Honour access until current_period_end by setting cancel_at_period_end.
-      // The renewal job filters WHERE cancel_at_period_end = false so no further
-      // charge will be attempted regardless of the value in next_billing_date.
-      // check-subscription will transition status → "cancelled" when period ends.
-      updatePayload = {
-        cancel_at_period_end: true,
-        cancelled_at: now,
-        // status intentionally not changed here — stays "active" or "past_due"
-        // so check-subscription can correctly read access until period end.
-      };
-      cancelledImmediately = false;
-    }
+    // Identical for trialing, active and past_due: schedule the end, never
+    // revoke access that has already been paid for.
+    //
+    // status is intentionally NOT changed:
+    //   - active / past_due : check-subscription reads access until period end.
+    //   - trialing          : the row must stay in the renewal job's trialing
+    //                         queue so that job can expire it at trial_end.
+    const updatePayload: Record<string, any> = {
+      cancel_at_period_end: true,
+      cancelled_at: now,
+    };
 
     const { error: updateError } = await adminClient
       .from("user_subscriptions")
@@ -137,32 +154,18 @@ serve(async (req) => {
     }
 
     console.log(
-      cancelledImmediately
-        ? `Sub ${sub.id}: cancelled immediately (was trialing)`
-        : `Sub ${sub.id}: cancellation scheduled at period end (${sub.current_period_end})`,
+      `Sub ${sub.id}: cancellation scheduled (status ${sub.status}, access until ${accessUntil})`,
     );
 
-    // ── Immediate cancel: sync profiles.plan_type to "free" ──────────────────
-    // For period-end cancels, check-subscription handles the sync when the
-    // period actually expires, so we intentionally leave profiles.plan_type
-    // unchanged here — the user still has active access.
-    if (cancelledImmediately) {
-      const { error: profileErr } = await adminClient
-        .from("profiles")
-        .update({ plan_type: "free" })
-        .eq("user_id", user.id);
-      if (profileErr) {
-        // Non-fatal — log and continue. The plan_type will be corrected on
-        // next check-subscription call.
-        console.warn("Failed to sync profiles.plan_type after immediate cancel:", profileErr);
-      }
-    }
+    // profiles.plan_type is deliberately NOT touched: the user still has access
+    // until accessUntil. check-subscription / process-subscription-renewal sync
+    // it to "free" when the period or trial actually ends.
 
     return new Response(
       JSON.stringify({
         success: true,
-        cancelled_immediately: cancelledImmediately,
-        access_until: cancelledImmediately ? null : sub.current_period_end,
+        cancelled_immediately: false,
+        access_until: accessUntil,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

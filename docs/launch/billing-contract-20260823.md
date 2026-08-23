@@ -515,3 +515,324 @@ real risk:
 (`isPaidActive || isTrialActive || isTrialConversionPending`) instead of active-access booleans,
 and renders a short bilingual note while `trial_conversion_pending` is true. The "Subscribe now"
 CTA is hidden in that state so the customer is not invited to pay twice.
+
+### 12.6 Seat changes: who may make them, and when they are paid for
+
+Added by the third adversarial round (R3-C1 / H9, 2026-08-23).
+
+**The defect.** `public.update_subscription_seat_count` — a `SECURITY DEFINER` RPC granted to
+`authenticated` (migration `20260430000002_enterprise_seat_enforcement.sql`, lines 377-451) — wrote
+`user_subscriptions.seat_count` directly with **no upper bound** and **no status restriction**. It
+therefore bypassed Section 12.1 entirely: the escalation that 12.1 forces through a captured payment
+could simply be typed into the RPC. Seat **enforcement** reads the raw column, so seats leaked at
+once; seat **billing** clamps at `MAX_BILLABLE_SEATS = 100` only in TypeScript
+(`_shared/billing.ts`), so the stored value also armed the next unattended charge.
+
+**The rule now.** `supabase/migrations/20260823000002_seat_rpc_hardening.sql` replaces the function
+(`CREATE OR REPLACE`, so the existing `GRANT EXECUTE ... TO authenticated` is preserved) with:
+
+| subscription status | seat INCREASE | seat DECREASE | why |
+|---|---|---|---|
+| `active` | allowed, capped at 100 | allowed, above `min_seats` and above the org's active member count | the next renewal prices the new seat count at the published per-seat price |
+| `trialing` | refused | refused | a stored card is waiting for an unattended post-trial charge — this is the C1 escalation itself |
+| `past_due` | refused | refused | a charge is already failing; the retry pass would re-price against the new count |
+| `pending_activation` | refused | refused | plan and seats are decided by the payment in flight and promoted by `moyasar-webhook` on capture |
+| `expired` / `cancelled` | refused | refused | nothing to adjust; the next checkout sets the seat count |
+
+Any request above **100** seats is refused with `SEAT_CAP_EXCEEDED` regardless of status. The SQL
+constant `c_max_billable_seats` **must equal** `MAX_BILLABLE_SEATS` in `_shared/billing.ts` and
+`SEAT_CAP` in `moyasar-create-subscription`; the migration carries a comment to that effect. A
+request on a non-`active` row is refused with `SEAT_CHANGE_REQUIRES_CHECKOUT`, which tells the
+customer to change seats through checkout — the path that produces a captured payment. Both codes
+are surfaced as bilingual copy by `src/hooks/useOrganization.ts`.
+
+Decreases on non-`active` rows are refused too. That is deliberately blunt: one status gate is
+easier to reason about than a direction-dependent one, and a decrease on a `trialing` row would put
+the row out of step with the plan and seats the card was verified against. The cost is that a
+trialing customer who wants fewer seats must go through checkout (already noted in Section 10,
+item 8).
+
+**Decision — a seat INCREASE on an `active` row does NOT require a payment before it takes effect.**
+
+Reasoning:
+
+1. There is no other path. `moyasar-create-subscription` and `moyasar-initiate-token-payment` reject
+   an `active` row (Section 12.4), so blocking the RPC would leave **no** way to add a seat to a paid
+   subscription — the enterprise product would have no growth path at all.
+2. The consent profile is different from the C1 case. The C1 hole was an **abandoned checkout**
+   mutating a row with no human decision behind it. This is an authenticated owner deliberately
+   raising their own seat count, in their own dashboard, after being shown the seat usage.
+3. The exposure is bounded and predictable: at most 100 seats, at the published per-seat price, on
+   the normal renewal date — not an immediate unattended charge and not an arbitrary amount.
+
+Residual risk, accepted and recorded:
+
+- **Up to one unpaid period.** The extra seats are enforced (invitations succeed) the moment the RPC
+  returns, but are only paid for at the next renewal. There is no pro-rating. Worst case is one
+  billing period of unbilled seats per increase. Stated with explicit units, the absolute ceiling on
+  that exposure is the cap on the most expensive per-seat plan: `enterprise_office` is
+  `price_per_seat = 54900` halalas, i.e. **549.00 SAR per seat per period**, so 100 seats is
+  **5,490,000 halalas = 54,900.00 SAR for one period** — that is the total, not the per-seat figure.
+- **No fresh consent at charge time.** `process-subscription-renewal` prices a renewal from the row
+  (`computeCharge` -> `planPriceFor` -> `effectiveSeats`) and applies **no**
+  `trialChargeAuthorized`-style check on the renewal path — that guard covers only the post-trial
+  conversion. So an owner who raises seats and forgets will see a larger renewal with no second
+  prompt. Mitigation is a change-of-seats confirmation and a pre-renewal notice; **neither is
+  implemented**, and both are open work items.
+- **Downgrades are not pro-rated either.** Lowering seats takes effect at the next renewal, with no
+  credit for the current period.
+
+**H9 — `trialChargeAuthorized` fails closed.** The same round found that the guard returned
+`{ authorized: true, reason: "no_verified_plan_metadata" }` whenever the verification payment
+carried no `plan_id`, which authorized an unattended charge at whatever the row currently held. It
+now **refuses**. There is no honest clamp for that state: the historical plan is not knowable from
+the inputs, and clamping seats alone still leaves a plan escalation (`pro` at 245.00 SAR total, to
+`enterprise_office` at its `min_seats` of 5 seats x 549.00 SAR per seat = **2,745.00 SAR total**).
+A refused row is not charged, stays `trialing`
+with a lapsed `trial_end`, and converts through the normal checkout — which Section 12.4 made
+reachable again. The result now also carries `clampedPlanId` and `maxSeats` (the verified reference)
+so the caller can price the charge from the VERIFIED payment instead of re-deriving it from the
+mutable subscription row.
+
+**Execute grants on the RPC.** Verified read-only against production on 2026-08-23:
+`update_subscription_seat_count` held EXECUTE for `postgres`, `anon`, `authenticated` and
+`service_role`. That is not a mistake in the 2026-04-30 migration — Supabase ships
+`ALTER DEFAULT PRIVILEGES ... IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated,
+service_role`, so every function created in `public` is born with an `anon` grant, and
+`REVOKE ALL ... FROM PUBLIC` does not remove an explicit role grant. The hardening migration now
+adds `REVOKE ALL ... FROM anon`. Practical exploitability today is nil: `auth.uid()` reads only the
+JWT `sub` claim, an `anon` request carries none, and the function's first statement refuses a NULL
+caller — this is defence in depth on a `SECURITY DEFINER` function that writes billing state, not a
+live hole.
+
+**No database-level seat ceiling was added, deliberately.** `user_subscriptions` carries exactly one
+seat constraint, `user_subscriptions_seat_count_positive_chk CHECK (seat_count >= 1)`. A
+`CHECK (seat_count <= 100)` was considered and rejected: 100 is a **commercial** limit, not a data
+integrity invariant, and freezing it into the schema means the first deal above it needs a
+hand-applied production migration under the known migration drift. Worse, the constraint would fire
+on the webhook promotion path *after* money is captured, converting a pricing-policy mismatch into
+the "paid but never activated" failure that Section 12.2 exists to prevent. Both write paths are now
+bounded in code instead — the RPC (this migration) and `parsePaidPlanRef` for the webhook. If a
+database backstop is ever wanted, it should be a wide corruption guard (e.g. `<= 10000`), not the
+commercial cap.
+
+**Production state when this was written (read-only SELECT, 2026-08-23).** 88 `user_subscriptions`
+rows (58 `expired`, 23 `active`, 4 `trialing`, 3 `cancelled`); the highest `seat_count` anywhere is
+**3**; **no row in any status holds a `moyasar_card_token`**; `payment_transactions` holds 2 rows,
+both `status = 'initiated'`, `payment_type = 'checkout'` (legacy). No Moyasar payment has ever been
+captured in production. So the seat escalation was never exploited, and the H9 fail-closed refusal
+has an **empty** cohort today — no trialing row has a stored card, so none can be refused. Both
+fixes are forward-looking hardening, not incident remediation.
+
+---
+
+## Section 12 (continued). Third adversarial round, lane A (2026-08-23)
+
+Subsections 12.7 to 12.11 were written by the lane-A supervisor from the code as
+merged, not from the implementing agents' reports. Every claim below was
+re-verified against the working tree.
+
+### 12.7 The renewal cron is single-flight, and no row can be stuck forever
+
+**H5 - overlapping runs.** Two concurrent invocations (hourly pg_cron plus a
+manual call, or a slow run overlapping the next tick) could both pass the
+per-subscription idempotency checks in the window between the SELECT and the
+INSERT, and charge one stored card twice. The run is now serialised by a **TTL
+lease**, not a session advisory lock: PostgREST only exposes functions in
+`public` (so `pg_try_advisory_lock` is unreachable) and it runs on a connection
+pool (so a session-scoped lock is not reliably held across HTTP round trips and
+can leak permanently). `supabase/migrations/20260823000004_job_locks.sql` adds
+`public.job_locks` plus `try_acquire_job_lock` / `release_job_lock`. A crashed
+run self-heals when the lease expires.
+
+**The cron FAILS SOFT if that migration is not applied.** A missing RPC
+(`PGRST202`) logs loudly and the run continues unlocked, because a bricked
+renewal job means no trial ever converts and no subscription ever renews - a
+worse failure than the race it guards. Any *other* RPC error is treated as "lock
+not acquired" (fail closed on an unknown lock state).
+
+**H7 - the refused-conversion zombie.** Since H9 made `trialChargeAuthorized`
+fail closed, a lapsed `trialing` row with a stored card whose verification
+payment carries no `plan_id` was refused on every hourly tick forever: never
+converted, never expired, never surfaced. The two refusal kinds are now
+separated. A **transient** refusal (the Moyasar lookup failed) is skipped quietly
+and never counted. A **permanent** refusal (`trialChargeAuthorized` said no) is
+counted in `webhook_dead_letters`, and after `MAX_TRIAL_CONVERSION_REFUSALS` the
+row is moved to `expired` with `profiles.plan_type` synced to `free`.
+
+> **Customer-money consequence, stated plainly:** expiring such a row forfeits
+> the 1.00 SAR the customer already paid to verify their card, because their next
+> checkout is an `immediate_charge` at the full plan price with no credit. The
+> alternative was an invisible row that is never billed and never closed. The
+> dead letter exists so a human can refund the 1.00 SAR.
+
+**M9 / M11 - stale `initiated` transactions.** A `payment_transactions` row stuck
+at `initiated` blocks BOTH idempotency guards, so that subscription is never
+charged again. A pass now resolves rows older than `STALE_INITIATED_AFTER_MS`.
+It is deliberately asymmetric, because getting this wrong double-charges:
+`moyasar_payment_id IS NULL` means the charge never reached Moyasar and is marked
+`failed`; a row WITH a payment id is re-fetched, and a Moyasar status of **`paid`
+is never marked failed** - it is dead-lettered for a webhook replay. `created_at`
+is never rewritten, because `chargeRetryEligibility` derives the 24h backoff from
+it. The pass never changes `user_subscriptions.status`: the outcome of a lost
+payment is not certain enough to cut access.
+
+**M14 - `past_due` with a NULL `past_due_since`.** Such a row can leave `past_due`
+through no pass, and because `user_subscriptions_one_live_row_per_user` counts
+`past_due` as live, it also blocks any new subscription the customer buys. It is
+now stamped with `now()` - never back-dated, which would place it past the grace
+cutoff and cut the customer off inside the same run.
+
+**Two properties that must not be "cleaned up" later.** The `optedOut` branch in
+`expireUnbillableTrials()` was once called dead code; it is live now that
+`cancel-subscription` writes only `cancel_at_period_end`, and it is the only
+thing that closes a cancelled trial. The `.eq("cancel_at_period_end", false)`
+filters on the trial-conversion, renewal and past-due queries are what stop a
+cancelled subscription being charged.
+
+### 12.8 The webhook cannot loop, and cannot silently swallow a capture
+
+**The classification principle (M10).** Every return path is now classified by
+one question: *did we obtain the authority's answer?* If yes and the answer is
+"this is wrong", the condition is **permanent** - return 200 so Moyasar stops
+redelivering, and always leave a dead letter so a human sees it. If we never got
+the answer, it is **transient** - return non-2xx and let Moyasar redeliver. Three
+paths changed direction, all in the money-safe direction: a missing payment id
+(400, no letter) became 200 plus a letter; Moyasar 401 / 403 / 408 / 429 became
+transient 500s, so a rotated key or a rate limit no longer acknowledges away
+every capture it touches; an unparseable verification body became a 500.
+
+A `payment_transactions` write failure on a `paid` event is now fatal
+(dead letter plus non-2xx). It previously only logged, which meant money captured
+with no transaction row - and `priorPaidCount`, both idempotency guards and
+`has_captured_verification` all read that table, so the verification credit and
+the retry cap were silently corrupted.
+
+**H8 - duplicate dead letters.** Deduped on `(charge_id, reason)` before insert.
+A lookup error falls through to inserting: a duplicate letter is far better than
+a lost one. `insertDeadLetter` still cannot throw.
+
+**M13 - `expected_amount` is now validated.** It was written into metadata
+(Section 7) and never read back. It is now checked against the re-verified
+payment, string-or-number tolerant. Presence of `metadata.flow` is the marker of
+a payment created by current code; when `flow` is present `expected_amount` is
+mandatory. This is IN ADDITION to `expectedAmountsFor`: one proves the amount is
+what the server intended at creation time, the other proves it is what the plan
+is worth now.
+
+**M17 - retirement keys off the NAMED constraint.** `isUniqueViolationError`
+matches any SQLSTATE 23505, and the handler then retires the user's other live
+rows. A 23505 from any other constraint would have destroyed live subscriptions.
+The predicate is now `isOneLiveRowPerUserViolation`. If the constraint name
+cannot be recovered, the payment is stranded loudly rather than rows deleted.
+
+**Currency is validated against the plan actually paid for**, not the plan stored
+on the row - under Section 12.1 a payment may legitimately be for a different
+plan.
+
+**L18 - the `failed` branch no longer swallows its re-read error.** It used to
+discard it, leaving the row un-marked, no dunning email sent, and a 200 returned:
+a declined renewal that quietly kept full access to the end of the period.
+
+**Cancel-during-trial followed by re-checkout (found by lane A, fixed here).**
+`moyasar-create-subscription` reuses the live row and the renewal job filters on
+`cancel_at_period_end = false`, so a customer who cancelled mid-trial and then
+paid another 1.00 SAR verification stayed flagged and was closed as `cancelled`
+at `trial_end`: **2.00 SAR paid, nothing delivered.** `decideTrialCancelClear`
+now clears the flag on a captured verification, but only when the row is
+`trialing` with a pending cancel AND the payment is fresh AND it was created
+strictly after `cancelled_at`. Both unknown-timestamp cases fail closed. The flag
+is never cleared by an abandoned checkout, which is what would have re-armed the
+Section 12.1 escalation.
+
+**REJECTED FOR LAUNCH - a unique index on `webhook_dead_letters`.** A
+`CREATE UNIQUE INDEX ... ON (charge_id, reason)` was proposed to enforce the H8
+dedupe in the database. **It must not be created.** Section 12.7's H7 mechanism
+*counts* refusals as repeated rows sharing the same
+`(charge_id = subscription_id, reason = 'trial_conversion_refused')` pair; a
+unique index caps that count at one, the third-strike expiry never fires, and the
+refused-conversion zombie returns. The webhook-side read-then-write dedupe is
+sufficient. Deferred post-launch; any future version must exclude reasons that
+carry counting semantics. Recorded here so this conflict is visibly caught, not
+missed.
+
+### 12.9 An enterprise seat member is entitled by the ORG's subscription (H6)
+
+`fire-safety-chat` decided access from the caller's own `user_subscriptions` row
+and `profiles.plan_type` only. An enterprise **seat member** has no subscription
+row of their own - the org owner holds it - so a seat that was paid for received
+the free-tier limit of 10 messages a day.
+
+Access is now granted when all four hold: an `active` `org_members` row; a role in
+`["owner","admin","head_of_department","engineer"]` (the same list
+`check-subscription` uses - a stricter or looser list here would be a UI/server
+disagreement); org status `active` or `trial`; **and the org's linked
+`user_subscriptions` row is itself paying** (`active` in period, or `trialing` in
+window WITH a card on file, or `past_due` inside the 7-day grace).
+
+**The fourth clause is load-bearing, not defensive.** Nothing in the codebase ever
+moves `organizations.status` away from `active` when the linked subscription
+lapses - the only writers are the two creation sites. Org status alone is
+permanently stale, so the org-side subscription lookup is the only thing that
+stops a lapsed enterprise org handing unlimited AI to every seat forever.
+
+`subscription_id IS NULL` with org status `trial` is **denied**:
+`create_organization_with_owner` is granted to `authenticated`, so any user can
+self-create an org in exactly that state, and granting would be free enterprise AI
+to anyone who asks. Every DB error in this predicate fails closed.
+
+**Follow-up defect found during lane-A verification and fixed.** The
+`trial_card_required` 403 returned *before* the org check ran, so a member holding
+a paid seat who also had an old card-less `trialing` row of their own was refused
+with "add your card" - locked out of a product their organization had already paid
+for. The refusal is now **deferred**, not weakened: it is applied after the org
+check, and only for callers the org check did not entitle. The server-side card
+gate is unchanged for everyone else, and the refusal still precedes every
+quota-increment call, so no caller can be charged a unit and then refused.
+
+**KNOWN AND ACCEPTED - UI/server divergence.** `check-subscription` grants org AI
+access on role plus org status alone, with no paying check. A seat member of a
+lapsed org therefore sees "enterprise" in the UI but receives free-tier service in
+chat. The server favours protecting the money; the disagreement is real and is
+recorded for the next review rather than fixed here.
+
+### 12.10 The quota rollback that never ran (A7)
+
+`geminiResilience.ts` rolls a quota increment back when the AI provider fails, so
+a user is not charged a message that was never answered. The mode-scoped rollback
+worked. The flat daily rollback called `decrement_daily_usage`, **a function that
+existed in no migration and not in production**: PostgREST returned 404, the catch
+swallowed it, and the counter was never restored. Advisory and Analytical gave the
+unit back; Main (`primary`) and trialing users silently did not, losing one message
+from their daily allowance on every transient upstream failure.
+
+The call site was already correct, so the fix is a migration only -
+`supabase/migrations/20260823000011_decrement_daily_usage.sql` - clamped with
+`GREATEST(0, message_count - 1)` so a double rollback cannot hand out free quota,
+and with no insert-if-absent so a rollback with nothing to decrement is a no-op
+rather than fabricated usage history. It is `service_role` only: `anon` and
+`authenticated` are revoked by name, because Supabase's default privileges give
+every new function in `public` an `anon` grant, and a client able to call this
+`SECURITY DEFINER` function could loop it to grant itself unlimited messages.
+**The operator must run `NOTIFY pgrst, 'reload schema';` after applying it**, or
+PostgREST keeps 404ing the new RPC - which looks exactly like the original bug.
+
+The unit test could never have caught this: it asserts the RPC is *called* with
+the right arguments against a mock, which was always true. What was false was that
+the function existed. `src/__tests__/geminiResilience.test.ts` now also checks
+every RPC name `rollbackQuotaIfNeeded` calls against the migrations that create
+it. Verified to have teeth: with the migration removed the test fails with the
+production symptom, and passes when it is restored.
+
+### 12.11 Migrations the OWNER must apply for lane A
+
+Apply by hand, in the Supabase SQL editor, never with `supabase db push`. All are
+idempotent and safe to re-run.
+
+| file | what it does | if it is NOT applied |
+|---|---|---|
+| `20260823000002_seat_rpc_hardening.sql` | caps the seat RPC at 100 and restricts it to `active` rows | the Section 12.1 escalation stays bypassable through the RPC |
+| `20260823000004_job_locks.sql` | TTL lease for the renewal job (H5) | the cron logs loudly and runs UNLOCKED - correct, but the double-charge race stays open |
+| `20260823000011_decrement_daily_usage.sql` | creates the missing rollback RPC (A7) | Main-mode users keep losing a quota unit on every provider failure |
+
+`20260823000011` additionally requires `NOTIFY pgrst, 'reload schema';`.

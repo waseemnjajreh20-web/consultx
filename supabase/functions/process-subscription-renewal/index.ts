@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  CARD_VERIFICATION_AMOUNT,
   chargeRetryEligibility,
   computeCharge,
   isUndefinedColumnError,
@@ -12,6 +13,21 @@ import {
   trialChargeAuthorized,
   withoutKeys,
 } from "../_shared/billing.ts";
+import {
+  classifyLockResult,
+  type LockOutcome,
+  MAX_TRIAL_CONVERSION_REFUSALS,
+  RENEWAL_JOB_LOCK_NAME,
+  RENEWAL_JOB_LOCK_TTL_SECONDS,
+  resolveStaleInitiated,
+  STALE_INITIATED_AFTER_MS,
+  STALE_INITIATED_LOOKUP_CAP,
+  STALE_INITIATED_NO_PAYMENT_ID_CODE,
+  TRIAL_CONVERSION_FORFEIT_REASON,
+  TRIAL_CONVERSION_REFUSAL_REASON,
+  trialRefusalOutcome,
+} from "../_shared/renewalDecisions.ts";
+import { getSecretKey } from "../_shared/supabaseKeys.ts";
 
 // Must match GRACE_DAYS in check-subscription, moyasar-webhook,
 // Workspace.tsx, and Account.tsx.
@@ -37,6 +53,18 @@ type AdminClient = ReturnType<typeof createClient<any>>;
 //   1.  RENEWAL — active subscriptions whose next_billing_date has
 //       arrived; charge the stored Moyasar card token (MIT).
 //   1b. PAST-DUE RETRY — inside the GRACE_DAYS window.
+//
+// Housekeeping passes that run first, before anything is charged:
+//   0b. expireUnbillableTrials      — lapsed trials with no usable card.
+//   0c. expireLapsedPastDue         — past_due past the grace window, plus the
+//                                     M14 stamping of past_due_since = now()
+//                                     on rows that never got one.
+//   0d. resolveStaleInitiatedTxs    — payment_transactions stuck at `initiated`
+//                                     (M9 / M11); they block BOTH idempotency
+//                                     guards below, so the subscription would
+//                                     otherwise never be charged again.
+//
+// The whole run is serialised by a TTL lease in public.job_locks (H5).
 //
 // Pass 0 is what makes trials convert to revenue. Without it a
 // trialing row stays trialing forever and is never billed.
@@ -79,7 +107,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceRoleKey = getSecretKey();
   const moyasarSecretKey = Deno.env.get("MOYASAR_SECRET_KEY");
 
   if (!moyasarSecretKey) {
@@ -92,6 +120,46 @@ serve(async (req) => {
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+  // -- H5. Single-flight lease ------------------------------------------------
+  // Two overlapping invocations of this job (the hourly pg_cron tick plus a
+  // manual invocation, or a slow run overlapping the next tick) can BOTH pass
+  // the per-subscription idempotency checks in the window between the SELECT
+  // and the INSERT of the payment_transactions anchor row, and both then charge
+  // the same stored card. A TTL lease in public.job_locks serialises the runs.
+  // supabase/migrations/20260823000004_job_locks.sql explains why this is a
+  // lease and not pg_try_advisory_lock (PostgREST pools connections, so a
+  // session-scoped advisory lock is neither reliably held nor reliably freed).
+  const lease = await acquireRenewalLease(adminClient);
+  if (lease.outcome === "locked") {
+    // A skipped tick is harmless: the work is picked up an hour later, and the
+    // 24h/period idempotency windows are far wider than one tick. A double
+    // charge on a stored card is not harmless. 200 so pg_cron does not retry.
+    console.log("Renewal job: lease not acquired (another run holds it, or the lock state is unknown) — skipping this tick");
+    return new Response(JSON.stringify({ skipped: "locked" }), {
+      status: 200, headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    return await runRenewalPasses(adminClient, supabaseUrl, moyasarSecretKey, lease);
+  } finally {
+    // Runs on EVERY exit path of runRenewalPasses, including a throw. If this
+    // never runs at all (hard timeout, OOM, redeploy mid-run) the lease still
+    // expires by itself after RENEWAL_JOB_LOCK_TTL_SECONDS — that is exactly
+    // why this is a TTL lease and not a lock that has to be cleaned up.
+    await releaseRenewalLease(adminClient, lease);
+  }
+});
+
+// ── The passes ────────────────────────────────────────────────────────────────
+// Lifted out of the serve() handler unchanged so the single-flight lease above
+// can wrap all of it in ONE try/finally instead of chasing every return path.
+async function runRenewalPasses(
+  adminClient: AdminClient,
+  supabaseUrl: string,
+  moyasarSecretKey: string,
+  lease: RenewalLease,
+): Promise<Response> {
   const nowIso = new Date().toISOString();
 
   // ── 0. Trial conversion: trialing rows whose trial_end has passed ──────────
@@ -120,7 +188,14 @@ serve(async (req) => {
   // user_subscriptions_one_live_row_per_user counts `past_due` as LIVE, that
   // zombie row blocked the activation of any new subscription the customer
   // bought afterwards.
-  const expiredPastDue = await expireLapsedPastDue(adminClient);
+  const pastDueSweep = await expireLapsedPastDue(adminClient);
+
+  // -- 0d. payment_transactions stuck at `initiated` (M9 / M11) ---------------
+  // Both idempotency guards below match `initiated` as well as `captured`, so a
+  // transaction row that never reached a terminal status blocks its
+  // subscription from ever being charged again. Resolving them is also the most
+  // dangerous thing in this file — see resolveStaleInitiatedTransactions().
+  const staleTx = await resolveStaleInitiatedTransactions(adminClient, moyasarSecretKey);
 
   // 1. Active subscriptions due for renewal (have moyasar_card_token)
   const safetyWindowMs = 60 * 60 * 1000;
@@ -169,7 +244,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         processed: 0, skipped: 0, failed: 0, total: 0,
-        trials_converted: 0, trials_expired: expiredTrials, past_due_expired: expiredPastDue,
+        trials_converted: 0, trials_refused: 0, trials_forfeited: 0,
+        trials_expired: expiredTrials,
+        past_due_expired: pastDueSweep.closed, past_due_stamped: pastDueSweep.stamped,
+        stale_tx_failed: staleTx.markedFailed,
+        stale_tx_paid_needs_replay: staleTx.paidNeedsReplay,
+        stale_tx_left_alone: staleTx.leftAlone,
+        lock: lease.outcome,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
@@ -183,6 +264,9 @@ serve(async (req) => {
   );
 
   let processed = 0, skipped = 0, failed = 0, trialsConverted = 0;
+  // H7 counters: `refused` is one permanent refusal, `forfeited` is a row that
+  // was finally closed because it had accumulated MAX_TRIAL_CONVERSION_REFUSALS.
+  let trialsRefused = 0, trialsForfeited = 0;
 
   for (const sub of allDue) {
     const plan = sub.subscription_plans as any;
@@ -270,16 +354,33 @@ serve(async (req) => {
       // "unknown authorization -> skip", never as "proceed to charge".
       const verified = await fetchVerifiedPlanRef(moyasarSecretKey, (sub as any).moyasar_payment_id);
       if (!verified.ok) {
-        console.error(`Sub ${sub.id}: verified-plan lookup failed, skipping this tick`);
+        // TRANSIENT refusal (H7). Moyasar was unreachable or answered 5xx, so the
+        // authorization is UNKNOWN — not refused. It is never counted toward the
+        // give-up counter and never dead-lettered: closing a perfectly payable
+        // subscription because of an upstream outage would be the worse error.
+        console.error(`Sub ${sub.id}: verified-plan lookup failed, skipping this tick (transient — not counted)`);
         skipped++; continue;
       }
       const authz = trialChargeAuthorized(sub as any, verified.ref);
       if (!authz.authorized) {
+        // PERMANENT refusal (H7). H9 made trialChargeAuthorized fail closed, and
+        // its inputs are the row plus the IMMUTABLE metadata of an already
+        // captured verification payment — every later tick reaches the same
+        // answer, forever. Left alone the row never converts, never expires and
+        // never reaches ops, while still counting as LIVE in
+        // user_subscriptions_one_live_row_per_user and blocking any new
+        // subscription the customer buys. Count it, and close it after
+        // MAX_TRIAL_CONVERSION_REFUSALS.
         console.error(
           `Sub ${sub.id}: refusing post-trial charge (${authz.reason}) — row is plan ` +
           `${sub.plan_id} x${sub.seat_count}, card was verified for plan ` +
           `${verified.ref?.plan_id ?? "unknown"} x${verified.ref?.seat_count ?? "unknown"}`,
         );
+        trialsRefused++;
+        const refusal = await recordTrialConversionRefusal(
+          adminClient, sub as any, authz.reason, verified.ref,
+        );
+        if (refusal.forfeited) trialsForfeited++;
         skipped++; continue;
       }
     } else {
@@ -504,14 +605,21 @@ serve(async (req) => {
     processed, skipped, failed,
     total: allDue.length,
     trials_converted: trialsConverted,
+    trials_refused: trialsRefused,
+    trials_forfeited: trialsForfeited,
     trials_expired: expiredTrials,
-    past_due_expired: expiredPastDue,
+    past_due_expired: pastDueSweep.closed,
+    past_due_stamped: pastDueSweep.stamped,
+    stale_tx_failed: staleTx.markedFailed,
+    stale_tx_paid_needs_replay: staleTx.paidNeedsReplay,
+    stale_tx_left_alone: staleTx.leftAlone,
+    lock: lease.outcome,
   };
   console.log("Renewal job complete:", JSON.stringify(summary));
   return new Response(JSON.stringify(summary), {
     status: 200, headers: { "Content-Type": "application/json" },
   });
-});
+}
 
 // ── Subscription query helper ─────────────────────────────────────────────────
 // card_verified_at only exists after the Section 8 migration. Try the richer
@@ -585,8 +693,11 @@ async function expireUnbillableTrials(
 // pass and nothing else ever moved it, so it stayed `past_due` forever. Close it
 // out: "cancelled" if the user opted out, otherwise "expired", and sync
 // profiles.plan_type to free so entitlement cannot outlive the subscription.
-async function expireLapsedPastDue(adminClient: AdminClient): Promise<number> {
+async function expireLapsedPastDue(
+  adminClient: AdminClient,
+): Promise<{ closed: number; stamped: number }> {
   let closed = 0;
+  let stamped = 0;
   try {
     const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
@@ -621,24 +732,507 @@ async function expireLapsedPastDue(adminClient: AdminClient): Promise<number> {
       if (error) console.error(`expireLapsedPastDue: plan_type sync failed for ${row.user_id}:`, error.message);
     }
 
-    // A past_due row with no past_due_since can never leave past_due through
-    // any pass. Surface it for ops rather than silently cutting a customer off.
-    const { count: unstamped } = await adminClient
+    // -- M14 -----------------------------------------------------------------
+    // A past_due row with no past_due_since can never leave past_due through any
+    // pass: the retry query requires the column to be NOT NULL, and the expiry
+    // above requires it to be older than the grace cutoff. Because
+    // user_subscriptions_one_live_row_per_user counts `past_due` as LIVE, such a
+    // row also blocks any new subscription the customer buys. Counting and
+    // logging it (what this used to do) never moved it.
+    //
+    // Stamp it with now(), NEVER a back-dated value. Back-dating would place the
+    // row past the grace cutoff and cut the customer off in this same run;
+    // now() starts a full GRACE_DAYS window from this moment and the pass above
+    // closes the row 7 days later if nothing is ever paid. The row also becomes
+    // visible to the past-due retry pass, which is the customer-favouring
+    // outcome: a successful retry puts them back to `active`. Attempts are still
+    // capped by chargeRetryEligibility, so this cannot start a charge storm.
+    const { data: stampedRows, error: stampError } = await adminClient
       .from("user_subscriptions")
-      .select("id", { count: "exact", head: true })
+      .update({ past_due_since: new Date().toISOString() })
       .eq("status", "past_due")
-      .is("past_due_since", null);
-    if ((unstamped ?? 0) > 0) {
+      .is("past_due_since", null)
+      .select("id, user_id");
+    if (stampError) {
+      console.error("expireLapsedPastDue: past_due_since stamping failed:", stampError.message);
+    }
+    stamped = stampedRows?.length ?? 0;
+    if (stamped > 0) {
+      // Ops line kept deliberately: these rows WERE a stuck state, and ops must
+      // still see that they existed even though the job has now unstuck them.
       console.error(
-        `Renewal job: ${unstamped} past_due row(s) carry no past_due_since and are stuck — needs ops`,
+        `Renewal job: ${stamped} past_due row(s) carried no past_due_since and were stuck — ` +
+        `stamped with now(); the ${GRACE_DAYS}-day grace window starts today`,
       );
+      for (const row of (stampedRows ?? []) as Array<{ id: string; user_id: string }>) {
+        console.error(`Renewal job: stamped stuck past_due row ${row.id} (user ${row.user_id})`);
+      }
     }
 
     if (closed > 0) console.log(`Renewal job: closed ${closed} past_due subscription(s) past the grace window`);
   } catch (e) {
     console.error("expireLapsedPastDue threw (non-fatal):", e instanceof Error ? e.message : String(e));
   }
-  return closed;
+  return { closed, stamped };
+}
+
+// ── H5. Single-flight lease helpers ───────────────────────────────────────────
+// The lease lives in public.job_locks and is taken/released through two
+// SECURITY DEFINER RPCs (migration 20260823000004_job_locks.sql). It is a TTL
+// lease rather than a session advisory lock because PostgREST answers from a
+// CONNECTION POOL: a session-scoped lock taken in one HTTP round-trip is not
+// reliably held for the next one, and leaks onto a pooled connection when the
+// holder dies. A lease needs no cleanup — it expires.
+
+export interface RenewalLease {
+  outcome: LockOutcome;
+  /** Opaque holder id. Only this id may release the lease. */
+  holder: string;
+}
+
+async function acquireRenewalLease(adminClient: AdminClient): Promise<RenewalLease> {
+  const holder = `${RENEWAL_JOB_LOCK_NAME}:${crypto.randomUUID()}`;
+  let error: unknown = null;
+  let data: unknown = null;
+
+  try {
+    const res = await adminClient.rpc("try_acquire_job_lock", {
+      p_job: RENEWAL_JOB_LOCK_NAME,
+      p_holder: holder,
+      p_ttl_seconds: RENEWAL_JOB_LOCK_TTL_SECONDS,
+    });
+    error = res.error;
+    data = res.data;
+  } catch (e) {
+    error = { message: e instanceof Error ? e.message : String(e) };
+  }
+
+  const outcome = classifyLockResult(error, data);
+
+  if (outcome === "degraded_missing_rpc") {
+    // FAIL SOFT, LOUDLY. The owner applies migrations by hand (CLAUDE.md forbids
+    // `supabase db push`), so this state is expected between the code landing
+    // and the SQL being run. Bricking the job here would mean no trial ever
+    // converts and no subscription ever renews — strictly worse than the race.
+    console.error(
+      "Renewal job: SINGLE-FLIGHT LOCK UNAVAILABLE — public.try_acquire_job_lock does not exist. " +
+      "Apply supabase/migrations/20260823000004_job_locks.sql by hand in the Supabase SQL Editor " +
+      "(never `supabase db push`), then run: NOTIFY pgrst, 'reload schema'. " +
+      "Continuing WITHOUT the lease so trials still convert and renewals still run — until the " +
+      "migration is applied, two overlapping runs of this job could double-charge a stored card.",
+    );
+  } else if (outcome === "locked" && error) {
+    // Any error that is NOT "the function is missing" leaves the lock state
+    // UNKNOWN, and unknown is treated as HELD. Fail closed: skip the tick.
+    const msg = (error as { message?: unknown })?.message;
+    console.error(
+      "Renewal job: lock acquisition failed — treating the lock as HELD and skipping this tick:",
+      typeof msg === "string" ? msg : String(msg),
+    );
+  }
+
+  return { outcome, holder };
+}
+
+async function releaseRenewalLease(adminClient: AdminClient, lease: RenewalLease): Promise<void> {
+  // Nothing to release when the RPC is missing: this run never held a lease.
+  if (lease.outcome !== "acquired") return;
+  try {
+    const { error } = await adminClient.rpc("release_job_lock", {
+      p_job: RENEWAL_JOB_LOCK_NAME,
+      p_holder: lease.holder,
+    });
+    if (error) {
+      console.error(
+        `Renewal job: lease release failed (${error.message}) — the lease expires by itself after ` +
+        `${RENEWAL_JOB_LOCK_TTL_SECONDS}s, so at worst a few ticks are skipped.`,
+      );
+    }
+  } catch (e) {
+    console.error("Renewal job: lease release threw (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
+}
+
+// ── Local dead-letter writer ──────────────────────────────────────────────────
+// Deliberately local rather than shared with moyasar-webhook's own
+// insertDeadLetter: this job must stay editable without touching the webhook.
+// It can NEVER throw — a failed dead letter must not abort a billing pass.
+//
+// `tap_status` is the historical column name in public.webhook_dead_letters.
+// Tap is retired and is not coming back; the column is reused for "the upstream
+// status that produced this dead letter" and is not evidence of a Tap code path.
+async function insertDeadLetter(
+  adminClient: AdminClient,
+  params: { chargeId: string | null; status: string | null; reason: string; payload: unknown },
+): Promise<void> {
+  try {
+    const { error } = await adminClient.from("webhook_dead_letters").insert({
+      charge_id: params.chargeId,
+      tap_status: params.status,
+      reason: params.reason,
+      payload: params.payload,
+    });
+    if (error) {
+      console.error(`Dead-letter insert failed (non-fatal, reason=${params.reason}):`, error.message);
+    }
+  } catch (err) {
+    console.error(
+      `Dead-letter insert threw (non-fatal, reason=${params.reason}):`,
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+}
+
+/**
+ * Write a dead letter only if one with the same (reason, charge_id) does not
+ * already exist. Used for conditions this job re-observes on EVERY tick and
+ * never resolves by itself (a captured payment whose webhook was lost), so the
+ * ledger does not grow by 24 rows a day per stuck payment. A failure of the
+ * existence check falls through to inserting: a duplicate is better than
+ * silence about money.
+ */
+async function insertDeadLetterOnce(
+  adminClient: AdminClient,
+  params: { chargeId: string | null; status: string | null; reason: string; payload: unknown },
+): Promise<void> {
+  try {
+    const { count, error } = await adminClient
+      .from("webhook_dead_letters")
+      .select("id", { count: "exact", head: true })
+      .eq("reason", params.reason)
+      .eq("charge_id", params.chargeId);
+    if (!error && (count ?? 0) > 0) return;
+  } catch {
+    // fall through and insert
+  }
+  await insertDeadLetter(adminClient, params);
+}
+
+// ── H7. The rejected-conversion zombie ────────────────────────────────────────
+/**
+ * Record ONE permanent refusal of the unattended post-trial charge and, once
+ * MAX_TRIAL_CONVERSION_REFUSALS have accumulated, close the row.
+ *
+ * THE LEDGER. `user_subscriptions` has no refusal counter and none may be added,
+ * so public.webhook_dead_letters carries the count. Column meanings for THESE
+ * rows, which differ from the webhook's own use of the same table:
+ *   charge_id  = the SUBSCRIPTION id (not a Moyasar payment id). This is the key
+ *                the count is taken on.
+ *   tap_status = the refusal reason from trialChargeAuthorized
+ *                ("no_verified_plan_metadata" | "plan_mismatch" | "seat_escalation").
+ *   reason     = TRIAL_CONVERSION_REFUSAL_REASON — the discriminator that keeps
+ *                these rows out of every other dead-letter count.
+ *   payload    = the full comparison, so ops can act without re-querying Moyasar.
+ *
+ * "Consecutive" needs no reset logic: a subscription that converts leaves
+ * `trialing` and never re-enters this pass, so every counted row belongs to the
+ * same unbroken episode.
+ *
+ * CUSTOMER MONEY — stated plainly. Expiring the row FORFEITS the customer's
+ * 1.00 SAR card verification. The credit is only ever applied on a
+ * `post_trial_first_charge` (computeCharge), and once the row is `expired` their
+ * next checkout is an `immediate_charge` at the full plan price. That is a real,
+ * small, one-off loss to the customer, accepted because the alternative is a row
+ * that is refused forever and holds the customer's only LIVE subscription slot.
+ */
+async function recordTrialConversionRefusal(
+  adminClient: AdminClient,
+  sub: { id: string; user_id: string; plan_id: string | null; seat_count: number | null },
+  refusalReason: string,
+  verifiedRef: PaidPlanRef | null,
+): Promise<{ forfeited: boolean }> {
+  await insertDeadLetter(adminClient, {
+    chargeId: sub.id,
+    status: refusalReason,
+    reason: TRIAL_CONVERSION_REFUSAL_REASON,
+    payload: {
+      subscription_id: sub.id,
+      user_id: sub.user_id,
+      row_plan_id: sub.plan_id ?? null,
+      row_seat_count: sub.seat_count ?? null,
+      verified_plan_id: verifiedRef?.plan_id ?? null,
+      verified_seat_count: verifiedRef?.seat_count ?? null,
+      refusal_reason: refusalReason,
+      recorded_at: new Date().toISOString(),
+    },
+  });
+
+  const { count, error } = await adminClient
+    .from("webhook_dead_letters")
+    .select("id", { count: "exact", head: true })
+    .eq("reason", TRIAL_CONVERSION_REFUSAL_REASON)
+    .eq("charge_id", sub.id);
+
+  if (error) {
+    // Unknown count -> do NOT close the row. Cutting a customer off on an
+    // unreadable counter is the one outcome here that waiting cannot undo.
+    console.error(`Sub ${sub.id}: refusal count failed, leaving the row open:`, error.message);
+    return { forfeited: false };
+  }
+
+  const outcome = trialRefusalOutcome(count ?? 0);
+  if (!outcome.expire) {
+    console.error(
+      `Sub ${sub.id}: permanent trial-conversion refusal ${count ?? 0}/${MAX_TRIAL_CONVERSION_REFUSALS} ` +
+      `(${refusalReason}) — ${outcome.remaining} more before the row is expired`,
+    );
+    return { forfeited: false };
+  }
+
+  // Close it out. `expired`, not `cancelled`: the customer never asked for this
+  // to end. A cancelled trial cannot reach here at all — the conversion query
+  // filters cancel_at_period_end = false, and expireUnbillableTrials owns that
+  // case. The .eq("status", "trialing") guard means a conversion that landed
+  // concurrently (through the normal checkout) is never overwritten.
+  const { data: closedRows, error: closeError } = await adminClient
+    .from("user_subscriptions")
+    .update({ status: "expired" })
+    .eq("id", sub.id)
+    .eq("status", "trialing")
+    .select("id");
+
+  if (closeError) {
+    console.error(`Sub ${sub.id}: could not expire the refused trial:`, closeError.message);
+    return { forfeited: false };
+  }
+  if (!closedRows || closedRows.length === 0) {
+    console.log(`Sub ${sub.id}: refused trial had already left "trialing" — nothing to expire`);
+    return { forfeited: false };
+  }
+
+  // Same entitlement sync expireUnbillableTrials performs: a closed trial must
+  // never keep a paid plan_type.
+  const { error: planTypeError } = await adminClient
+    .from("profiles")
+    .update({ plan_type: "free" })
+    .eq("user_id", sub.user_id);
+  if (planTypeError) {
+    console.error(`Sub ${sub.id}: plan_type sync failed after expiring the refused trial:`, planTypeError.message);
+  }
+
+  console.error(
+    `Sub ${sub.id}: EXPIRED after ${MAX_TRIAL_CONVERSION_REFUSALS} permanent trial-conversion refusals ` +
+    `(${refusalReason}). The customer's ${CARD_VERIFICATION_AMOUNT}-halala card verification is FORFEITED: ` +
+    `the credit only applies to a post_trial_first_charge, and their next checkout is an immediate_charge ` +
+    `at the full plan price.`,
+  );
+
+  await insertDeadLetter(adminClient, {
+    chargeId: sub.id,
+    status: refusalReason,
+    reason: TRIAL_CONVERSION_FORFEIT_REASON,
+    payload: {
+      subscription_id: sub.id,
+      user_id: sub.user_id,
+      refusals: count ?? 0,
+      refusal_reason: refusalReason,
+      forfeited_verification_halalas: CARD_VERIFICATION_AMOUNT,
+      expired_at: new Date().toISOString(),
+    },
+  });
+
+  return { forfeited: true };
+}
+
+// ── M9 / M11. payment_transactions stuck at `initiated` ───────────────────────
+/**
+ * A `payment_transactions` row left at `status = 'initiated'` blocks BOTH
+ * idempotency guards in this job (each matches `initiated` as well as
+ * `captured`), so its subscription is never charged again — the trial never
+ * converts, the renewal never happens.
+ *
+ * This pass is also the single most dangerous thing in this file: flipping a row
+ * that actually SUCCEEDED to `failed` unblocks the guard and lets the next tick
+ * charge the customer a second time. Every branch is therefore biased toward
+ * leaving the row alone:
+ *
+ *   moyasar_payment_id IS NULL -> the charge never reached Moyasar, so no money
+ *                                 can have moved. Closed in bulk with an
+ *                                 explicit failure_code.
+ *   Moyasar "initiated"        -> created-but-not-captured; after
+ *                                 STALE_INITIATED_AFTER_MS it will never
+ *                                 complete. Closed.
+ *   Moyasar "failed"           -> authoritative. Closed.
+ *   Moyasar "paid"             -> NEVER closed. Logged loudly and dead-lettered:
+ *                                 a captured payment whose webhook was lost
+ *                                 needs a REPLAY, and stamping it `failed` is
+ *                                 precisely how the customer gets charged twice.
+ *   anything else / lookup err -> left exactly as it is, re-examined next tick.
+ *
+ * `created_at` is NEVER modified. chargeRetryEligibility derives the 24h backoff
+ * from it, and preserving it is what stops a resolved row from being re-charged
+ * in the same or the next tick.
+ *
+ * `user_subscriptions.status` is NEVER modified here either. The charge outcome
+ * for a lost payment is not certain enough to cut access or to stamp `past_due`.
+ */
+interface StaleInitiatedSummary {
+  markedFailed: number;
+  paidNeedsReplay: number;
+  leftAlone: number;
+}
+
+async function resolveStaleInitiatedTransactions(
+  adminClient: AdminClient,
+  moyasarSecretKey: string,
+): Promise<StaleInitiatedSummary> {
+  const out: StaleInitiatedSummary = { markedFailed: 0, paidNeedsReplay: 0, leftAlone: 0 };
+  try {
+    const staleCutoff = new Date(Date.now() - STALE_INITIATED_AFTER_MS).toISOString();
+
+    // (a) Never reached Moyasar. No payment id was ever stamped on the row, so
+    // no money can have moved and no lookup is needed.
+    const { data: noPaymentId, error: noPaymentIdError } = await adminClient
+      .from("payment_transactions")
+      .update({
+        status: "failed",
+        failure_code: STALE_INITIATED_NO_PAYMENT_ID_CODE,
+        failure_message: "Stuck at initiated with no Moyasar payment id — the charge never reached Moyasar",
+      })
+      .eq("status", "initiated")
+      .lt("created_at", staleCutoff)
+      .is("moyasar_payment_id", null)
+      .select("id");
+
+    if (noPaymentIdError) {
+      console.error("Stale-initiated pass: bulk close failed:", noPaymentIdError.message);
+    } else if (noPaymentId && noPaymentId.length > 0) {
+      out.markedFailed += noPaymentId.length;
+      console.log(
+        `Stale-initiated pass: closed ${noPaymentId.length} transaction(s) that never reached Moyasar`,
+      );
+    }
+
+    // (b) Reached Moyasar: the truth is upstream. Bounded to
+    // STALE_INITIATED_LOOKUP_CAP HTTPS round-trips per run so this pass cannot
+    // eat the wall-clock budget the charge loop needs. Oldest first; anything
+    // not reached this tick is already hours old and waits another hour.
+    const { data: withPaymentId, error: withPaymentIdError } = await adminClient
+      .from("payment_transactions")
+      .select("id, subscription_id, user_id, moyasar_payment_id, payment_type, amount, created_at")
+      .eq("status", "initiated")
+      .lt("created_at", staleCutoff)
+      .not("moyasar_payment_id", "is", null)
+      .order("created_at", { ascending: true })
+      .limit(STALE_INITIATED_LOOKUP_CAP);
+
+    if (withPaymentIdError) {
+      console.error("Stale-initiated pass: query failed:", withPaymentIdError.message);
+      return out;
+    }
+
+    for (const tx of (withPaymentId ?? []) as any[]) {
+      const looked = await fetchMoyasarPaymentStatus(moyasarSecretKey, tx.moyasar_payment_id);
+      if (!looked.ok) {
+        // Unknown upstream state -> leave the row exactly as it is.
+        out.leftAlone++;
+        continue;
+      }
+
+      const decision = resolveStaleInitiated(looked.status);
+
+      if (decision.action === "mark_failed") {
+        const { data: flipped, error: flipError } = await adminClient
+          .from("payment_transactions")
+          .update({
+            status: "failed",
+            failure_code: decision.failureCode,
+            failure_message: `Resolved by the stale-initiated pass — Moyasar reports "${looked.status}"`,
+          })
+          .eq("id", tx.id)
+          // Re-assert `initiated`: a webhook may have written the real outcome
+          // between the SELECT above and this UPDATE, and it must win.
+          .eq("status", "initiated")
+          .select("id");
+
+        if (flipError) {
+          console.error(`Stale-initiated pass: could not close transaction ${tx.id}:`, flipError.message);
+          out.leftAlone++;
+        } else if (!flipped || flipped.length === 0) {
+          console.log(`Stale-initiated pass: transaction ${tx.id} changed status concurrently — left alone`);
+          out.leftAlone++;
+        } else {
+          out.markedFailed++;
+          console.log(
+            `Stale-initiated pass: transaction ${tx.id} (payment ${tx.moyasar_payment_id}) -> failed ` +
+            `(${decision.failureCode}); created_at preserved so the 24h charge backoff still applies`,
+          );
+        }
+        continue;
+      }
+
+      if (decision.action === "dead_letter_paid") {
+        out.paidNeedsReplay++;
+        console.error(
+          `Stale-initiated pass: transaction ${tx.id} is still "initiated" locally but Moyasar reports ` +
+          `PAID (payment ${tx.moyasar_payment_id}, subscription ${tx.subscription_id}). Its webhook was ` +
+          `LOST. The row is left untouched ON PURPOSE: stamping it "failed" would unblock the idempotency ` +
+          `guard and let the next tick charge this customer a SECOND time. Replay the webhook or reconcile ` +
+          `by hand.`,
+        );
+      } else {
+        out.leftAlone++;
+        console.error(
+          `Stale-initiated pass: transaction ${tx.id} left alone — Moyasar reports the unhandled status ` +
+          `"${looked.status}" (payment ${tx.moyasar_payment_id}). An unknown state is never treated as ` +
+          `safe to re-charge.`,
+        );
+      }
+
+      // Written once per (reason, payment id): this job never resolves these
+      // rows by itself, so it would otherwise re-report them on every tick.
+      await insertDeadLetterOnce(adminClient, {
+        chargeId: tx.moyasar_payment_id,
+        status: looked.status,
+        reason: decision.deadLetterReason ?? "stale_initiated_unexpected_status",
+        payload: {
+          transaction_id: tx.id,
+          subscription_id: tx.subscription_id ?? null,
+          user_id: tx.user_id ?? null,
+          payment_type: tx.payment_type ?? null,
+          amount: tx.amount ?? null,
+          transaction_created_at: tx.created_at ?? null,
+          moyasar_status: looked.status,
+        },
+      });
+    }
+  } catch (e) {
+    console.error(
+      "resolveStaleInitiatedTransactions threw (non-fatal):",
+      e instanceof Error ? e.message : String(e),
+    );
+  }
+  return out;
+}
+
+/** Read one payment's status from Moyasar. `ok:false` means "do not act". */
+async function fetchMoyasarPaymentStatus(
+  moyasarSecretKey: string,
+  paymentId: string,
+): Promise<{ ok: boolean; status: string | null }> {
+  try {
+    const res = await fetch(`https://api.moyasar.com/v1/payments/${paymentId}`, {
+      method: "GET",
+      headers: { Authorization: `Basic ${btoa(moyasarSecretKey + ":")}` },
+    });
+    if (!res.ok) {
+      console.error(`Stale-initiated lookup: Moyasar returned HTTP ${res.status} for payment ${paymentId}`);
+      return { ok: false, status: null };
+    }
+    const body = await res.json();
+    const status = typeof body?.status === "string" ? body.status : null;
+    if (!status) {
+      console.error(`Stale-initiated lookup: Moyasar payment ${paymentId} carries no status field`);
+      return { ok: false, status: null };
+    }
+    return { ok: true, status };
+  } catch (e) {
+    console.error(
+      `Stale-initiated lookup threw for payment ${paymentId}:`,
+      e instanceof Error ? e.message : String(e),
+    );
+    return { ok: false, status: null };
+  }
 }
 
 // -- Verified plan reference for the post-trial charge (defect C1) -------------

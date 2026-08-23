@@ -5,7 +5,6 @@ import {
   deriveFlow,
   expectedAmountsFor,
   isUndefinedColumnError,
-  isUniqueViolationError,
   OPTIONAL_SUBSCRIPTION_COLUMNS,
   OPTIONAL_TRANSACTION_COLUMNS,
   parseFlow,
@@ -13,6 +12,15 @@ import {
   chargeSplit,
   withoutKeys,
 } from "../_shared/billing.ts";
+import {
+  decideActivation,
+  decideExpectedAmount,
+  decideTrialCancelClear,
+  isDuplicateTransactionInsert,
+  isOneLiveRowPerUserViolation,
+  parseTimestampMs,
+} from "../_shared/webhookDecisions.ts";
+import { getSecretKey } from "../_shared/supabaseKeys.ts";
 
 // Must match GRACE_DAYS in check-subscription, process-subscription-renewal,
 // Workspace.tsx, and Account.tsx.
@@ -52,9 +60,35 @@ const corsHeaders = {
 // derived from the subscription row. See
 // docs/launch/billing-contract-20260823.md
 //
+// RETURN-PATH CLASSIFICATION (M10). Every exit from this handler is one of:
+//
+//   TRANSIENT  — the SAME event could succeed on a later delivery, because what
+//                failed was our ability to reach an answer (network, upstream
+//                5xx, 401/403/429 from Moyasar, an unreadable response body, a
+//                database read or write that errored).
+//                => non-2xx so Moyasar redelivers. A deduped dead letter is
+//                   written whenever money is already captured, so a failure
+//                   that outlives the redelivery window is still visible.
+//
+//   PERMANENT  — we DID reach an answer and rejected it (amount mismatch,
+//                expected_amount mismatch, currency mismatch, id / status /
+//                subscription mismatch, verification 404, unknown subscription,
+//                activation refused after cancellation). Redelivering replays
+//                the same comparison against the same facts and reaches the
+//                same refusal.
+//                => 200 so Moyasar stops, ALWAYS with a deduped dead letter so
+//                   a human sees it. A permanent refusal with no dead letter is
+//                   a silent loss and is never acceptable.
+//
+// The dividing line is deliberately "did we obtain the authority's answer?",
+// not "did something go wrong?": a 429 and a 404 are both 4xx, but only one of
+// them is a property of the payment.
+//
 // Required secrets:
 //   MOYASAR_WEBHOOK_SECRET — from Moyasar Dashboard webhook config
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+//   SUPABASE_URL, plus the service-role key resolved via
+//   _shared/supabaseKeys.ts (SUPABASE_SECRET_KEYS when configured, else the
+//   legacy SUPABASE_SERVICE_ROLE_KEY)
 // Optional secrets:
 //   RESEND_API_KEY, FROM_EMAIL — for dunning emails on failure
 // ============================================================
@@ -119,7 +153,7 @@ serve(async (req) => {
     // ── End signature verification ────────────────────────────────────────────
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const serviceRoleKey = getSecretKey();
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     // Moyasar payment event payload shape:
@@ -135,9 +169,20 @@ serve(async (req) => {
     });
 
     if (!paymentId) {
+      // M10 — PERMANENT. The payload is authentic (the signature passed) but
+      // carries no payment id, so nothing can ever be looked up, matched or
+      // re-verified from it. This used to return 400, which asks Moyasar to
+      // redeliver an event that can never be processed and left ops nothing to
+      // look at. Ack it and record it instead.
       console.error("Webhook payload missing payment ID");
-      return new Response(JSON.stringify({ error: "Missing payment ID" }), {
-        status: 400,
+      await insertDeadLetter(adminClient, {
+        paymentId: null,
+        moyasarStatus: typeof status === "string" ? status : "unknown",
+        reason: "missing_payment_id",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Missing payment ID" }), {
+        status: 200,
         headers: corsHeaders,
       });
     }
@@ -283,13 +328,38 @@ serve(async (req) => {
     }
 
     if (verifyResponse.status >= 400 && verifyResponse.status < 500) {
-      console.error("Moyasar re-verification 4xx:", verifyResponse.status);
+      // M10 — not every 4xx is permanent. 401/403 mean OUR credential is wrong
+      // (rotated, unset, mis-scoped) and 408/429 mean the request was refused
+      // for pace, not for content: none of those is a property of the payment,
+      // and acking them would silently strand every captured payment for the
+      // whole duration of the outage. Redelivery genuinely helps, so they are
+      // TRANSIENT. Everything else in the 4xx range (404 unknown payment, 400 /
+      // 422 malformed id) is a decided answer about this payment and can never
+      // change on redelivery — PERMANENT.
+      const transientVerify =
+        verifyResponse.status === 401 ||
+        verifyResponse.status === 403 ||
+        verifyResponse.status === 408 ||
+        verifyResponse.status === 429;
+
+      console.error("Moyasar re-verification 4xx:", verifyResponse.status, {
+        classification: transientVerify ? "transient" : "permanent",
+      });
       await insertDeadLetter(adminClient, {
         paymentId,
         moyasarStatus: status,
-        reason: "verification_api_error_4xx",
+        reason: transientVerify
+          ? "verification_api_auth_or_rate_limited"
+          : "verification_api_error_4xx",
         payload,
       });
+
+      if (transientVerify) {
+        return new Response(JSON.stringify({ error: "Verification temporarily refused" }), {
+          status: 500,
+          headers: corsHeaders,
+        });
+      }
       return new Response(JSON.stringify({ message: "Verification failed (4xx)" }), {
         status: 200,
         headers: corsHeaders,
@@ -308,23 +378,35 @@ serve(async (req) => {
     try {
       verifiedPayment = await verifyResponse.json();
     } catch {
-      console.error("Moyasar re-verification: invalid JSON");
+      // M10 — TRANSIENT. A 2xx whose body does not parse means we never got the
+      // authority's answer at all (an edge/proxy error page, a truncated
+      // response). Nothing about THIS payment was decided, so acking it would
+      // discard a possibly captured payment on the strength of one bad read.
+      // The dead letter is still written — deduped, so an outage produces one
+      // row per payment, not one row per redelivery — so a failure that outlives
+      // Moyasar's retry window is still visible to ops.
+      console.error("Moyasar re-verification: invalid JSON (transient — will be redelivered)");
       await insertDeadLetter(adminClient, {
         paymentId,
         moyasarStatus: status,
         reason: "verification_invalid_json",
         payload,
       });
-      return new Response(JSON.stringify({ message: "Verification parse error" }), {
-        status: 200,
+      return new Response(JSON.stringify({ error: "Verification parse error" }), {
+        status: 500,
         headers: corsHeaders,
       });
     }
 
     // Compare critical fields between verified payment and event/local sub.
-    const planCurrency = (sub as any)?.subscription_plans?.currency;
-    const expectedCurrency = planCurrency || "SAR";
-
+    //
+    // The CURRENCY comparison is deliberately not here. Under Section 12.1 a
+    // payment may legitimately be for a different plan than the one stored on
+    // the row, and that plan can sit on the other side of a currency boundary.
+    // The currency must therefore be checked against the plan actually PAID
+    // FOR, which is only resolved further down — see the currency block just
+    // before the amount validation. Nothing between here and there reads the
+    // currency.
     if (verifiedPayment?.id !== paymentId) {
       console.error("Re-verification mismatch: payment id");
       await insertDeadLetter(adminClient, {
@@ -359,20 +441,6 @@ serve(async (req) => {
         paymentId,
         moyasarStatus: status,
         reason: "verification_subscription_mismatch",
-        payload,
-      });
-      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
-        status: 200,
-        headers: corsHeaders,
-      });
-    }
-
-    if (verifiedPayment?.currency !== expectedCurrency) {
-      console.error("Re-verification mismatch: currency");
-      await insertDeadLetter(adminClient, {
-        paymentId,
-        moyasarStatus: status,
-        reason: "verification_currency_mismatch",
         payload,
       });
       return new Response(JSON.stringify({ message: "Verification mismatch" }), {
@@ -426,6 +494,84 @@ serve(async (req) => {
     }
     if (planRefUsable && paidPlanRef.seat_count != null && paidPlanRef.seat_count !== (sub as any).seat_count) {
       promoteSeatCount = paidPlanRef.seat_count;
+    }
+
+    // ── Currency of the plan ACTUALLY paid for ───────────────────────────────
+    // This check used to sit above, reading `sub.subscription_plans.currency` —
+    // the plan stored on the ROW. Under Section 12.1 the payment may be for a
+    // different plan (`paidPlanRow`, resolved just above), so a plan switch
+    // across a currency boundary was validated against the wrong plan: the
+    // stored plan's currency was accepted while the amount was then validated
+    // against the NEW plan's prices, i.e. 245.00 of one currency compared with
+    // a price expressed in another.
+    //
+    // Order matters and is load-bearing: this must stay AFTER `paidPlanRow` is
+    // resolved and BEFORE the amount validation below, because comparing
+    // integer halalas only means anything once the currency is known to match.
+    // Nothing between the plan resolution above and this point reads the
+    // currency.
+    //
+    // Fail-closed: an unexpected currency is a decided answer about this
+    // payment (PERMANENT) — deduped dead letter plus 200.
+    const expectedCurrency =
+      paidPlanRow?.currency || (sub as any)?.subscription_plans?.currency || "SAR";
+
+    if (verifiedPayment?.currency !== expectedCurrency) {
+      console.error("Re-verification mismatch: currency", {
+        expected: expectedCurrency,
+        got: verifiedPayment?.currency ?? null,
+      });
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_currency_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    // ── M13: the amount the SERVER committed to when it created the payment ──
+    // Contract Section 7 writes `metadata.expected_amount` on every payment this
+    // codebase creates (moyasar-initiate-token-payment and
+    // process-subscription-renewal), always next to `metadata.flow`. Nothing
+    // read it back, so the server's own intent was never verified.
+    //
+    // This is IN ADDITION to the `expectedAmountsFor` validation below, not a
+    // replacement: `expected_amount` proves the captured amount is what THIS
+    // payment was created for, `expectedAmountsFor` proves it is what the plan
+    // is worth NOW. A payment can satisfy either one alone and still be wrong.
+    //
+    // Payments with no `metadata.flow` predate this scheme and carry no
+    // `expected_amount` either; they are skipped exactly as the flow-derivation
+    // fallback above skips them, so no legacy payment is stranded.
+    const expectedAmountDecision = decideExpectedAmount({
+      rawFlow: verifiedPayment?.metadata?.flow,
+      rawExpectedAmount: verifiedPayment?.metadata?.expected_amount,
+      verifiedAmount: verifiedPayment?.amount,
+    });
+
+    if (!expectedAmountDecision.ok) {
+      // PERMANENT: the amount captured is not the amount the server intended.
+      // No redelivery can change either number.
+      console.error("Re-verification mismatch: expected_amount", {
+        reason: expectedAmountDecision.reason,
+        expected: expectedAmountDecision.expected,
+        got: verifiedPayment?.amount ?? null,
+        flow,
+      });
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: expectedAmountDecision.reason,
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
     }
 
     // Validate the amount against the plan/seats actually paid for, not against
@@ -495,6 +641,24 @@ serve(async (req) => {
       : flow === "renewal" || flow === "post_trial_first_charge" ? "renewal"
       : "subscription";
 
+    // ── Persist the transaction row ──────────────────────────────────────────
+    // M10. This write used to be best-effort: a failure was console.error'd and
+    // the run continued straight into activation. On a `paid` event that is
+    // money captured with NO transaction row — and every downstream counter
+    // reads this table: `priorPaidCount` (whether the 1.00 SAR verification
+    // credit was already consumed), the renewal idempotency guards,
+    // `has_captured_verification`, and the C3 retry cap's `failedCount`. A lost
+    // `paid` row re-grants a consumed credit and re-opens an already-settled
+    // invoice; a lost `failed` row resets the retry cap to zero and returns the
+    // system to re-charging a declining card on every cron tick.
+    //
+    // TRANSIENT: a database write error is not a property of the payment, and
+    // reprocessing is safe — the paid path is idempotent through `existingTx`,
+    // and the failed path re-marks `past_due` idempotently with an atomic
+    // dunning claim. So: deduped dead letter, then non-2xx so Moyasar
+    // redelivers. Nothing below this point runs on a failed write.
+    let txWriteError: any = null;
+
     if (!existingTx) {
       // Insert transaction row (first delivery)
       const txInsert: Record<string, any> = {
@@ -511,11 +675,17 @@ serve(async (req) => {
       const { error: txErr } = await adminClient.from("payment_transactions").insert(txInsert);
       if (txErr && isUndefinedColumnError(txErr)) {
         // Section 8 migration not applied yet — persist without the split columns.
-        await adminClient
+        const retryTx = await adminClient
           .from("payment_transactions")
           .insert(withoutKeys(txInsert, OPTIONAL_TRANSACTION_COLUMNS));
+        // The retry's own error was previously discarded, so a real insert
+        // failure hiding behind a missing column was invisible.
+        txWriteError = retryTx.error ?? null;
       } else if (txErr) {
-        console.error("payment_transactions insert failed:", txErr.message);
+        txWriteError = txErr;
+      }
+      if (txWriteError) {
+        console.error("payment_transactions insert failed:", txWriteError.message);
       }
     } else {
       // Update existing row
@@ -529,13 +699,51 @@ serve(async (req) => {
         .update(txUpdate)
         .eq("id", existingTx.id);
       if (txUpdErr && isUndefinedColumnError(txUpdErr)) {
-        await adminClient
+        const retryTx = await adminClient
           .from("payment_transactions")
           .update(withoutKeys(txUpdate, OPTIONAL_TRANSACTION_COLUMNS))
           .eq("id", existingTx.id);
+        txWriteError = retryTx.error ?? null;
       } else if (txUpdErr) {
-        console.error("payment_transactions update failed:", txUpdErr.message);
+        txWriteError = txUpdErr;
       }
+      if (txWriteError) {
+        console.error("payment_transactions update failed:", txWriteError.message);
+      }
+    }
+
+    if (txWriteError && isDuplicateTransactionInsert(txWriteError)) {
+      // The ONE transaction-write error that is not a failure to persist: a
+      // concurrent delivery of this same event inserted the row microseconds
+      // earlier (the `existingTx` lookup runs before the insert, so two
+      // overlapping deliveries can both see "no row" and both try). The row
+      // exists, that delivery owns the rest of the processing, and this one has
+      // nothing left to do. Acking it keeps the pair from ping-ponging
+      // redeliveries at each other, and files no misleading dead letter.
+      console.warn(
+        `payment_transactions row for ${paymentId} was written by a concurrent delivery — ` +
+        `acking this duplicate without reprocessing`,
+      );
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    if (txWriteError) {
+      // See the note above this block: the transaction row is load-bearing for
+      // the credit, idempotency and retry-cap logic, so a failed write must not
+      // be followed by an activation that pretends it succeeded.
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "transaction_write_failed",
+        payload,
+      });
+      return new Response(JSON.stringify({ error: "Transaction write failed" }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
     // ── Handle paid event ────────────────────────────────────────────────────
@@ -573,6 +781,66 @@ serve(async (req) => {
           if (trialEndDate) updateData.next_billing_date = trialEndDate.toISOString();
           updateData.past_due_since = null;
           updateData.dunning_notified_at = null;
+
+          // A scheduled end-of-trial cancellation is withdrawn ONLY here, and
+          // only for a verification payment created AFTER that cancellation and
+          // still inside the resubscribe window. Without this, a customer who
+          // cancelled during the trial and then checked out again paid a second
+          // 1.00 SAR while the row stayed scheduled to close (the renewal
+          // conversion passes filter on `cancel_at_period_end = false`).
+          //
+          // The guard is the same discriminator R3-C2 uses, so the
+          // 09:00-payment / 09:02-cancel / 09:05-webhook race can NEVER
+          // un-cancel anything. `cancelled_at` is deliberately left in place as
+          // the historical stamp; nothing reads it once
+          // `cancel_at_period_end` is false (decideActivation returns ALLOW
+          // before it looks at the timestamp).
+          const trialCancelClear = decideTrialCancelClear({
+            subStatus: (sub as any).status ?? null,
+            cancelAtPeriodEnd: (sub as any).cancel_at_period_end ?? null,
+            cancelledAtMs: parseTimestampMs((sub as any).cancelled_at),
+            paymentCreatedAtMs: parseTimestampMs(verifiedPayment?.created_at),
+            nowMs: now.getTime(),
+          });
+
+          if (trialCancelClear.clear) {
+            updateData.cancel_at_period_end = false;
+            console.log(
+              `Card verified AFTER a trial cancellation — withdrawing the scheduled ` +
+              `cancellation for sub ${sub.id} (payment ${paymentId})`,
+            );
+          } else if (trialCancelClear.reason !== "nothing_to_clear") {
+            // Money captured against a trial that is still scheduled to close.
+            // PERMANENT (the timestamps will not change on redelivery), so the
+            // event is still acked below — but ops gets one deduped letter so
+            // the 1.00 SAR can be judged and refunded if it was a resubscribe
+            // we could not prove.
+            console.warn(
+              `Verification paid on a cancelled trial ${sub.id} — cancellation NOT withdrawn ` +
+              `(${trialCancelClear.reason}); payment ${paymentId}`,
+            );
+            await insertDeadLetter(adminClient, {
+              paymentId,
+              moyasarStatus: status,
+              reason: "verification_paid_on_cancelled_trial",
+              payload: {
+                event: payload,
+                context: {
+                  note:
+                    "1.00 SAR card verification captured for a trial that is scheduled to end. " +
+                    "The cancellation was left in place. Refund or re-arm manually.",
+                  decision: trialCancelClear.reason,
+                  moyasar_payment_id: paymentId,
+                  payment_created_at: verifiedPayment?.created_at ?? null,
+                  subscription_id: sub.id,
+                  user_id: sub.user_id,
+                  cancelled_at: (sub as any).cancelled_at ?? null,
+                  trial_end: (sub as any).trial_end ?? null,
+                },
+              },
+            });
+          }
+
           console.log("Payment paid — card verified, trial continues:", sub.id);
         } else {
           // A late/retried delivery of the FIRST verification webhook, arriving
@@ -588,8 +856,67 @@ serve(async (req) => {
         }
       } else {
         // immediate_charge / post_trial_first_charge / renewal — a real
-        // invoice was paid. Activate and open a new billing period.
+        // invoice was paid.
+        //
+        // R3-C2. Before activating, re-read the CURRENT lifecycle state. The
+        // renewal cron can create a charge at 09:00, the customer can cancel at
+        // 09:02, and this webhook can land at 09:05 — activating here would
+        // revive a subscription the customer already ended and keep the money.
+        // A deliberate resubscribe (a fresh `immediate_charge` created AFTER the
+        // cancellation) is still allowed through. See _shared/webhookDecisions.ts.
+        const activation = decideActivation({
+          subStatus: (sub as any).status ?? null,
+          cancelAtPeriodEnd: (sub as any).cancel_at_period_end ?? null,
+          cancelledAtMs: parseTimestampMs((sub as any).cancelled_at),
+          flow,
+          paymentCreatedAtMs: parseTimestampMs(verifiedPayment?.created_at),
+          nowMs: now.getTime(),
+        });
+
+        if (!activation.activate) {
+          // Money is captured (the payment_transactions row above already
+          // records it) but the customer is not entitled to a new period.
+          // This state is FINAL, not transient: return 200 so Moyasar stops
+          // redelivering, and leave a dead letter a human can refund from.
+          console.error(
+            `Refusing to activate cancelled subscription ${sub.id} from payment ${paymentId} ` +
+            `(flow=${flow}, status=${(sub as any).status}, ` +
+            `cancel_at_period_end=${(sub as any).cancel_at_period_end}) — REFUND REQUIRED`,
+          );
+          await insertDeadLetter(adminClient, {
+            paymentId,
+            moyasarStatus: status,
+            reason: "paid_after_cancel",
+            payload: {
+              event: payload,
+              refund_context: {
+                note: "Captured payment for a cancelled/ending subscription. Activation refused. Refund the customer.",
+                moyasar_payment_id: paymentId,
+                payment_created_at: verifiedPayment?.created_at ?? null,
+                amount: verifiedAmount,
+                currency: verifiedCurrency,
+                flow,
+                subscription_id: sub.id,
+                user_id: sub.user_id,
+                subscription_status: (sub as any).status ?? null,
+                cancel_at_period_end: (sub as any).cancel_at_period_end ?? null,
+                cancelled_at: (sub as any).cancelled_at ?? null,
+                trial_end: (sub as any).trial_end ?? null,
+                current_period_end: (sub as any).current_period_end ?? null,
+              },
+            },
+          });
+          return new Response(
+            JSON.stringify({ message: "Activation refused: subscription cancelled" }),
+            { status: 200, headers: corsHeaders },
+          );
+        }
+
+        // Activate and open a new billing period.
         updateData.status = "active";
+        // A real invoice was paid on a row that the guard above cleared, so any
+        // pending end-of-period cancellation is superseded by this purchase.
+        updateData.cancel_at_period_end = false;
         updateData.current_period_start = now.toISOString();
         updateData.current_period_end = periodEnd.toISOString();
         updateData.next_billing_date = periodEnd.toISOString();
@@ -612,7 +939,22 @@ serve(async (req) => {
         subUpdateError = retry.error;
       }
 
-      if (subUpdateError && isUniqueViolationError(subUpdateError) && updateData.status === "active") {
+      if (
+        subUpdateError &&
+        isOneLiveRowPerUserViolation(subUpdateError) &&
+        updateData.status === "active"
+      ) {
+        // M17. The predicate is `isOneLiveRowPerUserViolation`, NOT the generic
+        // `isUniqueViolationError`: what follows EXPIRES other subscription rows
+        // belonging to this user, and that is only ever the right response to a
+        // violation of `user_subscriptions_one_live_row_per_user`. Any other
+        // 23505 — from an existing index or one added by a later migration —
+        // would have destroyed live rows for a reason that had nothing to do
+        // with them. An unrecognised violation now falls through to the
+        // `subscription_update_failed_on_paid` path below: dead letter plus
+        // non-2xx, which strands the payment loudly instead of deleting data
+        // silently. See _shared/webhookDecisions.ts for the full reasoning.
+        //
         // Defect C2. `user_subscriptions_one_live_row_per_user` is a partial
         // unique index over ('active','trialing','past_due'). A lapsed customer
         // who resubscribes gets a NEW `pending_activation` row (allowed by the
@@ -772,11 +1114,38 @@ serve(async (req) => {
       const isRenewal = isRenewalTx;
 
       if (isRenewal) {
-        const { data: subForFailure } = await adminClient
+        const { data: subForFailure, error: subForFailureError } = await adminClient
           .from("user_subscriptions")
           .select("status, past_due_since")
           .eq("id", sub.id)
           .single();
+
+        if (subForFailureError) {
+          // L18. This error used to be discarded. `subForFailure` is then null,
+          // every branch below is skipped, and the handler still returned 200:
+          // a declined renewal that never marks the row `past_due`, never sends
+          // the dunning email, and leaves the customer on full access until the
+          // period end with no grace clock started and no ops signal.
+          //
+          // TRANSIENT: the row demonstrably exists (it was read at the top of
+          // this handler); only this second read failed. Redelivery is exactly
+          // what fixes it, and reprocessing is safe — the past_due write is
+          // idempotent and the dunning email is claimed atomically.
+          console.error(
+            "Failed-event subscription re-read failed:",
+            subForFailureError.message,
+          );
+          await insertDeadLetter(adminClient, {
+            paymentId,
+            moyasarStatus: status,
+            reason: "failure_lookup_error",
+            payload,
+          });
+          return new Response(JSON.stringify({ error: "Subscription lookup failed" }), {
+            status: 500,
+            headers: corsHeaders,
+          });
+        }
 
         // Defect C3(b). This branch used to stamp past_due_since but NEVER set
         // status, so an async decline left the row `active` with a
@@ -848,6 +1217,28 @@ serve(async (req) => {
 });
 
 // ── Dead-letter helper ────────────────────────────────────────────────────────
+//
+// H8 — DEDUPED ON (charge_id, reason).
+//
+// Moyasar redelivers an event until it is acked, and several paths here
+// deliberately answer non-2xx to ask for exactly that. Every redelivery used to
+// append another row, so `webhook_dead_letters` filled with copies of one fact
+// precisely when ops needed to read it. The reported case: a redelivered `paid`
+// event on a `past_due` subscription with `cancel_at_period_end = true` wrote a
+// second `paid_after_cancel` letter for the same captured payment, inviting a
+// second refund for money that was only taken once.
+//
+// The dedupe is UNBOUNDED IN TIME, on purpose. `charge_id` is one immutable
+// Moyasar payment and `reason` is one classification, so the pair identifies a
+// FACT, not an occurrence — "this payment was refused for this reason" is true
+// once and stays true. A time-bounded window would let a redelivery that
+// arrives after the window write a second letter, which is the one thing this
+// must never do. Recurrence is not lost: it is logged on every delivery.
+//
+// CONTRACT (unchanged): this function never throws and never blocks the
+// caller's own error handling. The dedupe lookup is inside the same try/catch,
+// and a lookup ERROR falls through to the insert — a duplicate letter is a
+// nuisance, a lost letter is money nobody knows about.
 async function insertDeadLetter(
   adminClient: AdminClient,
   params: {
@@ -858,6 +1249,31 @@ async function insertDeadLetter(
   },
 ): Promise<void> {
   try {
+    if (params.paymentId) {
+      // `charge_id` is nullable and a NULL cannot be matched by equality, so a
+      // letter with no payment id (a malformed event) is never deduped — it is
+      // also never redelivered, because that path answers 200.
+      const { data: existing, error: lookupError } = await adminClient
+        .from("webhook_dead_letters")
+        .select("id")
+        .eq("charge_id", params.paymentId)
+        .eq("reason", params.reason)
+        .limit(1);
+
+      if (lookupError) {
+        console.error(
+          "Dead-letter dedupe lookup failed — inserting anyway (non-fatal):",
+          lookupError.message,
+        );
+      } else if (existing && existing.length > 0) {
+        console.warn(
+          `Dead letter already recorded for payment ${params.paymentId} ` +
+          `reason '${params.reason}' — recurrence logged, duplicate row skipped`,
+        );
+        return;
+      }
+    }
+
     const { error } = await adminClient.from("webhook_dead_letters").insert({
       charge_id: params.paymentId,
       tap_status: params.moyasarStatus,

@@ -67,6 +67,45 @@ export const FOUNDING10_WINDOW_END_MS = Date.parse("2026-09-23T00:00:00.000Z");
 /** EID50 first-month price for the `pro` plan, in halalas (50% of 24500). */
 export const EID50_PRO_AMOUNT = 12250;
 
+/**
+ * EID50 is Pro-only on the server, exactly like FOUNDING10. Named as a constant
+ * so the restriction reads the same way in both branches of `promoAmountFor`
+ * and cannot drift between the checkout price and the webhook validation.
+ *
+ * NOTE for the owner: src/lib/campaigns/eid50.ts `EID50_PRICING` also advertises
+ * discounted per-seat prices for `enterprise_team` (199.50) and
+ * `enterprise_office` (274.50). The server does NOT honour EID50 on those plans
+ * and never did. That is a marketing-vs-server truthfulness gap, not a money
+ * leak, and it is an owner decision to fix in one direction or the other.
+ */
+export const EID50_PLAN_SLUG = "pro";
+
+/**
+ * Server-side redemption window for EID50. Outside it the code is inert and the
+ * checkout charges the full plan price.
+ *
+ * R3-C4: EID50 previously had NO server-side window at all, so a campaign whose
+ * own copy says "valid only from 26 to 30 May 2026"
+ * (src/lib/campaigns/eid50.ts, EID50_CAMPAIGN.subheadline / dateRange) was a
+ * permanent, repeatable 50% key to the Pro plan.
+ *
+ * TIMEZONE — deliberate divergence from FOUNDING10. The FOUNDING10 constants use
+ * UTC midnights. EID50's advertised dates are calendar dates sold to customers
+ * in Saudi Arabia, so they are anchored to Arabia Standard Time (UTC+3):
+ *   start = 26 May 2026 00:00 AST = 2026-05-25T21:00:00Z  (inclusive)
+ *   end   = 31 May 2026 00:00 AST = 2026-05-30T21:00:00Z  (EXCLUSIVE)
+ * The end boundary is the START of 31 May, because "26 to 30 May" includes the
+ * whole of the 30th. That is exactly 5 days, matching
+ * EID50_CAMPAIGN.durationDays = 5.
+ *
+ * Had these been UTC midnights instead, the window would have opened and closed
+ * three hours late for a Saudi customer: the offer would still be dead at 00:30
+ * on 26 May local time, and would still be alive until 03:00 on 31 May local
+ * time. The AST anchoring makes the server agree with the advertised dates.
+ */
+export const EID50_WINDOW_START_MS = Date.parse("2026-05-25T21:00:00.000Z");
+export const EID50_WINDOW_END_MS = Date.parse("2026-05-30T21:00:00.000Z");
+
 export type BillingFlow =
   | "trial_card_verification"
   | "immediate_charge"
@@ -280,7 +319,13 @@ export function promoAmountFor(
     if (!(nowMs >= FOUNDING10_WINDOW_START_MS && nowMs < FOUNDING10_WINDOW_END_MS)) return null;
     return FOUNDING10_AMOUNT;
   }
-  if (code === "EID50" && plan?.slug === "pro") return EID50_PRO_AMOUNT;
+  if (code === "EID50") {
+    // Same two server-side checks as FOUNDING10: plan restriction, then window.
+    // R3-C4 — without the window this was a permanent 50% key to Pro.
+    if (plan?.slug !== EID50_PLAN_SLUG) return null;
+    if (!(nowMs >= EID50_WINDOW_START_MS && nowMs < EID50_WINDOW_END_MS)) return null;
+    return EID50_PRO_AMOUNT;
+  }
   return null;
 }
 
@@ -298,7 +343,12 @@ function promoAmountForValidation(
   if (code === "FOUNDING10") {
     return plan?.slug === FOUNDING10_PLAN_SLUG ? FOUNDING10_AMOUNT : null;
   }
-  if (code === "EID50" && plan?.slug === "pro") return EID50_PRO_AMOUNT;
+  if (code === "EID50") {
+    // Window-FREE on purpose (same as FOUNDING10 above): a payment created just
+    // before the window closed must not be stranded when its webhook lands just
+    // after. The plan restriction is NOT relaxed.
+    return plan?.slug === EID50_PLAN_SLUG ? EID50_PRO_AMOUNT : null;
+  }
   return null;
 }
 
@@ -583,6 +633,22 @@ export interface TrialChargeAuthorization {
     | "plan_mismatch"
     | "seat_escalation"
     | "no_subscription";
+  /**
+   * ADDITIVE (H9). The plan the stored card was actually verified against, or
+   * null when that is unknown. When non-null the caller MUST price the charge
+   * from THIS plan id, never from whatever the row currently holds.
+   */
+  clampedPlanId?: string | null;
+  /**
+   * ADDITIVE (H9). The highest seat count this authorization covers, or null
+   * when the verified payment carried no seat count. When non-null the caller
+   * MUST price with `Math.min(row.seat_count, maxSeats)`.
+   *
+   * `authorized === true` on its own is a comparison result, not a price. These
+   * two fields let the caller derive the amount from the VERIFIED reference
+   * instead of re-deriving it from the (mutable) subscription row.
+   */
+  maxSeats?: number | null;
 }
 
 /**
@@ -594,29 +660,63 @@ export interface TrialChargeAuthorization {
  * If the row's plan no longer matches, something escalated the row outside a
  * captured payment and the charge must NOT be attempted.
  *
- * A payment created before this change carries no `plan_id` in its metadata;
- * that is treated as "nothing to compare" rather than as a mismatch, otherwise
- * every pre-existing trial would be stranded and never converted.
- *
  * Billing fewer seats than were verified is allowed (it can only undercharge).
+ *
+ * H9 (2026-08-23) — THIS GUARD NOW FAILS CLOSED.
+ * It used to return `{ authorized: true, reason: "no_verified_plan_metadata" }`
+ * whenever the verification payment carried no `plan_id`, so that pre-C1 trials
+ * were not stranded. That fails OPEN: with nothing to compare against, the cron
+ * charged the stored card for whatever plan and seat count the row currently
+ * held — the exact escalation C1 exists to close. There is no honest clamp
+ * available in that state either: the historical plan is simply not knowable
+ * from the inputs, and clamping seats alone still leaves a plan escalation
+ * (e.g. `pro` 245.00 SAR -> `enterprise_office` at min_seats 5 = 2745.00 SAR).
+ *
+ * So an unknown authorization is now a refusal. Nothing is charged; the row
+ * stays `trialing` with a lapsed `trial_end` and the customer converts through
+ * the normal checkout, which produces a captured payment carrying full
+ * metadata (Section 12.4 removed the 409 that used to block exactly that). No
+ * money moves on an amount nobody consented to.
  */
 export function trialChargeAuthorized(
   sub: { plan_id?: string | null; seat_count?: number | null } | null | undefined,
   verified: PaidPlanRef | null | undefined,
 ): TrialChargeAuthorization {
-  if (!sub) return { authorized: false, reason: "no_subscription" };
+  if (!sub) {
+    return { authorized: false, reason: "no_subscription", clampedPlanId: null, maxSeats: null };
+  }
   if (!verified || !verified.plan_id) {
-    return { authorized: true, reason: "no_verified_plan_metadata" };
+    return {
+      authorized: false,
+      reason: "no_verified_plan_metadata",
+      clampedPlanId: null,
+      maxSeats: null,
+    };
   }
   if (verified.plan_id !== sub.plan_id) {
-    return { authorized: false, reason: "plan_mismatch" };
+    return {
+      authorized: false,
+      reason: "plan_mismatch",
+      clampedPlanId: verified.plan_id,
+      maxSeats: verified.seat_count ?? null,
+    };
   }
   const rawSeats = Number(sub.seat_count ?? 1);
   const billedSeats = Number.isFinite(rawSeats) ? Math.floor(rawSeats) : 1;
   if (verified.seat_count != null && billedSeats > verified.seat_count) {
-    return { authorized: false, reason: "seat_escalation" };
+    return {
+      authorized: false,
+      reason: "seat_escalation",
+      clampedPlanId: verified.plan_id,
+      maxSeats: verified.seat_count,
+    };
   }
-  return { authorized: true, reason: "match" };
+  return {
+    authorized: true,
+    reason: "match",
+    clampedPlanId: verified.plan_id,
+    maxSeats: verified.seat_count ?? null,
+  };
 }
 
 // ── Unique-violation helper (defect C2) ──────────────────────────────────────

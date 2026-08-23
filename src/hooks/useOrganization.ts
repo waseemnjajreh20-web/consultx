@@ -223,7 +223,30 @@ export function useOrganization() {
         p_subscription_id: subscriptionId,
         p_seat_count:      seatCount,
       });
-      if (error) throw error;
+      if (error) {
+        // R3-C1. The hardened RPC raises two machine-readable codes
+        // (migration 20260823000002_seat_rpc_hardening.sql). Postgres delivers
+        // them as a plain PostgrestError object, not an Error instance, so a
+        // consumer doing `err instanceof Error ? err.message : "..."` would show
+        // a generic fallback instead of the reason. Map the codes to bilingual
+        // copy and rethrow a real Error; anything else keeps its raw message.
+        const raw = error.message ?? "";
+        if (raw.includes("SEAT_CAP_EXCEEDED")) {
+          throw new Error(
+            language === "ar"
+              ? "الحد الأقصى 100 مقعد. تواصل معنا لعدد أكبر."
+              : "The maximum is 100 seats. Contact us for a larger deployment.",
+          );
+        }
+        if (raw.includes("SEAT_CHANGE_REQUIRES_CHECKOUT")) {
+          throw new Error(
+            language === "ar"
+              ? "لا يمكن تغيير عدد المقاعد إلا على اشتراك نشط. غيّر المقاعد من صفحة الدفع ليُحتسب العدد الجديد قبل تفعيله."
+              : "Seats can only be changed on an active subscription. Change your seats through checkout so the new seat count is paid for before it takes effect.",
+          );
+        }
+        throw new Error(raw || (language === "ar" ? "تعذّر تحديث عدد المقاعد" : "Could not update the seat count"));
+      }
       return data;
     },
     onSuccess: () => {

@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { computeCharge, MAX_BILLABLE_SEATS } from "../_shared/billing.ts";
+import {
+  computeCharge,
+  isUndefinedColumnError,
+  isUniqueViolationError,
+  MAX_BILLABLE_SEATS,
+  OPTIONAL_TRANSACTION_COLUMNS,
+  withoutKeys,
+} from "../_shared/billing.ts";
+import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +37,10 @@ const corsHeaders = {
 // activation; this function only kicks off the payment.
 //
 // Required secrets:
-//   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+//   SUPABASE_URL, plus the service-role and anon/publishable keys resolved via
+//   _shared/supabaseKeys.ts (SUPABASE_SECRET_KEYS / SUPABASE_PUBLISHABLE_KEYS
+//   when configured, else the legacy SUPABASE_SERVICE_ROLE_KEY /
+//   SUPABASE_ANON_KEY),
 //   MOYASAR_SECRET_KEY  (Basic-auth credential for /v1/payments)
 // ============================================================
 
@@ -37,6 +48,12 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Set once the R3-C3 attempt row exists and cleared again as soon as a
+  // Moyasar payment id has been stamped onto it, so the outer catch below can
+  // release a row that an unexpected throw would otherwise leave `initiated` —
+  // which would block the customer's next attempt for ten minutes.
+  let releaseAttemptRowRef: ((code: string, message: string) => Promise<void>) | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -48,8 +65,8 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = getPublishableKey();
+    const serviceRoleKey = getSecretKey();
     const moyasarSecretKey = Deno.env.get("MOYASAR_SECRET_KEY");
 
     if (!moyasarSecretKey) {
@@ -328,6 +345,98 @@ serve(async (req) => {
       });
     }
 
+    // ── R3-C3: attempt row written BEFORE the charge ─────────────────────────
+    // The duplicate-attempt guard above queries `payment_transactions`, but this
+    // endpoint never wrote to that table: only moyasar-webhook (on delivery,
+    // seconds-to-minutes later) and process-subscription-renewal did. The guard
+    // therefore matched nothing during exactly the window it exists to protect,
+    // so two browser tabs submitting at once both reached Moyasar and both
+    // charged the card.
+    //
+    // Same shape as process-subscription-renewal: insert `initiated` with a null
+    // payment id, keep the row id, stamp the Moyasar payment id onto that SAME
+    // row afterwards so moyasar-webhook (which looks the transaction up by
+    // `moyasar_payment_id` and only inserts when that lookup returns nothing)
+    // updates it instead of writing a second row for the same payment.
+    //
+    // `payment_type` is derived from the flow exactly as moyasar-webhook derives
+    // it, so the two writers agree and the verification-credit / prior-paid
+    // counting above stays correct.
+    //
+    // NOTE: this insert must stay AFTER the duplicate-attempt guard (or it would
+    // trip its own guard) and AFTER the non-positive-amount check (never record
+    // an attempt for a charge that is about to be refused).
+    const txPaymentType =
+      decision.flow === "trial_card_verification"
+        ? "verification"
+        : decision.flow === "renewal" || decision.flow === "post_trial_first_charge"
+        ? "renewal"
+        : "subscription";
+
+    const txPayload: Record<string, any> = {
+      user_id: sub.user_id,
+      subscription_id: sub.id,
+      moyasar_payment_id: null,
+      amount: chargeAmount,
+      amount_base: decision.base,
+      amount_vat: decision.vat,
+      // The Moyasar call below hardcodes SAR, so record what is actually charged.
+      currency: "SAR",
+      status: "initiated",
+      payment_type: txPaymentType,
+    };
+
+    let txInsert = await adminClient
+      .from("payment_transactions")
+      .insert(txPayload)
+      .select("id")
+      .single();
+
+    if (txInsert.error && isUndefinedColumnError(txInsert.error)) {
+      // Section 8 migration not applied yet — persist without the split columns.
+      txInsert = await adminClient
+        .from("payment_transactions")
+        .insert(withoutKeys(txPayload, OPTIONAL_TRANSACTION_COLUMNS))
+        .select("id")
+        .single();
+    }
+
+    if (txInsert.error || !txInsert.data) {
+      // No attempt row means no race protection at all. Refuse rather than
+      // charge a card with the guard disarmed.
+      console.error("Attempt-row insert failed; refusing to charge", {
+        sub_id: sub.id,
+        message: txInsert.error?.message,
+      });
+      return new Response(JSON.stringify({ error: "Could not start the payment" }), {
+        status: 503,
+        headers: corsHeaders,
+      });
+    }
+    const txId = txInsert.data.id as string;
+
+    // Every early return AFTER this point must release the attempt row, or the
+    // 10-minute duplicate guard locks a customer whose card was merely declined
+    // out of retrying for ten minutes.
+    const releaseAttemptRow = async (failureCode: string, failureMessage: string) => {
+      const { error: releaseError } = await adminClient
+        .from("payment_transactions")
+        .update({
+          status: "failed",
+          failure_code: failureCode.slice(0, 100),
+          failure_message: failureMessage.slice(0, 500),
+        })
+        .eq("id", txId);
+      if (releaseError) {
+        console.error("Attempt-row release failed; customer may be blocked for 10 minutes", {
+          sub_id: sub.id,
+          tx_id: txId,
+          message: releaseError.message,
+        });
+      }
+    };
+    releaseAttemptRowRef = releaseAttemptRow;
+
     // ── Create Moyasar payment from token ────────────────────────────────────
     let chargeData: any;
     let chargeOk = false;
@@ -369,6 +478,7 @@ serve(async (req) => {
     } catch (chargeErr) {
       const msg = chargeErr instanceof Error ? chargeErr.message : String(chargeErr);
       console.error("Moyasar network error on token payment:", msg);
+      await releaseAttemptRow("NETWORK_ERROR", msg);
       return new Response(JSON.stringify({ error: "Payment provider unreachable" }), {
         status: 502,
         headers: corsHeaders,
@@ -378,6 +488,8 @@ serve(async (req) => {
     if (!chargeOk) {
       const safeMsg = typeof chargeData?.message === "string" ? chargeData.message.slice(0, 200) : "charge_rejected";
       console.error("Moyasar charge rejected", { sub_id: sub.id, http_status: chargeStatus });
+      // A declined card must be retryable at once — release the guard.
+      await releaseAttemptRow("CHARGE_REJECTED", `http ${chargeStatus}: ${safeMsg}`);
       return new Response(JSON.stringify({ error: "Payment was declined", detail: safeMsg }), {
         status: 400,
         headers: corsHeaders,
@@ -392,11 +504,100 @@ serve(async (req) => {
 
     if (!paymentId) {
       console.error("Moyasar response missing payment id");
+      // The attempt row can never be reconciled without an id, so release it.
+      // If Moyasar did create a payment, its webhook still records it under its
+      // own row, and the prior-paid guard above then blocks a second real
+      // charge on a row still awaiting activation.
+      await releaseAttemptRow(
+        "MISSING_PAYMENT_ID",
+        "Moyasar accepted the charge but returned no payment id",
+      );
       return new Response(JSON.stringify({ error: "Invalid payment provider response" }), {
         status: 502,
         headers: corsHeaders,
       });
     }
+
+    // ── Stamp the payment id onto the attempt row ────────────────────────────
+    // moyasar-webhook looks the transaction up by `moyasar_payment_id` and only
+    // INSERTS when that lookup returns nothing, so stamping here is what makes
+    // the webhook update THIS row rather than create a second one.
+    //
+    // The status is deliberately NOT promoted to `captured` on a synchronous
+    // `paid`: moyasar-webhook treats an already-`captured` row as an idempotent
+    // replay (defect C2 branch) and would then skip activation for a
+    // `post_trial_first_charge` on a still-`trialing` row. Leaving it
+    // `initiated` keeps the webhook on its normal path — and correctly keeps the
+    // duplicate guard armed while the money is in flight.
+    //
+    // A synchronous `failed`, by contrast, IS recorded as failed: the charge was
+    // declined, so the customer must be able to retry immediately.
+    const txStamp: Record<string, any> = {
+      moyasar_payment_id: paymentId,
+      status: paymentStatus === "failed" ? "failed" : "initiated",
+    };
+    if (paymentStatus === "failed") {
+      txStamp.failure_code = "CHARGE_FAILED";
+      txStamp.failure_message =
+        typeof chargeData?.source?.message === "string"
+          ? chargeData.source.message.slice(0, 500)
+          : null;
+    }
+    const { error: txStampError } = await adminClient
+      .from("payment_transactions")
+      .update(txStamp)
+      .eq("id", txId);
+
+    if (txStampError) {
+      // TWO distinct causes reach this branch, and the correct response to both
+      // is the same — but only one of them was previously described here, which
+      // made the log unreadable in production and the reasoning look narrower
+      // than it is.
+      //
+      // 1. UNIQUE VIOLATION (SQLSTATE 23505) on
+      //    `payment_transactions_moyasar_payment_id_key` — a PARTIAL unique
+      //    index on (moyasar_payment_id) WHERE moyasar_payment_id IS NOT NULL,
+      //    created by 20260423000001_moyasar_billing_columns.sql lines 41-43.
+      //    It means moyasar-webhook landed for this payment and inserted its own
+      //    row in the narrow gap between the Moyasar response and this update.
+      //    The webhook's row won the race and the money IS recorded — on that
+      //    row, not this one.
+      //
+      // 2. ANY OTHER error (transient PostgREST/network failure, timeout). The
+      //    webhook may or may not have landed; nothing is known. The attempt row
+      //    simply stays `initiated` with a null payment id.
+      //
+      // Neither case may mark the row `failed`. The charge has already been sent
+      // to Moyasar, so a `failed` row would show the customer a failed payment
+      // beside a successful one, and would inflate the renewal retry counter
+      // (`chargeRetryEligibility` counts `failed` rows inside the period window).
+      // Activation is not at risk in either case: moyasar-webhook looks the
+      // transaction up by `moyasar_payment_id` and INSERTS its own row when that
+      // lookup returns nothing.
+      //
+      // Residual cost of case 2 only: an orphaned `initiated` row carrying a null
+      // payment id that no pass reconciles. No effect on money or on access —
+      // recorded as post-launch hygiene, not a launch blocker.
+      const stampLostRaceToWebhook = isUniqueViolationError(txStampError);
+      if (stampLostRaceToWebhook) {
+        console.warn("Attempt-row payment-id stamp lost the race to moyasar-webhook (23505) — money is recorded on the webhook's row", {
+          sub_id: sub.id,
+          tx_id: txId,
+          moyasar_payment_id: paymentId,
+          message: txStampError.message,
+        });
+      } else {
+        console.error("Attempt-row payment-id stamp failed (non-23505) — row left `initiated` with a null payment id", {
+          sub_id: sub.id,
+          tx_id: txId,
+          moyasar_payment_id: paymentId,
+          message: txStampError.message,
+        });
+      }
+    }
+    // A charge now exists at Moyasar. Nothing beyond this point may mark the
+    // attempt row `failed`, so the outer catch must not release it.
+    releaseAttemptRowRef = null;
 
     // Safe-only logging — never log token, card data, or full provider payload.
     console.log("Token payment initiated", {
@@ -431,9 +632,13 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("moyasar-initiate-token-payment error:", {
-      message: error instanceof Error ? error.message : String(error),
-    });
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("moyasar-initiate-token-payment error:", { message });
+    // No charge was created (the ref is cleared as soon as one is), so release
+    // the attempt row rather than lock the customer out for ten minutes.
+    if (releaseAttemptRowRef) {
+      await releaseAttemptRowRef("INTERNAL_ERROR", message).catch(() => {});
+    }
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: corsHeaders,

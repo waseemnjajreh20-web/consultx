@@ -38,6 +38,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ---------------------------------------------------------------------------
 // CancelSubscriptionButton — preserved exactly from original
@@ -129,6 +140,273 @@ function CancelSubscriptionButton({
         )}
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DeleteAccountSection — PDPL right-to-erasure UI for delete-account.
+//
+// Copy is defined locally on purpose, following the TRIAL_CONVERSION_PENDING_NOTE
+// precedent below: a destructive, single-purpose flow that does not belong in
+// the shared translation table (src/lib/translations.ts).
+// ---------------------------------------------------------------------------
+
+/** Must exactly match the confirmation token delete-account/index.ts checks for. */
+const DELETE_ACCOUNT_CONFIRM_WORD = "DELETE";
+
+const DELETE_ACCOUNT_COPY = {
+  ar: {
+    sectionTitle: "منطقة الخطر",
+    title: "حذف الحساب نهائياً",
+    warning:
+      "هذا الإجراء لا يمكن التراجع عنه أبداً. سيتم حذف حسابك ومحادثاتك وصورك المرفوعة وبياناتك الشخصية بشكل دائم.",
+    typeToConfirm: `للمتابعة، اكتب كلمة "${DELETE_ACCOUNT_CONFIRM_WORD}" في الحقل أدناه`,
+    cancel: "إلغاء",
+    trigger: "حذف الحساب",
+    confirmButton: "حذف حسابي نهائياً",
+    deleting: "جارٍ الحذف...",
+    successTitle: "تم حذف حسابك",
+    successBody: "تم حذف حسابك وبياناتك بنجاح.",
+  },
+  en: {
+    sectionTitle: "Danger Zone",
+    title: "Permanently Delete Account",
+    warning:
+      "This action can never be undone. Your account, conversations, uploaded images, and personal data will be permanently deleted.",
+    typeToConfirm: `To continue, type "${DELETE_ACCOUNT_CONFIRM_WORD}" in the field below`,
+    cancel: "Cancel",
+    trigger: "Delete Account",
+    confirmButton: "Permanently delete my account",
+    deleting: "Deleting...",
+    successTitle: "Your account has been deleted",
+    successBody: "Your account and data were permanently deleted.",
+  },
+} as const;
+
+/**
+ * Every `error` code delete-account/index.ts can return, mapped to a bilingual
+ * message. R1-R4 (the refusal gates) also carry the backend's own `message` /
+ * `message_ar` — those are preferred at render time when present; this table
+ * covers the codes the backend does not localize (the 5xx lookup/write
+ * failures, the auth edge cases) and is the fallback if the response body
+ * cannot be read at all.
+ */
+const DELETE_ACCOUNT_REASON_COPY: Record<string, { ar: string; en: string }> = {
+  subscription_active: {
+    ar: "لديك اشتراك ساري. يرجى إلغاء الاشتراك أولاً ثم حذف الحساب.",
+    en: "You have a live subscription. Cancel your subscription first, then delete your account.",
+  },
+  organization_owner: {
+    ar: "أنت مالك مساحة عمل مؤسسية. يرجى نقل الملكية أو إغلاق المؤسسة بالتواصل مع info@consultx.app قبل حذف حسابك.",
+    en: "You own an organization workspace. Transfer ownership or close the organization with info@consultx.app before deleting your account.",
+  },
+  organization_member: {
+    ar: "أنت عضو في مساحة عمل مؤسسية. يرجى الطلب من مالك المؤسسة أو المشرف إزالتك أولاً، أو التواصل مع info@consultx.app.",
+    en: "You are a member of an organization workspace. Ask an organization owner or admin to remove you first, or contact info@consultx.app.",
+  },
+  enterprise_records_present: {
+    ar: "حسابك مرتبط بسجلات مشاريع مؤسسية تتطلب معالجة يدوية. يرجى التواصل مع info@consultx.app وسنستكمل طلب الحذف.",
+    en: "Your account is linked to enterprise case records that must be handled manually. Contact info@consultx.app and we will complete your erasure request.",
+  },
+  confirmation_required: {
+    ar: "تعذّر تأكيد طلب الحذف. يرجى المحاولة مرة أخرى.",
+    en: "The deletion request could not be confirmed. Please try again.",
+  },
+  unauthorized: {
+    ar: "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى ثم إعادة المحاولة.",
+    en: "Your session has expired. Please sign in again and retry.",
+  },
+  method_not_allowed: {
+    ar: "حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.",
+    en: "An unexpected error occurred. Please try again later.",
+  },
+  subscription_lookup_failed: {
+    ar: "تعذّر التحقق من حالة اشتراكك. يرجى المحاولة لاحقاً.",
+    en: "Could not verify your subscription status. Please try again later.",
+  },
+  organization_lookup_failed: {
+    ar: "تعذّر التحقق من عضويتك المؤسسية. يرجى المحاولة لاحقاً.",
+    en: "Could not verify your organization membership. Please try again later.",
+  },
+  membership_lookup_failed: {
+    ar: "تعذّر التحقق من عضويتك المؤسسية. يرجى المحاولة لاحقاً.",
+    en: "Could not verify your organization membership. Please try again later.",
+  },
+  preflight_check_failed: {
+    ar: "تعذّر التحقق من سجلاتك قبل الحذف. لم يتم تغيير أي بيانات. يرجى المحاولة لاحقاً.",
+    en: "Could not verify your records before deletion. No data was changed. Please try again later.",
+  },
+  conversation_lookup_failed: {
+    ar: "تعذّر بدء عملية الحذف. يرجى المحاولة لاحقاً.",
+    en: "Could not start the deletion process. Please try again later.",
+  },
+  message_deletion_failed: {
+    ar: "توقفت عملية الحذف في منتصفها. يرجى التواصل مع info@consultx.app لإكمالها.",
+    en: "Deletion stopped part-way through. Contact info@consultx.app to complete it.",
+  },
+  personal_data_deletion_failed: {
+    ar: "توقفت عملية الحذف في منتصفها. يرجى التواصل مع info@consultx.app لإكمالها.",
+    en: "Deletion stopped part-way through. Contact info@consultx.app to complete it.",
+  },
+  billing_deidentification_failed: {
+    ar: "تعذّر إكمال الحذف قبل إزالة تسجيل الدخول. يرجى التواصل مع info@consultx.app فوراً.",
+    en: "Deletion could not complete before removing your login. Contact info@consultx.app immediately.",
+  },
+  auth_deletion_failed: {
+    ar: "تم حذف بياناتك الشخصية لكن تعذّر حذف تسجيل الدخول. يرجى التواصل مع info@consultx.app لإكمال الحذف.",
+    en: "Your personal data was removed but your login could not be deleted. Contact info@consultx.app so we can finish.",
+  },
+  internal_server_error: {
+    ar: "حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.",
+    en: "An unexpected error occurred. Please try again later.",
+  },
+  network_error: {
+    ar: "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+    en: "Could not reach the server. Please check your connection and try again.",
+  },
+};
+
+function DeleteAccountSection({
+  session,
+  signOut,
+}: {
+  session: any;
+  signOut: () => Promise<void>;
+}) {
+  const navigate = useNavigate();
+  const { language } = useLanguage();
+  const { toast } = useToast();
+  const copy = DELETE_ACCOUNT_COPY[language === "ar" ? "ar" : "en"];
+  const lang = language === "ar" ? "ar" : "en";
+
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const canConfirm = confirmText.trim() === DELETE_ACCOUNT_CONFIRM_WORD && !loading;
+
+  const resetAndClose = () => {
+    if (loading) return; // never let the dialog close mid-request
+    setOpen(false);
+    setConfirmText("");
+    setErrorMessage(null);
+  };
+
+  const handleDelete = async () => {
+    if (!canConfirm || !session?.access_token) return;
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("delete-account", {
+        body: { confirm: DELETE_ACCOUNT_CONFIRM_WORD },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      let body: any = data;
+      if (fnError) {
+        // supabase-js sets `data: null` and wraps the response in `error` for
+        // any non-2xx status. The actual JSON body — including which of the
+        // refusal reasons (R1-R4) fired — lives on error.context (a Response).
+        try {
+          body = await fnError.context?.json?.();
+        } catch {
+          body = null;
+        }
+      }
+
+      if (body?.success === true) {
+        toast({ title: copy.successTitle, description: copy.successBody });
+        await signOut();
+        navigate("/auth");
+        return;
+      }
+
+      const code: string | undefined = body?.error;
+      const backendMessage = lang === "ar" ? body?.message_ar : body?.message;
+      let message =
+        backendMessage ||
+        (code && DELETE_ACCOUNT_REASON_COPY[code]?.[lang]) ||
+        DELETE_ACCOUNT_REASON_COPY.internal_server_error[lang];
+
+      // R1: append the exact "deletable after" date when the backend gave one.
+      if (code === "subscription_active" && body?.deletable_after) {
+        const d = new Date(body.deletable_after).toLocaleDateString(
+          lang === "ar" ? "ar-SA" : "en-US",
+          { year: "numeric", month: "long", day: "numeric" }
+        );
+        message +=
+          lang === "ar" ? ` (يصبح الحساب قابلاً للحذف في ${d})` : ` (Deletable after ${d})`;
+      }
+
+      setErrorMessage(message);
+    } catch {
+      setErrorMessage(DELETE_ACCOUNT_REASON_COPY.network_error[lang]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
+        <Trash2 className="w-4 h-4 me-2" />
+        {copy.trigger}
+      </Button>
+
+      <AlertDialog open={open} onOpenChange={(v) => !v && resetAndClose()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              {copy.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-start">
+                <p className="font-medium text-destructive">{copy.warning}</p>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1.5">
+                    {copy.typeToConfirm}
+                  </label>
+                  <Input
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    placeholder={DELETE_ACCOUNT_CONFIRM_WORD}
+                    disabled={loading}
+                    autoComplete="off"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                </div>
+                {errorMessage && (
+                  <p className="text-sm text-destructive flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{errorMessage}</span>
+                  </p>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading} onClick={resetAndClose}>
+              {copy.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault(); // keep the dialog open — we manage close ourselves
+                handleDelete();
+              }}
+              disabled={!canConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : copy.confirmButton}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -1132,6 +1410,23 @@ const Account = () => {
           >
             <Trash2 className="w-4 h-4" />
           </Button>
+        </div>
+      </div>
+
+      {/* Danger Zone — delete account (PDPL right to erasure) */}
+      <div className="bg-card/60 rounded-xl border border-destructive/20 p-6">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="font-medium text-sm text-destructive">
+              {DELETE_ACCOUNT_COPY[language === "ar" ? "ar" : "en"].sectionTitle}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {language === "ar"
+                ? "حذف حسابك وبياناتك بشكل دائم ولا يمكن التراجع عنه"
+                : "Permanently delete your account and data — this cannot be undone"}
+            </p>
+          </div>
+          <DeleteAccountSection session={session} signOut={signOut} />
         </div>
       </div>
     </div>
