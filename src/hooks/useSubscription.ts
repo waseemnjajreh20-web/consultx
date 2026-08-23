@@ -76,6 +76,12 @@ export interface SubscriptionStatus {
   effective_access_source?: string;
   effective_access?: string;
   effective_plan_slug?: string;
+
+  // Billing contract 2026-08-23: card-required-for-trial fields.
+  // See docs/launch/billing-contract-20260823.md Section 4.
+  trial_requires_card?: boolean; // constant true — card required to start/keep the trial
+  card_on_file?: boolean;        // true when a Moyasar card token is stored (trial or paid)
+  card_verified_at?: string | null; // ISO 8601 | null — null until migration lands; fall back to card_on_file
 }
 
 export function useSubscription() {

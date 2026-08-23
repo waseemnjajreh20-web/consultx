@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { computeCharge, type ChargeDecision, type SubLike } from "../_shared/billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,20 +114,12 @@ serve(async (req) => {
       ? (plan.price_per_seat as number) * seatCount
       : (plan.price_amount as number);
 
-    const isFounding10 = promo_code === "FOUNDING10";
-    const isEid50 = promo_code === "EID50";
-    let chargeAmount = 100;
-    let chargeDescription = `Card verification for ${plan.name_en}`;
-    if (isFounding10) {
-      chargeAmount = 1000;
-      chargeDescription = `Founding Engineers Offer — First month of ${plan.name_en}`;
-    } else if (isEid50) {
-      if (plan.slug === "pro") {
-        chargeAmount = 12250; // 122.50 SAR = 50% of 24500
-        chargeDescription = `Eid Offer — First month at 50% off — ${plan.name_en}`;
-      }
-      // Enterprise per-seat EID50 deferred — see campaign requirements
-    }
+    // ── Checkout amount ──────────────────────────────────────────────────────
+    // The displayed amount MUST be produced by the same helper that produces
+    // the charged amount (see moyasar-initiate-token-payment), otherwise the
+    // screen and the card can disagree. Billing contract Section 6.
+    const decide = (subLike: SubLike): ChargeDecision =>
+      computeCharge(plan as any, { ...subLike, seat_count: seatCount }, promo_code, 0);
 
     // ── Block double-active subscriptions ────────────────────────────────────
     const { data: activeSub } = await adminClient
@@ -156,6 +149,8 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingPendingSub?.status === "pending_activation") {
+      // No live trial — immediate charge at the full (or promo) plan price.
+      const decision = decide({ status: "pending_activation", trial_end: null });
       const freshGivenId = crypto.randomUUID();
       const { data: refreshedSub, error: refreshError } = await adminClient
         .from("user_subscriptions")
@@ -174,10 +169,15 @@ serve(async (req) => {
           subscription_id: refreshedSub.id,
           given_id: freshGivenId,
           is_returning_user: true,
-          amount: chargeAmount,
+          flow: decision.flow,
+          amount: decision.amount,
           currency: "SAR",
-          description: chargeDescription,
-          promo_code,
+          amount_base: decision.base,
+          amount_vat: decision.vat,
+          plan_price: decision.planPrice,
+          verification_credit: decision.verificationCredit,
+          description: decision.description,
+          promo_code: decision.appliedPromo,
           seat_count: seatCount,
           monthly_total: monthlyTotal,
         }),
@@ -279,16 +279,27 @@ serve(async (req) => {
       );
     }
 
+    // Decide the displayed amount from the row that was actually written.
+    const decision = decide({
+      status: subscription.status,
+      trial_end: subscription.trial_end ?? null,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
         subscription_id: subscription.id,
         given_id: givenId,
         is_returning_user: hasPriorExpiredSub || isLaunchTrialConsumed,
-        amount: chargeAmount,
+        flow: decision.flow,
+        amount: decision.amount,
         currency: "SAR",
-        description: chargeDescription,
-        promo_code,
+        amount_base: decision.base,
+        amount_vat: decision.vat,
+        plan_price: decision.planPrice,
+        verification_credit: decision.verificationCredit,
+        description: decision.description,
+        promo_code: decision.appliedPromo,
         seat_count: seatCount,
         monthly_total: monthlyTotal,
       }),

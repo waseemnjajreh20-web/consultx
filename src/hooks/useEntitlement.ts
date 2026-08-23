@@ -81,6 +81,13 @@ export interface UseEntitlementResult {
   // E7.1: Admin override
   isOwnerMode: boolean;          // admin + owner_mode override active
   adminOverrideMode: string | null; // current override slug if active, else null
+
+  // Billing contract 2026-08-23: card-required-for-trial gating.
+  // See docs/launch/billing-contract-20260823.md Sections 4-5.
+  cardOnFile: boolean;           // subscription?.card_on_file (defaults false while loading)
+  cardVerifiedAt: string | null; // subscription?.card_verified_at — null-safe, may lag card_on_file
+  needsTrialCard: boolean;       // trialing AND no card on file — must block chat (UX state 5.1)
+  hasTrialCard: boolean;         // trialing AND card on file — non-blocking banner (UX state 5.2)
 }
 
 export function useEntitlement(): UseEntitlementResult {
@@ -130,6 +137,14 @@ export function useEntitlement(): UseEntitlementResult {
   const trialDaysRemaining = subscription?.launch_trial_days_remaining ?? 0;
   const trialHoursRemaining = subscription?.launch_trial_hours_remaining ?? 0;
 
+  // Billing contract 2026-08-23 (docs/launch/billing-contract-20260823.md Sections 4-5):
+  // a card is required to start/keep any trial. Gate strictly on card_on_file — never on
+  // card_verified_at alone (it stays null until the DB migration in Section 8 is applied).
+  const cardOnFile = subscription?.card_on_file ?? false;
+  const cardVerifiedAt = subscription?.card_verified_at ?? null;
+  const needsTrialCard = isTrialActive && !isAdmin && !cardOnFile;
+  const hasTrialCard = isTrialActive && cardOnFile;
+
   const state: EntitlementState = (() => {
     if (isLoading)                                       return "loading";
     if (!user)                                           return "anonymous";
@@ -177,5 +192,10 @@ export function useEntitlement(): UseEntitlementResult {
     // E7.1: Admin override
     isOwnerMode,
     adminOverrideMode,
+    // Billing contract 2026-08-23
+    cardOnFile,
+    cardVerifiedAt,
+    needsTrialCard,
+    hasTrialCard,
   };
 }

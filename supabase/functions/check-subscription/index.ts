@@ -96,6 +96,11 @@ serve(async (req) => {
         advisory_used: 0, analysis_used: 0,
         org_access: adminOrgAccess,
         effective_access_source: "admin_override",
+        // Billing contract Section 4 — present on every response shape so the
+        // frontend never has to special-case admins.
+        trial_requires_card: true,
+        card_on_file: true,
+        card_verified_at: null,
       };
 
       if (override === "free") {
@@ -189,6 +194,10 @@ serve(async (req) => {
           effective_access_source: "admin",
           effective_access: "enterprise",
           effective_plan_slug: "enterprise",
+          // Billing contract Section 4
+          trial_requires_card: true,
+          card_on_file: true,
+          card_verified_at: null,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -545,6 +554,15 @@ serve(async (req) => {
         effective_access_source: effectiveAccessSource,
         effective_access:        effectiveAccess,
         effective_plan_slug:     effectivePlanSlug,
+
+        // Billing contract Section 4 — trial card gating.
+        // A card is REQUIRED to start the free trial; the frontend blocks chat
+        // when status === "trialing" && card_on_file === false.
+        // card_verified_at is null until the Section 8 migration is applied,
+        // so gating must key off card_on_file, never card_verified_at alone.
+        trial_requires_card: true,
+        card_on_file:        !!subscription?.moyasar_card_token,
+        card_verified_at:    (subscription as any)?.card_verified_at ?? null,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

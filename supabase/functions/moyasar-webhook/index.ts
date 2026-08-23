@@ -1,9 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  type BillingFlow,
+  deriveFlow,
+  expectedAmountsFor,
+  isUndefinedColumnError,
+  OPTIONAL_SUBSCRIPTION_COLUMNS,
+  OPTIONAL_TRANSACTION_COLUMNS,
+  parseFlow,
+  splitVat,
+  withoutKeys,
+} from "../_shared/billing.ts";
 
 // Must match GRACE_DAYS in check-subscription, process-subscription-renewal,
 // Workspace.tsx, and Account.tsx.
 const GRACE_DAYS = 7;
+
+// `ReturnType<typeof createClient>` resolves the DEFAULT generic instantiation,
+// whose schema type is `never` — passing the real client to a helper typed that
+// way fails to type-check. Instantiating with `any` matches what
+// `createClient(url, key)` actually returns.
+type AdminClient = ReturnType<typeof createClient<any>>;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +35,20 @@ const corsHeaders = {
 // Base64-encoded) before any DB access.
 //
 // Looks up the target subscription via metadata.subscription_id
-// (set by Subscribe.tsx when initializing the Moyasar form).
+// (set server-side when the payment was created).
+//
+// The state transition is decided by metadata.flow, read from the
+// RE-VERIFIED payment fetched from the Moyasar API — never from the
+// webhook body and never from client input:
+//   trial_card_verification -> stay trialing, store the token, stamp
+//                              card_verified_at, schedule the first
+//                              charge for trial_end
+//   immediate_charge /
+//   post_trial_first_charge /
+//   renewal                 -> active, new period, next_billing_date
+// Payments created before this change carry no flow; the flow is then
+// derived from the subscription row. See
+// docs/launch/billing-contract-20260823.md
 //
 // Required secrets:
 //   MOYASAR_WEBHOOK_SECRET — from Moyasar Dashboard webhook config
@@ -170,9 +200,13 @@ serve(async (req) => {
 
     // ── Find or create payment_transactions row ───────────────────────────────
     // Look up by moyasar_payment_id for idempotency on duplicate delivery.
+    // NOTE: payment_type MUST be selected here — the renewal-vs-verification
+    // branches below read it. It was previously omitted from the select, so
+    // `existingTx.payment_type` was always undefined and every renewal webhook
+    // was validated against the 1 SAR verification rule and dead-lettered.
     const { data: existingTx } = await adminClient
       .from("payment_transactions")
-      .select("id, status")
+      .select("id, status, payment_type")
       .eq("moyasar_payment_id", paymentId)
       .maybeSingle();
 
@@ -314,60 +348,41 @@ serve(async (req) => {
       });
     }
 
-    // Promo-aware amount validation
+    // ── Flow-aware amount validation ─────────────────────────────────────────
+    // `metadata` comes from the re-fetched Moyasar payment, not from the
+    // webhook body and never from client input, so it is trustworthy. If a
+    // payment predates this change it has no `flow`; fall back to deriving the
+    // flow from the database row (or from the local transaction type).
     const verifiedPromoCode = verifiedPayment?.metadata?.promo_code ?? null;
-    const isFounding10 = verifiedPromoCode === "FOUNDING10";
-    const isEid50 = verifiedPromoCode === "EID50";
+    const nowMs = Date.now();
+    const localTxType = (existingTx as any)?.payment_type ?? null;
 
-    // Amount validation (renewal vs verification flow).
-    const isRenewalTx = (existingTx as any)?.payment_type === "renewal";
-    if (isRenewalTx) {
-      // Per-seat plans (price_per_seat != null) charge price_per_seat * effective_seats
-      // where effective_seats = max(sub.seat_count, plan.min_seats, 1).
-      // Flat plans (price_per_seat = null) charge price_amount unchanged.
-      const planRow      = (sub as any)?.subscription_plans;
-      const seatCount    = (sub as any)?.seat_count ?? 1;
-      const minSeats     = planRow?.min_seats ?? 1;
-      const effectiveSeats = Math.max(seatCount, minSeats, 1);
-      const expectedAmount = planRow?.price_per_seat != null
-        ? (planRow.price_per_seat as number) * effectiveSeats
-        : planRow?.price_amount;
-      if (
-        typeof expectedAmount !== "undefined" &&
-        expectedAmount !== null &&
-        typeof verifiedPayment?.amount !== "undefined" &&
-        verifiedPayment.amount !== expectedAmount
-      ) {
-        console.error("Re-verification mismatch: renewal amount");
-        await insertDeadLetter(adminClient, {
-          paymentId,
-          moyasarStatus: status,
-          reason: "verification_amount_mismatch",
-          payload,
-        });
-        return new Response(JSON.stringify({ message: "Verification mismatch" }), {
-          status: 200,
-          headers: corsHeaders,
-        });
-      }
-    } else {
-      // EID50 Pro: 12250 halalas = 122.50 SAR (50% of 24500)
-      const planSlug = sub?.subscription_plans?.slug ?? "";
-      const expectedAmount = isFounding10 ? 1000 : (isEid50 && planSlug === "pro") ? 12250 : 100;
-      if (verifiedPayment?.amount !== expectedAmount) {
-        console.error("Re-verification mismatch: verification amount");
-        await insertDeadLetter(adminClient, {
-          paymentId,
-          moyasarStatus: status,
-          reason: "verification_amount_mismatch",
-          payload,
-        });
-        return new Response(JSON.stringify({ message: "Verification mismatch" }), {
-          status: 200,
-          headers: corsHeaders,
-        });
-      }
+    const flow: BillingFlow =
+      parseFlow(verifiedPayment?.metadata?.flow) ??
+      (localTxType === "renewal" ? "renewal" : deriveFlow(sub as any, nowMs));
+
+    const planRowForAmount = (sub as any)?.subscription_plans ?? null;
+    const allowedAmounts = expectedAmountsFor(planRowForAmount, sub as any, flow, verifiedPromoCode);
+    const verifiedAmountRaw = verifiedPayment?.amount;
+
+    if (
+      typeof verifiedAmountRaw !== "number" ||
+      (allowedAmounts.length > 0 && !allowedAmounts.includes(verifiedAmountRaw))
+    ) {
+      console.error("Re-verification mismatch: amount", { flow, allowed: allowedAmounts });
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_amount_mismatch",
+        payload,
+      });
+      return new Response(JSON.stringify({ message: "Verification mismatch" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
     }
+
+    const isRenewalTx = flow === "renewal" || flow === "post_trial_first_charge" || localTxType === "renewal";
 
     // Optional given_id check.
     const verifiedGivenId = verifiedPayment?.metadata?.given_id;
@@ -392,29 +407,63 @@ serve(async (req) => {
     const moyasarCardToken = verifiedPayment?.source?.token ?? null;
     const moyasarCardBrand = verifiedPayment?.source?.company ?? null;
     const moyasarCardLastFour = extractLastFour(verifiedPayment?.source?.number) ?? null;
-    const verifiedAmount = verifiedPayment?.amount ?? 100;
+    const verifiedAmount: number = verifiedAmountRaw;
     const verifiedCurrency = verifiedPayment?.currency ?? "SAR";
     // ── End re-verification ───────────────────────────────────────────────────
 
     const mappedStatus = status === "paid" ? "captured" : "failed";
 
+    // VAT split — plan prices are VAT-INCLUSIVE (15% KSA VAT).
+    const vatSplit = splitVat(verifiedAmount);
+
+    // payment_type mirrors the flow so the renewal machinery and the
+    // "has this subscription ever been really paid?" checks stay correct.
+    const txPaymentType =
+      flow === "trial_card_verification" ? "verification"
+      : flow === "renewal" || flow === "post_trial_first_charge" ? "renewal"
+      : "subscription";
+
     if (!existingTx) {
       // Insert transaction row (first delivery)
-      await adminClient.from("payment_transactions").insert({
+      const txInsert: Record<string, any> = {
         user_id: sub.user_id,
         subscription_id: sub.id,
         moyasar_payment_id: paymentId,
         amount: verifiedAmount,
+        amount_base: vatSplit.base,
+        amount_vat: vatSplit.vat,
         currency: verifiedCurrency,
         status: mappedStatus,
-        payment_type: "verification",
-      });
+        payment_type: txPaymentType,
+      };
+      const { error: txErr } = await adminClient.from("payment_transactions").insert(txInsert);
+      if (txErr && isUndefinedColumnError(txErr)) {
+        // Section 8 migration not applied yet — persist without the VAT columns.
+        await adminClient
+          .from("payment_transactions")
+          .insert(withoutKeys(txInsert, OPTIONAL_TRANSACTION_COLUMNS));
+      } else if (txErr) {
+        console.error("payment_transactions insert failed:", txErr.message);
+      }
     } else {
       // Update existing row
-      await adminClient
+      const txUpdate: Record<string, any> = {
+        status: mappedStatus,
+        amount_base: vatSplit.base,
+        amount_vat: vatSplit.vat,
+      };
+      const { error: txUpdErr } = await adminClient
         .from("payment_transactions")
-        .update({ status: mappedStatus })
+        .update(txUpdate)
         .eq("id", existingTx.id);
+      if (txUpdErr && isUndefinedColumnError(txUpdErr)) {
+        await adminClient
+          .from("payment_transactions")
+          .update(withoutKeys(txUpdate, OPTIONAL_TRANSACTION_COLUMNS))
+          .eq("id", existingTx.id);
+      } else if (txUpdErr) {
+        console.error("payment_transactions update failed:", txUpdErr.message);
+      }
     }
 
     // ── Handle paid event ────────────────────────────────────────────────────
@@ -430,27 +479,45 @@ serve(async (req) => {
 
       const now = new Date();
       const trialEndDate = sub.trial_end ? new Date(sub.trial_end) : null;
-      const isTrialExpiredOrImmediate = !trialEndDate || trialEndDate <= now;
       const durationDays = (sub as any)?.subscription_plans?.duration_days || 30;
       const periodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-      if (isTrialExpiredOrImmediate) {
-        // Returning user or no-trial case — activate immediately
+      if (flow === "trial_card_verification") {
+        // 1.00 SAR card verification inside a live trial window.
+        // Stay trialing. The card token is now on file, the verification is
+        // stamped (credited against the first invoice), and the first real
+        // charge is scheduled for the moment the trial ends.
+        updateData.status = "trialing";
+        updateData.card_verified_at = now.toISOString();
+        if (trialEndDate) updateData.next_billing_date = trialEndDate.toISOString();
+        updateData.past_due_since = null;
+        updateData.dunning_notified_at = null;
+        console.log("Payment paid — card verified, trial continues:", sub.id);
+      } else {
+        // immediate_charge / post_trial_first_charge / renewal — a real
+        // invoice was paid. Activate and open a new billing period.
         updateData.status = "active";
         updateData.current_period_start = now.toISOString();
         updateData.current_period_end = periodEnd.toISOString();
         updateData.next_billing_date = periodEnd.toISOString();
-        console.log("Payment paid — activating subscription immediately:", sub.id);
-      } else {
-        // New user within trial window — keep trialing, card token saved
-        updateData.status = "trialing";
-        console.log("Payment paid — keeping trialing, card token saved:", sub.id);
+        updateData.past_due_since = null;
+        updateData.dunning_notified_at = null;
+        console.log(`Payment paid — activating subscription (${flow}):`, sub.id);
       }
 
-      const { error: subUpdateError } = await adminClient
+      let { error: subUpdateError } = await adminClient
         .from("user_subscriptions")
         .update(updateData)
         .eq("id", sub.id);
+
+      if (subUpdateError && isUndefinedColumnError(subUpdateError)) {
+        // Section 8 migration not applied yet — retry without card_verified_at.
+        const retry = await adminClient
+          .from("user_subscriptions")
+          .update(withoutKeys(updateData, OPTIONAL_SUBSCRIPTION_COLUMNS))
+          .eq("id", sub.id);
+        subUpdateError = retry.error;
+      }
 
       if (subUpdateError) {
         console.error("Failed to update subscription on paid event:", subUpdateError);
@@ -551,10 +618,11 @@ serve(async (req) => {
     if (status === "failed") {
       console.error("Payment failed for subscription:", sub.id, "payment:", paymentId);
 
-      // Only stamp past_due_since on renewal failures, not verification failures.
-      // A failed initial card verification means the user never subscribed — status
-      // should remain pending_activation (or trialing), not past_due.
-      const isRenewal = (existingTx as any)?.payment_type === "renewal";
+      // Only stamp past_due_since on renewal / post-trial-conversion failures,
+      // not on verification or first-checkout failures. A failed card
+      // verification means the user never subscribed — status should remain
+      // pending_activation (or trialing), not past_due.
+      const isRenewal = isRenewalTx;
 
       if (isRenewal) {
         const { data: subForFailure } = await adminClient
@@ -615,7 +683,7 @@ serve(async (req) => {
 
 // ── Dead-letter helper ────────────────────────────────────────────────────────
 async function insertDeadLetter(
-  adminClient: ReturnType<typeof createClient>,
+  adminClient: AdminClient,
   params: {
     paymentId: string | null;
     moyasarStatus: string;

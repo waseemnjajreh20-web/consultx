@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -72,6 +73,7 @@ const Subscribe = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pendingGivenId, setPendingGivenId] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const promoCode = searchParams.get("promo");
   const founding10Active = promoCode === FOUNDING10_CODE && isFounding10Active();
@@ -314,6 +316,19 @@ const Subscribe = () => {
 
   const currentPlan = plans.find((p) => p.id === selectedPlan);
 
+  // Billing contract 2026-08-23 (docs/launch/billing-contract-20260823.md Section 1):
+  // prices are VAT-inclusive. base = round(total / 1.15), vat = total - base.
+  const isPerSeatSelected = currentPlan ? PER_SEAT_SLUGS.has(currentPlan.slug) : false;
+  const selectedSeatCount = currentPlan && isPerSeatSelected
+    ? (seatCounts[currentPlan.id] ?? Math.max(1, currentPlan.min_seats ?? 1))
+    : 1;
+  const selectedTotalHalalas = currentPlan
+    ? (isPerSeatSelected ? (currentPlan.price_per_seat ?? 0) * selectedSeatCount : currentPlan.price_amount)
+    : 0;
+  const vatBaseHalalas = Math.round(selectedTotalHalalas / 1.15);
+  const vatAmountHalalas = selectedTotalHalalas - vatBaseHalalas;
+  const selectedTotalSar = selectedTotalHalalas / 100;
+
   const getPriceLabel = (type: string) => {
     if (type === "weekly") return t("sarWeek");
     if (type === "yearly") return t("sarYear");
@@ -486,6 +501,9 @@ const Subscribe = () => {
                             ? `الإجمالي: ${monthlyTotalSar.toFixed(0)} ريال / شهر`
                             : `Total: ${monthlyTotalSar.toFixed(0)} SAR / month`}
                         </div>
+                        <div className="text-[11px] text-muted-foreground/70 mt-0.5">
+                          {language === "ar" ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
+                        </div>
                       </>
                     ) : (
                       <div className="text-3xl font-bold text-primary">
@@ -495,6 +513,11 @@ const Subscribe = () => {
                         {plan.price_amount > 0 && (
                           <span className="text-sm text-muted-foreground ms-1">{getPriceLabel(plan.type)}</span>
                         )}
+                      </div>
+                    )}
+                    {!isPerSeat && plan.price_amount > 0 && (
+                      <div className="text-[11px] text-muted-foreground/70 -mt-2 mb-1">
+                        {language === "ar" ? "شامل ضريبة القيمة المضافة 15%" : "Incl. 15% VAT"}
                       </div>
                     )}
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground text-start px-2">
@@ -553,12 +576,50 @@ const Subscribe = () => {
                 <span>{t("fullAccess")}</span>
               </div>
 
+              {/* Honest trial/immediate-charge copy — billing contract 2026-08-23 Section 5 */}
+              <div className="mb-4 rounded-lg border border-border/40 bg-card/40 p-4 text-sm text-center text-muted-foreground">
+                <p>
+                  {isTrialActive
+                    ? (language === "ar"
+                        ? "سيتم خصم 1 ريال للتحقق من البطاقة، ويُخصم من أول فاتورة"
+                        : "SAR 1.00 will be charged to verify the card — deducted from your first invoice")
+                    : (language === "ar"
+                        ? `سيتم تحصيل ${selectedTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%)`
+                        : `SAR ${selectedTotalSar.toFixed(2)} will be charged now (incl. 15% VAT)`)}
+                </p>
+                {selectedTotalHalalas > 0 && (
+                  <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground/80" dir="ltr">
+                    <span>{language === "ar" ? "الأساس" : "Base"}: {(vatBaseHalalas / 100).toFixed(2)} SAR</span>
+                    <span>{language === "ar" ? "الضريبة" : "VAT"}: {(vatAmountHalalas / 100).toFixed(2)} SAR</span>
+                    <span>{language === "ar" ? "الإجمالي" : "Total"}: {selectedTotalSar.toFixed(2)} SAR</span>
+                  </div>
+                )}
+              </div>
+
+              <label className="flex items-start gap-2 mb-4 text-sm text-muted-foreground cursor-pointer">
+                <Checkbox
+                  checked={termsAccepted}
+                  onCheckedChange={(v) => setTermsAccepted(v === true)}
+                  className="mt-0.5"
+                />
+                <span>
+                  {language === "ar" ? "أوافق على " : "I agree to the "}
+                  <a href="/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    {language === "ar" ? "الشروط والأحكام" : "Terms & Conditions"}
+                  </a>
+                  {language === "ar" ? " و" : " and "}
+                  <a href="/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    {language === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}
+                  </a>
+                </span>
+              </label>
+
               <Button
                 variant="hero"
                 size="lg"
                 className="w-full"
                 onClick={openPaymentModal}
-                disabled={!selectedPlan || processing}
+                disabled={!selectedPlan || processing || !termsAccepted}
               >
                 {processing ? (
                   <>
@@ -593,9 +654,13 @@ const Subscribe = () => {
               <DialogHeader>
                 <DialogTitle>{language === "ar" ? "تفاصيل الدفع" : "Payment Details"}</DialogTitle>
                 <DialogDescription>
-                  {language === "ar"
-                    ? "سيتم خصم 1 ريال للتحقق من البطاقة ثم استرداده تلقائيًا."
-                    : "1 SAR will be charged for card verification, then refunded automatically."}
+                  {isTrialActive
+                    ? (language === "ar"
+                        ? "سيتم خصم 1 ريال للتحقق من البطاقة، ويُخصم من أول فاتورة."
+                        : "SAR 1.00 will be charged to verify the card — deducted from your first invoice.")
+                    : (language === "ar"
+                        ? `سيتم تحصيل ${selectedTotalSar.toFixed(2)} ريال الآن (شامل ضريبة القيمة المضافة 15%).`
+                        : `SAR ${selectedTotalSar.toFixed(2)} will be charged now (incl. 15% VAT).`)}
                 </DialogDescription>
               </DialogHeader>
 

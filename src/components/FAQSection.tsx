@@ -24,8 +24,8 @@ const FAQS = [
   {
     qAr: "ماذا يحدث بعد انتهاء التجربة؟",
     qEn: "What happens after the trial ends?",
-    aAr: "بعد 7 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
-    aEn: "After 7 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
+    aAr: "التجربة المجانية تتطلب إضافة بطاقة عند البدء (تُخصم 1 ريال للتحقق فقط، يُخصم من أول فاتورة). بعد 7 أيام، يُحصَّل سعر الخطة تلقائياً — يمكنك الإلغاء في أي وقت قبل ذلك من صفحة حسابك.",
+    aEn: "The free trial requires adding a card up front (a SAR 1.00 verification charge is deducted from your first invoice). After 7 days, the plan price is charged automatically — you can cancel anytime before then from your account page.",
   },
   {
     qAr: "هل يمكنني رفع المخططات للتحليل؟",

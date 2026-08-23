@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Mail, Lock, ArrowLeft, ArrowRight, Loader2, UserPlus, LogIn, Building2, Sparkles } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -34,6 +35,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [shake, setShake] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -154,6 +156,11 @@ const Auth = () => {
           navigate("/");
         }
       } else {
+        // TODO(billing): persist terms acceptance once a timestamp column exists.
+        // `profiles.terms_accepted_at` does not exist yet in
+        // src/integrations/supabase/types.ts — add it via migration, then set it here
+        // (e.g. supabase.from("profiles").update({ terms_accepted_at: new Date().toISOString() })
+        // after signUp succeeds) instead of only gating the UI on `termsAccepted`.
         const { error } = await signUp(email, password);
         if (error) {
           triggerShake();
@@ -436,6 +443,28 @@ const Auth = () => {
               </div>
             )}
 
+            {/* Terms & privacy acceptance (signup only) */}
+            {mode === "signup" && (
+              <label className="flex items-start gap-2 text-xs cursor-pointer" style={{ color: "rgba(200,220,240,0.7)" }}>
+                <Checkbox
+                  checked={termsAccepted}
+                  onCheckedChange={(v) => setTermsAccepted(v === true)}
+                  className="mt-0.5"
+                  required
+                />
+                <span>
+                  {isAr ? "أوافق على " : "I agree to the "}
+                  <a href="/terms" target="_blank" rel="noreferrer" style={{ color: CYAN }} className="hover:underline">
+                    {isAr ? "الشروط والأحكام" : "Terms & Conditions"}
+                  </a>
+                  {isAr ? " و" : " and "}
+                  <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: CYAN }} className="hover:underline">
+                    {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
+                  </a>
+                </span>
+              </label>
+            )}
+
             {/* Forgot password link (login only) */}
             {isLogin && (
               <div className="text-center -mt-2">
@@ -455,7 +484,7 @@ const Auth = () => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (mode === "signup" && !termsAccepted)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 background: CYAN,

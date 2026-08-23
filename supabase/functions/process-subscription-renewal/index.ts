@@ -1,19 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  computeCharge,
+  isUndefinedColumnError,
+  OPTIONAL_TRANSACTION_COLUMNS,
+  planPriceFor,
+  splitVat,
+  withoutKeys,
+} from "../_shared/billing.ts";
 
 // Must match GRACE_DAYS in check-subscription, moyasar-webhook,
 // Workspace.tsx, and Account.tsx.
 const GRACE_DAYS = 7;
 
+// Skip a trial conversion if any non-verification charge was already
+// attempted for the subscription inside this window.
+const TRIAL_CONVERSION_IDEMPOTENCY_MS = 24 * 60 * 60 * 1000;
+
+// `ReturnType<typeof createClient>` resolves the DEFAULT generic instantiation,
+// whose schema type is `never` — every .update() against it fails to type-check.
+// Instantiating with `any` matches what `createClient(url, key)` actually returns.
+type AdminClient = ReturnType<typeof createClient<any>>;
+
 // ============================================================
 // process-subscription-renewal
 //
-// Mission: find active subscriptions whose next_billing_date
-// has arrived, charge the stored Moyasar card token (MIT), and
-// update the subscription period on success.
+// Passes, in order:
+//   0.  TRIAL CONVERSION — trialing subscriptions whose trial_end has
+//       passed. With a saved card token: charge the first real invoice
+//       (plan price minus the 1.00 SAR card verification, credited
+//       once) and activate. Without a usable token: expire.
+//   1.  RENEWAL — active subscriptions whose next_billing_date has
+//       arrived; charge the stored Moyasar card token (MIT).
+//   1b. PAST-DUE RETRY — inside the GRACE_DAYS window.
 //
+// Pass 0 is what makes trials convert to revenue. Without it a
+// trialing row stays trialing forever and is never billed.
+//
+// Contract: docs/launch/billing-contract-20260823.md
 // Triggered by pg_cron via HTTP (hourly). Not user-callable.
 // ============================================================
+
+/** Columns every pass needs. card_verified_at is appended separately
+ *  because it only exists after the Section 8 migration. */
+const SUB_SELECT = `
+      id, user_id, plan_id, moyasar_card_token, seat_count, status, trial_end,
+      cancel_at_period_end, next_billing_date, current_period_end, past_due_since,
+      subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
+    `;
 
 serve(async (req) => {
   // Auth: validate CRON_SECRET if configured
@@ -43,22 +77,40 @@ serve(async (req) => {
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+  const nowIso = new Date().toISOString();
+
+  // ── 0. Trial conversion: trialing rows whose trial_end has passed ──────────
+  // These are the users who paid 1.00 SAR to verify a card at trial start and
+  // must now be charged the first real invoice. Nothing else in the system
+  // moves a subscription out of "trialing".
+  const { rows: trialDueSubs, error: trialQueryError } = await selectSubs(
+    adminClient,
+    (q: any) =>
+      q.eq("status", "trialing")
+        .eq("cancel_at_period_end", false)
+        .not("trial_end", "is", null)
+        .lte("trial_end", nowIso)
+        .not("moyasar_card_token", "is", null),
+  );
+  if (trialQueryError) console.error("Failed to query trialing subscriptions:", trialQueryError);
+
+  // ── 0b. Trials that ended with no usable card (or were cancelled) ─────────
+  // Nothing to charge. Close them out so they stop being "trialing" forever.
+  const expiredTrials = await expireUnbillableTrials(adminClient, nowIso);
+
   // 1. Active subscriptions due for renewal (have moyasar_card_token)
   const safetyWindowMs = 60 * 60 * 1000;
   const cutoff = new Date(Date.now() + safetyWindowMs).toISOString();
 
-  const { data: dueSubscriptions, error: queryError } = await adminClient
-    .from("user_subscriptions")
-    .select(`
-      id, user_id, plan_id, moyasar_card_token, seat_count,
-      next_billing_date, current_period_end, past_due_since,
-      subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
-    `)
-    .eq("status", "active")
-    .eq("cancel_at_period_end", false)
-    .not("next_billing_date", "is", null)
-    .lte("next_billing_date", cutoff)
-    .not("moyasar_card_token", "is", null);
+  const { rows: dueSubscriptions, error: queryError } = await selectSubs(
+    adminClient,
+    (q: any) =>
+      q.eq("status", "active")
+        .eq("cancel_at_period_end", false)
+        .not("next_billing_date", "is", null)
+        .lte("next_billing_date", cutoff)
+        .not("moyasar_card_token", "is", null),
+  );
 
   if (queryError) {
     console.error("Failed to query due subscriptions:", queryError);
@@ -70,79 +122,128 @@ serve(async (req) => {
   // 1b. Past-due subscriptions within grace window
   const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: pastDueSubs, error: pastDueError } = await adminClient
-    .from("user_subscriptions")
-    .select(`
-      id, user_id, plan_id, moyasar_card_token, seat_count,
-      next_billing_date, current_period_end, past_due_since,
-      subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
-    `)
-    .eq("status", "past_due")
-    .eq("cancel_at_period_end", false)
-    .not("moyasar_card_token", "is", null)
-    .not("past_due_since", "is", null)
-    .gte("past_due_since", graceCutoff);
+  const { rows: pastDueSubs, error: pastDueError } = await selectSubs(
+    adminClient,
+    (q: any) =>
+      q.eq("status", "past_due")
+        .eq("cancel_at_period_end", false)
+        .not("moyasar_card_token", "is", null)
+        .not("past_due_since", "is", null)
+        .gte("past_due_since", graceCutoff),
+  );
 
   if (pastDueError) console.error("Failed to query past_due subscriptions:", pastDueError);
 
-  const allDue = [...(dueSubscriptions ?? []), ...(pastDueSubs ?? [])];
+  const allDue = [
+    ...(trialDueSubs ?? []).map((s: any) => ({ ...s, __flow: "post_trial_first_charge" as const })),
+    ...(dueSubscriptions ?? []).map((s: any) => ({ ...s, __flow: "renewal" as const })),
+    ...(pastDueSubs ?? []).map((s: any) => ({ ...s, __flow: "renewal" as const })),
+  ];
 
   if (allDue.length === 0) {
-    console.log("Renewal job: no subscriptions due for renewal or retry");
+    console.log("Renewal job: no subscriptions due for conversion, renewal or retry");
     return new Response(
-      JSON.stringify({ processed: 0, skipped: 0, failed: 0, total: 0 }),
+      JSON.stringify({ processed: 0, skipped: 0, failed: 0, total: 0, trials_converted: 0, trials_expired: expiredTrials }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   }
 
   console.log(
-    `Renewal job: ${dueSubscriptions?.length ?? 0} active due, ` +
-    `${pastDueSubs?.length ?? 0} past_due retries`,
+    `Renewal job: ${trialDueSubs?.length ?? 0} trials to convert, ` +
+    `${dueSubscriptions?.length ?? 0} active due, ` +
+    `${pastDueSubs?.length ?? 0} past_due retries, ` +
+    `${expiredTrials} trials expired (no card)`,
   );
 
-  let processed = 0, skipped = 0, failed = 0;
+  let processed = 0, skipped = 0, failed = 0, trialsConverted = 0;
 
   for (const sub of allDue) {
     const plan = sub.subscription_plans as any;
     if (!plan || plan.price_amount == null) { skipped++; continue; }
 
     if (plan.price_amount === 0) {
+      // Zero-priced plan: nothing to charge, just roll the period forward.
+      // A trial conversion must ALSO leave "trialing", or the row stays
+      // invisible to every pass forever.
       const now = new Date();
       const periodEnd = new Date(now.getTime() + (plan.duration_days || 30) * 24 * 60 * 60 * 1000);
-      await adminClient.from("user_subscriptions").update({
+      const zeroUpdate: Record<string, any> = {
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
         next_billing_date: periodEnd.toISOString(),
-      }).eq("id", sub.id);
+      };
+      if ((sub as any).__flow === "post_trial_first_charge") zeroUpdate.status = "active";
+      await adminClient.from("user_subscriptions").update(zeroUpdate).eq("id", sub.id);
       processed++; continue;
     }
+
+    const isTrialConversion = (sub as any).__flow === "post_trial_first_charge";
+    const durationDays = plan.duration_days || 30;
 
     // Per-seat amount: enterprise_team / enterprise_office have price_per_seat
     // set; legacy enterprise / engineer / pro keep price_per_seat = null and
     // continue to charge the flat plan.price_amount.
-    const seatCount      = (sub as any).seat_count ?? 1;
-    const planMinSeats   = plan.min_seats ?? 1;
-    const effectiveSeats = Math.max(seatCount, planMinSeats, 1);
-    const chargeAmount   = plan.price_per_seat != null
-      ? (plan.price_per_seat as number) * effectiveSeats
-      : (plan.price_amount as number);
+    let chargeAmount = planPriceFor(plan, sub as any);
+    let chargeDescription = `Subscription renewal — ${plan.name_en}`;
+    let chargeFlow: string = "renewal";
+    let verificationCredit = 0;
 
-    // Idempotency: skip if renewal tx already exists for this period
-    const durationDays = plan.duration_days || 30;
+    if (isTrialConversion) {
+      // First real invoice after the trial. The 1.00 SAR card verification is
+      // credited exactly once — only when it was actually stamped and no
+      // non-verification charge has ever been captured for this subscription.
+      const { count: priorPaidCount } = await adminClient
+        .from("payment_transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("subscription_id", sub.id)
+        .eq("status", "captured")
+        .neq("payment_type", "verification");
+
+      const decision = computeCharge(plan, sub as any, null, priorPaidCount ?? 0);
+      chargeAmount = decision.amount;
+      chargeDescription = decision.description;
+      chargeFlow = decision.flow;
+      verificationCredit = decision.verificationCredit;
+
+      if (!Number.isInteger(chargeAmount) || chargeAmount <= 0) {
+        console.error(`Sub ${sub.id}: refusing non-positive trial conversion charge`);
+        skipped++; continue;
+      }
+
+      // Idempotency: skip if any non-verification charge was attempted for this
+      // subscription in the last 24h (covers duplicate cron ticks and retries).
+      const recentWindow = new Date(Date.now() - TRIAL_CONVERSION_IDEMPOTENCY_MS).toISOString();
+      const { count: recentAttempts } = await adminClient
+        .from("payment_transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("subscription_id", sub.id)
+        .neq("payment_type", "verification")
+        .in("status", ["initiated", "captured"])
+        .gte("created_at", recentWindow);
+
+      if ((recentAttempts ?? 0) > 0) { skipped++; continue; }
+    } else {
+      // Idempotency: skip if renewal tx already exists for this period
+      const periodWindowStart = sub.current_period_end
+        ? new Date(new Date(sub.current_period_end).getTime() - durationDays * 24 * 60 * 60 * 1000).toISOString()
+        : new Date(Date.now() - durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: existingTx } = await adminClient
+        .from("payment_transactions")
+        .select("id, status")
+        .eq("subscription_id", sub.id)
+        .eq("payment_type", "renewal")
+        .in("status", ["initiated", "captured"])
+        .gte("created_at", periodWindowStart)
+        .maybeSingle();
+
+      if (existingTx) { skipped++; continue; }
+    }
+
+    // Window used only for the failure-retry counter below.
     const periodWindowStart = sub.current_period_end
       ? new Date(new Date(sub.current_period_end).getTime() - durationDays * 24 * 60 * 60 * 1000).toISOString()
       : new Date(Date.now() - durationDays * 24 * 60 * 60 * 1000).toISOString();
-
-    const { data: existingTx } = await adminClient
-      .from("payment_transactions")
-      .select("id, status")
-      .eq("subscription_id", sub.id)
-      .eq("payment_type", "renewal")
-      .in("status", ["initiated", "captured"])
-      .gte("created_at", periodWindowStart)
-      .maybeSingle();
-
-    if (existingTx) { skipped++; continue; }
 
     const { count: failedCount } = await adminClient
       .from("payment_transactions")
@@ -152,24 +253,44 @@ serve(async (req) => {
       .eq("status", "failed")
       .gte("created_at", periodWindowStart);
 
-    // Insert renewal transaction row BEFORE charging (idempotency anchor)
-    const { data: txRecord, error: txInsertError } = await adminClient
+    // Insert renewal transaction row BEFORE charging (idempotency anchor).
+    // Trial conversions are recorded as payment_type "renewal" too, so the
+    // dunning / retry machinery and the "was this sub ever really paid?"
+    // counter treat them uniformly.
+    const vatSplit = splitVat(chargeAmount);
+    const txPayload: Record<string, any> = {
+      user_id: sub.user_id,
+      subscription_id: sub.id,
+      moyasar_payment_id: null,
+      amount: chargeAmount,
+      amount_base: vatSplit.base,
+      amount_vat: vatSplit.vat,
+      currency: plan.currency || "SAR",
+      status: "initiated",
+      payment_type: "renewal",
+      retry_count: failedCount ?? 0,
+    };
+
+    let txInsert = await adminClient
       .from("payment_transactions")
-      .insert({
-        user_id: sub.user_id,
-        subscription_id: sub.id,
-        moyasar_payment_id: null,
-        amount: chargeAmount,
-        currency: plan.currency || "SAR",
-        status: "initiated",
-        payment_type: "renewal",
-        retry_count: failedCount ?? 0,
-      })
+      .insert(txPayload)
       .select("id")
       .single();
 
-    if (txInsertError || !txRecord) { skipped++; continue; }
-    const txId = txRecord.id;
+    if (txInsert.error && isUndefinedColumnError(txInsert.error)) {
+      // Section 8 migration not applied yet — persist without the VAT columns.
+      txInsert = await adminClient
+        .from("payment_transactions")
+        .insert(withoutKeys(txPayload, OPTIONAL_TRANSACTION_COLUMNS))
+        .select("id")
+        .single();
+    }
+
+    if (txInsert.error || !txInsert.data) {
+      console.error(`Sub ${sub.id}: transaction insert failed:`, txInsert.error?.message);
+      skipped++; continue;
+    }
+    const txId = txInsert.data.id;
 
     // Charge via Moyasar MIT using stored card token
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? "";
@@ -189,10 +310,21 @@ serve(async (req) => {
         body: JSON.stringify({
           amount: chargeAmount,
           currency: plan.currency || "SAR",
-          description: `Subscription renewal — ${plan.name_en}`,
+          description: chargeDescription,
           callback_url: webhookUrl,
           source: { type: "token", token: sub.moyasar_card_token },
-          metadata: { subscription_id: sub.id, payment_type: "renewal" },
+          metadata: {
+            subscription_id: sub.id,
+            plan_id: sub.plan_id,
+            user_id: sub.user_id,
+            payment_type: "renewal",
+            flow: chargeFlow,
+            purpose: chargeFlow,
+            expected_amount: chargeAmount,
+            amount_base: vatSplit.base,
+            amount_vat: vatSplit.vat,
+            verification_credit: verificationCredit,
+          },
         }),
       });
       chargeData = await chargeResponse.json();
@@ -241,7 +373,20 @@ serve(async (req) => {
         past_due_since: null,
         dunning_notified_at: null,
       }).eq("id", sub.id);
-      console.log(`Sub ${sub.id}: renewed (paid) — next billing ${newPeriodEnd.toISOString()}`);
+      if (isTrialConversion) {
+        // Keep profiles.plan_type in step with the now-paid subscription,
+        // the same sync moyasar-webhook performs on activation.
+        if (plan.slug) {
+          await adminClient.from("profiles").update({ plan_type: plan.slug }).eq("user_id", sub.user_id);
+        }
+        console.log(
+          `Sub ${sub.id}: trial converted (paid ${chargeAmount}, credit ${verificationCredit}) — ` +
+          `next billing ${newPeriodEnd.toISOString()}`,
+        );
+        trialsConverted++;
+      } else {
+        console.log(`Sub ${sub.id}: renewed (paid) — next billing ${newPeriodEnd.toISOString()}`);
+      }
       processed++;
     } else if (chargeData.status === "failed") {
       await markPastDue(adminClient, sub);
@@ -254,16 +399,88 @@ serve(async (req) => {
     }
   }
 
-  const summary = { processed, skipped, failed, total: allDue.length };
+  const summary = {
+    processed, skipped, failed,
+    total: allDue.length,
+    trials_converted: trialsConverted,
+    trials_expired: expiredTrials,
+  };
   console.log("Renewal job complete:", JSON.stringify(summary));
   return new Response(JSON.stringify(summary), {
     status: 200, headers: { "Content-Type": "application/json" },
   });
 });
 
+// ── Subscription query helper ─────────────────────────────────────────────────
+// card_verified_at only exists after the Section 8 migration. Try the richer
+// select first and transparently fall back to the pre-migration column set.
+async function selectSubs(
+  adminClient: AdminClient,
+  applyFilters: (q: any) => any,
+): Promise<{ rows: any[] | null; error: unknown }> {
+  const withOptional = await applyFilters(
+    adminClient.from("user_subscriptions").select(`${SUB_SELECT}, card_verified_at`),
+  );
+  if (!withOptional.error) return { rows: withOptional.data as any[], error: null };
+  if (!isUndefinedColumnError(withOptional.error)) {
+    return { rows: null, error: withOptional.error };
+  }
+  const fallback = await applyFilters(
+    adminClient.from("user_subscriptions").select(SUB_SELECT),
+  );
+  return { rows: (fallback.data as any[]) ?? null, error: fallback.error ?? null };
+}
+
+// ── Unbillable trial cleanup ──────────────────────────────────────────────────
+// A trial whose window has closed and that has no saved card can never be
+// charged. Leaving it "trialing" makes it invisible to every pass forever, so
+// close it out: "cancelled" if the user opted out, otherwise "expired".
+async function expireUnbillableTrials(
+  adminClient: AdminClient,
+  nowIso: string,
+): Promise<number> {
+  let closed = 0;
+  try {
+    const { data: noCard } = await adminClient
+      .from("user_subscriptions")
+      .update({ status: "expired" })
+      .eq("status", "trialing")
+      .not("trial_end", "is", null)
+      .lte("trial_end", nowIso)
+      .is("moyasar_card_token", null)
+      .select("id, user_id");
+
+    const { data: optedOut } = await adminClient
+      .from("user_subscriptions")
+      .update({ status: "cancelled" })
+      .eq("status", "trialing")
+      .eq("cancel_at_period_end", true)
+      .not("trial_end", "is", null)
+      .lte("trial_end", nowIso)
+      .select("id, user_id");
+
+    const affected = [...(noCard ?? []), ...(optedOut ?? [])] as Array<{ id: string; user_id: string }>;
+    closed = affected.length;
+
+    // Sync entitlement so a lapsed trial cannot keep a paid plan_type.
+    for (const row of affected) {
+      const { error } = await adminClient
+        .from("profiles")
+        .update({ plan_type: "free" })
+        .eq("user_id", row.user_id);
+      if (error) console.error(`expireUnbillableTrials: plan_type sync failed for ${row.user_id}:`, error.message);
+    }
+
+    if (closed > 0) console.log(`Renewal job: closed ${closed} unbillable trial(s)`);
+  } catch (e) {
+    console.error("expireUnbillableTrials threw (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
+  return closed;
+}
+
 // Mark subscription past_due; stamp past_due_since on first failure only (idempotent)
 async function markPastDue(
-  adminClient: ReturnType<typeof createClient>,
+  adminClient: AdminClient,
   sub: { id: string; user_id: string; past_due_since: string | null },
 ): Promise<void> {
   const pastDueSince = sub.past_due_since ?? new Date().toISOString();

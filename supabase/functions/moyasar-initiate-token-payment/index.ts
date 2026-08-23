@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { computeCharge } from "../_shared/billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,10 +15,17 @@ const corsHeaders = {
 // directly with https://api.moyasar.com/v1/tokens. Card details
 // never reach this function — only the resulting opaque token.
 //
-// Creates a 1 SAR verification payment using the token. Moyasar
-// returns either a 'paid' status (no 3DS) or 'initiated' with a
-// transaction_url for 3DS redirect. The frontend redirects there.
-// The webhook (moyasar-webhook) is the source of truth for
+// The charged amount is decided SERVER-SIDE from the subscription
+// row (see docs/launch/billing-contract-20260823.md, Section 2):
+//   - inside the trial window  -> 1.00 SAR card verification,
+//                                 deducted from the first invoice
+//   - no active trial          -> full VAT-inclusive plan price,
+//                                 activated immediately
+// The client never supplies an amount.
+//
+// Moyasar returns either a 'paid' status (no 3DS) or 'initiated'
+// with a transaction_url for 3DS redirect. The frontend redirects
+// there. The webhook (moyasar-webhook) is the source of truth for
 // activation; this function only kicks off the payment.
 //
 // Required secrets:
@@ -90,7 +98,9 @@ serve(async (req) => {
     // ── Subscription ownership + state validation ─────────────────────────────
     const { data: sub, error: subError } = await adminClient
       .from("user_subscriptions")
-      .select("id, user_id, status, plan_id, moyasar_given_id, moyasar_payment_id, moyasar_card_token")
+      .select(
+        "id, user_id, status, plan_id, seat_count, trial_end, moyasar_given_id, moyasar_payment_id, moyasar_card_token",
+      )
       .eq("id", subscriptionId)
       .maybeSingle();
 
@@ -136,26 +146,62 @@ serve(async (req) => {
     const appUrl = Deno.env.get("APP_URL") || req.headers.get("origin") || "https://www.consultx.app";
     const callbackUrl = `${appUrl.replace(/\/+$/, "")}/payment-callback`;
 
-    // ── Promo-aware charge amount ────────────────────────────────────────────
-    const isFounding10 = promoCode === "FOUNDING10";
-    const isEid50 = promoCode === "EID50";
-    let chargeAmount = 100;
-    let chargeDescription = "ConsultX card verification";
-    if (isFounding10) {
-      chargeAmount = 1000;
-      chargeDescription = "ConsultX Founding Engineers Offer — First Month";
-    } else if (isEid50) {
-      // Plan lookup to determine correct EID50 charge amount
-      const { data: eid50Plan } = await adminClient
-        .from("subscription_plans")
-        .select("slug, price_amount, price_per_seat")
-        .eq("id", sub.plan_id)
-        .single();
-      if (eid50Plan?.slug === "pro") {
-        chargeAmount = 12250; // 122.50 SAR = 50% of 24500
-        chargeDescription = "ConsultX Eid Offer — First Month at 50% Off";
+    // ── card_verified_at is only present after the Section 8 migration ────────
+    // Read it separately and tolerate its absence so the credit is applied as
+    // soon as the column exists, without breaking before it does.
+    let cardVerifiedAt: string | null = null;
+    {
+      const { data: verifiedRow, error: verifiedErr } = await adminClient
+        .from("user_subscriptions")
+        .select("card_verified_at")
+        .eq("id", sub.id)
+        .maybeSingle();
+      if (!verifiedErr && verifiedRow) {
+        cardVerifiedAt = (verifiedRow as any).card_verified_at ?? null;
       }
-      // Enterprise per-seat EID50 deferred
+    }
+
+    // ── Server-side charge decision ──────────────────────────────────────────
+    // The amount is derived from the subscription + plan rows. Client input is
+    // limited to the promo code, and promos apply to immediate charges only.
+    const { data: planRow } = await adminClient
+      .from("subscription_plans")
+      .select("slug, name_en, currency, price_amount, price_per_seat, min_seats, duration_days")
+      .eq("id", sub.plan_id)
+      .maybeSingle();
+
+    if (!planRow) {
+      console.error("Plan not found for subscription", { sub_id: sub.id });
+      return new Response(JSON.stringify({ error: "Plan not found" }), {
+        status: 404,
+        headers: corsHeaders,
+      });
+    }
+
+    // Prior non-verification captured transactions consume the 1 SAR credit.
+    const { count: priorPaidCount } = await adminClient
+      .from("payment_transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("subscription_id", sub.id)
+      .eq("status", "captured")
+      .neq("payment_type", "verification");
+
+    const decision = computeCharge(
+      planRow as any,
+      { ...(sub as any), card_verified_at: cardVerifiedAt },
+      promoCode,
+      priorPaidCount ?? 0,
+    );
+
+    const chargeAmount = decision.amount;
+    const chargeDescription = decision.description;
+
+    if (!Number.isInteger(chargeAmount) || chargeAmount <= 0) {
+      console.error("Refusing to charge a non-positive amount", { sub_id: sub.id, flow: decision.flow });
+      return new Response(JSON.stringify({ error: "Plan pricing is not configured" }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
     // ── Create Moyasar payment from token ────────────────────────────────────
@@ -180,12 +226,12 @@ serve(async (req) => {
             given_id: givenId,
             plan_id: sub.plan_id,
             user_id: user.id,
-            purpose: isFounding10
-              ? "founding10_first_month"
-              : isEid50
-              ? "eid50_first_month"
-              : "card_verification",
-            ...(promoCode ? { promo_code: promoCode } : {}),
+            flow: decision.flow,
+            purpose: decision.purpose,
+            expected_amount: chargeAmount,
+            amount_base: decision.base,
+            amount_vat: decision.vat,
+            ...(decision.appliedPromo ? { promo_code: decision.appliedPromo } : {}),
           },
         }),
       });
@@ -230,7 +276,8 @@ serve(async (req) => {
       payment_id: paymentId,
       status: paymentStatus,
       has_transaction_url: !!transactionUrl,
-      promo_code: promoCode,
+      promo_code: decision.appliedPromo,
+      flow: decision.flow,
       amount: chargeAmount,
     });
 
@@ -240,6 +287,16 @@ serve(async (req) => {
         payment_id: paymentId,
         status: paymentStatus,
         transaction_url: transactionUrl,
+        // Billing contract Section 2 — lets the frontend render the honest
+        // amount and the right post-payment copy without guessing.
+        flow: decision.flow,
+        amount: chargeAmount,
+        currency: "SAR",
+        amount_base: decision.base,
+        amount_vat: decision.vat,
+        plan_price: decision.planPrice,
+        verification_credit: decision.verificationCredit,
+        description: chargeDescription,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

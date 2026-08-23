@@ -223,7 +223,7 @@ export const translations = {
     freeTrialDays: "7 أيام تجريبية مجانية",
     cancelAnytime: "إلغاء في أي وقت",
     fullAccess: "وصول كامل لجميع الميزات",
-    verificationCharge: "سيتم خصم 1 ريال للتحقق من البطاقة (يُسترد تلقائياً)",
+    verificationCharge: "سيتم خصم 1 ريال للتحقق من البطاقة (يُخصم من أول فاتورة)",
     startFreeTrial: "ابدأ الفترة التجريبية المجانية",
     addCardContinue: "أضف بطاقتك للاستمرار",
     subscriptionActivated: "تم تفعيل الاشتراك",
@@ -280,7 +280,7 @@ export const translations = {
     activateAndAddCard: "تفعيل الاشتراك وإضافة البطاقة",
     cardSaved: "تم حفظ بطاقتك بنجاح",
     subscriptionWillStart: "سيبدأ اشتراكك تلقائياً بعد انتهاء الفترة التجريبية",
-    verificationChargeReturning: "سيتم خصم 1 ريال للتحقق من البطاقة وتفعيل الاشتراك فوراً (يُسترد تلقائياً)",
+    verificationChargeReturning: "سيتم تحصيل سعر الخطة كاملاً الآن (شامل ضريبة القيمة المضافة 15%) لتفعيل الاشتراك فوراً",
 
     // Preferences Hub
     prefsTab_account: "الحساب",
@@ -344,7 +344,7 @@ export const translations = {
 
     // ── Pricing (Redesign) ──
     pricingTitle: "اختر باقتك",
-    pricingSubtitle: "جرّب 7 أيام مجاناً — بدون بطاقة بنكية",
+    pricingSubtitle: "7 أيام مجاناً — تتطلب بطاقة، يُحصَّل بعد انتهاء التجربة، إلغاء في أي وقت",
     monthlyLabel: "شهري",
     yearlyLabel: "سنوي",
     trialExplanation: "كل مستخدم جديد يحصل تلقائياً على 7 أيام وصول كامل",
@@ -361,7 +361,7 @@ export const translations = {
     faq3Q: "ماذا يشمل كل اشتراك؟",
     faq3A: "جميع الباقات تشمل الوصول لكود البناء السعودي SBC 201 وSBC 801. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
     faq4Q: "ماذا يحدث بعد انتهاء التجربة؟",
-    faq4A: "بعد 7 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
+    faq4A: "التجربة المجانية تتطلب إضافة بطاقة عند البدء (تُخصم 1 ريال للتحقق فقط، يُخصم من أول فاتورة). بعد 7 أيام، يُحصَّل سعر الخطة تلقائياً — يمكنك الإلغاء في أي وقت قبل ذلك.",
     faq5Q: "هل يمكنني رفع المخططات للتحليل؟",
     faq5A: "نعم، في وضع التحليل يمكنك رفع مخططاتك الهندسية للمراجعة بمقارنتها بمتطلبات الكود مباشرة.",
     faq6Q: "هل يمكنني إلغاء الاشتراك في أي وقت؟",
@@ -634,7 +634,7 @@ export const translations = {
     freeTrialDays: "7-day free trial",
     cancelAnytime: "Cancel anytime",
     fullAccess: "Full access to all features",
-    verificationCharge: "A 1 SAR verification charge will be applied (automatically refunded)",
+    verificationCharge: "A 1 SAR verification charge will be applied (deducted from your first invoice)",
     startFreeTrial: "Start Free Trial",
     addCardContinue: "Add Card & Continue",
     subscriptionActivated: "Subscription Activated",
@@ -691,7 +691,7 @@ export const translations = {
     activateAndAddCard: "Activate & Add Card",
     cardSaved: "Your card has been saved successfully",
     subscriptionWillStart: "Your subscription will auto-start after the trial ends",
-    verificationChargeReturning: "A 1 SAR verification charge will activate your subscription immediately (automatically refunded)",
+    verificationChargeReturning: "The full plan price (incl. 15% VAT) will be charged now to activate your subscription immediately",
 
     // Preferences Hub
     prefsTab_account: "Account",
@@ -755,7 +755,7 @@ export const translations = {
 
     // ── Pricing (Redesign) ──
     pricingTitle: "Choose Your Plan",
-    pricingSubtitle: "Try 7 days free — no credit card required",
+    pricingSubtitle: "7-day free trial — card required, charged after the trial, cancel anytime",
     monthlyLabel: "Monthly",
     yearlyLabel: "Yearly",
     trialExplanation: "Every new user automatically gets 7 days of full access",
@@ -772,7 +772,7 @@ export const translations = {
     faq3Q: "What does each plan include?",
     faq3A: "All plans include access to Saudi Building Code SBC 201 and SBC 801. Higher plans add plan analysis, unlimited conversations, and faster support.",
     faq4Q: "What happens after the trial ends?",
-    faq4A: "After 7 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
+    faq4A: "The free trial requires adding a card up front (a SAR 1.00 verification charge is deducted from your first invoice). After 7 days, the plan price is charged automatically — you can cancel anytime before then.",
     faq5Q: "Can I upload drawings for analysis?",
     faq5A: "Yes. In Analysis mode you can upload engineering drawings for review against code requirements directly.",
     faq6Q: "Can I cancel my subscription at any time?",

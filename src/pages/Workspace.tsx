@@ -7,6 +7,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import WelcomeEngineerModal from "@/components/WelcomeEngineerModal";
 import Founding10Banner from "@/components/campaigns/Founding10Banner";
+import { TrialCardBlockGate, TrialCardBanner } from "@/components/TrialCardGate";
 import AppShell from "@/components/AppShell";
 import { CLOSED_PANEL } from "@/components/SourcePanel";
 import type { SourcePanelState } from "@/components/SourcePanel";
@@ -17,7 +18,10 @@ const ChatInterface = lazy(() => import("@/components/ChatInterface"));
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { user, isLoading, canAccessChat, subscription, isPaidActive } = useEntitlement();
+  const {
+    user, isLoading, canAccessChat, subscription, isPaidActive,
+    needsTrialCard, hasTrialCard, trialDaysRemaining, trialHoursRemaining,
+  } = useEntitlement();
   const { profile } = useProfile();
   const { language } = useLanguage();
 
@@ -75,6 +79,18 @@ const Workspace = () => {
       {/* Founding Engineers Offer — visible to free/trial/expired users only */}
       <Founding10Banner />
 
+      {/* Trial-with-card banner — billing contract 2026-08-23, UX state 5.2. Fixed top,
+          non-blocking. Mutually exclusive with the past-due banner (different statuses). */}
+      {hasTrialCard && !needsTrialCard && (
+        <div className="fixed top-0 inset-x-0 z-40 px-3 pt-2">
+          <TrialCardBanner
+            subscription={subscription}
+            trialDaysRemaining={trialDaysRemaining}
+            trialHoursRemaining={trialHoursRemaining}
+          />
+        </div>
+      )}
+
       {/* Past-due grace banner — fixed top, non-blocking, dismissible per session */}
       {isPastDueInGrace && !bannerDismissed && (
         <div
@@ -129,13 +145,19 @@ const Workspace = () => {
         }
         historyTriggerRef={historyTriggerRef}
       >
-        <Suspense fallback={<LoadingSpinner />}>
-          <ChatInterface
-            onBack={() => navigate("/")}
-            onSourceStateChange={setSourcePanel}
-            historyTriggerRef={historyTriggerRef}
-          />
-        </Suspense>
+        {needsTrialCard ? (
+          // Billing contract 2026-08-23, UX state 5.1 (trial_no_card) — block chat entirely
+          // instead of threading a disabled prop through ChatInterface.
+          <TrialCardBlockGate />
+        ) : (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ChatInterface
+              onBack={() => navigate("/")}
+              onSourceStateChange={setSourcePanel}
+              historyTriggerRef={historyTriggerRef}
+            />
+          </Suspense>
+        )}
       </AppShell>
     </>
   );

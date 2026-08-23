@@ -18,7 +18,7 @@ export default function Refund() {
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">1. التجربة المجانية لـ 7 أيام</h2>
-                <p>كل مستخدم جديد يحصل تلقائياً على 7 أيام وصول كامل مجاناً — بدون بطاقة بنكية. التجربة لا تستوجب أي دفع.</p>
+                <p>كل مستخدم جديد يحصل على 7 أيام وصول كامل مجاناً — التجربة تتطلب بطاقة بنكية (تُخصم 1 ريال للتحقق فقط، يُخصم من أول فاتورة)، ويُحصَّل سعر الخطة تلقائياً بعد انتهاء التجربة. يمكنك الإلغاء في أي وقت قبل ذلك.</p>
               </div>
 
               <div>
@@ -59,7 +59,7 @@ export default function Refund() {
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">1. 7-Day Free Trial</h2>
-                <p>Every new user automatically receives 7 days of full access for free — no credit card required. The trial requires no payment.</p>
+                <p>Every new user gets 7 days of full access for free — the trial requires a card (a SAR 1.00 verification charge is deducted from your first invoice), and the plan price is charged automatically after the trial ends. You can cancel anytime before then.</p>
               </div>
 
               <div>
