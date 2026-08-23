@@ -80,6 +80,53 @@ tables plus `user_public_profiles.phone` are readable by any signed-in user.
 
 ---
 
+## Repository visibility — CLOSED 2026-08-23
+
+The GitHub repository `waseemnjajreh20-web/consultx` was **PUBLIC** until
+2026-08-23. Commit `5f0e4ac4`, reachable from `origin/main`, still contains in
+its tree:
+
+| File | Secret |
+|---|---|
+| `scripts/setup-admins.cjs` | Supabase `service_role` key (full RLS bypass) |
+| `scripts/test-gemini.mjs` | Google Gemini API key |
+| `scripts/list-models.mjs` | Google Gemini API key |
+| `scripts/test-embeddings.mjs` | Google Gemini API key |
+
+Commit `34fbeb5` removed them from the working tree but not from history, so for
+the whole period the repository was public these values were world-readable and
+indexable by automated secret scanners.
+
+**Owner set the repository to private on 2026-08-23.** Verified anonymously:
+`curl -o /dev/null -w "%{http_code}" https://github.com/waseemnjajreh20-web/consultx`
+returns **404** (was 200).
+
+**This stopped the exposure; it did NOT invalidate the keys.** Anyone who copied
+them while the repo was public still holds working credentials. Rotation
+(items 1-4 above) remains REQUIRED — it is now a planned task rather than an
+emergency, so it can be done via the no-downtime path below instead of a JWT
+secret rotation that would log out every user.
+
+### Recommended rotation path (no forced logout)
+
+The project already has new-style keys provisioned (`sb_publishable_...` and
+`sb_secret_...` on the API Keys page). Rotating the legacy `service_role` key
+means rotating the JWT secret, which invalidates the anon key AND every live
+user session. The migration path avoids that:
+
+1. Point the frontend `VITE_SUPABASE_PUBLISHABLE_KEY` (Vercel) at the
+   `sb_publishable_...` key and redeploy.
+2. Migrate the 18 edge functions that read `SUPABASE_SERVICE_ROLE_KEY` to a
+   manually-set secret holding the `sb_secret_...` value. The platform-injected
+   `SUPABASE_SERVICE_ROLE_KEY` stops working once legacy keys are disabled, so
+   this is a code change, not just a secret swap.
+3. Only then disable the legacy `anon` / `service_role` keys.
+
+Gemini rotation is independent and has no such constraint: delete the old key in
+AI Studio, create a new one, update the `GOOGLE_GEMINI_API_KEY` Supabase secret.
+
+---
+
 ## Reference
 
 - What was deleted during cleanup and how to recover it: `docs/ARCHIVE_INDEX.md`
