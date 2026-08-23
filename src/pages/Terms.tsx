@@ -65,6 +65,16 @@ export default function Terms() {
                 <h2 className="text-base font-semibold text-foreground mb-3">10. الإنهاء</h2>
                 <p>يحق لنا إنهاء أو تعليق حسابك في حال انتهاك هذه الشروط، مع الإشعار المسبق كلما أمكن.</p>
               </div>
+
+              <div>
+                <h2 className="text-base font-semibold text-foreground mb-3">11. مُشغّل الخدمة</h2>
+                <p>
+                  تُشغَّل منصة ConsultX من قِبل <strong>مؤسسة العباقرة الأوائل لتقنية نظم المعلومات</strong>،
+                  سجل تجاري رقم <strong>7042173794</strong> (صادر بتاريخ 19/10/2024)، تبوك، المملكة العربية السعودية.
+                  للتواصل: <a href="mailto:info@consultx.app" className="underline">info@consultx.app</a>
+                  {" "}أو <span dir="ltr">+966 53 251 9857</span>.
+                </p>
+              </div>
             </section>
           </>
         ) : (
@@ -121,6 +131,16 @@ export default function Terms() {
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">10. Termination</h2>
                 <p>We may terminate or suspend your account in case of violation of these Terms, with prior notice whenever possible.</p>
+              </div>
+
+              <div>
+                <h2 className="text-base font-semibold text-foreground mb-3">11. Service Operator</h2>
+                <p>
+                  ConsultX is operated by <strong>Al-Abaqirah Al-Awail Information Systems Technology Est.</strong>,
+                  Commercial Registration <strong>7042173794</strong> (issued 19/10/2024), Tabuk, Saudi Arabia.
+                  Contact: <a href="mailto:info@consultx.app" className="underline">info@consultx.app</a>
+                  {" "}or <span dir="ltr">+966 53 251 9857</span>.
+                </p>
               </div>
             </section>
           </>

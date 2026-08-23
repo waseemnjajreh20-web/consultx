@@ -225,6 +225,17 @@ const SiteFooter = () => {
           </div>
         </div>
 
+        {/* Legal entity identity — Saudi B2B buyers verify this before paying */}
+        <div className="pt-6 border-t border-border/20 space-y-1 text-center sm:text-start">
+          <p className="text-xs font-medium text-muted-foreground">{t("footerLegalName")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("footerCr")} · {t("footerAddress")}
+          </p>
+          <p className="text-xs text-muted-foreground" dir="ltr">
+            {t("footerPhone")}
+          </p>
+        </div>
+
         {/* Bottom bar */}
         <div className="pt-6 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">{t("footerCopyright")}</p>

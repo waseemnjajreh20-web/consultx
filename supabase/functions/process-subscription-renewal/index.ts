@@ -192,12 +192,19 @@ serve(async (req) => {
       // First real invoice after the trial. The 1.00 SAR card verification is
       // credited exactly once — only when it was actually stamped and no
       // non-verification charge has ever been captured for this subscription.
-      const { count: priorPaidCount } = await adminClient
+      const { count: priorPaidCount, error: priorPaidError } = await adminClient
         .from("payment_transactions")
         .select("id", { count: "exact", head: true })
         .eq("subscription_id", sub.id)
         .eq("status", "captured")
         .neq("payment_type", "verification");
+
+      // A discarded error here reads as "never charged before", which would both
+      // re-grant the one-time verification credit and mask an existing charge.
+      if (priorPaidError) {
+        console.error(`Sub ${sub.id}: prior-paid count failed, skipping:`, priorPaidError.message);
+        skipped++; continue;
+      }
 
       const decision = computeCharge(plan, sub as any, null, priorPaidCount ?? 0);
       chargeAmount = decision.amount;
@@ -213,7 +220,7 @@ serve(async (req) => {
       // Idempotency: skip if any non-verification charge was attempted for this
       // subscription in the last 24h (covers duplicate cron ticks and retries).
       const recentWindow = new Date(Date.now() - TRIAL_CONVERSION_IDEMPOTENCY_MS).toISOString();
-      const { count: recentAttempts } = await adminClient
+      const { count: recentAttempts, error: recentAttemptsError } = await adminClient
         .from("payment_transactions")
         .select("id", { count: "exact", head: true })
         .eq("subscription_id", sub.id)
@@ -221,6 +228,12 @@ serve(async (req) => {
         .in("status", ["initiated", "captured"])
         .gte("created_at", recentWindow);
 
+      // Same inversion as the renewal guard below: a discarded error would read
+      // as "no recent attempt -> charge" and re-charge on every tick.
+      if (recentAttemptsError) {
+        console.error(`Sub ${sub.id}: conversion idempotency check failed, skipping:`, recentAttemptsError.message);
+        skipped++; continue;
+      }
       if ((recentAttempts ?? 0) > 0) { skipped++; continue; }
     } else {
       // Idempotency: skip if renewal tx already exists for this period
@@ -228,16 +241,25 @@ serve(async (req) => {
         ? new Date(new Date(sub.current_period_end).getTime() - durationDays * 24 * 60 * 60 * 1000).toISOString()
         : new Date(Date.now() - durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-      const { data: existingTx } = await adminClient
+      // .maybeSingle() returns {data:null, error:PGRST116} when MORE than one
+      // row matches, which inverted this guard into "no prior attempt -> charge"
+      // on every hourly tick. Two rows is reachable: the trial-conversion pass
+      // writes payment_type "renewal" and its 24h retry window creates a second
+      // `initiated` row. Any error here means unknown history -> skip, never charge.
+      const { data: existingTxRows, error: existingTxError } = await adminClient
         .from("payment_transactions")
         .select("id, status")
         .eq("subscription_id", sub.id)
         .eq("payment_type", "renewal")
         .in("status", ["initiated", "captured"])
         .gte("created_at", periodWindowStart)
-        .maybeSingle();
+        .limit(1);
 
-      if (existingTx) { skipped++; continue; }
+      if (existingTxError) {
+        console.error(`Sub ${sub.id}: renewal idempotency check failed, skipping:`, existingTxError.message);
+        skipped++; continue;
+      }
+      if (existingTxRows && existingTxRows.length > 0) { skipped++; continue; }
     }
 
     // Window used only for the failure-retry counter below.
