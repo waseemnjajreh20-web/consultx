@@ -1,186 +1,86 @@
-﻿import {
-  Paragraph,
-  Table,
-  TableOfContents,
-} from "docx";
+/**
+ * ConsultX — Analytical DOCX report generator (QUARANTINED — NOT IMPLEMENTED)
+ *
+ * ## Status
+ * The DOCX generator has never been functional. It was committed already
+ * truncated in `a4a9fad` ("feat(reports): add analytical report generation
+ * with DOCX export"): the file's first 191 lines are the *tail* of the module
+ * — `renderForLanguage`, `generateDocxReport` and `downloadDocxReport` — while
+ * every builder they call was lost. The following identifiers are referenced
+ * but were never committed anywhere in the repository's history:
+ *
+ *   buildCoverPage, buildRevisionTable, buildToc, buildIntakeSections,
+ *   buildSections, buildSources, buildLimitations, buildHeader, buildFooter,
+ *   stringsFor, isBilingual, buildReportFileName, COLOR_HEADER_BG, COLOR_BODY
+ *
+ * plus the `docx` value imports (Document, Packer, TextRun, AlignmentType,
+ * LevelFormat, UnderlineType, IRunOptions) and the type imports
+ * (AnalyticalReportArtifactV1, ReportTypeConfig, ReportLanguage,
+ * REPORT_TYPE_CONFIGS).
+ *
+ * The original truncated source is preserved verbatim at
+ * `generateDocxReport.INCOMPLETE.ts.txt` in this directory. It is kept out of
+ * the TypeScript program on purpose (`.txt` extension) so the real application
+ * typecheck — `tsc --noEmit -p tsconfig.app.json` — can be a CI gate. Before
+ * this quarantine that single file produced every typecheck error in the repo
+ * (the rest of `src/` is clean), which is why the check could never gate CI.
+ *
+ * ## Production impact: none
+ * The feature is gated behind `VITE_ANALYTICAL_REPORTS_ENABLED`. That flag is
+ * unset in the production build: the deployed bundle
+ * (`assets/ChatInterface-DzDfaGcF.js`, verified 2026-08-23) contains no
+ * reference to `ReportArtifactDrawer`, `IntakeForm`, or `docx` — Vite
+ * tree-shook the entire gated block. No production user can reach this code.
+ * The flag IS set to `true` in local `.env.local`, so it is reachable in
+ * development; the thrown error below makes that failure explicit and
+ * bilingual instead of a bare `ReferenceError`.
+ *
+ * ## Do not "fix" this by writing new builders
+ * The report layout, revision table, TOC structure, header/footer, colour
+ * tokens, and bilingual string table are product decisions that were never
+ * recorded. Re-implementing them from the call sites would invent a document
+ * format rather than restore one. Completing this feature is dedicated product
+ * work: define the report layout with the owner, then implement against
+ * `reportArtifactTypes.ts` and `reportTypeConfigs.ts`.
+ *
+ * The disclaimer constants below were complete and are still consumed by
+ * `buildReportArtifact.ts`, so they remain exported unchanged.
+ */
 
-// ============================================================
-// Bilingual rendering helper
-// ============================================================
+import type { AnalyticalReportArtifactV1 } from "./reportArtifactTypes";
 
-function renderForLanguage(
-  artifact: AnalyticalReportArtifactV1,
-  cfg: ReportTypeConfig,
-  lang: "ar" | "en",
-): Array<Paragraph | Table | TableOfContents> {
-  const rtl = lang === "ar";
-  const s = stringsFor(lang);
-  const body: Array<Paragraph | Table | TableOfContents> = [];
+const NOT_IMPLEMENTED_MESSAGE =
+  "مُولّد تقارير DOCX غير مُنفَّذ بعد. " +
+  "The DOCX report generator is not implemented yet " +
+  "(see src/lib/analyticalReports/generateDocxReport.INCOMPLETE.ts.txt).";
 
-  // Cover page
-  body.push(...buildCoverPage(artifact, cfg, s, rtl));
-
-  // Revision table
-  if (cfg.showRevisionTable) {
-    body.push(...buildRevisionTable(artifact, s, rtl));
-    body.push(
-      new Paragraph({
-        children: [new TextRun({ text: "", break: 1 } as IRunOptions)],
-        pageBreakBefore: true,
-      }),
-    );
-  }
-
-  // TOC
-  if (cfg.showTOC) {
-    body.push(...buildToc(cfg, artifact.sections, s, rtl));
-    body.push(
-      new Paragraph({
-        children: [new TextRun({ text: "", break: 1 } as IRunOptions)],
-        pageBreakBefore: true,
-      }),
-    );
-  }
-
-  // Intake form sections (Phase 1.1) — emitted only when intake is present
-  if (artifact.intake) {
-    body.push(...buildIntakeSections(artifact, s, rtl));
-  }
-
-  // Main sections (AI-derived)
-  body.push(...buildSections(artifact, cfg, s, rtl));
-
-  // Sources
-  body.push(...buildSources(artifact, s, rtl));
-
-  // Limitations / engineer approval (always last)
-  body.push(...buildLimitations(artifact, s, rtl));
-
-  return body;
-}
-
-// ============================================================
-// Main generator
-// ============================================================
-
+/**
+ * Not implemented. Always throws.
+ *
+ * @throws Error — always, with a bilingual explanation.
+ */
 export async function generateDocxReport(
-  artifact: AnalyticalReportArtifactV1,
+  _artifact: AnalyticalReportArtifactV1,
 ): Promise<Blob> {
-  const cfg = REPORT_TYPE_CONFIGS[artifact.reportType];
-  const lang: ReportLanguage = artifact.language;
-
-  let body: Array<Paragraph | Table | TableOfContents>;
-
-  if (isBilingual(lang)) {
-    // Render Arabic first (RTL), then English (LTR)
-    const arabicBody = renderForLanguage(artifact, cfg, "ar");
-    const englishBody = renderForLanguage(artifact, cfg, "en");
-
-    // Add a page break and separator between languages
-    const separator: Array<Paragraph | Table> = [
-      new Paragraph({
-        children: [new TextRun({ text: "", break: 1 } as IRunOptions)],
-        pageBreakBefore: true,
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 240, after: 120 },
-        children: [
-          new TextRun({
-            text: "English Version / \u0627\u0644\u0646\u0633\u062E\u0629 \u0627\u0644\u0625\u0646\u062C\u0644\u064A\u0632\u064A\u0629",
-            bold: true,
-            size: 24,
-            color: COLOR_HEADER_BG,
-            font: "Calibri",
-          } as IRunOptions),
-        ],
-      }),
-    ];
-
-    body = [...arabicBody, ...separator, ...englishBody];
-  } else {
-    body = renderForLanguage(artifact, cfg, lang);
-  }
-
-  // Build document
-  const doc = new Document({
-    creator: artifact.generatedBy || "ConsultX",
-    title: cfg.titleEn,
-    description: cfg.subtitleEn,
-    styles: {
-      default: {
-        document: {
-          run: {
-            font: "Calibri",
-            size: 22,
-            color: COLOR_BODY,
-          },
-          paragraph: {
-            spacing: { line: 320 },
-          },
-        },
-      },
-    },
-    numbering: {
-      config: [
-        {
-          reference: "bullets",
-          levels: [
-            {
-              level: 0,
-              format: LevelFormat.BULLET,
-              text: "\u2022",
-              alignment: AlignmentType.LEFT,
-              style: {
-                paragraph: { indent: { left: 360, hanging: 200 } },
-                run: { underline: { type: UnderlineType.NONE } },
-              },
-            },
-          ],
-        },
-      ],
-    },
-    sections: [
-      {
-        properties: {
-          page: {
-            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
-          },
-        },
-        headers: { default: buildHeader(artifact, cfg, false) },
-        footers: { default: buildFooter(artifact, stringsFor("en"), false) },
-        children: body as any,
-      },
-    ],
-  });
-
-  return Packer.toBlob(doc);
+  throw new Error(NOT_IMPLEMENTED_MESSAGE);
 }
 
 /**
- * Trigger a browser download for a generated artifact. Convenience
- * wrapper used by the drawer; consumers may also call generateDocxReport
- * directly and handle the blob themselves.
+ * Not implemented. Always throws.
+ *
+ * `ReportArtifactDrawer` catches this and surfaces `err.message` in a
+ * destructive toast, so the user sees the explanation rather than a crash.
+ *
+ * @throws Error — always, with a bilingual explanation.
  */
 export async function downloadDocxReport(
-  artifact: AnalyticalReportArtifactV1,
+  _artifact: AnalyticalReportArtifactV1,
 ): Promise<string> {
-  const blob = await generateDocxReport(artifact);
-  const filename = buildReportFileName(artifact);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  // Defer revoke so Chrome reliably completes the download
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-  return filename;
+  throw new Error(NOT_IMPLEMENTED_MESSAGE);
 }
 
 // ============================================================
-// Exported constants
+// Exported constants — complete, in active use by buildReportArtifact.ts
 // ============================================================
 
 export const DEFAULT_DISCLAIMER_AR = `
