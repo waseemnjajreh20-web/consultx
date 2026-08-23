@@ -464,3 +464,180 @@ export function withoutKeys<T extends Record<string, unknown>>(payload: T, keys:
 /** Keys that only exist after the Section 8 migration is applied. */
 export const OPTIONAL_SUBSCRIPTION_COLUMNS = ["card_verified_at"];
 export const OPTIONAL_TRANSACTION_COLUMNS = ["amount_base", "amount_vat"];
+
+// ── Charge retry caps (defect C3) ─────────────────────────────────────────────
+
+/**
+ * Maximum number of charge attempts for ONE billing episode (the initial
+ * attempt plus retries), counted from the `failed` renewal transactions inside
+ * the current period window.
+ *
+ * Without a cap the hourly cron retried a declining card on EVERY tick for the
+ * whole 7-day grace window (~168 attempts on one card). Four attempts spaced by
+ * `CHARGE_RETRY_BACKOFF_MS` covers ~3 days and still fits inside the 7-day
+ * grace window, after which the past-due expiry pass closes the subscription.
+ *
+ * A healthy renewal has `failedCount === 0` and is never affected by this cap.
+ */
+export const MAX_CHARGE_ATTEMPTS = 4;
+
+/** Minimum spacing between two charge attempts after a failure. 24 hours. */
+export const CHARGE_RETRY_BACKOFF_MS = 24 * 60 * 60 * 1000;
+
+export type RetryBlockReason = "ok" | "attempts_exhausted" | "backoff" | "unknown_last_failure";
+
+export interface RetryEligibility {
+  /** True when the cron may attempt a charge now. */
+  eligible: boolean;
+  reason: RetryBlockReason;
+  /** 1-based attempt number this charge would be. */
+  attemptNumber: number;
+  /** Earliest time a retry is allowed, or null when unknown / not applicable. */
+  nextAttemptAtMs: number | null;
+}
+
+/**
+ * Decide whether a failed-charge episode may be retried right now.
+ *
+ * @param failedCount  number of `failed` renewal transactions inside the window
+ * @param lastFailedAt created_at of the MOST RECENT failed transaction (ISO)
+ * @param nowMs        injectable clock
+ *
+ * Fail-closed by construction: an unreadable `lastFailedAt` after a known
+ * failure blocks the retry rather than allowing an immediate re-charge. The
+ * subscription is then closed by the past-due expiry pass at the end of the
+ * grace window, so nothing is stuck forever.
+ */
+export function chargeRetryEligibility(
+  failedCount: number | null | undefined,
+  lastFailedAt: string | null | undefined,
+  nowMs: number = Date.now(),
+): RetryEligibility {
+  const raw = Number(failedCount ?? 0);
+  const failures = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+  const attemptNumber = failures + 1;
+
+  if (failures >= MAX_CHARGE_ATTEMPTS) {
+    return { eligible: false, reason: "attempts_exhausted", attemptNumber, nextAttemptAtMs: null };
+  }
+  if (failures === 0) {
+    return { eligible: true, reason: "ok", attemptNumber, nextAttemptAtMs: null };
+  }
+
+  const lastMs = lastFailedAt ? Date.parse(lastFailedAt) : NaN;
+  if (!Number.isFinite(lastMs)) {
+    return { eligible: false, reason: "unknown_last_failure", attemptNumber, nextAttemptAtMs: null };
+  }
+
+  const nextAttemptAtMs = lastMs + CHARGE_RETRY_BACKOFF_MS;
+  if (nowMs < nextAttemptAtMs) {
+    return { eligible: false, reason: "backoff", attemptNumber, nextAttemptAtMs };
+  }
+  return { eligible: true, reason: "ok", attemptNumber, nextAttemptAtMs };
+}
+
+// ── Plan / seat change carried through payment metadata (defect C1) ───────────
+
+/**
+ * The plan + seat count a specific Moyasar payment was created FOR, read back
+ * from that payment's verified metadata.
+ *
+ * `moyasar-create-subscription` must never write a requested plan/seat change
+ * onto a live `trialing` / `past_due` row: those rows are armed for an
+ * unattended token charge, so an abandoned checkout would leave the row
+ * escalated and the cron would bill the escalated price without the customer
+ * ever having paid for it. The request travels in the payment metadata instead
+ * and is promoted onto the row by `moyasar-webhook` only when the payment is
+ * actually captured.
+ */
+export interface PaidPlanRef {
+  plan_id: string | null;
+  seat_count: number | null;
+}
+
+/** Read `{plan_id, seat_count}` out of verified Moyasar payment metadata. */
+export function parsePaidPlanRef(metadata: unknown): PaidPlanRef {
+  const empty: PaidPlanRef = { plan_id: null, seat_count: null };
+  if (!metadata || typeof metadata !== "object") return empty;
+  const m = metadata as Record<string, unknown>;
+
+  const rawPlan = m.plan_id;
+  const planId = typeof rawPlan === "string" && rawPlan.trim().length > 0 ? rawPlan.trim() : null;
+
+  const rawSeats = m.seat_count;
+  const seatsNum =
+    typeof rawSeats === "number" ? rawSeats
+    : typeof rawSeats === "string" && rawSeats.trim() !== "" ? Number(rawSeats)
+    : NaN;
+  const seatCount =
+    Number.isInteger(seatsNum) && seatsNum >= 1 && seatsNum <= MAX_BILLABLE_SEATS ? seatsNum : null;
+
+  return { plan_id: planId, seat_count: seatCount };
+}
+
+export interface TrialChargeAuthorization {
+  authorized: boolean;
+  reason:
+    | "match"
+    | "no_verified_plan_metadata"
+    | "plan_mismatch"
+    | "seat_escalation"
+    | "no_subscription";
+}
+
+/**
+ * Guard for the unattended post-trial first charge: the cron may only bill the
+ * plan/seats the stored card was actually VERIFIED against.
+ *
+ * `verified` comes from the metadata of the payment referenced by
+ * `user_subscriptions.moyasar_payment_id` — the 1.00 SAR card verification.
+ * If the row's plan no longer matches, something escalated the row outside a
+ * captured payment and the charge must NOT be attempted.
+ *
+ * A payment created before this change carries no `plan_id` in its metadata;
+ * that is treated as "nothing to compare" rather than as a mismatch, otherwise
+ * every pre-existing trial would be stranded and never converted.
+ *
+ * Billing fewer seats than were verified is allowed (it can only undercharge).
+ */
+export function trialChargeAuthorized(
+  sub: { plan_id?: string | null; seat_count?: number | null } | null | undefined,
+  verified: PaidPlanRef | null | undefined,
+): TrialChargeAuthorization {
+  if (!sub) return { authorized: false, reason: "no_subscription" };
+  if (!verified || !verified.plan_id) {
+    return { authorized: true, reason: "no_verified_plan_metadata" };
+  }
+  if (verified.plan_id !== sub.plan_id) {
+    return { authorized: false, reason: "plan_mismatch" };
+  }
+  const rawSeats = Number(sub.seat_count ?? 1);
+  const billedSeats = Number.isFinite(rawSeats) ? Math.floor(rawSeats) : 1;
+  if (verified.seat_count != null && billedSeats > verified.seat_count) {
+    return { authorized: false, reason: "seat_escalation" };
+  }
+  return { authorized: true, reason: "match" };
+}
+
+// ── Unique-violation helper (defect C2) ──────────────────────────────────────
+
+/**
+ * True when a Postgres/PostgREST error is a unique-constraint violation
+ * (SQLSTATE 23505).
+ *
+ * `user_subscriptions_one_live_row_per_user` is a partial unique index over
+ * ('active','trialing','past_due'). A lapsed customer who resubscribes gets a
+ * new `pending_activation` row (allowed by the partial index) whose activation
+ * UPDATE then collides with their still-live `past_due` row. That collision was
+ * only console.error'd, so the webhook acked 200: money captured, no
+ * subscription, no dead letter, no retry.
+ */
+export function isUniqueViolationError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: unknown; message?: unknown; details?: unknown };
+  if (typeof e.code === "string" && e.code === "23505") return true;
+  const text = [e.message, e.details]
+    .map((v) => (typeof v === "string" ? v.toLowerCase() : ""))
+    .join(" ");
+  return text.includes("duplicate key value") || text.includes("violates unique constraint");
+}

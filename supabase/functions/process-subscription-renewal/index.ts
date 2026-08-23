@@ -1,11 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  chargeRetryEligibility,
   computeCharge,
   isUndefinedColumnError,
   OPTIONAL_TRANSACTION_COLUMNS,
+  type PaidPlanRef,
+  parsePaidPlanRef,
   planPriceFor,
   chargeSplit,
+  trialChargeAuthorized,
   withoutKeys,
 } from "../_shared/billing.ts";
 
@@ -44,23 +48,34 @@ type AdminClient = ReturnType<typeof createClient<any>>;
 /** Columns every pass needs. card_verified_at is appended separately
  *  because it only exists after the Section 8 migration. */
 const SUB_SELECT = `
-      id, user_id, plan_id, moyasar_card_token, seat_count, status, trial_end,
+      id, user_id, plan_id, moyasar_card_token, moyasar_payment_id, seat_count, status, trial_end,
       cancel_at_period_end, next_billing_date, current_period_end, past_due_since,
       subscription_plans ( price_amount, price_per_seat, min_seats, currency, duration_days, name_en, slug )
     `;
 
 serve(async (req) => {
-  // Auth: validate CRON_SECRET if configured
+  // Auth: CRON_SECRET is MANDATORY and fails closed (finding H6).
+  // This used to be `if (cronSecret) { ... }`, so an unset secret disabled the
+  // check entirely and left an unauthenticated endpoint that charges saved
+  // cards exposed to anyone who could reach the function URL.
   const cronSecret = Deno.env.get("CRON_SECRET");
-  if (cronSecret) {
-    const provided = req.headers.get("x-cron-secret");
-    if (provided !== cronSecret) {
-      console.error("Renewal job rejected: invalid or missing x-cron-secret");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  if (!cronSecret) {
+    console.error(
+      "Renewal job refused: CRON_SECRET is not configured. This job charges stored cards " +
+      "and will not run unauthenticated. Set CRON_SECRET on the function and on the pg_cron caller.",
+    );
+    return new Response(JSON.stringify({ error: "CRON_SECRET not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const providedCronSecret = req.headers.get("x-cron-secret");
+  if (providedCronSecret !== cronSecret) {
+    console.error("Renewal job rejected: invalid or missing x-cron-secret");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -97,6 +112,15 @@ serve(async (req) => {
   // ── 0b. Trials that ended with no usable card (or were cancelled) ─────────
   // Nothing to charge. Close them out so they stop being "trialing" forever.
   const expiredTrials = await expireUnbillableTrials(adminClient, nowIso);
+
+  // -- 0c. Past-due rows whose grace window has closed (defect C2) -----------
+  // Nothing used to move these: the retry pass below excludes them
+  // (graceCutoff) and check-subscription only synced profiles.plan_type. They
+  // stayed `past_due` forever, and because the partial unique index
+  // user_subscriptions_one_live_row_per_user counts `past_due` as LIVE, that
+  // zombie row blocked the activation of any new subscription the customer
+  // bought afterwards.
+  const expiredPastDue = await expireLapsedPastDue(adminClient);
 
   // 1. Active subscriptions due for renewal (have moyasar_card_token)
   const safetyWindowMs = 60 * 60 * 1000;
@@ -143,7 +167,10 @@ serve(async (req) => {
   if (allDue.length === 0) {
     console.log("Renewal job: no subscriptions due for conversion, renewal or retry");
     return new Response(
-      JSON.stringify({ processed: 0, skipped: 0, failed: 0, total: 0, trials_converted: 0, trials_expired: expiredTrials }),
+      JSON.stringify({
+        processed: 0, skipped: 0, failed: 0, total: 0,
+        trials_converted: 0, trials_expired: expiredTrials, past_due_expired: expiredPastDue,
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -235,6 +262,26 @@ serve(async (req) => {
         skipped++; continue;
       }
       if ((recentAttempts ?? 0) > 0) { skipped++; continue; }
+
+      // Defect C1. The stored card was verified against a SPECIFIC plan and
+      // seat count (the 1.00 SAR verification payment's metadata). If the row
+      // no longer matches, it was escalated outside a captured payment and this
+      // unattended charge must not happen. Any lookup failure is treated as
+      // "unknown authorization -> skip", never as "proceed to charge".
+      const verified = await fetchVerifiedPlanRef(moyasarSecretKey, (sub as any).moyasar_payment_id);
+      if (!verified.ok) {
+        console.error(`Sub ${sub.id}: verified-plan lookup failed, skipping this tick`);
+        skipped++; continue;
+      }
+      const authz = trialChargeAuthorized(sub as any, verified.ref);
+      if (!authz.authorized) {
+        console.error(
+          `Sub ${sub.id}: refusing post-trial charge (${authz.reason}) — row is plan ` +
+          `${sub.plan_id} x${sub.seat_count}, card was verified for plan ` +
+          `${verified.ref?.plan_id ?? "unknown"} x${verified.ref?.seat_count ?? "unknown"}`,
+        );
+        skipped++; continue;
+      }
     } else {
       // Idempotency: skip if renewal tx already exists for this period
       const periodWindowStart = sub.current_period_end
@@ -267,13 +314,44 @@ serve(async (req) => {
       ? new Date(new Date(sub.current_period_end).getTime() - durationDays * 24 * 60 * 60 * 1000).toISOString()
       : new Date(Date.now() - durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-    const { count: failedCount } = await adminClient
+    // The most recent failure drives BOTH the retry counter and the backoff, so
+    // fetch the row and the exact count in one query.
+    const { data: failedRows, count: failedCount, error: failedCountError } = await adminClient
       .from("payment_transactions")
-      .select("id", { count: "exact", head: true })
+      .select("id, created_at", { count: "exact" })
       .eq("subscription_id", sub.id)
       .eq("payment_type", "renewal")
       .eq("status", "failed")
-      .gte("created_at", periodWindowStart);
+      .gte("created_at", periodWindowStart)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (failedCountError) {
+      // Unknown failure history means an unknown attempt number. Never charge.
+      console.error(`Sub ${sub.id}: failed-attempt lookup failed, skipping:`, failedCountError.message);
+      skipped++; continue;
+    }
+
+    // Defect C3(a). The idempotency guards above only match `initiated` /
+    // `captured` rows, so a `failed` transaction blocked nothing: a declining
+    // card was re-charged on EVERY hourly tick for the whole 7-day grace window
+    // (~168 attempts). Cap the attempts and space them out. A healthy renewal
+    // has failedCount = 0 and is never affected. A subscription that exhausts
+    // its attempts is simply left alone and is closed by expireLapsedPastDue()
+    // when the grace window ends.
+    const retryDecision = chargeRetryEligibility(
+      failedCount ?? 0,
+      (failedRows?.[0] as any)?.created_at ?? null,
+    );
+    if (!retryDecision.eligible) {
+      console.log(
+        `Sub ${sub.id}: charge attempt ${retryDecision.attemptNumber} withheld (${retryDecision.reason})` +
+        (retryDecision.nextAttemptAtMs
+          ? ` — next attempt no earlier than ${new Date(retryDecision.nextAttemptAtMs).toISOString()}`
+          : ""),
+      );
+      skipped++; continue;
+    }
 
     // Insert renewal transaction row BEFORE charging (idempotency anchor).
     // Trial conversions are recorded as payment_type "renewal" too, so the
@@ -427,6 +505,7 @@ serve(async (req) => {
     total: allDue.length,
     trials_converted: trialsConverted,
     trials_expired: expiredTrials,
+    past_due_expired: expiredPastDue,
   };
   console.log("Renewal job complete:", JSON.stringify(summary));
   return new Response(JSON.stringify(summary), {
@@ -499,6 +578,96 @@ async function expireUnbillableTrials(
     console.error("expireUnbillableTrials threw (non-fatal):", e instanceof Error ? e.message : String(e));
   }
   return closed;
+}
+
+// -- Past-due expiry (defect C2) ----------------------------------------------
+// A past_due row whose GRACE_DAYS window has closed is excluded from the retry
+// pass and nothing else ever moved it, so it stayed `past_due` forever. Close it
+// out: "cancelled" if the user opted out, otherwise "expired", and sync
+// profiles.plan_type to free so entitlement cannot outlive the subscription.
+async function expireLapsedPastDue(adminClient: AdminClient): Promise<number> {
+  let closed = 0;
+  try {
+    const graceCutoff = new Date(Date.now() - GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: lapsed, error: lapsedError } = await adminClient
+      .from("user_subscriptions")
+      .update({ status: "expired" })
+      .eq("status", "past_due")
+      .eq("cancel_at_period_end", false)
+      .not("past_due_since", "is", null)
+      .lt("past_due_since", graceCutoff)
+      .select("id, user_id");
+    if (lapsedError) console.error("expireLapsedPastDue: expire failed:", lapsedError.message);
+
+    const { data: optedOut, error: optedOutError } = await adminClient
+      .from("user_subscriptions")
+      .update({ status: "cancelled" })
+      .eq("status", "past_due")
+      .eq("cancel_at_period_end", true)
+      .not("past_due_since", "is", null)
+      .lt("past_due_since", graceCutoff)
+      .select("id, user_id");
+    if (optedOutError) console.error("expireLapsedPastDue: cancel failed:", optedOutError.message);
+
+    const affected = [...(lapsed ?? []), ...(optedOut ?? [])] as Array<{ id: string; user_id: string }>;
+    closed = affected.length;
+
+    for (const row of affected) {
+      const { error } = await adminClient
+        .from("profiles")
+        .update({ plan_type: "free" })
+        .eq("user_id", row.user_id);
+      if (error) console.error(`expireLapsedPastDue: plan_type sync failed for ${row.user_id}:`, error.message);
+    }
+
+    // A past_due row with no past_due_since can never leave past_due through
+    // any pass. Surface it for ops rather than silently cutting a customer off.
+    const { count: unstamped } = await adminClient
+      .from("user_subscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "past_due")
+      .is("past_due_since", null);
+    if ((unstamped ?? 0) > 0) {
+      console.error(
+        `Renewal job: ${unstamped} past_due row(s) carry no past_due_since and are stuck — needs ops`,
+      );
+    }
+
+    if (closed > 0) console.log(`Renewal job: closed ${closed} past_due subscription(s) past the grace window`);
+  } catch (e) {
+    console.error("expireLapsedPastDue threw (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
+  return closed;
+}
+
+// -- Verified plan reference for the post-trial charge (defect C1) -------------
+// The unattended trial conversion may only bill the plan/seats the stored card
+// was actually VERIFIED against. That fact lives in the metadata of the 1.00 SAR
+// verification payment, whose id is stamped on the subscription row by
+// moyasar-webhook. A payment created before this change carries no plan_id, and
+// trialChargeAuthorized() treats that as "nothing to compare" so pre-existing
+// trials are not stranded.
+async function fetchVerifiedPlanRef(
+  moyasarSecretKey: string,
+  paymentId: string | null | undefined,
+): Promise<{ ok: boolean; ref: PaidPlanRef | null }> {
+  if (!paymentId) return { ok: true, ref: null };
+  try {
+    const res = await fetch(`https://api.moyasar.com/v1/payments/${paymentId}`, {
+      method: "GET",
+      headers: { Authorization: `Basic ${btoa(moyasarSecretKey + ":")}` },
+    });
+    if (!res.ok) {
+      console.error(`Verified-plan lookup: Moyasar returned HTTP ${res.status}`);
+      return { ok: false, ref: null };
+    }
+    const body = await res.json();
+    return { ok: true, ref: parsePaidPlanRef(body?.metadata) };
+  } catch (e) {
+    console.error("Verified-plan lookup threw:", e instanceof Error ? e.message : String(e));
+    return { ok: false, ref: null };
+  }
 }
 
 // Mark subscription past_due; stamp past_due_since on first failure only (idempotent)

@@ -36,6 +36,12 @@ import {
   FOUNDING10_WINDOW_START_MS,
   FOUNDING10_WINDOW_END_MS,
   MAX_BILLABLE_SEATS,
+  chargeRetryEligibility,
+  CHARGE_RETRY_BACKOFF_MS,
+  MAX_CHARGE_ATTEMPTS,
+  parsePaidPlanRef,
+  trialChargeAuthorized,
+  isUniqueViolationError,
   type PlanLike,
   type SubLike,
 } from "../../supabase/functions/_shared/billing.ts";
@@ -776,5 +782,225 @@ describe("INVARIANT — a trial_card_verification payment can never buy a paid p
     for (const seats of ALL_SEATS) {
       expect(deriveFlow(trialingSub({ seat_count: seats }), NOW)).toBe("trial_card_verification");
     }
+  });
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Second adversarial round — C1 / C2 / C3
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("chargeRetryEligibility — C3: uncapped hourly re-charging of a declining card", () => {
+  const HOUR = 3_600_000;
+
+  it("allows the first attempt of a healthy renewal (no failures)", () => {
+    const d = chargeRetryEligibility(0, null, NOW);
+    expect(d.eligible).toBe(true);
+    expect(d.reason).toBe("ok");
+    expect(d.attemptNumber).toBe(1);
+  });
+
+  it("treats a missing / hostile failure count as zero failures", () => {
+    for (const bad of [null, undefined, NaN, -3, Number.POSITIVE_INFINITY]) {
+      const d = chargeRetryEligibility(bad as any, null, NOW);
+      expect(d.eligible).toBe(true);
+      expect(d.attemptNumber).toBe(1);
+    }
+  });
+
+  it("refuses a retry inside the backoff window and reports when it may run", () => {
+    const lastFailed = new Date(NOW - HOUR).toISOString();
+    const d = chargeRetryEligibility(1, lastFailed, NOW);
+    expect(d.eligible).toBe(false);
+    expect(d.reason).toBe("backoff");
+    expect(d.nextAttemptAtMs).toBe(Date.parse(lastFailed) + CHARGE_RETRY_BACKOFF_MS);
+  });
+
+  it("allows the retry once the backoff window has elapsed", () => {
+    const lastFailed = new Date(NOW - (CHARGE_RETRY_BACKOFF_MS + HOUR)).toISOString();
+    const d = chargeRetryEligibility(1, lastFailed, NOW);
+    expect(d.eligible).toBe(true);
+    expect(d.attemptNumber).toBe(2);
+  });
+
+  it("stops entirely once the attempt cap is reached, however old the last failure", () => {
+    const ancient = new Date(NOW - 30 * 24 * HOUR).toISOString();
+    const d = chargeRetryEligibility(MAX_CHARGE_ATTEMPTS, ancient, NOW);
+    expect(d.eligible).toBe(false);
+    expect(d.reason).toBe("attempts_exhausted");
+    expect(d.nextAttemptAtMs).toBeNull();
+  });
+
+  it("allows exactly MAX_CHARGE_ATTEMPTS attempts and no more", () => {
+    const ancient = new Date(NOW - 30 * 24 * HOUR).toISOString();
+    for (let failures = 0; failures < MAX_CHARGE_ATTEMPTS; failures++) {
+      expect(chargeRetryEligibility(failures, ancient, NOW).eligible).toBe(true);
+    }
+    expect(chargeRetryEligibility(MAX_CHARGE_ATTEMPTS, ancient, NOW).eligible).toBe(false);
+    expect(chargeRetryEligibility(MAX_CHARGE_ATTEMPTS + 50, ancient, NOW).eligible).toBe(false);
+  });
+
+  it("fails closed when the last failure timestamp is unreadable", () => {
+    for (const bad of [null, undefined, "", "not-a-date"]) {
+      const d = chargeRetryEligibility(2, bad as any, NOW);
+      expect(d.eligible).toBe(false);
+      expect(d.reason).toBe("unknown_last_failure");
+    }
+  });
+
+  it("REGRESSION: 168 hourly ticks over the grace window produce at most MAX_CHARGE_ATTEMPTS charges", () => {
+    // The bug: the idempotency guard only matched `initiated` / `captured`, so a
+    // `failed` transaction blocked nothing and the cron re-charged the same
+    // declining card on every tick for the whole 7-day grace window.
+    let failures = 0;
+    let lastFailedAt: string | null = null;
+    let charges = 0;
+
+    for (let hour = 0; hour < 24 * 7; hour++) {
+      const now = NOW + hour * HOUR;
+      const d = chargeRetryEligibility(failures, lastFailedAt, now);
+      if (!d.eligible) continue;
+      // Every attempt declines.
+      charges++;
+      failures++;
+      lastFailedAt = new Date(now).toISOString();
+    }
+
+    expect(charges).toBe(MAX_CHARGE_ATTEMPTS);
+  });
+
+  it("the whole attempt schedule fits inside the 7-day grace window", () => {
+    // GRACE_DAYS = 7 in check-subscription / moyasar-webhook /
+    // process-subscription-renewal. The last allowed attempt must land before
+    // the past-due expiry pass closes the subscription.
+    const spanMs = (MAX_CHARGE_ATTEMPTS - 1) * CHARGE_RETRY_BACKOFF_MS;
+    expect(spanMs).toBeLessThan(7 * 24 * 3_600_000);
+  });
+});
+
+describe("parsePaidPlanRef — C1: the plan a payment was actually created for", () => {
+  it("returns nulls for anything that is not usable metadata", () => {
+    for (const bad of [null, undefined, "", 0, [], "plan"]) {
+      expect(parsePaidPlanRef(bad as any)).toEqual({ plan_id: null, seat_count: null });
+    }
+  });
+
+  it("reads plan_id and seat_count", () => {
+    expect(parsePaidPlanRef({ plan_id: "plan-uuid", seat_count: 12 })).toEqual({
+      plan_id: "plan-uuid",
+      seat_count: 12,
+    });
+  });
+
+  it("tolerates a numeric string seat_count (metadata round-trips as text)", () => {
+    expect(parsePaidPlanRef({ plan_id: "p", seat_count: "12" }).seat_count).toBe(12);
+  });
+
+  it("trims plan_id and rejects blank / non-string ids", () => {
+    expect(parsePaidPlanRef({ plan_id: "  p  " }).plan_id).toBe("p");
+    for (const bad of ["", "   ", 5, null, {}]) {
+      expect(parsePaidPlanRef({ plan_id: bad }).plan_id).toBeNull();
+    }
+  });
+
+  it("rejects seat counts outside 1..MAX_BILLABLE_SEATS and non-integers", () => {
+    for (const bad of [0, -1, 2.5, MAX_BILLABLE_SEATS + 1, "abc", null, {}, NaN]) {
+      expect(parsePaidPlanRef({ plan_id: "p", seat_count: bad }).seat_count).toBeNull();
+    }
+    expect(parsePaidPlanRef({ plan_id: "p", seat_count: 1 }).seat_count).toBe(1);
+    expect(parsePaidPlanRef({ plan_id: "p", seat_count: MAX_BILLABLE_SEATS }).seat_count).toBe(
+      MAX_BILLABLE_SEATS,
+    );
+  });
+});
+
+describe("trialChargeAuthorized — C1: the cron may only bill the plan the card was verified for", () => {
+  it("refuses when there is no subscription", () => {
+    expect(trialChargeAuthorized(null, { plan_id: "p", seat_count: 1 }).authorized).toBe(false);
+  });
+
+  it("allows a legacy payment that carries no plan metadata", () => {
+    for (const ref of [null, undefined, { plan_id: null, seat_count: null }]) {
+      const d = trialChargeAuthorized({ plan_id: "p", seat_count: 1 }, ref as any);
+      expect(d.authorized).toBe(true);
+      expect(d.reason).toBe("no_verified_plan_metadata");
+    }
+  });
+
+  it("allows the exact plan + seats the card was verified for", () => {
+    const d = trialChargeAuthorized({ plan_id: "p", seat_count: 5 }, { plan_id: "p", seat_count: 5 });
+    expect(d.authorized).toBe(true);
+    expect(d.reason).toBe("match");
+  });
+
+  it("REGRESSION: refuses a plan that was escalated without a captured payment", () => {
+    // The exploit: a trialing row was mutated to enterprise_office at checkout
+    // time, the checkout was abandoned, and the cron then charged the escalated
+    // plan on the card that had only ever been verified for `pro`.
+    const d = trialChargeAuthorized(
+      { plan_id: "enterprise-office-uuid", seat_count: 100 },
+      { plan_id: "pro-uuid", seat_count: 1 },
+    );
+    expect(d.authorized).toBe(false);
+    expect(d.reason).toBe("plan_mismatch");
+  });
+
+  it("REGRESSION: refuses a seat escalation on the same plan", () => {
+    const d = trialChargeAuthorized(
+      { plan_id: "p", seat_count: 100 },
+      { plan_id: "p", seat_count: 5 },
+    );
+    expect(d.authorized).toBe(false);
+    expect(d.reason).toBe("seat_escalation");
+  });
+
+  it("allows billing FEWER seats than were verified (can only undercharge)", () => {
+    expect(
+      trialChargeAuthorized({ plan_id: "p", seat_count: 3 }, { plan_id: "p", seat_count: 5 }).authorized,
+    ).toBe(true);
+  });
+
+  it("treats a missing seat_count on the row as one seat", () => {
+    expect(
+      trialChargeAuthorized({ plan_id: "p", seat_count: null }, { plan_id: "p", seat_count: 5 }).authorized,
+    ).toBe(true);
+  });
+
+  it("ignores the seat check when the verified payment carries no seat count", () => {
+    expect(
+      trialChargeAuthorized({ plan_id: "p", seat_count: 100 }, { plan_id: "p", seat_count: null }).authorized,
+    ).toBe(true);
+  });
+});
+
+describe("isUniqueViolationError — C2: paid but never activated", () => {
+  it("matches SQLSTATE 23505", () => {
+    expect(isUniqueViolationError({ code: "23505" })).toBe(true);
+  });
+
+  it("matches the PostgREST message wording", () => {
+    expect(
+      isUniqueViolationError({
+        message: 'duplicate key value violates unique constraint "user_subscriptions_one_live_row_per_user"',
+      }),
+    ).toBe(true);
+    expect(
+      isUniqueViolationError({ details: "Key (user_id)=(x) violates unique constraint" }),
+    ).toBe(true);
+  });
+
+  it("does not match anything else", () => {
+    for (const bad of [null, undefined, "23505", 23505, {}, { code: "PGRST204" }, { code: "42703" }]) {
+      expect(isUniqueViolationError(bad as any)).toBe(false);
+    }
+  });
+
+  it("REGRESSION: the undefined-column helper never matched 23505, which is why activation failures were swallowed", () => {
+    // moyasar-webhook only had isUndefinedColumnError() to classify the error,
+    // so a unique-violation on the activation UPDATE fell through to a bare
+    // console.error and the handler still returned 200: money captured, no
+    // subscription, no dead letter, no retry.
+    expect(isUndefinedColumnError({ code: "23505" })).toBe(false);
+    expect(isUniqueViolationError({ code: "23505" })).toBe(true);
   });
 });

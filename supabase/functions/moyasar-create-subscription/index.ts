@@ -136,14 +136,17 @@ serve(async (req) => {
       );
     }
 
-    // ── In-flight check: reuse existing pending_activation rows ──────────────
+    // ── In-flight check: reuse the existing live row ─────────────────────────
     // Rather than blocking the user with a 30-min TTL, refresh the given_id on
     // the existing row so a clean Moyasar form can be mounted immediately.
+    //
+    // `past_due` is included so a customer whose card is failing can start a
+    // fresh payment session and update their card (billing contract 5.4).
     const { data: existingPendingSub } = await adminClient
       .from("user_subscriptions")
-      .select("id, status, trial_end, created_at")
+      .select("id, status, trial_end, created_at, moyasar_card_token")
       .eq("user_id", userId)
-      .in("status", ["trialing", "pending_activation"])
+      .in("status", ["trialing", "pending_activation", "past_due"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -178,6 +181,7 @@ serve(async (req) => {
           verification_credit: decision.verificationCredit,
           description: decision.description,
           promo_code: decision.appliedPromo,
+          plan_id,
           seat_count: seatCount,
           monthly_total: monthlyTotal,
         }),
@@ -185,7 +189,67 @@ serve(async (req) => {
       );
     }
 
-    const trialingSub = existingPendingSub?.status === "trialing" ? existingPendingSub : null;
+    // ── ARMED rows: `trialing` and `past_due` ────────────────────────────────
+    // Defect C1. These two statuses hold a saved Moyasar card token and are
+    // polled by process-subscription-renewal, so whatever plan_id / seat_count
+    // sits on the row IS what an unattended cron charge will bill.
+    //
+    // Writing the requested plan/seats here (what this function used to do)
+    // meant an ABANDONED checkout permanently escalated a live subscription:
+    // pick enterprise_office x100, never complete the payment, close the tab —
+    // and at trial_end the cron charged 100 x 54,900 halalas on the stored
+    // token, with the webhook happily validating the amount because it
+    // re-derived it from the same mutated row.
+    //
+    // The row is therefore left untouched except for the payment-session id.
+    // The requested plan/seats travel in the Moyasar payment metadata
+    // (moyasar-initiate-token-payment) and are promoted onto the row by
+    // moyasar-webhook only when that payment is CAPTURED.
+    if (existingPendingSub?.status === "trialing" || existingPendingSub?.status === "past_due") {
+      const decision = decide({
+        status: existingPendingSub.status,
+        trial_end: existingPendingSub.trial_end ?? null,
+        moyasar_card_token: (existingPendingSub as any).moyasar_card_token ?? null,
+      });
+      const freshGivenId = crypto.randomUUID();
+      const { data: refreshedSub, error: refreshError } = await adminClient
+        .from("user_subscriptions")
+        .update({ moyasar_given_id: freshGivenId })
+        .eq("id", existingPendingSub.id)
+        .select("id")
+        .single();
+      if (refreshError || !refreshedSub) {
+        console.error("Failed to refresh live payment session:", refreshError);
+        return new Response(JSON.stringify({ error: "Failed to refresh payment session" }), {
+          status: 500, headers: corsHeaders,
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription_id: refreshedSub.id,
+          given_id: freshGivenId,
+          is_returning_user: existingPendingSub.status === "past_due",
+          flow: decision.flow,
+          amount: decision.amount,
+          currency: "SAR",
+          amount_base: decision.base,
+          amount_vat: decision.vat,
+          plan_price: decision.planPrice,
+          verification_credit: decision.verificationCredit,
+          description: decision.description,
+          promo_code: decision.appliedPromo,
+          // The plan/seats this payment session is FOR. Not yet written to the
+          // subscription row — promoted by the webhook once the payment is
+          // captured. The client must echo these back to
+          // moyasar-initiate-token-payment.
+          plan_id,
+          seat_count: seatCount,
+          monthly_total: monthlyTotal,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     // ── Prior subscription history ────────────────────────────────────────────
     const { data: anyPriorSub } = await adminClient
@@ -221,21 +285,7 @@ serve(async (req) => {
     let subscription: any;
     let subError: any;
 
-    if (trialingSub) {
-      // Case 2: user has an active trial — update plan, preserve trial dates
-      const result = await adminClient
-        .from("user_subscriptions")
-        .update({
-          plan_id,
-          moyasar_given_id: givenId,
-          seat_count: seatCount,
-        })
-        .eq("id", trialingSub.id)
-        .select()
-        .single();
-      subscription = result.data;
-      subError = result.error;
-    } else if (hasPriorExpiredSub || isLaunchTrialConsumed) {
+    if (hasPriorExpiredSub || isLaunchTrialConsumed) {
       // Case 3: no-trial user — pending_activation (immediate on webhook paid event)
       const result = await adminClient
         .from("user_subscriptions")
@@ -300,6 +350,7 @@ serve(async (req) => {
         verification_credit: decision.verificationCredit,
         description: decision.description,
         promo_code: decision.appliedPromo,
+        plan_id,
         seat_count: seatCount,
         monthly_total: monthlyTotal,
       }),

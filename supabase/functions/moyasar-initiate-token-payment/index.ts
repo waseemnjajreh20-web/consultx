@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { computeCharge } from "../_shared/billing.ts";
+import { computeCharge, MAX_BILLABLE_SEATS } from "../_shared/billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,6 +76,15 @@ serve(async (req) => {
     const subscriptionId = typeof body?.subscription_id === "string" ? body.subscription_id : "";
     const givenId = typeof body?.given_id === "string" ? body.given_id : "";
     const promoCode = typeof body?.promo_code === "string" ? body.promo_code.trim() : null;
+    // Defect C1. The plan/seats the customer is buying are NOT written onto a
+    // live `trialing` / `past_due` row before payment (see
+    // moyasar-create-subscription). The client echoes back the quote it was
+    // issued; it is re-validated and re-priced here, travels in the Moyasar
+    // payment metadata, and is promoted onto the subscription row by
+    // moyasar-webhook only when the payment is CAPTURED.
+    const requestedPlanId =
+      typeof body?.plan_id === "string" && body.plan_id.trim() ? body.plan_id.trim() : null;
+    const requestedSeatCountRaw = body?.seat_count;
 
     if (!token || !subscriptionId || !givenId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -119,7 +128,9 @@ serve(async (req) => {
       });
     }
 
-    if (sub.status !== "trialing" && sub.status !== "pending_activation") {
+    // `past_due` is admitted so a customer whose card is failing can pay with a
+    // new card (billing contract 5.4 previously had no working endpoint).
+    if (sub.status !== "trialing" && sub.status !== "pending_activation" && sub.status !== "past_due") {
       return new Response(JSON.stringify({ error: "Subscription not awaiting payment" }), {
         status: 409,
         headers: corsHeaders,
@@ -134,12 +145,16 @@ serve(async (req) => {
       });
     }
 
-    if (sub.moyasar_payment_id) {
-      return new Response(JSON.stringify({ error: "Payment already initiated for this subscription" }), {
-        status: 409,
-        headers: corsHeaders,
-      });
-    }
+    // NOTE - defect C1(b): there is deliberately NO `if (sub.moyasar_payment_id)`
+    // guard here any more. `user_subscriptions.moyasar_payment_id` is stamped by
+    // moyasar-webhook on EVERY paid event, including the 1.00 SAR trial card
+    // verification, so that guard permanently locked out any trialing row whose
+    // card had already been verified - the customer could never complete a real
+    // payment on that subscription again. It also never protected a real
+    // in-flight payment: this endpoint writes no payment id, and a captured
+    // non-trial payment moves the row to `active`, which the status check above
+    // already rejects. The replacement guards (already-captured + recent
+    // duplicate attempt) live below, once the flow is known.
 
     // ── Origin for callback_url ──────────────────────────────────────────────
     // Trust only configured app URL; fall back to request origin for dev.
@@ -164,11 +179,17 @@ serve(async (req) => {
     // ── Server-side charge decision ──────────────────────────────────────────
     // The amount is derived from the subscription + plan rows. Client input is
     // limited to the promo code, and promos apply to immediate charges only.
-    const { data: planRow } = await adminClient
+    const chargePlanId: string = requestedPlanId ?? sub.plan_id;
+
+    // A plan the customer is switching TO must still be on sale. The plan
+    // already stored on the row is looked up without that filter so an existing
+    // subscriber on a retired plan can still pay.
+    let planQuery = adminClient
       .from("subscription_plans")
-      .select("slug, name_en, currency, price_amount, price_per_seat, min_seats, duration_days")
-      .eq("id", sub.plan_id)
-      .maybeSingle();
+      .select("id, slug, name_en, currency, price_amount, price_per_seat, min_seats, duration_days")
+      .eq("id", chargePlanId);
+    if (chargePlanId !== sub.plan_id) planQuery = planQuery.eq("is_active", true);
+    const { data: planRow } = await planQuery.maybeSingle();
 
     if (!planRow) {
       console.error("Plan not found for subscription", { sub_id: sub.id });
@@ -177,6 +198,36 @@ serve(async (req) => {
         headers: corsHeaders,
       });
     }
+
+    // -- Seat count for THIS charge ------------------------------------------
+    const isPerSeatPlan = (planRow as any).price_per_seat != null;
+    const minSeatsRaw = Math.floor(Number((planRow as any).min_seats ?? 1));
+    const minSeats = Number.isFinite(minSeatsRaw) && minSeatsRaw >= 1 ? minSeatsRaw : 1;
+    const storedSeats = Math.floor(Number(sub.seat_count ?? 1));
+    let chargeSeatCount = Number.isFinite(storedSeats) && storedSeats >= 1 ? storedSeats : 1;
+
+    if (requestedSeatCountRaw !== undefined && requestedSeatCountRaw !== null) {
+      const n = Number(requestedSeatCountRaw);
+      if (!Number.isInteger(n) || n < 1 || n > MAX_BILLABLE_SEATS) {
+        return new Response(
+          JSON.stringify({ error: "seat_count must be an integer between 1 and " + MAX_BILLABLE_SEATS }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+      if (isPerSeatPlan && n < minSeats) {
+        return new Response(
+          JSON.stringify({ error: "seat_count must be at least " + minSeats + " for this plan" }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+      chargeSeatCount = n;
+    }
+    // Flat plans always bill one seat; per-seat plans never bill below min_seats.
+    chargeSeatCount = isPerSeatPlan ? Math.max(chargeSeatCount, minSeats) : 1;
+
+    // Promotions are for new immediate checkouts, never for repairing a failing
+    // card on an existing subscription (billing contract Section 2).
+    const effectivePromoCode = sub.status === "past_due" ? null : promoCode;
 
     // Prior non-verification captured transactions consume the 1 SAR credit.
     const { count: priorPaidCount, error: priorPaidError } = await adminClient
@@ -217,15 +268,57 @@ serve(async (req) => {
       planRow as any,
       {
         ...(sub as any),
+        seat_count: chargeSeatCount,
         card_verified_at: cardVerifiedAt,
         has_captured_verification: (verificationCount ?? 0) > 0,
       },
-      promoCode,
+      effectivePromoCode,
       priorPaidCount ?? 0,
     );
 
     const chargeAmount = decision.amount;
     const chargeDescription = decision.description;
+
+    // -- Double-charge guards (replace the old moyasar_payment_id check) ------
+    // 1. Money already captured for a row that is still awaiting activation:
+    //    charging again would take the customer's money twice. `past_due` is
+    //    exempt - captured transactions from earlier periods are normal there.
+    const isVerificationCharge = decision.flow === "trial_card_verification";
+    if (!isVerificationCharge && sub.status !== "past_due" && (priorPaidCount ?? 0) > 0) {
+      console.error("Refusing a second charge on an already-paid subscription", { sub_id: sub.id });
+      return new Response(
+        JSON.stringify({ error: "A payment for this subscription has already been received" }),
+        { status: 409, headers: corsHeaders },
+      );
+    }
+
+    // 2. Duplicate submit / double-click / retry of the same kind of charge.
+    const INITIATE_DUPLICATE_WINDOW_MS = 10 * 60 * 1000;
+    const dupWindowStart = new Date(Date.now() - INITIATE_DUPLICATE_WINDOW_MS).toISOString();
+    let dupQuery = adminClient
+      .from("payment_transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("subscription_id", sub.id)
+      .in("status", ["initiated", "captured"])
+      .gte("created_at", dupWindowStart);
+    dupQuery = isVerificationCharge
+      ? dupQuery.eq("payment_type", "verification")
+      : dupQuery.neq("payment_type", "verification");
+    const { count: recentAttempts, error: recentAttemptsError } = await dupQuery;
+
+    if (recentAttemptsError) {
+      console.error("Duplicate-attempt check failed; refusing to charge", { sub_id: sub.id });
+      return new Response(JSON.stringify({ error: "Could not verify the payment state" }), {
+        status: 503,
+        headers: corsHeaders,
+      });
+    }
+    if ((recentAttempts ?? 0) > 0) {
+      return new Response(
+        JSON.stringify({ error: "Payment already initiated for this subscription" }),
+        { status: 409, headers: corsHeaders },
+      );
+    }
 
     if (!Number.isInteger(chargeAmount) || chargeAmount <= 0) {
       console.error("Refusing to charge a non-positive amount", { sub_id: sub.id, flow: decision.flow });
@@ -255,7 +348,11 @@ serve(async (req) => {
           metadata: {
             subscription_id: sub.id,
             given_id: givenId,
-            plan_id: sub.plan_id,
+            // The plan/seats THIS payment buys. moyasar-webhook promotes them
+            // onto the subscription row when the payment is captured - never
+            // before (defect C1).
+            plan_id: chargePlanId,
+            seat_count: chargeSeatCount,
             user_id: user.id,
             flow: decision.flow,
             purpose: decision.purpose,
@@ -328,6 +425,8 @@ serve(async (req) => {
         plan_price: decision.planPrice,
         verification_credit: decision.verificationCredit,
         description: chargeDescription,
+        plan_id: chargePlanId,
+        seat_count: chargeSeatCount,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

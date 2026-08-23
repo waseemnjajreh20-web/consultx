@@ -72,6 +72,12 @@ type CheckoutQuote = {
   verification_credit: number;
   description: string;
   promo_code: string | null;
+  // The plan/seats this payment session is FOR. On a live `trialing` /
+  // `past_due` row the backend deliberately does NOT write them to the
+  // subscription before payment (defect C1), so they must be echoed back to
+  // moyasar-initiate-token-payment, which re-validates and re-prices them.
+  plan_id: string | null;
+  seat_count: number | null;
 };
 
 const Subscribe = () => {
@@ -220,6 +226,8 @@ const Subscribe = () => {
               verification_credit: typeof data.verification_credit === "number" ? data.verification_credit : 0,
               description: data.description,
               promo_code: typeof data.promo_code === "string" ? data.promo_code : null,
+              plan_id: typeof data.plan_id === "string" ? data.plan_id : null,
+              seat_count: typeof data.seat_count === "number" ? data.seat_count : null,
             }
           : null,
       );
@@ -305,6 +313,11 @@ const Subscribe = () => {
         subscription_id: pendingSubscriptionId,
         given_id: pendingGivenId,
       };
+      // Echo the quoted plan/seats so the server charges — and later promotes —
+      // exactly what was quoted. Server-side re-validated; omitted values fall
+      // back to whatever is stored on the subscription row.
+      if (checkoutQuote?.plan_id) initiateBody.plan_id = checkoutQuote.plan_id;
+      if (typeof checkoutQuote?.seat_count === "number") initiateBody.seat_count = checkoutQuote.seat_count;
       if (founding10Active) {
         initiateBody.promo_code = FOUNDING10_CODE;
       } else if (eid50Active) {

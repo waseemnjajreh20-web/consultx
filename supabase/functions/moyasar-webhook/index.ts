@@ -5,9 +5,11 @@ import {
   deriveFlow,
   expectedAmountsFor,
   isUndefinedColumnError,
+  isUniqueViolationError,
   OPTIONAL_SUBSCRIPTION_COLUMNS,
   OPTIONAL_TRANSACTION_COLUMNS,
   parseFlow,
+  parsePaidPlanRef,
   chargeSplit,
   withoutKeys,
 } from "../_shared/billing.ts";
@@ -206,16 +208,47 @@ serve(async (req) => {
     // was validated against the 1 SAR verification rule and dead-lettered.
     const { data: existingTx } = await adminClient
       .from("payment_transactions")
-      .select("id, status, payment_type")
+      .select("id, status, payment_type, created_at")
       .eq("moyasar_payment_id", paymentId)
       .maybeSingle();
 
     if (existingTx?.status === "captured" && status === "paid") {
-      console.log(`Idempotent paid: payment ${paymentId} already processed — ack without reprocessing`);
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: corsHeaders,
-      });
+      // Defect C2. A captured transaction is only a genuine no-op when the
+      // subscription ACTUALLY reached the state that payment was supposed to
+      // produce. The transaction row is written BEFORE the subscription update,
+      // so an activation that failed (for example on the
+      // `user_subscriptions_one_live_row_per_user` unique index) left a
+      // captured transaction beside a subscription that never activated — and
+      // this early ack then swallowed every Moyasar redelivery, making the
+      // dead-letter + non-2xx retry below useless.
+      //
+      // Re-applying is bounded to Moyasar's own retry window so an ancient
+      // redelivery can never resurrect a closed period.
+      const REPROCESS_WINDOW_MS = 24 * 60 * 60 * 1000;
+      const txCreatedAt = (existingTx as any).created_at;
+      const txAgeMs = txCreatedAt ? Date.now() - Date.parse(txCreatedAt) : Number.NaN;
+      const withinRetryWindow = Number.isFinite(txAgeMs) && txAgeMs >= 0 && txAgeMs < REPROCESS_WINDOW_MS;
+
+      // States that mean "this subscription is still waiting for money to land".
+      const awaitingActivation = sub.status === "pending_activation" || sub.status === "past_due";
+      // A captured verification whose card token never made it onto the row.
+      const verificationUnapplied =
+        (existingTx as any).payment_type === "verification" &&
+        sub.status === "trialing" &&
+        !(sub as any).moyasar_card_token;
+
+      if (!withinRetryWindow || (!awaitingActivation && !verificationUnapplied)) {
+        console.log(`Idempotent paid: payment ${paymentId} already processed — ack without reprocessing`);
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: corsHeaders,
+        });
+      }
+
+      console.warn(
+        `Payment ${paymentId} is captured but subscription ${sub.id} is still '${sub.status}' — ` +
+        `re-applying the state transition (defect C2)`,
+      );
     }
 
     // ── Independent Moyasar API re-verification ───────────────────────────────
@@ -361,8 +394,46 @@ serve(async (req) => {
       parseFlow(verifiedPayment?.metadata?.flow) ??
       (localTxType === "renewal" ? "renewal" : deriveFlow(sub as any, nowMs));
 
-    const planRowForAmount = (sub as any)?.subscription_plans ?? null;
-    const allowedAmounts = expectedAmountsFor(planRowForAmount, sub as any, flow, verifiedPromoCode);
+    // -- Plan / seats this payment was actually created FOR (defect C1) ------
+    // moyasar-create-subscription no longer writes a requested plan/seat change
+    // onto a live `trialing` / `past_due` row: an abandoned checkout used to
+    // leave the row escalated and the cron then billed the escalated price on
+    // the stored card without the customer ever paying for it. The request now
+    // rides in the payment metadata (written server-side by
+    // moyasar-initiate-token-payment, re-read here from the RE-VERIFIED
+    // payment) and is promoted onto the row further down, only on capture.
+    const paidPlanRef = parsePaidPlanRef(verifiedPayment?.metadata);
+    let paidPlanRow: any = (sub as any)?.subscription_plans ?? null;
+    let promotePlanId: string | null = null;
+    let promoteSeatCount: number | null = null;
+    let planRefUsable = true;
+
+    if (paidPlanRef.plan_id && paidPlanRef.plan_id !== (sub as any).plan_id) {
+      const { data: switchedPlan } = await adminClient
+        .from("subscription_plans")
+        .select("id, slug, name_en, currency, price_amount, price_per_seat, min_seats, duration_days")
+        .eq("id", paidPlanRef.plan_id)
+        .maybeSingle();
+      if (switchedPlan) {
+        paidPlanRow = switchedPlan;
+        promotePlanId = paidPlanRef.plan_id;
+      } else {
+        // Metadata names a plan that no longer exists. Ignore the whole
+        // reference and fall back to the plan stored on the row.
+        planRefUsable = false;
+        console.error("Paid-plan metadata names an unknown plan", { sub_id: sub.id });
+      }
+    }
+    if (planRefUsable && paidPlanRef.seat_count != null && paidPlanRef.seat_count !== (sub as any).seat_count) {
+      promoteSeatCount = paidPlanRef.seat_count;
+    }
+
+    // Validate the amount against the plan/seats actually paid for, not against
+    // whatever is currently stored on the row.
+    const subForAmount = promoteSeatCount != null
+      ? { ...(sub as any), seat_count: promoteSeatCount }
+      : (sub as any);
+    const allowedAmounts = expectedAmountsFor(paidPlanRow, subForAmount, flow, verifiedPromoCode);
     const verifiedAmountRaw = verifiedPayment?.amount;
 
     if (
@@ -478,9 +549,16 @@ serve(async (req) => {
       if (moyasarCardLastFour) updateData.card_last_four = moyasarCardLastFour;
       updateData.moyasar_payment_id = paymentId;
 
+      // Defect C1: promote the plan/seats this payment actually bought. This is
+      // the ONLY place a plan or seat escalation may land on a live
+      // subscription row, so an abandoned checkout can never arm a larger
+      // unattended charge.
+      if (promotePlanId) updateData.plan_id = promotePlanId;
+      if (promoteSeatCount != null) updateData.seat_count = promoteSeatCount;
+
       const now = new Date();
       const trialEndDate = sub.trial_end ? new Date(sub.trial_end) : null;
-      const durationDays = (sub as any)?.subscription_plans?.duration_days || 30;
+      const durationDays = paidPlanRow?.duration_days || 30;
       const periodEnd = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
       if (flow === "trial_card_verification") {
@@ -534,12 +612,66 @@ serve(async (req) => {
         subUpdateError = retry.error;
       }
 
+      if (subUpdateError && isUniqueViolationError(subUpdateError) && updateData.status === "active") {
+        // Defect C2. `user_subscriptions_one_live_row_per_user` is a partial
+        // unique index over ('active','trialing','past_due'). A lapsed customer
+        // who resubscribes gets a NEW `pending_activation` row (allowed by the
+        // partial index) whose activation then collides with the live row they
+        // lapsed on. The payment is already captured, so the new subscription
+        // must win: retire the superseded rows and retry once. An `active` row
+        // is deliberately NOT retired - that would be a genuine double
+        // subscription and needs a human.
+        const { data: superseded, error: supersededError } = await adminClient
+          .from("user_subscriptions")
+          .update({ status: "expired" })
+          .eq("user_id", sub.user_id)
+          .neq("id", sub.id)
+          .in("status", ["trialing", "past_due"])
+          .select("id");
+
+        if (supersededError) {
+          console.error("Failed to retire superseded live rows:", supersededError.message);
+        } else if (superseded && superseded.length > 0) {
+          console.warn(
+            `Retired ${superseded.length} superseded live subscription row(s) for user ${sub.user_id} ` +
+            `so captured payment ${paymentId} could activate subscription ${sub.id}`,
+          );
+          const retry = await adminClient
+            .from("user_subscriptions")
+            .update(updateData)
+            .eq("id", sub.id);
+          subUpdateError = retry.error;
+          if (subUpdateError && isUndefinedColumnError(subUpdateError)) {
+            const retryNoOptional = await adminClient
+              .from("user_subscriptions")
+              .update(withoutKeys(updateData, OPTIONAL_SUBSCRIPTION_COLUMNS))
+              .eq("id", sub.id);
+            subUpdateError = retryNoOptional.error;
+          }
+        }
+      }
+
       if (subUpdateError) {
+        // Defect C2. This used to be console.error'd while the handler still
+        // returned 200: money captured, no subscription, no dead letter, no
+        // retry. A failed activation on a PAID event is now dead-lettered AND
+        // not acknowledged, so Moyasar redelivers the event.
         console.error("Failed to update subscription on paid event:", subUpdateError);
+        await insertDeadLetter(adminClient, {
+          paymentId,
+          moyasarStatus: status,
+          reason: "subscription_update_failed_on_paid",
+          payload,
+        });
+        return new Response(JSON.stringify({ error: "Subscription update failed" }), {
+          status: 500,
+          headers: corsHeaders,
+        });
       } else {
         // Plan slug is needed by both the profiles.plan_type sync (active path)
         // and the enterprise org auto-link (any paid path), so fetch it once.
-        const planSlug = (sub as any)?.subscription_plans?.slug ?? null;
+        // It must come from the plan actually PAID FOR, not the stale row.
+        const planSlug = paidPlanRow?.slug ?? (sub as any)?.subscription_plans?.slug ?? null;
 
         // Sync profiles.plan_type when subscription becomes active.
         if (updateData.status === "active") {
@@ -642,17 +774,36 @@ serve(async (req) => {
       if (isRenewal) {
         const { data: subForFailure } = await adminClient
           .from("user_subscriptions")
-          .select("past_due_since")
+          .select("status, past_due_since")
           .eq("id", sub.id)
           .single();
 
-        if (subForFailure && !subForFailure.past_due_since) {
-          const pastDueSince = new Date().toISOString();
-          await adminClient
-            .from("user_subscriptions")
-            .update({ past_due_since: pastDueSince })
-            .eq("id", sub.id);
+        // Defect C3(b). This branch used to stamp past_due_since but NEVER set
+        // status, so an async decline left the row `active` with a
+        // next_billing_date in the past - and the cron's active-due pass then
+        // re-charged the declining card every single hour, forever. The status
+        // and the stamp must move together, exactly as markPastDue does in
+        // process-subscription-renewal.
+        const currentStatus = (subForFailure as any)?.status ?? null;
+        const canMarkPastDue =
+          currentStatus === "active" || currentStatus === "trialing" || currentStatus === "past_due";
+        const firstFailureOfEpisode = !!subForFailure && !subForFailure.past_due_since;
+        const pastDueSince = subForFailure?.past_due_since ?? new Date().toISOString();
 
+        if (subForFailure && canMarkPastDue) {
+          const failureUpdate: Record<string, any> = { status: "past_due" };
+          if (firstFailureOfEpisode) failureUpdate.past_due_since = pastDueSince;
+
+          const { error: pastDueError } = await adminClient
+            .from("user_subscriptions")
+            .update(failureUpdate)
+            .eq("id", sub.id);
+          if (pastDueError) {
+            console.error("Failed to mark subscription past_due:", pastDueError.message);
+          }
+        }
+
+        if (subForFailure && canMarkPastDue && firstFailureOfEpisode) {
           // Atomic dunning claim
           try {
             const { data: claimed } = await adminClient

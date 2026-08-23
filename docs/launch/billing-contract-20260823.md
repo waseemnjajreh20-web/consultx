@@ -125,7 +125,7 @@ previous (enterprise_office at 100 seats − 10.00 SAR).
 | `pending_activation` | returning user; payment in flight, webhook not yet delivered | no |
 | `trialing` | inside the 7-day free trial window (`trial_end > now`) | yes, if a card is on file (see Section 4) |
 | `active` | paid, inside `current_period_end` | yes |
-| `past_due` | a charge failed; 7-day grace window from `past_due_since` | yes during grace, no after |
+| `past_due` | a charge failed; 7-day grace window from `past_due_since`. At the end of the window `process-subscription-renewal` moves the row to `expired` (or `cancelled` if the user had opted out) and syncs `profiles.plan_type` to `free` | yes during grace, no after |
 | `expired` | trial ended with no card, or period ended | no |
 | `cancelled` | user cancelled and the period ended | no |
 
@@ -211,6 +211,15 @@ no "excluding VAT", no "VAT exempt", and no base/tax/total breakdown.
 `status === "past_due"`. Access continues until `past_due_since + 7 days` (`expires_at` already
 carries the grace end). Show the update-card CTA. A dunning email has already been sent by the backend.
 
+**The update-card path is the normal checkout.** `moyasar-create-subscription` and
+`moyasar-initiate-token-payment` both accept a `past_due` subscription, so `/subscribe` refreshes
+the payment session on the existing row and charges the full plan price as an `immediate_charge`,
+which activates a new 30-day period. Promotion codes are ignored for a `past_due` row: an offer is
+for a new checkout, never for repairing a failing card.
+
+The cron keeps its own retry going in parallel, capped at `MAX_CHARGE_ATTEMPTS` attempts spaced by
+`CHARGE_RETRY_BACKOFF_MS` (see Section 12.3).
+
 ### 5.5 `expired`
 `status === "expired"` or `"cancelled"`. No access. Route to checkout, which will run
 `immediate_charge` at the **full plan price** (not 1 SAR).
@@ -240,7 +249,8 @@ charged amount cannot diverge.
 {
   "subscription_id": "<uuid>",
   "given_id": "<uuid>",            // not present on cron-initiated charges
-  "plan_id": "<uuid>",
+  "plan_id": "<uuid>",           // the plan THIS payment buys — see Section 12.1
+  "seat_count": 5,               // the seats THIS payment buys — see Section 12.1
   "user_id": "<uuid>",
   "flow": "trial_card_verification" | "immediate_charge" | "post_trial_first_charge" | "renewal",
   "purpose": "card_verification" | "immediate_charge" | "founding10_first_month" | "eid50_first_month" | "post_trial_first_charge" | "renewal",
@@ -327,7 +337,7 @@ never charged.
 
 | File | Role |
 |---|---|
-| `supabase/functions/_shared/billing.ts` | `computeCharge`, `chargeSplit` (applied to live charges), `splitVat` (dormant, kept for future registration), `expectedAmountsFor`, `deriveFlow`, `isUndefinedColumnError` — pure, unit-tested |
+| `supabase/functions/_shared/billing.ts` | `computeCharge`, `chargeSplit` (applied to live charges), `splitVat` (dormant, kept for future registration), `expectedAmountsFor`, `deriveFlow`, `isUndefinedColumnError`, `isUniqueViolationError`, `chargeRetryEligibility`, `parsePaidPlanRef`, `trialChargeAuthorized` — pure, unit-tested |
 | `supabase/functions/moyasar-create-subscription/index.ts` | returns the honest checkout `amount` / `description` for display |
 | `supabase/functions/moyasar-initiate-token-payment/index.ts` | decides the flow server-side and creates the Moyasar charge |
 | `supabase/functions/moyasar-webhook/index.ts` | verifies HMAC + re-verifies via API, then applies the flow-specific state transition |
@@ -347,18 +357,11 @@ never charged.
    The code treats that as "awaiting webhook", which for an unattended cron charge means the user
    never completes 3DS and the payment stalls. Confirm with Moyasar that recurring MIT charges on a
    saved token are exempt from 3DS for this merchant account.
-3. **UNFIXED — renewal idempotency inverts into runaway charging.**
-   `process-subscription-renewal/index.ts` (~line 238) uses `.maybeSingle()` for the
-   renewal idempotency check and discards the error. PostgREST returns
-   `{data: null, error: PGRST116}` when MORE than one row matches, so two matching
-   `renewal` rows make `existingTx` null and the job charges — every hour, forever.
-   Two rows is reachable: the trial-conversion pass writes `payment_type = "renewal"`
-   and its 24h retry window deliberately creates a second `initiated` row.
-   **Required fix:** `.limit(1)` with an array result, and treat ANY query error as
-   "skip this subscription", never as "proceed to charge".
-   **Why it is not applied:** `.claude/hooks/guard-migrations.js` blocks all
-   Edit/Write to `supabase/functions/process-subscription-renewal/`. Owner must apply
-   it or lift the guard for this file. The exact patch is in the fix report.
+3. **CLOSED (2026-08-23) — renewal idempotency inverted into runaway charging.**
+   The `.maybeSingle()` idempotency check now uses `.limit(1)` with an array result and
+   treats any query error as "skip this subscription". A second, independent runaway
+   route (a `failed` transaction blocking nothing) was closed by the attempt cap in
+   Section 12.3.
 
 4. **No receipt document.** No receipt is issued and no receipt email is sent. A
    **non-VAT-registered** seller must issue a plain commercial receipt, **never** a tax invoice, and
@@ -368,10 +371,22 @@ never charged.
 5. **NOT VERIFIED — registration threshold.** See Section 11. The 375,000 SAR figure recorded there
    is an ASSUMPTION for planning; it has not been confirmed with an accountant.
 
-6. **OPEN — `process-subscription-renewal` still applies the 15% split.** That file is behind
-   `.claude/hooks/guard-migrations.js` and could not be edited. It still calls `splitVat` instead of
-   `chargeSplit`, so renewal and trial-conversion rows keep recording a VAT split that was never
-   charged. The charged amount is unaffected. Two-line patch in Section 11.1.
+6. **CLOSED (2026-08-23) — `process-subscription-renewal` now calls `chargeSplit`.** No renewal or
+   trial-conversion row records a VAT split any more. No charged amount changed.
+
+7. **OWNER ACTION — `CRON_SECRET` is now mandatory.** `process-subscription-renewal` used to skip
+   the secret check entirely when `CRON_SECRET` was unset, leaving an unauthenticated endpoint that
+   charges stored cards. It now returns **500** when `CRON_SECRET` is missing and **401** on a wrong
+   or missing `x-cron-secret` header. **If `CRON_SECRET` is not set in production, the renewal job
+   stops running: no trial converts and no subscription renews.** Set the secret on the function
+   and on the pg_cron caller before the next deploy, then confirm a 200 from one manual invocation.
+
+8. **KNOWN MINOR — a mid-trial plan change costs a second 1.00 SAR verification.** A plan or seat
+   change on a live trial is only promoted when a payment for it is captured (Section 12.1), and
+   inside the trial window that payment is the 1.00 SAR card verification. A customer who changes
+   plan mid-trial therefore pays 1.00 SAR twice while only one 1.00 SAR is credited against the
+   first invoice. Accepted: it is the consent signal that closes the escalation hole, and the
+   alternative (the previous behaviour) was a permanent 409 that made the trial un-payable.
 
 ---
 
@@ -404,17 +419,99 @@ and is an owner decision requiring advance customer notice.
 | 7 | Historical data | Do **not** retro-split past transactions. Rows charged before registration genuinely carried no VAT; rewriting them would misstate closed periods. |
 | 8 | Tests | `src/__tests__/billing.test.ts` — the `chargeSplit` describe block asserts `vat === 0`. It must be updated in the same change, not after. |
 
-### 11.1 Outstanding patch — `process-subscription-renewal`
+### 11.1 Outstanding patch — `process-subscription-renewal` (APPLIED 2026-08-23)
 
-Blocked by `.claude/hooks/guard-migrations.js`. Owner applies, or lifts the guard for this file.
-Two lines, no change to any charged amount:
+`process-subscription-renewal` imports and calls `chargeSplit`. Nothing outstanding here.
 
-```diff
--  splitVat,
-+  chargeSplit,
-```
+---
 
-```diff
--    const vatSplit = splitVat(chargeAmount);
-+    const vatSplit = chargeSplit(chargeAmount);
-```
+## Section 12. Second adversarial round — C1 / C2 / C3 (2026-08-23)
+
+### 12.1 A plan or seat change is promoted ONLY when a payment for it is captured
+
+**The defect.** `moyasar-create-subscription` wrote the requested `plan_id` and `seat_count`
+straight onto the live `trialing` row before any payment, with no rollback if the checkout was
+abandoned. Combined with a 409 that made a verified trial row permanently un-payable, a customer
+could set 100 seats of `enterprise_office`, fail to pay, close the tab — and the cron would charge
+100 x 54,900 halalas on the stored card at `trial_end`, with the webhook validating the amount
+because `expectedAmountsFor` re-derived it from the same mutated row.
+
+**The design.** `pending_plan_id` / `pending_seat_count` columns would be ideal but do not exist in
+production and the migration hook blocks adding them, so the request travels in the payment instead:
+
+| step | what happens |
+|---|---|
+| `moyasar-create-subscription` | For a live **`trialing`** or **`past_due`** row: **never** writes `plan_id` / `seat_count`. It refreshes only `moyasar_given_id` and returns the quote for the REQUESTED plan plus `plan_id` and `seat_count`. A `pending_activation` row is still updated in place — it holds no card token and no pass ever charges it, so nothing can be armed on it. |
+| `Subscribe.tsx` | Echoes the returned `plan_id` / `seat_count` back to `moyasar-initiate-token-payment`. |
+| `moyasar-initiate-token-payment` | Re-validates the plan (must exist; must be `is_active` when it differs from the stored one) and the seat count (integer, `min_seats`..`MAX_BILLABLE_SEATS`), prices the charge from it, and writes `plan_id` + `seat_count` into the Moyasar payment `metadata`. Omitted values fall back to the stored row. |
+| `moyasar-webhook` | Reads `parsePaidPlanRef(metadata)` from the RE-VERIFIED payment, validates the amount against the plan actually paid for, and on a `paid` event promotes `plan_id` / `seat_count` onto the row. This is the only place a plan or seat escalation may land on a live subscription. |
+| `process-subscription-renewal` | Before the unattended post-trial charge, re-fetches the payment referenced by `user_subscriptions.moyasar_payment_id` (the 1.00 SAR verification) and calls `trialChargeAuthorized(sub, ref)`. A plan mismatch, or a row billing MORE seats than were verified, **skips the charge**. A lookup failure also skips — unknown authorization is never "proceed to charge". A payment created before this change carries no `plan_id`, which is treated as "nothing to compare" so existing trials are not stranded. |
+
+Billing FEWER seats than were verified is allowed: it can only undercharge.
+
+### 12.2 A captured payment must never end with no subscription
+
+`user_subscriptions_one_live_row_per_user` is a partial unique index over
+(`active`,`trialing`,`past_due`). A lapsed customer who resubscribed got a new
+`pending_activation` row (allowed by the partial index) whose activation UPDATE then collided with
+their still-live `past_due` row. `isUndefinedColumnError` did not match SQLSTATE `23505`, so the
+failure was only `console.error`'d and the handler returned 200: money captured, no subscription,
+no dead letter, no retry.
+
+- `process-subscription-renewal` now runs a **past-due expiry pass** (`expireLapsedPastDue`) that
+  moves `past_due` rows past the grace window to `expired` (or `cancelled` when
+  `cancel_at_period_end`) and syncs `profiles.plan_type` to `free`. `past_due` rows with a NULL
+  `past_due_since` can never leave that status through any pass and are logged for ops rather than
+  cut off silently.
+- `moyasar-webhook`'s early idempotent ack (`existing transaction is captured` + `paid`) no longer
+  fires unconditionally. The transaction row is written **before** the subscription update, so a
+  captured transaction sitting beside a subscription still in `pending_activation` / `past_due`
+  (or a captured verification whose card token never landed on a `trialing` row) is the signature
+  of a failed activation. In that case the state transition is re-applied instead of acked, bounded
+  to a 24-hour window so an ancient redelivery can never resurrect a closed period. Without this the
+  dead-letter-and-retry below would have been dead code: every Moyasar retry was swallowed.
+- `moyasar-webhook` now treats **any** failure to update `user_subscriptions` on a `paid` event as
+  fatal: `insertDeadLetter` (which cannot throw — it wraps its own insert in try/catch) plus a
+  **non-2xx** response so Moyasar redelivers. On a `23505` during activation it first retires the
+  superseded **non-active** live rows of the same user and retries once; an `active` blocker is
+  never touched, because that would be a genuine double subscription needing a human.
+
+### 12.3 Charge attempts are capped and spaced
+
+The renewal idempotency guard only matched `initiated` / `captured`, so a `failed` transaction
+blocked nothing, `failedCount` was computed and never used, `next_billing_date` was not advanced,
+and the past-due pass retried a declining card **every hour** for the whole grace window
+(~168 attempts). The async route was worse: the webhook's failed handler stamped `past_due_since`
+but never set `status`, so the row stayed `active` with a past `next_billing_date` and the
+active-due pass retried forever.
+
+- `chargeRetryEligibility(failedCount, lastFailedAt, now)` in `_shared/billing.ts` caps an episode
+  at **`MAX_CHARGE_ATTEMPTS = 4`** attempts, spaced by **`CHARGE_RETRY_BACKOFF_MS = 24h`**, derived
+  from the `created_at` of the most recent `failed` renewal transaction in the period window. No
+  new column. Any error reading that history skips the subscription.
+- A healthy renewal has `failedCount = 0` and is never affected.
+- A subscription that exhausts its attempts is left alone and closed by the past-due expiry pass at
+  the end of the grace window (Section 12.2) — it is never retried again.
+- `moyasar-webhook` now sets `status = "past_due"` together with `past_due_since` on a failed
+  renewal / post-trial charge, so the async decline path can no longer leave a row `active`.
+
+### 12.4 The 409 that made a verified trial row un-payable
+
+`moyasar-initiate-token-payment` returned 409 whenever `user_subscriptions.moyasar_payment_id` was
+set — and the webhook stamps it on **every** paid event, including the 1.00 SAR verification. That
+guard never protected an in-flight payment (this endpoint writes no payment id, and a captured
+non-trial payment moves the row to `active`, which the status check already rejects); it only
+locked verified trial customers out of ever paying. It is replaced by two guards that match the
+real risk:
+
+1. money already captured for a row still awaiting activation (`priorPaidCount > 0`, `past_due`
+   exempt because captured transactions from earlier periods are normal there) — 409;
+2. another attempt of the same kind of charge (verification vs. real invoice) for this subscription
+   within the last 10 minutes — 409.
+
+### 12.5 Cancel stays available while the first invoice is in flight
+
+`Account.tsx` gates the cancel button on `canCancelSubscription`
+(`isPaidActive || isTrialActive || isTrialConversionPending`) instead of active-access booleans,
+and renders a short bilingual note while `trial_conversion_pending` is true. The "Subscribe now"
+CTA is hidden in that state so the customer is not invited to pay twice.

@@ -152,6 +152,20 @@ interface NavItem {
 }
 
 // ---------------------------------------------------------------------------
+// H5 copy — trial window closed with a card on file, first invoice in flight.
+// Defined locally on purpose: this state is surfaced without touching the
+// shared translation table in src/lib/translations.ts.
+const TRIAL_CONVERSION_PENDING_NOTE = {
+  ar: {
+    title: "جارٍ تجهيز أول فاتورة",
+    body: "انتهت تجربتك المجانية وبطاقتك مسجلة لدينا. أول فاتورة قيد المعالجة الآن ولم يُفعّل الاشتراك بعد. إن لم ترغب في المتابعة، يمكنك الإلغاء قبل تنفيذ الخصم.",
+  },
+  en: {
+    title: "Your first invoice is being processed",
+    body: "Your free trial has ended and your card is on file. The first invoice is being processed now and the subscription is not active yet. If you do not want to continue, you can cancel before it is charged.",
+  },
+} as const;
+
 // Main Account component
 // ---------------------------------------------------------------------------
 const Account = () => {
@@ -160,6 +174,10 @@ const Account = () => {
     user, session, signOut, authLoading, subscription, subLoading, refetch,
     isPaidActive, isTrialActive, isTrialExpired, hasActiveAccess, isFreeLoggedIn,
     trialDaysRemaining, rawAccessState, isOrgMember, isAdmin,
+    // H5: the trial window has closed with a card on file. The user is NOT
+    // active, but a first invoice is armed against their card, so the cancel
+    // affordance must stay visible for exactly this window.
+    isTrialConversionPending, canCancelSubscription,
   } = useEntitlement();
 
   const {
@@ -681,13 +699,25 @@ const Account = () => {
             </div>
           )}
 
-          {/* Cancel action — only when subscription is active/trialing and not already scheduled */}
-          {(isTrialActive || isPaidActive) && !isCancelScheduled && session && (
+          {/* H5: first invoice is being processed — say so, and keep cancel visible */}
+          {isTrialConversionPending && !isCancelScheduled && (
+            <div className="bg-amber-500/5 rounded-xl border border-amber-500/20 p-3 text-xs text-amber-300 space-y-1">
+              <p className="font-semibold">{TRIAL_CONVERSION_PENDING_NOTE[language === "ar" ? "ar" : "en"].title}</p>
+              <p className="opacity-90">{TRIAL_CONVERSION_PENDING_NOTE[language === "ar" ? "ar" : "en"].body}</p>
+            </div>
+          )}
+
+          {/* Cancel action — active, trialing, OR trial-conversion pending.
+              Gating this on active-access booleans hid the button at exactly the
+              moment a charge was armed against a stored card (finding H5). */}
+          {canCancelSubscription && !isCancelScheduled && session && (
             <CancelSubscriptionButton t={t} refetch={refetch} session={session} />
           )}
 
-          {/* Subscribe CTA — expired / free-tier users */}
-          {!isPaidActive && !isTrialActive && !isCancelScheduled && (
+          {/* Subscribe CTA — expired / free-tier users. A trial-conversion
+              pending user is NOT one of them: they already have a charge on the
+              way and must not be invited to pay a second time. */}
+          {!canCancelSubscription && !isCancelScheduled && (
             <Button
               variant="hero"
               className="w-full mt-2"
