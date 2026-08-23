@@ -54,3 +54,5 @@ testsprite_tests/
 .verdent/testing/e2e/.user_jwt
 .verdent/testing/e2e/*_state.json
 .verdent/testing/e2e/*_results.json
+
+__pycache__/
