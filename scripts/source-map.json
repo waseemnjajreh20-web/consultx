@@ -1,0 +1,370 @@
+{
+  "_meta": {
+    "generated_at": "2026-04-09T08:45:28.084Z",
+    "pdf_bucket": "source-pdfs",
+    "total_entries": 36,
+    "description": "Maps retrieval chunk/JSON source filenames to their canonical PDF files in source-pdfs bucket."
+  },
+  "entries": [
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1–250)",
+      "document_code": "SBC-201",
+      "page_start": 1,
+      "page_end": 250
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1-250_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1-250.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1–250)",
+      "document_code": "SBC-201",
+      "page_start": 1,
+      "page_end": 250
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 251–500)",
+      "document_code": "SBC-201",
+      "page_start": 251,
+      "page_end": 500
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-251-500_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-251-500.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 251–500)",
+      "document_code": "SBC-201",
+      "page_start": 251,
+      "page_end": 500
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-501-1000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-501-1000.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 501–1000)",
+      "document_code": "SBC-201",
+      "page_start": 501,
+      "page_end": 1000
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-501-1000_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-501-1000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-501-1000.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 501–1000)",
+      "document_code": "SBC-201",
+      "page_start": 501,
+      "page_end": 1000
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1001-1250.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1001-1250.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1001–1250)",
+      "document_code": "SBC-201",
+      "page_start": 1001,
+      "page_end": 1250
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1001-1250_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1001-1250.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1001-1250.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1001–1250)",
+      "document_code": "SBC-201",
+      "page_start": 1001,
+      "page_end": 1250
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1251-1500_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1251-1500.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1251-1500.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1251–1500)",
+      "document_code": "SBC-201",
+      "page_start": 1251,
+      "page_end": 1500
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1251-1500_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1251-1500.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1251-1500.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1251–1500)",
+      "document_code": "SBC-201",
+      "page_start": 1251,
+      "page_end": 1500
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1501-1750_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1501-1750.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1501-1750.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1501–1750)",
+      "document_code": "SBC-201",
+      "page_start": 1501,
+      "page_end": 1750
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1501-1750_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1501-1750.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1501-1750.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1501–1750)",
+      "document_code": "SBC-201",
+      "page_start": 1501,
+      "page_end": 1750
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1751-2000_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1751-2000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1751-2000.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1751–2000)",
+      "document_code": "SBC-201",
+      "page_start": 1751,
+      "page_end": 2000
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-1751-2000_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-1751-2000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-1751-2000.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 1751–2000)",
+      "document_code": "SBC-201",
+      "page_start": 1751,
+      "page_end": 2000
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-2001-2200_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-2001-2200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-2001-2200.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 2001–2200)",
+      "document_code": "SBC-201",
+      "page_start": 2001,
+      "page_end": 2200
+    },
+    {
+      "source_file": "SBC 201 - The Saudi General Building Code-2001-2200_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-201/SBC 201 - The Saudi General Building Code-2001-2200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-201/SBC 201 - The Saudi General Building Code-2001-2200.pdf",
+      "title": "SBC 201 — The Saudi General Building Code (Pages 2001–2200)",
+      "document_code": "SBC-201",
+      "page_start": 2001,
+      "page_end": 2200
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1–200)",
+      "document_code": "SBC-801",
+      "page_start": 1,
+      "page_end": 200
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1-200.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1–200)",
+      "document_code": "SBC-801",
+      "page_start": 1,
+      "page_end": 200
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 201–400)",
+      "document_code": "SBC-801",
+      "page_start": 201,
+      "page_end": 400
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-201-400.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 201–400)",
+      "document_code": "SBC-801",
+      "page_start": 201,
+      "page_end": 400
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 401–600)",
+      "document_code": "SBC-801",
+      "page_start": 401,
+      "page_end": 600
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-401-600.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 401–600)",
+      "document_code": "SBC-801",
+      "page_start": 401,
+      "page_end": 600
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 601–800)",
+      "document_code": "SBC-801",
+      "page_start": 601,
+      "page_end": 800
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-601-800.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 601–800)",
+      "document_code": "SBC-801",
+      "page_start": 601,
+      "page_end": 800
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 801–1000)",
+      "document_code": "SBC-801",
+      "page_start": 801,
+      "page_end": 1000
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-801-1000.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 801–1000)",
+      "document_code": "SBC-801",
+      "page_start": 801,
+      "page_end": 1000
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1001-1200_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1001–1200)",
+      "document_code": "SBC-801",
+      "page_start": 1001,
+      "page_end": 1200
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1001-1200_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1001-1200.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1001–1200)",
+      "document_code": "SBC-801",
+      "page_start": 1001,
+      "page_end": 1200
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1201–1400)",
+      "document_code": "SBC-801",
+      "page_start": 1201,
+      "page_end": 1400
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1201-1400.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1201–1400)",
+      "document_code": "SBC-801",
+      "page_start": 1201,
+      "page_end": 1400
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1401–1600)",
+      "document_code": "SBC-801",
+      "page_start": 1401,
+      "page_end": 1600
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1401-1600_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1401–1600)",
+      "document_code": "SBC-801",
+      "page_start": 1401,
+      "page_end": 1600
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1601–1800)",
+      "document_code": "SBC-801",
+      "page_start": 1601,
+      "page_end": 1800
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1601–1800)",
+      "document_code": "SBC-801",
+      "page_start": 1601,
+      "page_end": 1800
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1801–2061)",
+      "document_code": "SBC-801",
+      "page_start": 1801,
+      "page_end": 2061
+    },
+    {
+      "source_file": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted.json",
+      "pdf_bucket": "source-pdfs",
+      "pdf_path": "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "pdf_public_url": "https://hrnltxmwoaphgejckutk.supabase.co/storage/v1/object/public/source-pdfs/sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+      "title": "SBC 801 — The Saudi Fire Protection Code (Pages 1801–2061)",
+      "document_code": "SBC-801",
+      "page_start": 1801,
+      "page_end": 2061
+    }
+  ]
+}

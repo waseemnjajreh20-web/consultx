@@ -1,0 +1,133 @@
+[
+  {
+    "mode": "primary",
+    "language": "en",
+    "question": "What is ConsultX?",
+    "answer": "أهلاً بك! أنا ConsultX، مستشارك المتخصص في حماية المنشآت من الحرائق. مهمتي هي مساعدتك في فهم وتطبيق متطلبات الكود السعودي (SBC) ومعايير NFPA، وتقديم إجابات سريعة وموثوقة لأسئلتك.\n\nأنا هنا لأقدم لك:\n*   إجابات سريعة ومباشرة عن أسئلة الكود السعودي ومعايير NFPA.\n*   توجيهات أولية حول متطلبات السلامة من الحرائق.\n*   اقتراح الانتقال إلى وضع استشاري أو تحليلي للحالات التي تتطلب تعمقًا أكبر أو مراجعة لوثائق.\n\nكيف يمكنني مساعدتك اليوم؟",
+    "sources_header": "",
+    "source_meta": []
+  },
+  {
+    "mode": "primary",
+    "language": "ar",
+    "question": "مرحبا",
+    "answer": "أهلاً بك مهندسنا الفاضل! أنا ConsultX، مستشارك لحماية المنشآت من الحرائق. كيف يمكنني مساعدتك اليوم بخصوص الكود السعودي أو معايير NFPA؟",
+    "sources_header": "",
+    "source_meta": []
+  },
+  {
+    "mode": "primary",
+    "language": "ar",
+    "question": "ما رأيك في الطقس اليوم؟",
+    "answer": "أهلاً بك! بصفتي ConsultX، مستشار حماية من الحرائق، تركيزي ينصب على معايير السلامة والكودات. لكن إذا كان لديك أي استفسارات تتعلق بالحماية من الحرائق، الكود السعودي (SBC 201, SBC 801) أو معايير NFPA، يسعدني مساعدتك فيها.",
+    "sources_header": "",
+    "source_meta": []
+  },
+  {
+    "mode": "standard",
+    "language": "ar",
+    "question": "ما هي متطلبات نظام الإنذار في SBC 801؟",
+    "answer": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات نظام إنذار الحريق، أحتاج إلى توضيح بعض النقاط الأساسية حول مشروعك:\n\n1.  **ما هو تصنيف الإشغال الدقيق للمبنى؟** (مثال: تجاري (مكاتب، محلات)، سكني، تعليمي، صناعي، مستودع، رعاية صحية، تجمعات، إلخ.)\n2.  **كم عدد الطوابق في المبنى وما هي المساحة الإجمالية التقريبية للمبنى أو مساحة الطابق الواحد؟**\n3.  **هل المبنى مجهز بنظام رشاشات حريق تلقائي (Automatic Sprinkler System)؟**",
+    "sources_header": "SBC801_Ch9_v1_chunks.json",
+    "source_meta": [
+      {
+        "file": "SBC801_Ch9_v1_chunks.json",
+        "pageStart": null,
+        "pageEnd": null,
+        "precision": "chunk_range_only"
+      }
+    ]
+  },
+  {
+    "mode": "standard",
+    "language": "ar",
+    "question": "ما هو الحد الأدنى لعدد طفايات الحريق في المكاتب؟",
+    "answer": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات طفايات الحريق، أحتاج إلى توضيح بعض النقاط:\n\n1.  ما هو تصنيف الإشغال الدقيق للمكاتب (مثل: Group B، أو جزء من Group M، أو مختلط)؟\n2.  كم المساحة الإجمالية التقريبية لكل طابق تخدمه هذه المكاتب؟\n3.  هل هناك أي مخاطر خاصة محددة (مثل وجود سوائل قابلة للاشتعال، غرف خوادم، أو معدات طبخ تجارية)؟",
+    "sources_header": "SBC801_Ch9_v1_chunks.json",
+    "source_meta": [
+      {
+        "file": "SBC801_Ch9_v1_chunks.json",
+        "pageStart": null,
+        "pageEnd": null,
+        "precision": "chunk_range_only"
+      }
+    ]
+  },
+  {
+    "mode": "standard",
+    "language": "ar",
+    "question": "هل يجب تركيب رشاشات في كل غرفة نوم؟",
+    "answer": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات نظام الرشاشات، أحتاج إلى توضيح بعض النقاط:\n\n1.  **تصنيف الإشغال الدقيق للمبنى**: ما هو نوع استخدام المبنى بالتحديد الذي يحتوي على غرف النوم هذه (مثال: فندق، شقق سكنية، مستشفى، سكن طلاب)؟\n2.  **الارتفاع وعدد الطوابق**: كم عدد الطوابق في المبنى وما هو ارتفاعه الكلي؟\n3.  **المساحة**: ما هي المساحة الإجمالية للمبنى ومساحة الطابق الواحد؟",
+    "sources_header": "SBC801_Ch9_v1_chunks.json,SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json,SBC801_Ch10_v2_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json,__sbc_table__::SBC-801::903.2",
+    "source_meta": [
+      {
+        "file": "SBC801_Ch9_v1_chunks.json",
+        "pageStart": null,
+        "pageEnd": null,
+        "precision": "chunk_range_only"
+      },
+      {
+        "file": "SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json",
+        "pageStart": 350,
+        "pageEnd": 379,
+        "precision": "page_range"
+      },
+      {
+        "file": "SBC801_Ch10_v2_chunks.json",
+        "pageStart": 0,
+        "pageEnd": 685,
+        "precision": "chunk_range_only"
+      },
+      {
+        "file": "SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+        "pageStart": 56,
+        "pageEnd": 64,
+        "precision": "page_range"
+      },
+      {
+        "file": "__sbc_table__::SBC-801::903.2",
+        "pageStart": null,
+        "pageEnd": null,
+        "precision": "unavailable",
+        "sectionRef": "903.2",
+        "sectionConfidence": "medium"
+      }
+    ]
+  },
+  {
+    "mode": "analysis",
+    "language": "ar",
+    "question": "قارن بين SBC 201 و SBC 801 من حيث نظام الإنذار",
+    "answer": "",
+    "sources_header": "SBC801_Ch9_v1_chunks.json,SBC801_Ch10_v2_chunks.json",
+    "source_meta": [
+      {
+        "file": "SBC801_Ch9_v1_chunks.json",
+        "pageStart": null,
+        "pageEnd": null,
+        "precision": "chunk_range_only"
+      },
+      {
+        "file": "SBC801_Ch10_v2_chunks.json",
+        "pageStart": 0,
+        "pageEnd": 0,
+        "precision": "page_range"
+      }
+    ]
+  },
+  {
+    "mode": "analysis",
+    "language": "en",
+    "question": "What compliance gaps exist between SBC 201 and SBC 801 for smoke detectors?",
+    "answer": "**I. Project Classification**\n*   Matter Type: Specific Code Question\n*   Occupancy: [CANNOT CONCLUDE] - Not provided, not relevant for this general code question.\n*   Hazard Category: [CANNOT CONCLUDE] - Not provided, not relevant for this general code question.\n*   Height / Stories: [CANNOT CONCLUDE] - Not provided, not relevant for this general code question.\n*   Area: [CANNOT CONCLUDE] - Not provided, not relevant for this general code question.\n*   Sprinklers: [CANNOT CONCLUDE] - Not provided, not relevant for this general code question.\n\n**II. Inputs Reviewed**\n*   SBC801_Ch10_v2_chunks.json (4 relevant sections) — [CONFIRMED]\n\n**III. Governing Code Path**\nThe question pertains to identifying compliance gaps between SBC 201 and SBC 801 regarding smoke detectors. To address this, relevant sections from both codes concerning fire alarm systems, smoke detection, and related building services (e.g., mechanical ventilation) would typically be required.\n\n*   Primary Path: SBC 801 (specifically Chapter 9, Fire Protection Systems, and Chapter 10, Means of Egress, if related to smoke control in egress paths) and SBC 201 (specifically Chapter 9, Fire Protection Systems, and potentially Chapter 7, Fire and Smoke Protection Features, and Chapter 5, General Building Heights and Areas).\n*   Secondary Path: SBC 501 (Mechanical Code) is indicated by an indirect reference within the provided SBC 801 text.\n*   Conflicts/Issues: The provided document chunks are highly limited and do not contain the primary code text for smoke detectors or comprehensive fire alarm system requirements from either SBC 201 or SBC 801. Therefore, a direct comparison for compliance gaps is not possible with the available information.\n\n**IV. Key Requirements**\nBased on the provided limited context:\n\n| Requirement | Reference (Document + Section) | Value / Factor | Epistemic State |\n| :---------- | :----------------------------- | :------------- | :-------------- |\n| AHU Smoke Detectors | [INDIRECT — SBC801-Ch10, Section 1020.6.1, Item 3 context] | Required by SBC 501 | [INFERRED] |\n\n**V. Engineering Analysis**\nA comprehensive engineering analysis to identify compliance gaps between SBC 201 and SBC 801 for smoke detectors cannot be performed with the currently provided code text. The available text primarily focuses on corridors, exits, and handrails, with only one indirect mention of \"air-handling unit smoke detectors required by SBC 501\" within the context of air movement in corridors.\n\nWithout specific sections from SBC 201 and SBC 801 detailing the requirements for smoke detectors (e.g., types, locations, spacing, power supplies, integration with fire alarm systems, testing, and maintenance), it is impossible to identify any \"compliance gaps\" or overlaps between the two codes.\n\n| Element | Requirement | Reference (Document + Section + Page) | Status | Notes |\n| :------ | :---------- | :------------------------------------ | :----- | :---- |\n| Smoke Detector Requirements (General) | Not specified in provided text. | [NO SOURCE] | ⚠️ Requires Confirmation | The verbatim text for general smoke detector requirements in SBC 201 or SBC 801 is not available in the current structured index. |\n| Air-Handling Unit Smoke Detectors | Required by SBC 501 for certain conditions (e.g., for return air plenum shutdown). | [INDIRECT — SBC801-Ch10, Section 1020.6.1, Item 3 context] | ⚠️ Requires Confirmation | This is an indirect reference to SBC 501, not a direct requirement from SBC 201 or SBC 801 regarding the details of smoke detectors themselves. |\n\n**VI. Conflicts & Risk Areas**\nBased on the available, highly limited code text, there are no explicit conflicts or risk areas identified regarding smoke detectors *between SBC 201 and SBC 801*. The provided text is insufficient to perform such an analysis.\n\n**VII. Missing Critical Information**\n*   [X] Comprehensive sections from SBC 201 detailing smoke detector requirements.\n*   [X] Comprehensive sections from SBC 801 detailing smoke detector requirements (e.g., Section 907, Fire Alarm and Detection Systems, which is typically where these requirements reside).\n*   [X] Specific details on the scope and application of smoke detector requirements in both codes.\n\n**VIII. Preliminary Review Position**\n*   **Confirmed:** The provided text is extremely limited regarding smoke detector requirements from SBC 201 and SBC 801. There is an indirect reference in SBC 801 Section 1020.6.1, Item 3, which mentions \"air-handling unit smoke detectors required by SBC 501.\"\n*   **Inferred:** SBC 501 (the Mechanical Code) is likely a primary source for specific requirements related to smoke detectors in air-handling systems.\n*   **Requires Confirmation:** The actual requirements for smoke detectors in both SBC 201 and SBC 801, and thus any compliance gaps, cannot be determined from the provided context.\n*   **Cannot Conclude:** A comprehensive answer to the user's question about compliance gaps for smoke detectors between SBC 201 and SBC 801 is impossible due to the critical lack of source material on this topic.\n\n**IX. Compliance Verdict**\n🔲 Not Determined — Insufficient Data.\nBased on the severely limited code excerpts provided, it is not possible to identify or analyze compliance gaps between SBC 201 and SBC 801 for smoke detectors. The necessary specific code sections detailing smoke detector requirements are not available in the provided context.\n\nThis analysis represents the technical minimum according to the code and is subject to the approval of the Civil Defense based on its general and specific circulars and field risk assessment.\n\n**X. Required Clarifications & Next Actions**\n*   [🔴] Provide the relevant sections of SBC 201 (e.g., Chapter 9, Fire Protection Systems, and Chapter 7, Fire and Smoke Protection Features) that specifically address smoke detector requirements.\n*   [🔴] Provide the relevant sections of SBC 801 (e.g., Chapter 9, Fire Protection Systems, particularly Section 907, Fire Alarm and Detection Systems) that specifically address smoke detector requirements.\n*   [🟠] Clarify if the user is interested in a specific type of smoke detector (e.g., spot, duct, beam) or their interaction with other systems (e.g., HVAC, sprinkler).",
+    "sources_header": "SBC801_Ch10_v2_chunks.json",
+    "source_meta": [
+      {
+        "file": "SBC801_Ch10_v2_chunks.json",
+        "pageStart": 0,
+        "pageEnd": 685,
+        "precision": "chunk_range_only"
+      }
+    ]
+  }
+]
