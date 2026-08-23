@@ -23,7 +23,7 @@ export default function Terms() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">2. وصف الخدمة</h2>
-                <p>ConsultX منصة استشارات هندسية للحماية من الحرائق مدعومة بالذكاء الاصطناعي، تقدم إجابات مرجعية من كود البناء السعودي ومعايير NFPA. الخدمة للاستخدام المعلوماتي المساعد ولا تحل محل المهندس المرخص أو المسؤولية القانونية الرسمية.</p>
+                <p>ConsultX منصة استشارات هندسية للحماية من الحرائق مدعومة بالذكاء الاصطناعي، تقدم إجابات مرجعية من كود البناء السعودي (SBC 201 وSBC 801). الخدمة للاستخدام المعلوماتي المساعد ولا تحل محل المهندس المرخص أو المسؤولية القانونية الرسمية.</p>
               </div>
 
               <div>
@@ -80,7 +80,7 @@ export default function Terms() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">2. Service Description</h2>
-                <p>ConsultX is an AI-powered fire safety engineering consultation platform that provides referenced answers from the Saudi Building Code and NFPA standards. The service is for informational and professional assistance purposes and does not replace a licensed engineer or official legal responsibility.</p>
+                <p>ConsultX is an AI-powered fire safety engineering consultation platform that provides referenced answers from the Saudi Building Code (SBC 201 and SBC 801). The service is for informational and professional assistance purposes and does not replace a licensed engineer or official legal responsibility.</p>
               </div>
 
               <div>

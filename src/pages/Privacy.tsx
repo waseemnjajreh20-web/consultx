@@ -18,7 +18,7 @@ export default function Privacy() {
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">1. جمع البيانات</h2>
-                <p>نجمع البيانات الضرورية لتقديم الخدمة: عنوان البريد الإلكتروني عند التسجيل، محادثات الاستشارة (مخزنة بشكل آمن)، بيانات الاستخدام الأساسية (عدد الرسائل، نوع الجهاز). لا نجمع بيانات مالية مباشرةً — تُعالج المدفوعات عبر Tap Payments.</p>
+                <p>نجمع البيانات الضرورية لتقديم الخدمة: عنوان البريد الإلكتروني عند التسجيل، محادثات الاستشارة (مخزنة بشكل آمن)، بيانات الاستخدام الأساسية (عدد الرسائل، نوع الجهاز). لا نجمع بيانات مالية مباشرةً — تُعالج المدفوعات عبر Moyasar (مُيسّر).</p>
               </div>
 
               <div>
@@ -33,7 +33,7 @@ export default function Privacy() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">4. الأطراف الثالثة</h2>
-                <p>نشارك بياناتك مع: <strong>Supabase</strong> (قاعدة البيانات والمصادقة)، <strong>Tap Payments</strong> (معالجة المدفوعات)، <strong>Google (Gemini)</strong> (معالجة الاستشارات بالذكاء الاصطناعي). لا نبيع بياناتك لأي طرف ثالث.</p>
+                <p>نشارك بياناتك مع: <strong>Supabase</strong> (قاعدة البيانات والمصادقة)، <strong>Moyasar (مُيسّر)</strong> (معالجة المدفوعات)، <strong>Google (Gemini)</strong> (معالجة الاستشارات بالذكاء الاصطناعي). لا نبيع بياناتك لأي طرف ثالث.</p>
               </div>
 
               <div>
@@ -70,7 +70,7 @@ export default function Privacy() {
             <section className="space-y-8 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">1. Data Collection</h2>
-                <p>We collect data necessary to provide the service: email address upon registration, consultation conversations (securely stored), and basic usage data (message count, device type). We do not collect financial data directly — payments are processed via Tap Payments.</p>
+                <p>We collect data necessary to provide the service: email address upon registration, consultation conversations (securely stored), and basic usage data (message count, device type). We do not collect financial data directly — payments are processed via Moyasar.</p>
               </div>
 
               <div>
@@ -85,7 +85,7 @@ export default function Privacy() {
 
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-3">4. Third-Party Services</h2>
-                <p>We share data with: <strong>Supabase</strong> (database & authentication), <strong>Tap Payments</strong> (payment processing), <strong>Google (Gemini)</strong> (AI consultation processing). We do not sell your data to any third party.</p>
+                <p>We share data with: <strong>Supabase</strong> (database & authentication), <strong>Moyasar</strong> (payment processing), <strong>Google (Gemini)</strong> (AI consultation processing). We do not sell your data to any third party.</p>
               </div>
 
               <div>

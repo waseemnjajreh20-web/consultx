@@ -54,7 +54,7 @@ const SiteFooter = () => {
                 </svg>
               </a>
               <a
-                href="mailto:hello@consultx.app"
+                href="mailto:info@consultx.app"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Email"
               >
@@ -134,7 +134,7 @@ const SiteFooter = () => {
               </li>
               <li>
                 <a
-                  href="https://nfpa.org"
+                  href="https://998.gov.sa"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"

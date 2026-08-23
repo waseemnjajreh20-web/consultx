@@ -6,8 +6,8 @@ const FAQS = [
   {
     qAr: "ما هو ConsultX؟",
     qEn: "What is ConsultX?",
-    aAr: "ConsultX مستشار هندسي ذكي للحماية من الحرائق، يُجيب على أسئلتك الهندسية بإحالة مباشرة لفقرات كود البناء السعودي ومعايير NFPA.",
-    aEn: "ConsultX is an intelligent engineering assistant for fire safety. It answers your questions with direct references to Saudi Building Code clauses and NFPA standards.",
+    aAr: "ConsultX مستشار هندسي ذكي للحماية من الحرائق، يُجيب على أسئلتك الهندسية بإحالة مباشرة لفقرات كود البناء السعودي (SBC 201 وSBC 801).",
+    aEn: "ConsultX is an intelligent engineering assistant for fire safety. It answers your questions with direct references to Saudi Building Code clauses (SBC 201 and SBC 801).",
   },
   {
     qAr: "ما مدى موثوقية الإجابات؟",
@@ -18,8 +18,8 @@ const FAQS = [
   {
     qAr: "ماذا يشمل كل اشتراك؟",
     qEn: "What does each plan include?",
-    aAr: "جميع الباقات تشمل الوصول لأكواد SBC وNFPA وأنظمة الدفاع المدني. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
-    aEn: "All plans include access to SBC and NFPA codes and Civil Defense regulations. Higher plans add plan analysis, unlimited conversations, and faster support.",
+    aAr: "جميع الباقات تشمل الوصول لكود البناء السعودي SBC 201 وSBC 801. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
+    aEn: "All plans include access to Saudi Building Code SBC 201 and SBC 801. Higher plans add plan analysis, unlimited conversations, and faster support.",
   },
   {
     qAr: "ماذا يحدث بعد انتهاء التجربة؟",

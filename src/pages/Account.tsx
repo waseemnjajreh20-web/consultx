@@ -1121,7 +1121,7 @@ const Account = () => {
 
         <div className="space-y-3">
           <a
-            href="mailto:support@consultx.ai"
+            href="mailto:info@consultx.app"
             className="flex items-center gap-3 p-3 rounded-lg border border-border/40 hover:border-primary/30 hover:bg-primary/5 transition-all"
           >
             <Mail className="w-4 h-4 text-primary shrink-0" />
@@ -1129,7 +1129,7 @@ const Account = () => {
               <p className="text-sm font-medium">
                 {language === "ar" ? "البريد الإلكتروني" : "Email Support"}
               </p>
-              <p className="text-xs text-muted-foreground">support@consultx.ai</p>
+              <p className="text-xs text-muted-foreground">info@consultx.app</p>
             </div>
             <ExternalLink className="w-3.5 h-3.5 text-muted-foreground ms-auto" />
           </a>
@@ -1192,7 +1192,7 @@ const Account = () => {
             : "If you encounter a bug or unexpected behaviour, send us the issue details via email with a description of what happened."}
         </p>
         <a
-          href="mailto:support@consultx.ai?subject=Issue Report"
+          href="mailto:info@consultx.app?subject=Issue Report"
           className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:underline"
         >
           <Phone className="w-3.5 h-3.5" />

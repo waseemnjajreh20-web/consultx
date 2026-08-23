@@ -114,7 +114,7 @@ const ProductProofSection = () => {
                     color: "#67e8f9",
                   }}
                 >
-                  NFPA 101 Section 7.6
+                  SBC 801 — Chapter 10: Means of Egress
                 </span>
               </div>
             </div>

@@ -23,19 +23,19 @@ const ctaUrl = getEid50SubscribeUrl("email", "outbound", "pro");
 const enterpriseCtaUrl = getEid50SubscribeUrl("email", "outbound", "enterprise_team");
 
 const BENEFITS_EN = [
-  "Advisory Mode for code questions \u2014 ask SBC, NFPA, and fire/life-safety questions and get structured, source-aware answers.",
+  "Advisory Mode for code questions \u2014 ask SBC 201, SBC 801, and fire/life-safety questions and get structured, source-aware answers.",
   "Analytical Mode for drawings and documents \u2014 upload drawings and documents to identify requirements, missing information, and review gaps before submission.",
   "Faster technical responses \u2014 reduce repeated searching through clauses and prepare clearer technical comments.",
   "Better engineering reports \u2014 create cleaner summaries, review notes, and client-ready technical replies.",
-  "Saudi-focused review workflow \u2014 built around SBC, NFPA, fire safety review, and engineering office needs.",
+  "Saudi-focused review workflow \u2014 built around SBC 201, SBC 801, fire safety review, and engineering office needs.",
 ];
 
 const BENEFITS_AR = [
-  "وضع Advisory للأسئلة الكودية \u2014 اطرح أسئلة SBC وNFPA والسلامة والحماية من الحريق واحصل على إجابات منظمة ومدعومة بالمراجع.",
+  "وضع Advisory للأسئلة الكودية \u2014 اطرح أسئلة SBC 201 وSBC 801 والسلامة والحماية من الحريق واحصل على إجابات منظمة ومدعومة بالمراجع.",
   "وضع Analytical للمخططات والمستندات \u2014 ارفع المخططات والمستندات لاستخراج المتطلبات، المعلومات الناقصة، وفجوات المراجعة قبل الرفع أو التسليم.",
   "ردود فنية أسرع \u2014 قلّل البحث المتكرر داخل البنود، وجهّز ملاحظات فنية أوضح.",
   "تقارير هندسية أفضل \u2014 أنشئ ملخصات، ملاحظات مراجعة، وردود فنية أكثر تنظيمًا للعملاء.",
-  "سير مراجعة موجه للسوق السعودي \u2014 مصمم حول SBC وNFPA ومراجعات السلامة واحتياجات المكاتب الهندسية.",
+  "سير مراجعة موجه للسوق السعودي \u2014 مصمم حول SBC 201 وSBC 801 ومراجعات السلامة واحتياجات المكاتب الهندسية.",
 ];
 
 const ENTERPRISE_BENEFITS_EN = [
@@ -210,7 +210,7 @@ ${buildBrowserLink("Open offer in browser", ctaUrl)}
 <!-- ENGLISH VALUE: PRO -->
 <tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:28px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${TEXT_BODY}">
-Eid Mubarak from ConsultX. If your office handles SBC questions, NFPA references, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.
+Eid Mubarak from ConsultX. If your office handles SBC 201 and SBC 801 questions, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">What does ConsultX Pro give one engineer?</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
@@ -222,7 +222,7 @@ ${benefitRowsEn}
 <tr><td dir="ltr" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">Built for Saudi engineering compliance workflows</p>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${TEXT_BODY}">
-ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.
+ConsultX supports engineering decision-making using structured references from Saudi Building Code (SBC 201 and SBC 801) requirements and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.
 </p>
 </td></tr>
 
@@ -268,7 +268,7 @@ ${entCtaEn}
 
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
-كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
+كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC 201 وSBC 801، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">ماذا يحصل عليه المهندس في ConsultX Pro؟</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE}">
@@ -280,7 +280,7 @@ ${benefitRowsAr}
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" background="${BG_0D1425_URL}" style="${CARD_STYLE};padding:18px 44px 0" class="sec">
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">مصمم حول أعمال المراجعة الهندسية في السعودية</p>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
-يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد الفرق الهندسية على المراجعة بشكل أسرع، والتوثيق بشكل أوضح، وتقليل وقت البحث المتكرر، مع بقاء القرار المهني النهائي للمهندس المختص.
+يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي (SBC 201 وSBC 801)، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد الفرق الهندسية على المراجعة بشكل أسرع، والتوثيق بشكل أوضح، وتقليل وقت البحث المتكرر، مع بقاء القرار المهني النهائي للمهندس المختص.
 </p>
 </td></tr>
 
@@ -328,7 +328,7 @@ ${buildBrowserLink("فتح العرض في المتصفح", ctaUrl)}
 <p style="margin:16px 0 0;font-size:11px;color:${TEXT_MUTED};line-height:1.6;direction:ltr;text-align:center">
 ${APP_NAME} &middot; AI-Powered Engineering Decision Support &middot; Saudi Arabia<br>
 You are receiving this email because your office contact was identified through publicly available engineering office listings in the Kingdom of Saudi Arabia.<br>
-If you do not wish to receive future communications, <a href="mailto:support@consultx.app?subject=Unsubscribe%20-%20EID50%20Campaign" style="color:${TEXT_MUTED};text-decoration:underline">unsubscribe here</a>.
+If you do not wish to receive future communications, <a href="mailto:info@consultx.app?subject=Unsubscribe%20-%20EID50%20Campaign" style="color:${TEXT_MUTED};text-decoration:underline">unsubscribe here</a>.
 </p>
 </td></tr>
 
@@ -354,13 +354,13 @@ ${"=".repeat(58)}
 ${EID50_CAMPAIGN.subheadline.en}
 ${"=".repeat(58)}
 
-Eid Mubarak from ConsultX. If your office handles SBC questions, NFPA references, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.
+Eid Mubarak from ConsultX. If your office handles SBC 201 and SBC 801 questions, fire and life safety reviews, drawing checks, client comments, and internal approvals, ConsultX gives your team a more organized way to review, document, and move faster.
 
 What does ConsultX Pro give one engineer?
 ${benefitLinesEn}
 
 Built for Saudi engineering compliance workflows:
-ConsultX supports engineering decision-making using structured references from Saudi Building Code requirements, NFPA standards, and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.
+ConsultX supports engineering decision-making using structured references from Saudi Building Code (SBC 201 and SBC 801) requirements and fire and life safety review workflows. It helps engineering teams review faster, document clearer, and reduce repeated code-search effort while keeping final professional judgment with the licensed engineer.
 
 ---
 What does ConsultX Enterprise give your office?
@@ -385,13 +385,13 @@ ${"=".repeat(34)}
 ${EID50_CAMPAIGN.subheadline.ar}
 ${"=".repeat(66)}
 
-كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC، مراجع NFPA، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
+كل عام وأنتم بخير من ConsultX. إذا كان مكتبك يتعامل يوميًا مع أسئلة SBC 201 وSBC 801، مراجعات السلامة والوقاية من الحريق، فحص المخططات، ملاحظات العملاء، والمراجعات الداخلية، فإن ConsultX يمنح فريقك طريقة أكثر تنظيمًا للمراجعة، والتوثيق، وتسريع العمل.
 
 ماذا يحصل عليه المهندس في ConsultX Pro؟
 ${benefitLinesAr}
 
 مصمم حول أعمال المراجعة الهندسية في السعودية:
-يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي، ومعايير NFPA، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد الفرق الهندسية على المراجعة بشكل أسرع، والتوثيق بشكل أوضح، وتقليل وقت البحث المتكرر، مع بقاء القرار المهني النهائي للمهندس المختص.
+يدعم ConsultX القرار الهندسي بالاستناد إلى مراجع ومتطلبات كود البناء السعودي (SBC 201 وSBC 801)، وسير عمل مراجعات السلامة والوقاية من الحريق. يساعد الفرق الهندسية على المراجعة بشكل أسرع، والتوثيق بشكل أوضح، وتقليل وقت البحث المتكرر، مع بقاء القرار المهني النهائي للمهندس المختص.
 
 ---
 ماذا يمنح ConsultX Enterprise لمكتبك؟
@@ -412,5 +412,5 @@ ${"=".repeat(60)}
 ConsultX · AI-Powered Engineering Decision Support · Saudi Arabia
 
 You are receiving this email because your office contact was identified through publicly available engineering office listings in the Kingdom of Saudi Arabia.
-If you do not wish to receive future communications, email support@consultx.app to unsubscribe.`;
+If you do not wish to receive future communications, email info@consultx.app to unsubscribe.`;
 }

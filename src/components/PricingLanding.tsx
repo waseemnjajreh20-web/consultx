@@ -70,7 +70,6 @@ function getPlans(isAr: boolean): LandingPlan[] {
             "قاعدة بيانات SBC 201 و SBC 801 كاملة",
             "إحالة للفقرة القانونية الدقيقة",
             "حفظ المحادثات",
-            "تحليل مخططات (20 تحليل/شهر)",
           ]
         : [
             "Unlimited daily messages (Quick mode)",
@@ -79,7 +78,6 @@ function getPlans(isAr: boolean): LandingPlan[] {
             "Full SBC 201 & SBC 801 code database",
             "Exact legal clause citation",
             "Conversation history",
-            "Plan analysis (20 analyses/month)",
           ],
     },
     {
@@ -120,14 +118,14 @@ function getPlans(isAr: boolean): LandingPlan[] {
         ? [
             "كل مميزات Enterprise Team",
             "حد أدنى 5 مستخدمين",
-            "دعم فني أولوي عبر واتساب والبريد",
+            "دعم أولوية عبر البريد",
             "مناسب للمكاتب الهندسية المتكاملة",
             "إعداد مخصص للمؤسسة",
           ]
         : [
             "Everything in Enterprise Team",
             "Minimum 5 users",
-            "Priority support via WhatsApp & email",
+            "Priority email support",
             "Built for full engineering offices",
             "Custom enterprise onboarding",
           ],

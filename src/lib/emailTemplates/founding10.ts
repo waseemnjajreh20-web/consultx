@@ -17,7 +17,7 @@ const ctaUrl = getFounding10SubscribeUrl("email", "reactivation");
 
 const BENEFITS_EN = [
   "Review fire and life safety requirements faster.",
-  "Use Advisory Mode for deeper SBC / NFPA questions.",
+  "Use Advisory Mode for deeper SBC 201 / SBC 801 questions.",
   "Use Analytical Mode for drawing and compliance review.",
   "Generate clearer engineering reasoning with source-based answers.",
   "Save time before reports, reviews, and client responses.",
@@ -180,7 +180,7 @@ ${buildBrowserLink("Open offer in browser")}
 <!-- ===== ENGLISH VALUE SECTION ===== -->
 <tr><td dir="ltr" bgcolor="${CARD_DARK}" style="padding:28px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${TEXT_BODY}">
-ConsultX is built for engineers who review fire and life safety, Saudi Building Code, NFPA references, compliance notes, and technical reports. You may not have seen what it can really do yet.
+ConsultX is built for engineers who review fire and life safety, Saudi Building Code (SBC 201, SBC 801), compliance notes, and technical reports. You may not have seen what it can really do yet.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">With ConsultX Pro, you can:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}">
@@ -197,7 +197,7 @@ ${benefitRowsEn}
 
 <!-- ===== CREDIBILITY ===== -->
 <tr><td align="center" bgcolor="${CARD_DARK}" style="padding:18px 44px 12px" class="sec">
-<p style="margin:0;font-size:11px;line-height:1.5;color:#475569">Built for SBC 201, SBC 801, NFPA, fire &amp; life safety reviews, and engineering decision support.</p>
+<p style="margin:0;font-size:11px;line-height:1.5;color:#475569">Built for SBC 201, SBC 801, fire &amp; life safety reviews, and engineering decision support.</p>
 </td></tr>
 
 <!-- ===== DIVIDER 2 ===== -->
@@ -212,7 +212,7 @@ ${benefitRowsEn}
 
 <tr><td dir="rtl" bgcolor="${CARD_DARK}" style="padding:20px 44px 0" class="sec">
 <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:${TEXT_BODY}">
-تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.
+تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة من الحريق، كود البناء السعودي (SBC 201، SBC 801)، ملاحظات الامتثال، والتقارير الفنية. ربما لم تجرّب بعد قيمته الحقيقية.
 </p>
 <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:${TEXT_HIGHLIGHT}">مع ConsultX Pro يمكنك:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD_DARK}">
@@ -266,7 +266,7 @@ Activate your first month of ConsultX Pro for only 10 SAR.
 
 You created a ConsultX account, but you may not have seen what the platform can really do yet.
 
-ConsultX is built for engineers who review fire and life safety requirements, Saudi Building Code, NFPA references, compliance notes, and technical reports.
+ConsultX is built for engineers who review fire and life safety requirements, Saudi Building Code (SBC 201, SBC 801), compliance notes, and technical reports.
 
 With ConsultX Pro, you can:
 ${benefitLinesEn}
@@ -285,7 +285,7 @@ ${"=".repeat(28)}
 
 قمت بإنشاء حساب في ConsultX، لكن ربما لم تجرّب بعد القيمة الحقيقية للمنصة.
 
-تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة والحماية من الحريق، كود البناء السعودي، مراجع NFPA، ملاحظات الامتثال، والتقارير الفنية.
+تم بناء ConsultX للمهندسين الذين يراجعون متطلبات السلامة والحماية من الحريق، كود البناء السعودي (SBC 201، SBC 801)، ملاحظات الامتثال، والتقارير الفنية.
 
 مع ConsultX Pro يمكنك:
 ${benefitLinesAr}
@@ -297,7 +297,7 @@ ${benefitLinesAr}
 ---
 ${"=".repeat(40)}
 ConsultX — Fire Safety Engineering · Engineering Decision Support
-Built for SBC 201, SBC 801, NFPA, fire & life safety reviews, and engineering decision support.
+Built for SBC 201, SBC 801, fire & life safety reviews, and engineering decision support.
 
 You are receiving this email because you created a ConsultX account.
 If you do not want to receive product updates, you can unsubscribe.`;

@@ -24,7 +24,7 @@ export default function Contact() {
       `Name: ${formState.name}\nEmail: ${formState.email}\n\n${formState.message}`
     );
     window.open(
-      `mailto:hello@consultx.app?subject=${encodeURIComponent(formState.subject)}&body=${body}`,
+      `mailto:info@consultx.app?subject=${encodeURIComponent(formState.subject)}&body=${body}`,
       "_blank"
     );
     setSubmitted(true);
@@ -51,12 +51,14 @@ export default function Contact() {
                 }}
               >
                 <p className="text-foreground font-semibold text-lg mb-2">
-                  {isAr ? "تم إرسال رسالتك ✓" : "Message sent ✓"}
+                  {isAr
+                    ? "تم فتح برنامج البريد — أرسل الرسالة لإتمام التواصل"
+                    : "Your email app was opened — send the message to complete"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {isAr
-                    ? "سيفتح تطبيق البريد الإلكتروني لديك. نرد في غضون 24 ساعة."
-                    : "Your email client will open. We respond within 24 hours."}
+                    ? "إذا لم يفتح تطبيق البريد تلقائياً، راسلنا مباشرة على info@consultx.app. نرد عادةً خلال 24 ساعة."
+                    : "If your email app didn't open automatically, reach us directly at info@consultx.app. We usually respond within 24 hours."}
                 </p>
               </div>
             ) : (
@@ -139,10 +141,10 @@ export default function Contact() {
                   {t("contactEmailLabel")}
                 </p>
                 <a
-                  href="mailto:hello@consultx.app"
+                  href="mailto:info@consultx.app"
                   className="text-sm text-primary hover:underline"
                 >
-                  hello@consultx.app
+                  info@consultx.app
                 </a>
               </div>
             </div>

@@ -27,8 +27,8 @@ const steps = [
     iconGlow: "0 0 20px rgba(255,140,0,0.5)",
     titleAr: "احصل على إجابة موثقة بالكود",
     titleEn: "Get a Code-Referenced Answer",
-    descAr: "إجابة فورية مع إحالة مباشرة لفقرة الكود أو المعيار المعتمد — SBC أو NFPA أو الدفاع المدني.",
-    descEn: "Instant answer with a direct citation to the exact code clause or applicable standard — SBC, NFPA, or Civil Defense.",
+    descAr: "إجابة فورية مع إحالة مباشرة لفقرة الكود — SBC 201 أو SBC 801.",
+    descEn: "Instant answer with a direct citation to the exact code clause — SBC 201 or SBC 801.",
     lineGradient: "from-[#FF8C00] to-[#DC143C]",
   },
   {

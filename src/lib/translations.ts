@@ -47,7 +47,7 @@ export const translations = {
     // Hero
     heroTitle: "إجابة مرجعية دقيقة خلال ثوانٍ — بدلاً من ساعات بحث",
     heroSubtitle: "اطرح سؤالك، يحلّله ConsultX ويردّ بإجابة مستشهدة من الكود مباشرةً — يختصر وقتك ويرفع دقة قرارك",
-    heroTrustBadge: "مستند إلى · SBC 201 · SBC 801 · الدفاع المدني",
+    heroTrustBadge: "مستند إلى · SBC 201 · SBC 801",
     startConsultation: "ابدأ الاستشارة الآن",
     signInToConsult: "سجل دخول للاستشارة",
     learnMore: "تعرف على المزيد",
@@ -307,7 +307,7 @@ export const translations = {
     // ── Hero Rewrite ──
     heroHeadline: "إجابات هندسية دقيقة من كود الحماية من الحرائق",
     heroSubline: "ConsultX يُحيل كل إجابة إلى الفقرة الدقيقة من SBC 201 أو SBC 801 — في ثوانٍ لا ساعات.",
-    heroTrustLine: "مبني على SBC 201، SBC 801، والدفاع المدني",
+    heroTrustLine: "مبني على SBC 201 وSBC 801",
 
     // ── Problem / Solution ──
     problemTitle: "التحديات اليومية للمهندس",
@@ -321,10 +321,10 @@ export const translations = {
 
     // ── Core Benefits ──
     benefitsTitle: "ما الذي يُقدّمه ConsultX",
-    benefit1Title: "دقة مرجعية كاملة",
-    benefit1Desc: "كل إجابة تُحيل إلى الفقرة الدقيقة من الكود — لا تخمين ولا غموض",
-    benefit2Title: "تغطية شاملة للمعايير",
-    benefit2Desc: "SBC 201 وSBC 801 وأنظمة الدفاع المدني في مكان واحد",
+    benefit1Title: "إجابات مدعومة باستشهادات من نص الكود",
+    benefit1Desc: "كل إجابة تُحيل إلى الفقرة ذات الصلة من الكود — لا تخمين ولا غموض",
+    benefit2Title: "تغطية كود البناء السعودي",
+    benefit2Desc: "SBC 201 وSBC 801 في مكان واحد",
     benefit3Title: "تحليل المخططات بصرياً",
     benefit3Desc: "ارفع مخططاتك للحصول على مراجعة مدعومة بالذكاء الاصطناعي",
     benefit4Title: "ثلاثة أوضاع استشارة",
@@ -339,7 +339,7 @@ export const translations = {
     trustTitle: "موثّق بالمعايير الرسمية",
     trust1Label: "SBC 201 & 801",
     trust2Label: "تفسيرات SBC",
-    trust3Label: "الدفاع المدني",
+    trust3Label: "الحماية من الحريق",
     trust4Label: "+5,700 عقدة معرفية",
 
     // ── Pricing (Redesign) ──
@@ -359,7 +359,7 @@ export const translations = {
     faq2Q: "ما مدى موثوقية الإجابات؟",
     faq2A: "كل إجابة تُحيل إلى الفقرة الدقيقة من المعيار المعتمد. ConsultX لا يخمّن — يستشهد بالمصدر الأصلي في كل مرة.",
     faq3Q: "ماذا يشمل كل اشتراك؟",
-    faq3A: "جميع الباقات تشمل الوصول لأكواد SBC 201 وSBC 801 وأنظمة الدفاع المدني. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
+    faq3A: "جميع الباقات تشمل الوصول لكود البناء السعودي SBC 201 وSBC 801. الباقات الأعلى تشمل تحليل المخططات، محادثات غير محدودة، ودعماً أسرع.",
     faq4Q: "ماذا يحدث بعد انتهاء التجربة؟",
     faq4A: "بعد 7 أيام، اختر أي باقة مدفوعة للاستمرار. إذا لم تختر، ستُوقف الميزات المتقدمة وتحتفظ بالوصول الأساسي.",
     faq5Q: "هل يمكنني رفع المخططات للتحليل؟",
@@ -458,7 +458,7 @@ export const translations = {
     // Hero
     heroTitle: "Code-Backed Fire Safety Answers in Seconds",
     heroSubtitle: "Ask your question. ConsultX retrieves the exact SBC 201 or SBC 801 clause and delivers a cited answer — faster than any manual search",
-    heroTrustBadge: "Powered by · SBC 201 · SBC 801 · Civil Defense",
+    heroTrustBadge: "Powered by · SBC 201 · SBC 801",
     startConsultation: "Start Consultation",
     signInToConsult: "Sign in to Consult",
     learnMore: "Learn More",
@@ -718,7 +718,7 @@ export const translations = {
     // ── Hero Rewrite ──
     heroHeadline: "Precise Engineering Answers from Fire Safety Code",
     heroSubline: "ConsultX cites every answer to the exact paragraph of SBC 201 or SBC 801 — in seconds, not hours.",
-    heroTrustLine: "Built on SBC 201, SBC 801, and Civil Defense standards",
+    heroTrustLine: "Built on SBC 201 and SBC 801",
 
     // ── Problem / Solution ──
     problemTitle: "The Engineer's Daily Challenges",
@@ -732,10 +732,10 @@ export const translations = {
 
     // ── Core Benefits ──
     benefitsTitle: "What ConsultX Delivers",
-    benefit1Title: "Full Citation Accuracy",
-    benefit1Desc: "Every answer links to the exact code clause — no guessing, no ambiguity",
-    benefit2Title: "Multi-Standard Coverage",
-    benefit2Desc: "SBC 201, SBC 801, and Civil Defense regulations in one place",
+    benefit1Title: "Answers Backed by Citations from the Code Text",
+    benefit1Desc: "Every answer links to the relevant code clause — no guessing, no ambiguity",
+    benefit2Title: "Saudi Building Code Coverage",
+    benefit2Desc: "SBC 201 and SBC 801 in one place",
     benefit3Title: "Visual Plan Analysis",
     benefit3Desc: "Upload your drawings for AI-assisted code compliance review",
     benefit4Title: "Three Consultation Modes",
@@ -750,7 +750,7 @@ export const translations = {
     trustTitle: "Backed by Official Standards",
     trust1Label: "SBC 201 & 801",
     trust2Label: "SBC Commentary",
-    trust3Label: "Civil Defense",
+    trust3Label: "Fire Protection",
     trust4Label: "5,700+ Knowledge Nodes",
 
     // ── Pricing (Redesign) ──
@@ -770,7 +770,7 @@ export const translations = {
     faq2Q: "How reliable are the answers?",
     faq2A: "Every answer cites the exact clause from the applicable standard. ConsultX doesn't guess — it references the original source every time.",
     faq3Q: "What does each plan include?",
-    faq3A: "All plans include access to SBC 201, SBC 801, and Civil Defense regulations. Higher plans add plan analysis, unlimited conversations, and faster support.",
+    faq3A: "All plans include access to Saudi Building Code SBC 201 and SBC 801. Higher plans add plan analysis, unlimited conversations, and faster support.",
     faq4Q: "What happens after the trial ends?",
     faq4A: "After 7 days, choose any paid plan to continue. If you don't, advanced features will be paused but basic access is retained.",
     faq5Q: "Can I upload drawings for analysis?",
