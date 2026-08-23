@@ -6,6 +6,8 @@
  * Gemini API.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import {
   AIErrorClass,
   buildModelChain,
@@ -295,5 +297,55 @@ describe("error classification integration", () => {
     expect(classified.userMessageAr).toBe(
       "الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة."
     );
+  });
+});
+
+/**
+ * A7 (2026-08-23) — code-vs-migrations RPC contract.
+ *
+ * `rollbackQuotaIfNeeded` shipped calling `decrement_daily_usage`, a function
+ * that existed in NO migration and NOT in production. PostgREST 404'd, the
+ * catch swallowed it, and the flat daily counter (Main/`primary` mode and
+ * trialing users) silently never rolled back on a provider failure.
+ *
+ * The mock-based tests above could never catch that: they assert the RPC is
+ * CALLED with the right arguments, which was always true. What was false was
+ * that the function existed at the other end. This test closes that gap by
+ * checking the call sites against the migrations that create them.
+ */
+describe("quota RPC contract - code vs migrations", () => {
+  const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
+
+  it("every RPC rollbackQuotaIfNeeded calls is created by a migration", () => {
+    const src = readFileSync(
+      `${repoRoot}supabase/functions/fire-safety-chat/geminiResilience.ts`,
+      "utf8",
+    );
+    const called = [...src.matchAll(/\.rpc\(\s*"([a-z0-9_]+)"/g)].map((m) => m[1]);
+
+    // Guard the guard: if the call sites are ever renamed, this test must fail
+    // loudly rather than silently verifying an empty list.
+    expect(called).toContain("decrement_daily_usage");
+    expect(called).toContain("decrement_mode_daily_count");
+
+    const migDir = `${repoRoot}supabase/migrations`;
+    const allSql = readdirSync(migDir)
+      .filter((f) => f.endsWith(".sql"))
+      .map((f) => readFileSync(`${migDir}/${f}`, "utf8"))
+      .join("\n");
+
+    for (const name of [...new Set(called)]) {
+      const isCreated = new RegExp(
+        String.raw`CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+public\.${name}\s*\(`,
+        "i",
+      ).test(allSql);
+      expect(
+        isCreated,
+        `RPC "${name}" is called by geminiResilience.ts but no migration under ` +
+          `supabase/migrations/ creates public.${name}. At runtime PostgREST ` +
+          `returns 404/PGRST202 and the catch in rollbackQuotaIfNeeded swallows ` +
+          `it, so the quota unit is never returned to the user.`,
+      ).toBe(true);
+    }
   });
 });

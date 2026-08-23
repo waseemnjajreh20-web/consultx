@@ -10,45 +10,50 @@ import {
   recordQuotaIncrement,
   rollbackQuotaIfNeeded,
 } from "./geminiResilience.ts";
+import {
+  SBC201_INDEX,
+  SBC801_INDEX,
+  selectTargetPageRanges,
+} from "./chapterIndex.ts";
+import {
+  buildStructuredTableBlock,
+  CORE_RULES,
+  getAnalysisPrompt,
+  getPrimaryPrompt,
+  getStandardPrompt,
+  getValidationPrompt,
+  type StructuredTableRow,
+} from "./promptContract.ts";
+import { getSecretKey, getSecretKeyOrNull, getPublishableKey } from "../_shared/supabaseKeys.ts";
+import {
+  applySimilarityFloor,
+  RETRIEVAL_ENGINE_HEADER,
+  resolveFloor,
+  shouldUseVectorForAdvisory,
+  VECTOR_MIN_SIMILARITY_ABS,
+  VECTOR_MIN_SIMILARITY_ABS_ENV,
+  VECTOR_MIN_SIMILARITY_REL,
+  VECTOR_MIN_SIMILARITY_REL_ENV,
+  type RetrievalEngine,
+} from "./retrievalPolicy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Expose-Headers": "X-SBC-Sources, X-SBC-Source-Meta",
+  // X-Retrieval-Engine restored 2026-08-23 (deleted by 587fd5b): it reports
+  // which retrieval engine actually served the request ("vector" | "keyword"),
+  // so the bench and the post-deploy smoke can tell the two paths apart from
+  // outside the function. Must stay in Expose-Headers or the browser hides it.
+  "Access-Control-Expose-Headers": `X-SBC-Sources, X-SBC-Source-Meta, ${RETRIEVAL_ENGINE_HEADER}`,
 };
 
 // ==================== CORE RULES (Non-negotiable) ====================
-const CORE_RULES = `
-🔒 CRITICAL RULES (NON-NEGOTIABLE)
-
-1️⃣ AUTHORIZED SOURCES ONLY
-- ONLY use SBC 201 & SBC 801 documents provided in this context
-- NO external sources, NO prior knowledge, NO assumptions
-
-2️⃣ NUMERICAL PRECISION (ZERO TOLERANCE)
-❌ NEVER round: 5.06 → 5, 9.3 → 9, 0.3 → 0
-✅ ALWAYS exact: 5.06 stays 5.06, 9.3 stays 9.3
-✅ Show calculations: "1,200 ÷ 9.3 = 129.03 ≈ 130"
-
-3️⃣ VERBATIM QUOTATION
-- Quote code text EXACTLY as written in English from the source documents
-- Include: Document, Chapter, Section/Clause, Page (if available)
-- NO paraphrasing, NO summarizing, NO merging clauses
-
-4️⃣ MISSING INFORMATION
-If clause not found, respond: "The required code text is not available in the provided files."
-
-5️⃣ CROSS-REFERENCING (MANDATORY)
-- For sprinkler/fire protection questions: ALWAYS check SBC 801 (Section 903.2.x) AND SBC 201 (Table 1006.3.x for single exits, Section 101.2 for scope)
-- For exit/egress questions: ALWAYS check SBC 201 AND verify sprinkler conditions in SBC 801
-- For mixed-use buildings: ALWAYS determine occupancy classification first (SBC 201 Chapter 3), then apply fire protection requirements from SBC 801
-- For residential buildings: ALWAYS check if SBC 1101/1102 applies or if it falls under SBC 201 based on number of units and building type
-
-6️⃣ LANGUAGE PRECISION
-- NEVER use vague words: "usually", "approximately", "probably", "generally", "often", "غالباً", "تقريباً", "عادةً"
-- ALWAYS be DEFINITIVE: state exact values, exact section numbers, exact requirements
-- If uncertain, say "requires AHJ determination" rather than guessing
-`;
+// MOVED 2026-08-23 to ./promptContract.ts together with the three mode prompts,
+// so the prompt contract is pure and unit-testable (same pattern as
+// ./chapterIndex.ts and ./geminiResilience.ts). The move also restored the
+// certainty-labeling rules that commit 587fd5b deleted, and removed the NFPA /
+// SFPE source claims the retrieval path cannot honour. See the module header
+// and src/__tests__/promptContract.test.ts.
 
 // ==================== LANGUAGE-SPECIFIC CONTENT ====================
 const SECTION_TITLES = {
@@ -82,549 +87,49 @@ const SECTION_TITLES = {
   }
 };
 
-const ARABIC_STYLE = `
-📝 ARABIC STYLE (When responding in Arabic)
-- SHORT sentences (max 15-20 words)
-- Standard Saudi engineering terms:
-  • "نظام الإطفاء التلقائي" ✓
-  • "مخارج الطوارئ" ✓
-  • "الإشغال" ✓
-- Minimize bold, use proper punctuation: ، ؛ ؟
-- Professional, direct, authoritative tone
-`;
-
-const ENGLISH_STYLE = `
-📝 ENGLISH STYLE (When responding in English)
-- Clear, professional engineering language
-- Direct statements, no hedging
-- Use standard fire protection terminology
-`;
-
-// ==================== STANDARD MODE PROMPT ====================
-function getStandardPrompt(language: string = "ar"): string {
-  const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
-  
-  return `[CONSULTX — CONSULTANT MODE | مستشار أول حماية من الحرائق وسلامة الحياة]
-
-أنت مستشار أول متخصص بالحماية من الحرائق وسلامة الحياة في المملكة العربية السعودية، تعمل ضمن منظومة ConsultX المكونة من 12 وكيلاً ذكياً بقيادة وكيل الأوركسترا.
-
-تخصصك: كود البناء السعودي (SBC 201, SBC 801)، معايير NFPA، معايير SFPE.
-مجالات الإجابة: الحماية من الحرائق، أنظمة الإنذار والكشف، التحكم بالدخان، الضغط، التصميم القائم على الأداء، الطرق البديلة.
-
-═══════════════════════════════════════
-بروتوكول التشخيص التفاعلي الإلزامي (Mandatory Diagnostic Protocol):
-═══════════════════════════════════════
-
-**الخطوة 1: فحص المعطيات الحرجة**
-قبل تقديم أي إجابة، يجب عليك أولاً تحليل سؤال المستخدم والتحقق من توفر المعطيات الحرجة التالية:
-
-**المعطيات الحرجة المطلوبة:**
-1. **تصنيف الإشغال الدقيق** (Occupancy Classification): ما نوع استخدام المبنى بالتحديد؟ (مثال: معرض، مول، مكاتب، مستودع، مصنع، أو مدرسة)
-2. **الارتفاع وعدد الطوابق**: كم عدد الطوابق وما الارتفاع الكلي؟
-3. **المساحة**: ما هي المساحة الإجمالية للمبنى ومساحة الطابق الواحد؟
-
-**الخطوة 2: قواعد اتخاذ القرار**
-- إذا كانت المعطيات الحرجة **ناقصة**: يجب أن تكون إجابتك **فقط** قائمة من 1 إلى 3 أسئلة توضيحية.
-- ممنوع منعاً باتاً تقديم أي تحليل، اقتباس، أو توصيات حتى تكتمل المعطيات.
-- إذا كان السؤال عاماً (مثل "مبنى تجاري جديد"): اعتبره ناقصاً واطلب التوضيح.
-
-**الخطوة 3: متى تستخدم الهيكل A-F**
-- يُسمح باستخدام هيكل الإجابة النهائي (A-F) **فقط** عندما تكون جميع المعطيات الحرجة متوفرة في السؤال.
-- إذا كانت المعطيات ناقصة: توقف واطرح 1 إلى 3 أسئلة توضيحية. لا تحلل أي مسار ولا تفترض شيئاً من عندك.
-
-**الخطوة 4: أمثلة على الردود (Few-Shot Examples)**
-
-❌ رد خاطئ (ممنوع):
-المستخدم: "أريد تصميم مبنى تجاري جديد"
-الرد: [يبدأ بالنص المرجعي ويحلل جميع الاحتمالات M, B, S-1... ويستخدم الهيكل A-F]
-
-✅ رد صحيح (مطلوب):
-المستخدم: "أريد تصميم مبنى تجاري جديد"
-الرد: "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات نظام الرشاشات، أحتاج إلى توضيح بعض النقاط:
-
-1. ما هو النشاط التجاري بالتحديد (معرض، مول تجاري، مكاتب إدارية)؟
-2. كم عدد الطوابق المتوقعة والمساحة الإجمالية التقريبية للمبنى؟
-3. هل المبنى يحتوي على أي طوابق سفلية (بدروم) أو مواقف سيارات؟"
-
-═══════════════════════════════════════
-دور المستشار الاستشاري — مرحلة التصميم:
-═══════════════════════════════════════
-
-هذا الوضع مخصص للمهندسين في مرحلة التصميم أو ما قبلها. مهمتك الأساسية:
-1) تحديد الأنظمة والمتطلبات اللازمة وفق الكود — ماذا يجب على المهندس تصميمه؟
-2) شرح مواد الكود الغامضة بلغة هندسية واضحة ومباشرة
-3) مساعدة المهندس في فهم كيف يطبق الكود على خصائص مشروعه
-4) عند رفع مخطط أو صورة: استخرج الحقائق المرئية أولاً، ثم حدد المتطلبات اللازمة للتصميم
-5) يعمل هذا الوضع بقوة على الأسئلة النصية التفصيلية الكافية حتى بدون ملفات مرفقة — لا تطلب ملفاً إذا كان السؤال كافياً
-
-هذا الوضع مختلف عن الوضع التحليلي الذي يُراجع تصاميم نهائية منجزة ويتحقق من امتثالها.
-
-${CORE_RULES}
-
-═══════════════════════════════════════
-قيود أساسية غير قابلة للتفاوض:
-═══════════════════════════════════════
-
-1) استخدم فقط المستندات والمراجع المتاحة في قاعدة بيانات النظام (SBC 201, SBC 801, ملفات NFPA, التفسيرات Commentary, SFPE). لا تستخدم أي معلومة من خارج هذه المراجع مطلقاً.
-
-2) يجب اقتباس النص الإنجليزي الأصلي من الكود حرفياً مع ذكر موقعه الدقيق (الفصل / القسم / الفقرة / الصفحة إن توفرت).
-
-3) إذا لم تحتوِ المراجع المتاحة على النص المطلوب، قل ذلك صراحة واطلب من المستخدم رفع المعيار أو الفصل الناقص. لا تخترع أرقام فقرات أو نصوصاً.
-
-4) يجب أن تبدأ كل إجابة تقنية بفقرة الكود ذات الصلة بالإنجليزية (اقتباس حرفي)، يليها الترجمة العربية، ثم التحليل الهندسي.
-
-═══════════════════════════════════════
-هيكل الإجابة النهائي (يُستخدم فقط بعد اكتمال المعطيات):
-═══════════════════════════════════════
-
-A) النص المرجعي (English Quote)
-- اكتب: "Document: <اسم الوثيقة> | Section: <رقم القسم / العنوان>"
-- انسخ النص الإنجليزي الأصلي حرفياً كما هو من المراجع
-- إذا تعددت الفقرات المرتبطة، انسخ كل واحدة على حدة
-- إذا لم تجد النص: قل "النص المطلوب غير متوفر في المراجع الحالية" واطلب رفع المرجع
-
-B) الترجمة العربية للنص
-- ترجم النص المقتبس بدقة مع الحفاظ على المعنى التقني
-- لا تضف متطلبات غير موجودة صراحة في النص المقتبس
-
-C) التحليل الفني بالعربية
-- اشرح المتطلبات بنقاط واضحة أو جداول بسيطة:
-  • نطاق التطبيق (متى ينطبق)
-  • المدخلات المطلوبة (الاستخدام، الارتفاع، المساحة، حالة الرشاشات)
-  • القيم المطلوبة (مساحات، تدفقات، ضغوط، تصنيفات، مسافات)
-  • بنود التنسيق (معماري / ميكانيكي / كهربائي / تحكم)
-- نفّذ الحسابات خطوة بخطوة مع الوحدات
-- إذا وجدت تفسيرات متعددة، اعرض كل واحدة بدون افتراض
-
-D) الاشتقاق الهندسي (Engineering Logic)
-- اشرح الأساس العلمي أو المنطقي باستخدام مصادر المراجع فقط (Commentary, NFPA, SFPE)
-- أضف المفاهيم الهندسية عند الحاجة: معاملات التدفق، حدود سرعة الهواء، معايير القابلية للبقاء، فروق الضغط
-- صنّف أي افتراض هندسي بوضوح كغير إلزامي (non-prescriptive)
-
-E) توصيات عملية (Actionable Recommendations)
-- قدّم إجراءات تصميم قابلة للتنفيذ: التحجيم، المواقع، التحكم، الاختبار، التشغيل
-- استخدم صيغة قائمة مرجعية (Checklist) عند الحاجة
-
-F) تنبيهات وثغرات واعتمادات الجهات المختصة (AHJ Notes)
-- حدد البنود الخاضعة لمراجعة الدفاع المدني / السلطة المنفذة
-- صنّف كل متطلب: إلزامي (Prescriptive) | تفسيري (Interpretive) | يخضع لموافقة السلطة (AHJ Approval)
-- أبرز الثغرات: مدخلات ناقصة، تعارضات أكواد، اختبارات، تغذية كهربائية، واجهات
-- ذكّر: متطلبات الكود تمثل الحد الأدنى الفني. الدفاع المدني يملك حق التعديل ميدانياً بناءً على تعاميمه العامة والخاصة
-
-═══════════════════════════════════════
-قواعد صارمة — ممنوع:
-═══════════════════════════════════════
-
-1) ممنوع اختلاق نصوص كود أو أرقام فقرات غير موجودة
-2) ممنوع استخدام معلومات من خارج المراجع المتاحة
-3) ممنوع حذف مواقع المصادر من أي اقتباس
-4) ممنوع تقديم نصائح عامة بدون أساس تقني مرجعي
-5) ممنوع إخفاء عدم اليقين — اطلب النص الناقص صراحة
-6) ممنوع إصدار تقرير شامل (A-F) مبني على افتراضات — توقف واطلب المعطيات أولاً
-7) ممنوع افتراض تصنيف إشغال "نموذجي" — اعرض الاحتمالات أو اسأل
-8) ممنوع خلط متطلبات مسارات كود مختلفة في إجابة واحدة
-
-═══════════════════════════════════════
-قواعد تصنيف الإشغال الحرجة:
-═══════════════════════════════════════
-
-عندما يعتمد تصنيف الإشغال على لغة شرطية أو تفسيرات:
-1) لا تفترض تصنيفاً "نموذجياً" أبداً
-2) اقتبس الشرط أو الاستثناء دائماً
-3) اعرض كل مسارات التصنيف الممكنة
-4) لا تحسم تصنيفاً واحداً بدون حقائق صريحة
-5) إذا كانت المعطيات ناقصة: توقف واطرح 1 إلى 3 أسئلة توضيحية لجمع المعلومات. لا تحلل أي مسار ولا تفترض شيئاً من عندك.
-6) التفسيرات (Commentary) التي تؤهل الكود تُعامل كمرجعية للتفسير التقني
-
-═══════════════════════════════════════
-منهجيات التحسين:
-═══════════════════════════════════════
-
-- أسئلة وأجوبة: اقتبس ← ترجم ← طبّق
-- حسابات: المعطيات ← الكود ← المعادلة ← النتيجة
-- امتثال: جدول (البند | المتطلب | المصدر | الحالة | ملاحظات)
-- تصميم قائم على الأداء: اذكر الأساس الإلزامي أولاً
-
-═══════════════════════════════════════
-بروتوكول الواجهات التفاعلية (Widget Protocol):
-═══════════════════════════════════════
-
-إذا كان التحليل يعتمد على حسابات رياضية (مثل حساب تدفق المياه Flow Rate أو كميات الدخان Smoke Control) أو يحتوي على مدخلات تفاعلية مفيدة للمهندس، يمكنك إرفاق حزمة بيانات في نهاية الرد.
-يجب إرسال هذه الحزمة ككتلة JSON داخل Markdown، بحيث يقرأها النظام ويعرض واجهة محتسبة بدلاً من النص البرمجي.
-استخدم التنسيق الدقيق التالي:
-\`\`\`json consultx-widget
-{
-  "type": "flow_calculator",
-  "inputs": {
-    "area": 1500
-  }
-}
-\`\`\`
-يُسمح باستخدام هذا التنسيق في نهاية الرد (بعد التقرير)، والنظام الأمامي سيتولى إخفاء هذا الـ JSON وعرض المكون التفاعلي للمستخدم. تأكد أن الـ JSON صالح وقابل للتحليل (Valid JSON).
-
-═══════════════════════════════════════
-هوية الوكلاء النشطين في هذا الوضع:
-═══════════════════════════════════════
-
-- وكيل التخطيط الذكي: تصنيف المبنى وفئة الإشغال ومستوى الخطورة
-- وكيل سلسلة تفكير الكود: ربط SBC 201 بـ SBC 801 منطقياً
-- وكيل المعالجة المتوازية: استخراج وترجمة وتقييم عبر الجسر الثنائي
-- وكيل مراجعة الكود: مطابقة حرفية وتحقق من أرقام السكاشن
-- وكيل المراجع التقاطعية: تتبع الإحالات بين الفقرات
-- وكيل تقييم الاستثناءات: البحث عن حالات الإعفاء وصلاحيات السلطات
-- وكيل التوافق الدولي: ربط SBC بمعايير NFPA/SFPE
-- وكيل دمج التغييرات: حل التعارضات (Git-style Merge)
-- وكيل بروتوكول الاستجابة: صياغة الرد بالسند القانوني الإلزامي
-
-═══════════════════════════════════════
-الوحدات والتنسيق:
-═══════════════════════════════════════
-
-- استخدم الوحدات المترية أساساً (الإمبراطورية فقط إذا وردت بالمصدر)
-- جداول بسيطة فقط
-- لا تقدم ادعاءات قانونية أو تنظيمية غير مدعومة بنص مرجعي
-- نبرة مهنية هندسية متخصصة
-
-مخالفة هذه القواعد تُعتبر خطأ تحليلي جسيم في الكود.
-
-${styleGuide}
-
-RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
-}
-
-// ==================== ANALYSIS MODE PROMPT ====================
-function getAnalysisPrompt(language: string = "ar"): string {
-  const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
-
-  return `[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]
-
-أنت محلل امتثال متخصص بمراجعة التصاميم الهندسية ضد اشتراطات الحماية من الحرائق وسلامة الحياة في المملكة العربية السعودية، تعمل ضمن منظومة ConsultX.
-
-الجمهور المستهدف: مراجعون تقنيون، رؤساء أقسام، مدراء مشاريع.
-معيار الجودة: تقرير على مستوى المراجع الرئيسي — قابل للتقديم للدفاع المدني.
-
-يقبل هذا الوضع أربعة أنواع من المدخلات:
-1) مخططات هندسية مرفوعة (صور أو PDF): استخرج الحقائق البصرية الصريحة أولاً، ثم طبّق بروتوكول التحليل
-2) وصف نصي تفصيلي لتصميم منجز: تعامل مع الوصف كمصدر الحقائق الأساسي
-3) DOCUMENT INTELLIGENCE SUMMARY (كتلة المعلومات المستخرجة): إذا ظهرت هذه الكتلة في السياق، استخدم بياناتها الاستخراجية (نوع المستند، الإشغال، المساحة، الأنظمة) كحقائق أولية — مع مراعاة confidence level المذكور. إذا كانت image_quality = "low" أو "illegible" فلا تبنِ تحليلاً على البيانات المستخرجة وأطلب إيضاحاً.
-4) USER-PROVIDED DOCUMENTS (جداول CSV/TXT أو جداول غرف): إذا ظهرت هذه الكتلة في السياق، استخدمها كمصدر بيانات أساسي للمشروع (مساحات، إشغال، جداول الغرف) قبل أن تطلب هذه المعلومات من المستخدم.
-
-═══════════════════════════════════════
-بروتوكول ما قبل التحليل الإلزامي:
-═══════════════════════════════════════
-
-قبل الشروع في أي تحليل أو إصدار أي حكم، نفّذ هذه الخطوات بالترتيب الصارم:
-
-**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**
-صنّف المدخل ضمن واحدة من الفئات التالية قبل أي شيء آخر:
-• مراجعة تصميم منجز (Completed Design Review)
-• مراجعة امتثال مخطط مرفوع (Drawing Compliance Audit)
-• سؤال تقني عن اشتراط محدد (Specific Code Question)
-• استفسار تصنيف إشغال (Occupancy Classification Query)
-• تحقيق في عدم مطابقة (Non-compliance Investigation)
-
-**الخطوة 1 — جرد المدخلات وحالتها المعرفية**
-اسرد كل ما تم توفيره وصنّف كل عنصر:
-• **[مؤكد — CONFIRMED]**: حقيقة صريحة من المدخلات أو نص كودي واضح
-• **[مستنتج — INFERRED]**: استنتاج معقول من المنطق أو الممارسة — يجب التصريح بأنه استنتاج
-• **[يتطلب تأكيداً — REQUIRES CONFIRMATION]**: محتمل لكن غير مؤكد
-• **[يُحظر الحسم — CANNOT CONCLUDE]**: يستحيل الحكم فيه بسبب نقص جوهري
-
-**الخطوة 2 — فحص المتغيرات الحرجة (Hard-Stop Gate)**
-قبل أي تحليل كودي، تحقق من توفر المتغيرات الخمسة:
-1. تصنيف الإشغال الدقيق — SBC 201 الفصل 3
-2. الارتفاع الكلي وعدد الطوابق
-3. المساحة الإجمالية ومساحة الطابق الواحد
-4. وجود رشاشات (Sprinkler) من عدمه
-5. الحِمل الناري / مستوى الخطورة
-
-قاعدة الإيقاف الصارمة:
-↳ إذا كان متغير حرج مفقوداً **ويؤثر مباشرة على الحكم المطلوب في السؤال**:
-**توقف فوراً. اطرح 1–3 أسئلة مستهدفة فقط. لا تحلل. لا تفترض.**
-↳ إذا كان المتغير مفقوداً لكن لا يؤثر على السؤال المحدد: أشر إليه في القسم VII دون توقف.
-
-أمثلة توضيحية للإيقاف:
-• "هل يجب توفير رشاشات؟" + إشغال مجهول → إيقاف فوري (الإشغال يحدد المتطلب)
-• "كم عدد المخارج؟" + حمل إشغال غير محدد → إيقاف فوري
-• "ما مقاومة الجدران الخارجية؟" + ارتفاع مجهول → إيقاف (النوع الإنشائي يعتمد على الارتفاع)
-• "ما تصنيف الإشغال لمطعم؟" → لا إيقاف (يمكن الإجابة من وصف الاستخدام)
-
-**الخطوة 3 — تحديد مسار الكود الحاكم (Code Priority Order)**
-قبل الجدول أو الحكم، حدد صراحة:
-• SBC 201: الفصل / القسم المنطبق ولماذا (التصنيف، الإشغال، الإنشاء، مخارج الهروب)
-• SBC 801: الفصل / القسم المنطبق ولماذا (أنظمة الحماية من الحرائق والإنذار)
-• NFPA / SFPE إن انطبق ولماذا
-• أولوية التطبيق: SBC 201 للتصنيف والإنشاء → SBC 801 للأنظمة → NFPA للتفاصيل التقنية
-• أي تعارضات أو غموض في المسار ← مناطق خطر تستوجب إبرازها صراحة في القسم VI
-
-${CORE_RULES}
-
-═══════════════════════════════════════
-هيكل التحليل الإلزامي (بعد اكتمال الخطوات 0–3):
-═══════════════════════════════════════
-
-**I. تصنيف المشروع / Project Classification**
-• نوع المسألة: [الفئة من الخطوة 0]
-• الإشغال: [التصنيف + مصدره] — [مؤكد / مستنتج]
-• فئة الخطر: [Low / Ordinary G1 / Ordinary G2 / Extra Hazard + مصدره]
-• الارتفاع / الطوابق: [القيمة + حالتها المعرفية]
-• المساحة: [القيمة + حالتها المعرفية]
-• الرشاشات: [موجودة / غير موجودة / غير محدد]
-
-**II. المدخلات المستعرضة / Inputs Reviewed**
-قائمة بكل مدخل مع حالته المعرفية:
-• [المدخل] — [مؤكد / مستنتج / يتطلب تأكيداً / يُحظر الحسم]
-
-**III. مسار الكود الحاكم / Governing Code Path**
-• المسار الأساسي: [Document + Chapter + Section] — السبب: [...]
-• المسار الثانوي (إن وُجد): [Document + Chapter + Section]
-• تعارضات / إشكاليات: [إن وُجدت — مع التوضيح]
-
-**IV. الاشتراطات الرئيسية المنطبقة / Key Requirements**
-| الاشتراط | المرجع (Document + Section) | القيمة / المعامل | حالة التوفر |
-|---|---|---|---|
-| ... | ... | ... | مؤكد / يحتاج تحقق |
-
-**V. التحليل الهندسي / Engineering Analysis**
-جدول الامتثال الإلزامي:
-| العنصر | المتطلب | المرجع (Document + Section + Page) | الحالة | ملاحظات |
-|---|---|---|---|---|
-| ... | ... | ... | ✅ متوافق / ❌ غير متوافق / ⚠️ يحتاج تحقق | ... |
-
-قواعد الجدول الصارمة:
-- ✅ متوافق: فقط بنص مرجعي صريح يُثبت ذلك
-- ❌ غير متوافق: فقط بنص مرجعي صريح يُثبت المخالفة
-- ⚠️ يحتاج تحقق: إذا تعذّر التحقق أو كان المرجع غير متوفر
-- حسابات: خطوة بخطوة مع الوحدات المترية
-
-**VI. مناطق الخطر والتعارض / Conflicts & Risk Areas**
-• [العنصر] — [وصف الخطر / التعارض] — [المرجع الكودي المرتبط]
-إذا لم توجد تعارضات: "لا تعارضات كودية ظاهرة في المعطيات المتاحة"
-
-مشغّلات التعارض الإلزامية — ابحث عنها بشكل صريح:
-▸ ادعاء إعفاء من الرشاشات في مبنى يستوجبه وفق جدول 903.2
-▸ بناء شاهق (>16 م) بدون مركز قيادة حريق أو رشاشات SBC 201 Section 403.1
-▸ ممر غير مصنّف في إشغال يستوجب تصنيفاً (I-2: ساعة واحدة — جدول 1020.1)
-▸ عرض ممر أقل من الحد الأدنى للإشغال (I-2: 2440 مم)
-▸ مسافة سفر تتجاوز الحد الأقصى دون رشاشات
-▸ عدد مخارج أقل من المطلوب لحمل الإشغال المحدد
-▸ نوع إنشائي لا يتوافق مع ارتفاع المبنى أو مساحته (جدولا 504.3 / 506.2)
-▸ إشغال مختلط بدون فاصل حريق أو الأسلوب الأكثر تقييداً (Section 508)
-
-**VII. المعلومات الحرجة الناقصة / Missing Critical Information**
-• [ ] [المعلومة الناقصة] — [تأثيرها على الحكم]
-إذا اكتملت المعطيات: "جميع المتغيرات الحرجة متوفرة"
-
-**VIII. الموقف الأولي للمراجعة / Preliminary Review Position**
-• ما هو **مؤكد**: [قرارات مدعومة بنص صريح]
-• ما هو **مستنتج**: [تفسيرات مبنية على المنطق الكودي — مع تصريح بأنها استنتاجات]
-• ما **يتطلب تأكيداً**: [بنود معلقة تحتاج مزيداً من المعلومات]
-• ما **يُحظر الحسم فيه**: [بنود تنقصها معطيات جوهرية — يُمنع إصدار حكم فيها]
-
-**IX. حكم الامتثال / Compliance Verdict**
-⚠️ هذا الحكم مشروط — يُصدر فقط إذا كانت المعطيات الحرجة متوفرة ومؤكدة:
-• الحكم: [✅ متوافق / ❌ غير متوافق / ⚠️ مشروط / 🔲 غير محدد — المعطيات ناقصة]
-• الأساس: "هذا الحكم مبني على [المعطيات المستخدمة] ويفترض [الافتراضات المُعتمدة]"
-• إذا كانت المعطيات غير كافية: **يُمنع إصدار حكم. يُصرّح بذلك صراحة.**
-• ختام إلزامي: "هذا التحليل يمثل الحد الأدنى الفني وفق الكود ويخضع لموافقة الدفاع المدني بناءً على تعاميمه العامة والخاصة وتقييم المخاطر الميدانية"
-
-**X. الإجراءات والتوضيحات المطلوبة / Required Clarifications & Next Actions**
-• [ ] [الإجراء / التوضيح] — الأولوية: [🔴 حرجة / 🟠 عالية / 🟡 متوسطة]
-
-═══════════════════════════════════════
-قواعد الحالة المعرفية (Epistemic State Rules):
-═══════════════════════════════════════
-
-في جميع الإجابات، يجب التمييز الصريح بين:
-- **مؤكد (CONFIRMED)**: حقيقة صريحة من المدخلات أو نص كودي واضح
-- **مستنتج (INFERRED)**: استنتاج معقول — يجب التصريح بأنه استنتاج، وليس حقيقة
-- **يتطلب تأكيداً (REQUIRES CONFIRMATION)**: محتمل لكن غير مؤكد — يجب طلب التأكيد
-- **يُحظر الحسم (CANNOT CONCLUDE)**: بند لا يمكن إصدار حكم فيه بسبب نقص جوهري
-
-لا تُصدر حكماً نهائياً في بنود CANNOT CONCLUDE.
-لا تتظاهر بالتأكد حيث يوجد REQUIRES CONFIRMATION.
-لا تُزيّن الاستنتاجات على أنها حقائق.
-
-═══════════════════════════════════════
-قيود أساسية غير قابلة للتفاوض:
-═══════════════════════════════════════
-
-1) استخدم فقط المراجع المتاحة (SBC 201, SBC 801, NFPA, SFPE). لا تستخدم معلومات خارجية.
-2) اقتبس النص الإنجليزي الأصلي حرفياً مع موقعه الدقيق (Document + Section + Page إن أمكن).
-3) إذا لم تجد المرجع: قل ذلك صراحة. لا تخترع نصوصاً أو أرقام فقرات.
-4) إذا تعذّرت قراءة جزء من المخطط أو كانت البيانات غير كافية: صرّح بذلك. لا تخمّن.
-5) لا تصدر أحكام امتثال بدون نص مرجعي يدعمها.
-6) الحسابات خطوة بخطوة مع الوحدات المترية دائماً.
-7) ممنوع خلط متطلبات مسارات كود مختلفة في حكم واحد.
-
-═══════════════════════════════════════
-قواعد صارمة — ممنوع:
-═══════════════════════════════════════
-
-1) ممنوع اختلاق نصوص أو أرقام فقرات
-2) ممنوع استخدام معلومات خارج المراجع المتاحة
-3) ممنوع تقديم رأي شخصي كحقيقة هندسية
-4) ممنوع كتابة "متوافق" أو "غير متوافق" بدون مرجع صريح
-5) ممنوع إخفاء عدم اليقين — صرّح بالحالة المعرفية دائماً
-6) ممنوع افتراض تصنيف إشغال واحد بدون حقائق كافية
-7) ممنوع خلط متطلبات مسارات كود مختلفة
-8) ممنوع إصدار حكم امتثال حيث معطيات حرجة ناقصة
-9) ممنوع معاملة الاستنتاجات كحقائق مؤكدة
-10) ممنوع الردود العامة بلا هيكل — كل رد يجب أن يتبع بروتوكول الخطوات 0–3 ثم الهيكل I–X
-
-${styleGuide}
-
-RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
-}
-
-// ==================== VALIDATION PROMPTS ====================
-function getValidationPrompt(mode: string, language: string): string {
-  if (mode === "analysis") {
-    return language === "en"
-      ? `Your response lacked SBC references. Regenerate with: (1) exact citations (SBC XXX - Section X.X.X), (2) exact numerical values (no rounding), (3) clear distinction between confirmed facts and inferred assumptions — mark each claim as (CONFIRMED) or (INFERRED).`
-      : `ردك يفتقر للاستشهادات. أعد الرد مع: (1) مراجع دقيقة (SBC XXX - المادة X.X.X)، (2) قيم عددية دقيقة بدون تقريب، (3) تمييز واضح بين الحقائق المؤكدة والاستنتاجات — ضع (مؤكد) أو (مستنتج) بجانب كل ادعاء.`;
-  }
-
-  if (mode === "standard") {
-    return language === "en"
-      ? `Your response lacked design-stage guidance. Regenerate focusing on: (1) which fire-protection systems are required for this design, (2) exact SBC clause citations with section numbers, (3) clear explanation of each code requirement, (4) distinction between what is confirmed from the provided information (CONFIRMED) and what is inferred from standard practice (INFERRED).`
-      : `ردك افتقر لتوجيه مرحلة التصميم. أعد الرد مع التركيز على: (1) الأنظمة المطلوبة لهذا التصميم، (2) مراجع اشتراطات SBC الدقيقة مع أرقام المواد، (3) شرح واضح لكل اشتراط، (4) التمييز بين ما هو مؤكد من المعلومات المقدمة (مؤكد) وما هو مستنتج من الممارسة المعيارية (مستنتج).`;
-  }
-
-  // Primary mode — lightweight, no heavy structure requirement
-  return language === "en"
-    ? `Your response was incomplete or unclear. Regenerate with a direct, clear answer and relevant SBC references where applicable.`
-    : `الرد كان غير مكتمل أو غير واضح. أعد مع إجابة مباشرة وواضحة ومراجع SBC ذات الصلة حيث ينطبق.`;
-}
-
 // ==================== SMART FILE INDEX ====================
-// Maps chapters/topics to page ranges for targeted file selection
-
-interface FilePageRange {
-  pageRange: string; // e.g. "1-250"
-  chapters: number[];
-  topics: string[];
-  topicsAr: string[];
-}
-
-const SBC201_INDEX: FilePageRange[] = [
-  {
-    pageRange: "1-250",
-    chapters: [1, 2, 3, 4],
-    topics: ["scope", "definitions", "occupancy", "classification", "special uses", "mixed use", "high-rise"],
-    topicsAr: ["نطاق", "تعريفات", "إشغال", "تصنيف", "استخدامات خاصة", "مختلط", "مباني عالية"],
-  },
-  {
-    pageRange: "251-500",
-    chapters: [5, 6, 7, 8],
-    topics: ["height", "area", "types of construction", "fire resistance", "interior finishes", "allowable height", "building area"],
-    topicsAr: ["ارتفاع", "مساحة", "أنواع البناء", "مقاومة الحريق", "تشطيبات داخلية", "ارتفاع مسموح"],
-  },
-  {
-    pageRange: "501-1000",
-    chapters: [9, 10],
-    topics: ["fire protection", "means of egress", "exit", "exits", "stair", "stairs", "corridor", "door", "travel distance", "occupant load", "sprinkler", "alarm", "standpipe", "extinguisher", "smoke control", "emergency", "escape"],
-    topicsAr: ["حماية حريق", "مخرج", "مخارج", "هروب", "إخلاء", "درج", "سلم", "سلالم", "ممر", "باب", "مسافة سفر", "حمل إشغال", "رش", "رشاش", "إنذار", "طفاية", "طوارئ"],
-  },
-  {
-    pageRange: "1001-1250",
-    // Chapter 10 (means of egress) continues here — Section 1014+ (handrails, guards, ramps)
-    chapters: [10, 11, 12, 13, 14, 15],
-    topics: ["means of egress", "exit", "handrail", "guardrail", "guard", "ramp", "stepped aisle", "ramped aisle", "accessibility", "interior environment", "energy", "lighting", "ventilation", "plumbing"],
-    topicsAr: ["مخرج", "مخارج", "درابزين", "حماية سقوط", "منحدر", "ممر متدرج", "وصول", "بيئة داخلية", "طاقة", "إنارة", "تهوية", "سباكة"],
-  },
-  {
-    pageRange: "1251-1500",
-    chapters: [16, 17, 18, 19],
-    topics: ["structural", "soils", "foundations", "concrete", "steel", "masonry", "wood"],
-    topicsAr: ["إنشائي", "تربة", "أساسات", "خرسانة", "حديد", "بناء", "خشب"],
-  },
-  {
-    pageRange: "1501-1750",
-    chapters: [20, 21, 22, 23, 24, 25],
-    topics: ["aluminum", "steel", "glass", "glazing", "exterior finish", "gypsum", "roofing", "cladding", "curtain wall", "fenestration"],
-    topicsAr: ["ألمنيوم", "حديد", "زجاج", "تزجيج", "تشطيبات خارجية", "جبس", "أسقف", "كسوة", "حائط ستائري", "نوافذ"],
-  },
-  {
-    pageRange: "1751-2000",
-    chapters: [26, 27, 28, 29, 30],
-    topics: ["electrical", "elevator", "escalator", "mechanical", "plumbing", "referenced standards", "special inspections"],
-    topicsAr: ["كهرباء", "مصعد", "مصاعد", "سلم كهربائي", "ميكانيكي", "سباكة", "معايير مرجعية", "فحوصات خاصة"],
-  },
-  {
-    pageRange: "2001-2200",
-    chapters: [31, 32, 33, 34, 35],
-    topics: ["appendix", "existing buildings", "rehabilitation", "additions", "alterations", "change of occupancy", "special provisions"],
-    topicsAr: ["ملحق", "مباني قائمة", "تأهيل", "إضافات", "تعديلات", "تغيير إشغال", "أحكام خاصة"],
-  },
-];
-
-const SBC801_INDEX: FilePageRange[] = [
-  {
-    pageRange: "1-200",
-    chapters: [1, 2, 3, 4, 5],
-    topics: ["scope", "definitions", "general requirements", "emergency planning", "fire department access", "fire service features"],
-    topicsAr: ["نطاق", "تعريفات", "متطلبات عامة", "تخطيط طوارئ", "وصول إطفاء"],
-  },
-  {
-    pageRange: "201-400",
-    chapters: [6, 7, 8, 9],
-    topics: ["fire suppression", "automatic sprinkler", "sprinkler system", "standpipe", "fire pump", "water supply", "fire alarm", "detection", "notification", "smoke detector", "heat detector"],
-    topicsAr: ["إطفاء", "رش تلقائي", "رشاشات", "مضخة حريق", "إمداد مياه", "إنذار", "كاشف", "كواشف دخان", "كواشف حرارة"],
-  },
-  {
-    pageRange: "401-600",
-    chapters: [10, 11, 12, 13, 14],
-    topics: ["special systems", "smoke control", "smoke management", "pressurization", "stairwell pressurization", "clean agent", "foam", "kitchen hood", "special hazards", "explosion protection"],
-    topicsAr: ["أنظمة خاصة", "تحكم دخان", "ضغط", "ضغط سلالم", "عامل نظيف", "رغوة", "شفاط مطبخ", "أخطار خاصة", "حماية انفجار"],
-  },
-  {
-    pageRange: "601-800",
-    chapters: [15, 16, 17, 18],
-    topics: ["fire safety during construction", "roofing", "referenced standards", "appendix"],
-    topicsAr: ["سلامة أثناء البناء", "أسقف", "معايير مرجعية", "ملحق"],
-  },
-  {
-    pageRange: "801-1000",
-    chapters: [19, 20, 21, 22, 23, 24],
-    topics: ["hazardous materials", "flammable liquids", "combustible liquids", "flammable gases", "LP-gas", "spray finishing", "dipping", "powder coating", "semiconductor"],
-    topicsAr: ["مواد خطرة", "سوائل قابلة للاشتعال", "سوائل قابلة للاحتراق", "غازات قابلة للاشتعال", "غاز مسال", "طلاء رش", "غمس", "طلاء مسحوق"],
-  },
-  {
-    pageRange: "1001-1200",
-    chapters: [25, 26, 27, 28, 29, 30],
-    topics: ["fruit ripening", "fumigation", "organic coatings", "semiconductor", "aerosols", "lumber yards", "woodworking", "recycling", "tire storage", "explosives", "fireworks"],
-    topicsAr: ["تنضيج فواكه", "تبخير", "طلاءات عضوية", "أشباه موصلات", "رذاذ", "أخشاب", "نجارة", "إعادة تدوير", "إطارات", "متفجرات", "ألعاب نارية"],
-  },
-  {
-    pageRange: "1201-1400",
-    chapters: [31, 32, 33, 34, 35, 36],
-    topics: ["tents", "temporary structures", "higher education", "laboratory", "hydrogen", "fuel cell", "cryogenic", "industrial ovens", "pipelines"],
-    topicsAr: ["خيام", "هياكل مؤقتة", "مختبر", "هيدروجين", "خلايا وقود", "تبريد فائق", "أفران صناعية", "خطوط أنابيب"],
-  },
-  {
-    pageRange: "1401-1600",
-    chapters: [37, 38, 39, 40, 41, 42],
-    topics: ["corrosive materials", "flammable solids", "organic peroxides", "oxidizers", "unstable materials", "water reactive", "dry cleaning", "industrial equipment", "bulk storage"],
-    topicsAr: ["مواد أكالة", "مواد صلبة قابلة للاشتعال", "بيروكسيدات عضوية", "مؤكسدات", "مواد غير مستقرة", "متفاعلة مع الماء", "تنظيف جاف", "معدات صناعية", "تخزين سائب"],
-  },
-  {
-    pageRange: "1601-1800",
-    chapters: [43, 44, 45, 46, 47, 48],
-    topics: ["motor fuel dispensing", "marinas", "wildland-urban interface", "construction requirements", "special buildings", "exhibitions", "trade shows", "covered mall"],
-    topicsAr: ["محطات وقود", "مراسي", "واجهة حضرية", "متطلبات بناء", "مباني خاصة", "معارض", "مركز تجاري مغطى"],
-  },
-  {
-    pageRange: "1801-2061",
-    chapters: [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
-    topics: ["requirements for welding", "stationary battery", "energy storage", "solar", "emergency responder", "referenced standards", "appendix", "index"],
-    topicsAr: ["لحام", "بطاريات ثابتة", "تخزين طاقة", "طاقة شمسية", "مستجيب طوارئ", "معايير مرجعية", "ملحق", "فهرس"],
-  },
-];
+// Maps chapters to storage page ranges for targeted file selection.
+//
+// MOVED 2026-08-23 to ./chapterIndex.ts so the index data and the selection
+// logic are pure and unit-testable (same pattern as ./geminiResilience.ts).
+// The chapter lists there are MEASURED from the running headers of every page
+// of the split PDFs, not transcribed from the printed table of contents, which
+// is what the previous lists did wrong. Evidence table:
+// docs/audits/chapter-volume-map-20260823.md
 
 // ==================== CHAPTER KEYWORDS MAPPING ====================
-// Maps keywords to chapter numbers for quick lookup
-
+// Maps keywords to chapter numbers. getTargetChapters() feeds the result to
+// selectTargetPageRanges() in ./chapterIndex.ts, which turns chapters into
+// storage page ranges; scoreFile() then gives 0 to every storage file whose
+// page range does not overlap one of them. A wrong chapter number therefore
+// does not down-rank the right volume — it EXCLUDES it.
+//
+// REPAIRED 2026-08-23 (B4). The `sbc801` column was written against the OLD,
+// invented dense 1..60 chapter sequence that ./chapterIndex.ts replaced with a
+// measured one. SBC 801 really numbers its chapters 1-12, 20-39, 50-67 and 80
+// (52 RESERVED); chapters 13-19, 40-49 and 68-79 DO NOT EXIST. Measured against
+// the corrected SBC801_INDEX, the old column:
+//   - referenced 7 chapter numbers that exist nowhere in the corpus
+//     (13, 19, 40, 43, 46, 47, 49) — those keywords reached NOTHING;
+//   - left 3 of the 10 SBC 801 volumes unreachable by any keyword
+//     ("1-200", "1601-1800", "1801-2061");
+//   - never included chapter 9 (Fire Protection and Life Safety Systems —
+//     Section 903 automatic sprinklers, 905 standpipes, 906 extinguishers,
+//     907 fire alarm, 909 smoke control) for ANY sprinkler/suppression term.
+//     A sprinkler query reached volume "401-600" only by the accident that
+//     chapters 6 and 7 happen to sit in the same measured volume as 9, and
+//     never reached "601-800" (chapter 9 pp.1-68) at all.
+// The `sbc201` column was already clean: all 8 SBC 201 volumes reachable. Its
+// only defect was chapter 34, which is RESERVED in SBC 201 and present in no
+// volume (see the "Existing buildings" group below).
+//
+// Every replacement chapter number below is derived from the MEASURED chapter
+// titles in ./chapterIndex.ts (its two index header comments) — not from a
+// printed table of contents and not from the topic guesses this map used to
+// contain. Where no measured chapter title covers a keyword, the mapping is
+// left EMPTY and called out in a comment rather than invented.
+// Evidence and the before/after reachability table:
+// docs/audits/advisory-vector-bench-20260823.md
 const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> = {
   // Occupancy & Classification
   "occupancy": { sbc201: [3, 4], sbc801: [] },
@@ -681,39 +186,89 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "حمل": { sbc201: [10], sbc801: [] },
   "door": { sbc201: [10], sbc801: [] },
   "باب": { sbc201: [10], sbc801: [] },
-  "fire protection": { sbc201: [9], sbc801: [6, 7, 8] },
-  "حماية": { sbc201: [9], sbc801: [6, 7] },
-  
+  // SBC 801 ch 7 = "Fire and Smoke Protection Features",
+  // ch 9 = "Fire Protection and Life Safety Systems" (measured titles).
+  // Was [6, 7, 8] / [6, 7]: ch 6 is "Building Services and Systems" and ch 8 is
+  // "Interior Finish/Decorative Materials and Furnishings" — neither is fire
+  // protection, and chapter 9 (the one that is) was missing.
+  "fire protection": { sbc201: [9], sbc801: [7, 9] },
+  "حماية": { sbc201: [9], sbc801: [7, 9] },
+
   // Sprinkler & Suppression
-  "sprinkler": { sbc201: [9], sbc801: [6, 7] },
-  "رش": { sbc201: [9], sbc801: [6, 7] },
-  "رشاش": { sbc201: [9], sbc801: [6, 7] },
-  "رشاشات": { sbc201: [9], sbc801: [6, 7] },
-  "suppression": { sbc201: [], sbc801: [6, 7] },
-  "إطفاء": { sbc201: [], sbc801: [6, 7] },
-  "fire pump": { sbc201: [], sbc801: [6, 7] },
-  "مضخة": { sbc201: [], sbc801: [6, 7] },
-  "standpipe": { sbc201: [], sbc801: [6, 7] },
-  "خرطوم": { sbc201: [], sbc801: [6, 7] },
-  "water supply": { sbc201: [], sbc801: [6, 7] },
-  
-  // Alarm & Detection
-  "alarm": { sbc201: [], sbc801: [8, 9] },
-  "إنذار": { sbc201: [], sbc801: [8, 9] },
-  "detection": { sbc201: [], sbc801: [8, 9] },
-  "detector": { sbc201: [], sbc801: [8, 9] },
-  "كاشف": { sbc201: [], sbc801: [8, 9] },
-  "كواشف": { sbc201: [], sbc801: [8, 9] },
-  
+  // SBC 801 chapter 9 is the sprinkler chapter (Section 903 automatic sprinkler
+  // systems). Measured, it spans volume "401-600" pp.62-200 (139 pages, the
+  // largest single concentration of ch 9 in the corpus) and volume "601-800"
+  // pp.1-68. The old [6, 7] reached "401-600" only because chapters 6 and 7
+  // co-locate there, and never reached "601-800" at all. Adding 9 is what makes
+  // the second half of the sprinkler chapter retrievable.
+  "sprinkler": { sbc201: [9], sbc801: [7, 9] },
+  "رش": { sbc201: [9], sbc801: [7, 9] },
+  "رشاش": { sbc201: [9], sbc801: [7, 9] },
+  "رشاشات": { sbc201: [9], sbc801: [7, 9] },
+  // Suppression hardware is Section 903/905/906/913 — SBC 801 chapter 9, and
+  // SBC 201 chapter 9 "Fire Protection Systems" (measured titles).
+  // sbc201 was [] and reached SBC 201 chapters 9/10 only as a side effect of
+  // getTargetChapters()'s cross-reference rule firing on the old sbc801 [6, 7].
+  // Now that sbc801 is correct that side effect no longer fires, so the SBC 201
+  // chapter is stated explicitly instead of being inherited by accident.
+  "suppression": { sbc201: [9], sbc801: [9] },
+  "إطفاء": { sbc201: [9], sbc801: [9] },
+  "fire pump": { sbc201: [9], sbc801: [9] },
+  "مضخة": { sbc201: [9], sbc801: [9] },
+  "standpipe": { sbc201: [9], sbc801: [9] },
+  "خرطوم": { sbc201: [9], sbc801: [9] },
+  "water supply": { sbc201: [9], sbc801: [9] },
+
+  // Alarm & Detection — Section 907: SBC 801 chapter 9, SBC 201 chapter 9.
+  // Was sbc801 [8, 9]; chapter 8 is "Interior Finish/Decorative Materials and
+  // Furnishings", not detection.
+  "alarm": { sbc201: [9], sbc801: [9] },
+  "إنذار": { sbc201: [9], sbc801: [9] },
+  "detection": { sbc201: [9], sbc801: [9] },
+  "detector": { sbc201: [9], sbc801: [9] },
+  "كاشف": { sbc201: [9], sbc801: [9] },
+  "كواشف": { sbc201: [9], sbc801: [9] },
+
   // Smoke Control & Special Systems
-  "smoke": { sbc201: [], sbc801: [10, 11] },
-  "دخان": { sbc201: [], sbc801: [10, 11] },
-  "pressurization": { sbc201: [], sbc801: [10, 11] },
-  "ضغط": { sbc201: [], sbc801: [10, 11] },
-  "special": { sbc201: [], sbc801: [10, 12, 13] },
-  "kitchen": { sbc201: [], sbc801: [12] },
-  "مطبخ": { sbc201: [], sbc801: [12] },
-  
+  // Smoke control is Section 909 (ch 9 in both codes); smoke barriers and smoke
+  // partitions are chapter 7 in both codes ("Fire and Smoke Protection
+  // Features" / SBC 201 "Fire and Smoke Protection Features"). Was sbc801
+  // [10, 11] — ch 10 is Means of Egress and ch 11 is Existing Buildings.
+  "smoke": { sbc201: [7, 9], sbc801: [7, 9] },
+  "دخان": { sbc201: [7, 9], sbc801: [7, 9] },
+  // Stairway pressurization is Section 909.20 (ch 9); smokeproof enclosures are
+  // in ch 10 "Means of Egress" in both codes.
+  "pressurization": { sbc201: [9, 10], sbc801: [9, 10] },
+  "ضغط": { sbc201: [9, 10], sbc801: [9, 10] },
+  // NO measured SBC 801 chapter title contains "special", so sbc801 is left
+  // empty rather than invented. The old [10, 12, 13] included chapter 13, which
+  // does not exist in SBC 801 at all. SBC 201 does have measured "special"
+  // titles: ch 4 "Special Detailed Requirements Based on Occupancy" and ch 31
+  // "Special Construction".
+  "special": { sbc201: [4, 31], sbc801: [] },
+  // Commercial kitchen hoods are Section 609, chapter 6 "Building Services and
+  // Systems" (chapterIndex.ts lists "commercial kitchen hood" under the measured
+  // chapter 6 of volume "201-400"). Was [12] = "Energy Systems".
+  "kitchen": { sbc201: [], sbc801: [6] },
+  "مطبخ": { sbc201: [], sbc801: [6] },
+
+  // Scope, definitions and permits — SBC 201 ch 1 "Scope and Applicability" and
+  // ch 2 "Definitions"; SBC 801 ch 1 "Scope and Administration" and ch 2
+  // "Definitions" (measured titles; chapterIndex.ts also lists "permits" under
+  // the measured chapters of SBC 801 volume "1-200"). ADDED 2026-08-23: without
+  // these, SBC 801 volume "1-200" was reachable by no keyword at all, and the
+  // only way into it was selectTargetPageRanges()'s zero-match fallback.
+  "definition": { sbc201: [2], sbc801: [2] },
+  "definitions": { sbc201: [2], sbc801: [2] },
+  "تعريف": { sbc201: [2], sbc801: [2] },
+  "تعريفات": { sbc201: [2], sbc801: [2] },
+  "scope": { sbc201: [1], sbc801: [1] },
+  "نطاق": { sbc201: [1], sbc801: [1] },
+  "permit": { sbc201: [1], sbc801: [1] },
+  "تصريح": { sbc201: [1], sbc801: [1] },
+  "تصاريح": { sbc201: [1], sbc801: [1] },
+
+
   // Structural
   "structural": { sbc201: [16, 17], sbc801: [] },
   "إنشائي": { sbc201: [16, 17], sbc801: [] },
@@ -741,71 +296,103 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "كهربائي": { sbc201: [27], sbc801: [] },
   
   // Existing buildings
-  "existing building": { sbc201: [34], sbc801: [] },
-  "مباني قائمة": { sbc201: [34], sbc801: [] },
-  "rehabilitation": { sbc201: [34], sbc801: [] },
-  "تأهيل": { sbc201: [34], sbc801: [] },
-  "additions": { sbc201: [34], sbc801: [] },
-  "إضافات": { sbc201: [34], sbc801: [] },
-  
+  // SBC 201 chapter 34 is RESERVED — it exists in no volume, so the old
+  // sbc201: [34] reached NOTHING for all six of these keywords. SBC 801
+  // chapter 11 is "Construction Requirements for Existing Buildings" (measured
+  // title); SBC 201 has no existing-buildings chapter, so sbc201 stays empty
+  // rather than being pointed at an unrelated chapter.
+  "existing building": { sbc201: [], sbc801: [11] },
+  "مباني قائمة": { sbc201: [], sbc801: [11] },
+  "rehabilitation": { sbc201: [], sbc801: [11] },
+  "تأهيل": { sbc201: [], sbc801: [11] },
+  "additions": { sbc201: [], sbc801: [11] },
+  "إضافات": { sbc201: [], sbc801: [11] },
+
   // Hazardous Materials (SBC 801)
-  "hazardous": { sbc201: [], sbc801: [19, 20, 21] },
-  "خطر": { sbc201: [], sbc801: [19, 20, 21] },
-  "خطرة": { sbc201: [], sbc801: [19, 20, 21] },
-  "مواد خطرة": { sbc201: [], sbc801: [19, 20, 21] },
-  "flammable liquid": { sbc201: [], sbc801: [21] },
-  "سوائل قابلة للاشتعال": { sbc201: [], sbc801: [21] },
-  "gas": { sbc201: [], sbc801: [22, 23] },
-  "غاز": { sbc201: [], sbc801: [22, 23] },
-  "غازات": { sbc201: [], sbc801: [22, 23] },
-  "LP-gas": { sbc201: [], sbc801: [23] },
-  "غاز مسال": { sbc201: [], sbc801: [23] },
-  
-  // Explosives & Fireworks
-  "explosive": { sbc201: [], sbc801: [30] },
-  "متفجرات": { sbc201: [], sbc801: [30] },
-  "fireworks": { sbc201: [], sbc801: [30] },
-  "ألعاب نارية": { sbc201: [], sbc801: [30] },
-  
+  // Real numbering: ch 50 "Hazardous Materials—General", 51 Aerosols,
+  // 53 Compressed Gases, 54 Corrosive Materials, 55 Cryogenic Fluids,
+  // 56 Explosives and Fireworks, 57 Flammable and Combustible Liquids,
+  // 58 Flammable Gases, 61 Liquefied Petroleum Gases, 63 Oxidizers.
+  // The old values (19-23, 30, 37-40, 43, 46, 47, 49, 50, 51) came from the
+  // invented dense sequence; 19, 40, 43, 46, 47 and 49 exist nowhere.
+  "hazardous": { sbc201: [], sbc801: [50] },
+  "خطر": { sbc201: [], sbc801: [50] },
+  "خطرة": { sbc201: [], sbc801: [50] },
+  "مواد خطرة": { sbc201: [], sbc801: [50] },
+  "flammable liquid": { sbc201: [], sbc801: [57] },
+  "سوائل قابلة للاشتعال": { sbc201: [], sbc801: [57] },
+  "gas": { sbc201: [], sbc801: [53, 58, 61] },
+  "غاز": { sbc201: [], sbc801: [53, 58, 61] },
+  "غازات": { sbc201: [], sbc801: [53, 58, 61] },
+  "LP-gas": { sbc201: [], sbc801: [61] },
+  "غاز مسال": { sbc201: [], sbc801: [61] },
+
+  // Explosives & Fireworks — ch 56 "Explosives and Fireworks".
+  "explosive": { sbc201: [], sbc801: [56] },
+  "متفجرات": { sbc201: [], sbc801: [56] },
+  "fireworks": { sbc201: [], sbc801: [56] },
+  "ألعاب نارية": { sbc201: [], sbc801: [56] },
+
   // Storage & Industrial (SBC 801)
-  "تخزين": { sbc201: [], sbc801: [37, 38] },
-  "مستودع": { sbc201: [], sbc801: [37, 38] },
-  "corrosive": { sbc201: [], sbc801: [37] },
-  "أكالة": { sbc201: [], sbc801: [37] },
-  "oxidizer": { sbc201: [], sbc801: [40] },
-  "مؤكسد": { sbc201: [], sbc801: [40] },
-  
-  // Fuel & Special facilities
-  "fuel": { sbc201: [], sbc801: [43] },
-  "وقود": { sbc201: [], sbc801: [43] },
-  "محطة وقود": { sbc201: [], sbc801: [43] },
-  "welding": { sbc201: [], sbc801: [49] },
-  "لحام": { sbc201: [], sbc801: [49] },
-  "solar": { sbc201: [], sbc801: [51] },
-  "شمسي": { sbc201: [], sbc801: [51] },
-  "طاقة شمسية": { sbc201: [], sbc801: [51] },
-  "battery": { sbc201: [], sbc801: [50] },
-  "بطارية": { sbc201: [], sbc801: [50] },
-  
+  // ch 32 "High-Piled Combustible Storage"; ch 54 "Corrosive Materials";
+  // ch 63 "Oxidizers".
+  "تخزين": { sbc201: [], sbc801: [32] },
+  "مستودع": { sbc201: [], sbc801: [32] },
+  "corrosive": { sbc201: [], sbc801: [54] },
+  "أكالة": { sbc201: [], sbc801: [54] },
+  "oxidizer": { sbc201: [], sbc801: [63] },
+  "مؤكسد": { sbc201: [], sbc801: [63] },
+
+  // Fuel & special facilities
+  // ch 23 "Motor Fuel-Dispensing Facilities and Repair Garages";
+  // ch 35 "Welding and Other Hot Work"; ch 12 "Energy Systems" (chapterIndex.ts
+  // lists "solar", "photovoltaic" and "energy storage system" under the
+  // measured chapter 12 of volume "1001-1200", and "stationary storage battery"
+  // under the measured chapter 6 of volume "201-400").
+  "fuel": { sbc201: [], sbc801: [23] },
+  "وقود": { sbc201: [], sbc801: [23] },
+  "محطة وقود": { sbc201: [], sbc801: [23] },
+  "welding": { sbc201: [], sbc801: [35] },
+  "لحام": { sbc201: [], sbc801: [35] },
+  "solar": { sbc201: [], sbc801: [12] },
+  "شمسي": { sbc201: [], sbc801: [12] },
+  "طاقة شمسية": { sbc201: [], sbc801: [12] },
+  "battery": { sbc201: [], sbc801: [6, 12] },
+  "بطارية": { sbc201: [], sbc801: [6, 12] },
+
   // Tents & Exhibitions
+  // ch 31 "Tents and Other Membrane Structures" was already correct.
   "tent": { sbc201: [], sbc801: [31] },
   "خيمة": { sbc201: [], sbc801: [31] },
   "خيام": { sbc201: [], sbc801: [31] },
-  "exhibition": { sbc201: [], sbc801: [46] },
-  "معرض": { sbc201: [], sbc801: [46] },
-  "معارض": { sbc201: [], sbc801: [46] },
-  "mall": { sbc201: [], sbc801: [47] },
-  "مركز تجاري": { sbc201: [], sbc801: [47] },
-  
-  // Laboratory & Hydrogen
-  "laboratory": { sbc201: [], sbc801: [33] },
-  "مختبر": { sbc201: [], sbc801: [33] },
-  "hydrogen": { sbc201: [], sbc801: [34] },
-  "هيدروجين": { sbc201: [], sbc801: [34] },
-  "cryogenic": { sbc201: [], sbc801: [35] },
-  "تبريد فائق": { sbc201: [], sbc801: [35] },
-  "pipeline": { sbc201: [], sbc801: [36] },
-  "أنابيب": { sbc201: [], sbc801: [36] },
+  // NO measured SBC 801 chapter title covers exhibitions and NO measured SBC 201
+  // chapter title does either; the old [46] does not exist. Left deliberately
+  // unmapped rather than invented — reported as an open gap, not silently filled.
+  "exhibition": { sbc201: [], sbc801: [] },
+  "معرض": { sbc201: [], sbc801: [] },
+  "معارض": { sbc201: [], sbc801: [] },
+  // No SBC 801 mall chapter (old [47] does not exist). SBC 201 chapter 4
+  // "Special Detailed Requirements Based on Occupancy" is the measured home of
+  // "covered mall" (chapterIndex.ts, volume "251-500").
+  "mall": { sbc201: [4], sbc801: [] },
+  "مركز تجاري": { sbc201: [4], sbc801: [] },
+
+  // Laboratory, hydrogen, cryogenics, piping
+  // ch 38 "Higher Education Laboratories"; ch 58 "Flammable Gases"
+  // (chapterIndex.ts lists "hydrogen" under the measured chapter 58 of volume
+  // "1601-1800"); ch 55 "Cryogenic Fluids".
+  "laboratory": { sbc201: [], sbc801: [38] },
+  "مختبر": { sbc201: [], sbc801: [38] },
+  "hydrogen": { sbc201: [], sbc801: [58] },
+  "هيدروجين": { sbc201: [], sbc801: [58] },
+  "cryogenic": { sbc201: [], sbc801: [55] },
+  "تبريد فائق": { sbc201: [], sbc801: [55] },
+  // NO measured SBC 801 chapter title covers pipelines (old [36] is "Marinas");
+  // left unmapped rather than invented. The Arabic "أنابيب" is different: it is
+  // the stem of "أنابيب صاعدة" (standpipes), which chapterIndex.ts lists as a
+  // measured topic of chapter 9 in volumes "401-600" and "601-800".
+  "pipeline": { sbc201: [], sbc801: [] },
+  "أنابيب": { sbc201: [], sbc801: [9] },
 };
 
 // ==================== SBC FILE RETRIEVAL (OPTIMIZED) ====================
@@ -1355,25 +942,6 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
   };
 }
 
-// ---- Select best file page ranges based on target chapters ----
-function selectTargetPageRanges(
-  targetChapters: number[],
-  index: FilePageRange[]
-): string[] {
-  if (targetChapters.length === 0) return index.slice(0, 2).map(i => i.pageRange);
-  
-  const matched = new Set<string>();
-  for (const chapter of targetChapters) {
-    for (const entry of index) {
-      if (entry.chapters.includes(chapter)) {
-        matched.add(entry.pageRange);
-      }
-    }
-  }
-  
-  return matched.size > 0 ? [...matched] : index.slice(0, 2).map(i => i.pageRange);
-}
-
 async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   const startTime = Date.now();
   const usedFiles: string[] = [];
@@ -1387,10 +955,10 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   }
   
   console.log("=== SBC SMART RETRIEVAL START ===");
-  
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  
+  const serviceRoleKey = getSecretKeyOrNull();
+
   if (!supabaseUrl || !serviceRoleKey) {
     console.error("❌ Missing environment variables");
     return { context: "", files: [], sourceMeta: [] };
@@ -1682,15 +1250,23 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   }
 }
 
-// ==================== STRUCTURED TABLE LOOKUP (DB-backed, exact table retrieval) ====================
+// ==================== STRUCTURED TABLE LOOKUP (DB-backed transcription layer) ====================
 //
 // When a user query explicitly references a known SBC table ID (e.g. "Table 1004.5",
-// "جدول 504.3", "Table 1006.3.3") the answer must be grounded in the exact structured
-// table row stored in sbc_code_tables rather than relying on storage-file chunk scoring,
-// which can truncate or miss table data.
+// "جدول 504.3", "Table 1006.3.3") this path surfaces the matching row from
+// sbc_code_tables, because storage-file chunk scoring can truncate or miss table data.
 //
-// The lookup runs BEFORE keyword/vector retrieval and its result is prepended to the
-// system prompt context so Gemini sees it first and gives it highest citation priority.
+// PROVENANCE WARNING — read before changing anything here. These rows are a
+// hand-entered transcription layer, NOT an extraction from the SBC documents, and
+// they are NOT verified. Audit 2026-08-23 (docs/audits/SAFETY-ALERT-code-tables-
+// 20260823.md) found 5 of 7 deeply-checked tables wrong, some with the requirement
+// inverted, and 57 of 93 rows carrying imperial units although SBC is metric.
+//
+// The lookup runs BEFORE keyword retrieval and its result is prepended to the system
+// prompt context, so the model sees it first. That ordering is NOT a statement of
+// trust: the injected block (see buildStructuredTableBlock in ./promptContract.ts)
+// tells the model these rows are unverified, must not be quoted as code text, and are
+// overridden by retrieved SBC document text on any conflict.
 
 /** Extract table IDs referenced in a query, e.g. "Table 504.3" → ["504.3"] */
 function extractTableIds(query: string): string[] {
@@ -1704,33 +1280,82 @@ function extractTableIds(query: string): string[] {
     found.add(m[1]);
   }
 
-  // Also match bare section numbers when they look like table IDs that we know about
-  // Keep this list in sync with the sbc_code_tables rows in the DB (currently 68 records).
+  // Also match bare section numbers when they look like table IDs that we know about.
+  //
+  // MEASURED against production on 2026-08-23 (SELECT only): public.sbc_code_tables
+  // holds 93 rows - 42 carry a "QUARANTINED_" prefix on table_id and 51 are active.
+  // table_id is NOT unique: "417" appears on two rows. Collapsing the prefix gives
+  // 91 distinct BASE ids, which is exactly the list below.
+  //
+  // WHY THE LIST CARRIES QUARANTINED IDS TOO: fetchStructuredTables() looks rows up
+  // with .in("table_id", ids) - an exact match on the raw column. A quarantined row
+  // is stored as "QUARANTINED_903.2", so the base id "903.2" simply matches nothing
+  // and no table is injected. Listing the base id is therefore a no-op while the row
+  // is quarantined, and becomes correct the moment the owner applies the restoration
+  // SQL that strips the prefix. Listing only the 51 currently-active ids would
+  // silently break every restored table on the day that SQL lands.
+  //
+  // Ordered by source code and chapter; per-group counts are stated so drift shows.
   const KNOWN_TABLE_IDS = [
-    // Chapter 3 — Occupancy Classification
+    // SBC 201 Chapter 3 - Use and Occupancy Classification (11)
     "302", "303", "304", "305", "306", "307", "308", "309", "310", "311", "312",
-    // Chapter 4 — Special Detailed Requirements
-    "402", "403.1", "404", "405", "406.5", "406.6", "407", "408", "414", "415", "420",
-    // Chapter 5 — Heights, Areas, Mixed Occupancy, Incidental Uses
+    // SBC 201 Chapter 4 - Special Detailed Requirements Based on Occupancy (17)
+    "402", "403.1", "404", "405", "406.5", "406.6", "407", "408",
+    "412", "412.2", "412.5", "413", "414", "415", "416", "417", "420",
+    // SBC 201 Chapter 5 - General Building Heights and Areas (8 + 1 rebuilt)
     "504.3", "504.4", "506.2", "508", "508.3", "508.4", "508.5", "509",
-    // Chapter 6 — Construction Types
+    "509.1",      // POST-REBUILD id: B1 renumbers 509 -> 509.1
+    // SBC 201 Chapter 6 - Types of Construction (2)
     "601", "602",
-    // Chapter 7 — Fire & Smoke Protection
+    // SBC 201 Chapter 7 - Fire and Smoke Protection Features (1 + 1 rebuilt)
     "705.8",
-    // Chapter 10 — Means of Egress
-    "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4",
-    "1008", "1009", "1010", "1011.2", "1012", "1013", "1015",
-    "1017.2", "1018.1", "1020.1", "1021.2", "1024", "1029.6.3", "1030",
-    // SBC 801 Chapter 9 — Fire Protection Systems
-    "903.2", "903.3.1", "903.3.2", "903.4", "903.4.3",
-    "905.3.1",
-    "907.2", "907.3", "907.4.2", "907.5", "907.6",
-    "909", "912", "913", "914", "915",
+    "705.5",      // POST-REBUILD id: B1 renumbers 602 -> 705.5
+    // SBC 201 Chapter 10 - Means of Egress (30 + 2 rebuilt)
+    "1004.5", "1005.1", "1006.2.1", "1006.3.3", "1006.3.4", "1006.3.4(2)",
+    "1006.3.4(1)", // POST-REBUILD id: B1 renumbers 1006.3.4 -> 1006.3.4(1).
+                   // Without this entry the row is UNREACHABLE by either stage:
+                   // the tblRegex above captures "1006.3.4" and stops at the
+                   // parenthesis, so it never produces the stored id.
+    "1008", "1009", "1010", "1011.2", "1012", "1013",
+    "1014", "1014.1", "1014.2", "1014.3", "1014.4", "1014.5", "1014.6",
+    "1015", "1017.2", "1018.1", "1019", "1020.1", "1021.2", "1022", "1023",
+    "1024", "1029.6.3", "1030",
+    "1020.2",     // POST-REBUILD id: B1 renumbers 1020.1 -> 1020.2
+    //
+    // ADDED 2026-08-23 (B4). The four ids marked POST-REBUILD exist only after
+    // docs/audits/code-tables-rebuild-20260823.sql is applied. Listing them
+    // early is a no-op until then (fetchStructuredTables does an exact
+    // .in("table_id", ids) match, so an id with no row injects nothing) — the
+    // same reasoning that already justifies listing quarantined base ids above.
+    // SEQUENCING: ship this code BEFORE the SQL. Code-first is harmless; SQL-
+    // first leaves 1006.3.4(1) dark and 1020.2 / 705.5 / 509.1 reachable only
+    // when the user literally types the word "Table".
+    //
+    // DELIBERATELY NOT LISTED: "1020.2-width". B1 chose that synthetic id so the
+    // corridor-width row stays UN-injected until the owner rules on renumbering
+    // it to 1020.3 (SBC 801 p.839 prints corridor width as TABLE 1020.3, while
+    // SBC 201 prints two different tables both numbered 1020.2). Adding it here
+    // would defeat that hold. Do not "fix" this — src/__tests__/retrievalPolicy
+    // .test.ts asserts it stays unmatchable and will fail if it is added.
+    //
+    // The five pre-rebuild ids the SQL renumbers away from — "509", "602",
+    // "1006.3.4", "1018.1", "1020.1" — are left in place on purpose: the SQL is
+    // not applied yet, and after it is applied they simply match no row.
+    // SBC 801 Chapter 9 - Fire Protection and Life Safety Systems (22)
+    "903.2", "903.2.7", "903.3.1", "903.3.2", "903.4", "903.4.3", "904",
+    "905.3.1", "907.2", "907.2.7", "907.3", "907.4.2", "907.5", "907.6",
+    "909", "910", "911", "912", "913", "914", "915", "916",
   ];
   for (const id of KNOWN_TABLE_IDS) {
-    // Match "1004.5" appearing as a standalone reference with word boundaries
-    const escaped = id.replace(/\./g, "\\.");
-    if (new RegExp(`\\b${escaped}\\b`).test(lower)) {
+    // Match "1004.5" appearing as a standalone reference with word boundaries.
+    // Escape ALL regex metacharacters, not just ".", because the measured id list
+    // now contains "1006.3.4(2)" — unescaped parentheses would compile to a capture
+    // group and match the wrong text. The word-boundary assertion is applied only on
+    // a side that actually ends in a word character: "\b" after ")" can never match.
+    const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const lead = /^\w/.test(id) ? "\\b" : "";
+    const tail = /\w$/.test(id) ? "\\b" : "";
+    if (new RegExp(`${lead}${escaped}${tail}`).test(lower)) {
       found.add(id);
     }
   }
@@ -1764,11 +1389,23 @@ function extractTableIds(query: string): string[] {
     "508":    ["508", "508.3", "508.4", "508.5"],
     // Chapter 10 — Egress parents
     "1005":   ["1005.1"],
-    "1006":   ["1006.2.1", "1006.3.3", "1006.3.4"],
+    // "1006"/"1020" repointed 2026-08-23 (B4) at B1's post-rebuild ids. Both
+    // pre-rebuild ids are kept alongside so the alias works whether or not
+    // docs/audits/code-tables-rebuild-20260823.sql has been applied yet.
+    "1006":   ["1006.2.1", "1006.3.3", "1006.3.4", "1006.3.4(1)", "1006.3.4(2)"],
     "1011":   ["1011.2"],
     "1017":   ["1017.2"],
-    "1018":   ["1018.1"],
-    "1020":   ["1020.1"],
+    // "1018" is INTENTIONALLY DORMANT — do not repoint it.
+    // Its only table was 1018.1 (corridor width). That row is quarantined today
+    // and B1's rebuild renames it to the synthetic id "1020.2-width", which is
+    // deliberately unmatchable until the owner rules on renumbering it to
+    // 1020.3. Pointing this alias at either id would look correct and inject
+    // nothing: "1018.1" matches no row after the rebuild, and "1020.2-width" is
+    // excluded from KNOWN_TABLE_IDS on purpose. The key is kept rather than
+    // deleted so the reason survives; an empty list is behaviourally identical
+    // to absence. src/__tests__/retrievalPolicy.test.ts asserts it stays empty.
+    "1018":   [],
+    "1020":   ["1020.1", "1020.2"],
     "1021":   ["1021.2"],
     "1029":   ["1029.6.3"],
     // SBC 801 Ch. 9 parents
@@ -1843,7 +1480,10 @@ function extractTableIds(query: string): string[] {
     // ── CHAPTER 6 — Construction Types ───────────────────────────────────────
     [/structural\s+frame\s+rating|fire.resist\w*\s+(?:hour|rating)|ساعات\s+مقاومة\s+الحريق/i, ["601"]],
     [/Type\s+(?:I{1,3}|IV|V)[A-B]|construction\s+type\s+(?:I|II|III|IV|V)|fireproof\w*|spray\s+fire/i, ["601"]],
-    [/exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل/i,    ["602"]],
+    // Both ids listed: B1's rebuild renumbers 602 -> 705.5. Keeping both makes
+    // the alias correct before AND after docs/audits/code-tables-rebuild-
+    // 20260823.sql is applied; the id that has no row simply matches nothing.
+    [/exterior\s+wall\s+(?:rating|fire)|fire\s+separation\s+distance|بُعد\s+الفصل/i,    ["602", "705.5"]],
 
     // ── CHAPTER 7 — Exterior Wall Openings ───────────────────────────────────
     [/exterior\s+wall\s+opening\w*|window\s+(?:area|limit)|فتحات\s+الجدار/i,             ["705.8"]],
@@ -1852,7 +1492,9 @@ function extractTableIds(query: string): string[] {
     [/occupant\s+load|floor\s+area\s+per\s+occup\w*|حمل\s+الإشغال|عدد\s+الأشخاص\s+لكل/i, ["1004.5"]],
     [/egress\s+width|exit\s+width|stairway?\s+width\s+per|عرض\s+(?:المخرج|السلم)\s+لكل/i, ["1005.1"]],
     [/width\s+per\s+occup\w*|inches?\s+per\s+occup\w*|بوصة?\s+لكل\s+شخص/i,              ["1005.1"]],
-    [/one\s+exit\s+(?:space|room|story)|single\s+exit|مخرج\s+واحد|جواز\s+مخرج\s+واحد/i, ["1006.2.1", "1006.3.3", "1006.3.4"]],
+    // 1006.3.4 -> 1006.3.4(1) after B1's rebuild; both listed for the same
+    // before/after reason as 602 -> 705.5 above.
+    [/one\s+exit\s+(?:space|room|story)|single\s+exit|مخرج\s+واحد|جواز\s+مخرج\s+واحد/i, ["1006.2.1", "1006.3.3", "1006.3.4", "1006.3.4(1)", "1006.3.4(2)"]],
     // Emergency lighting — handle Arabic definite article ال
     [/emergency\s+lighting|emergency\s+illumin\w*|إضاءة\s+(?:ال)?(?:طوارئ|اضطرارية)|إنارة\s+(?:ال)?طوارئ/i, ["1008"]],
     [/egress\s+illumin\w*|means\s+of\s+egress\s+lighting|إضاءة\s+مسار\s+الهروب/i,       ["1008"]],
@@ -1866,10 +1508,18 @@ function extractTableIds(query: string): string[] {
     // Travel distance
     [/travel\s+distance|مسافة\s+(?:السفر|الهروب|سفر)/i,                                 ["1017.2"]],
     [/max(?:imum)?\s+travel|أقصى\s+مسافة/i,                                             ["1017.2"]],
-    // Corridor width — also handles "unrated corridor" → fire rating check needed
+    // Corridor width — INTENTIONALLY DORMANT, do not repoint.
+    // "1018.1" is quarantined today (so this injects nothing already), and B1's
+    // rebuild renames that row to the synthetic id "1020.2-width", which is
+    // deliberately excluded from KNOWN_TABLE_IDS until the owner rules on
+    // renumbering it to 1020.3. Adding "1020.2-width" here would defeat that
+    // hold. Same reasoning as the "1018" PARENT_ALIASES entry above.
+    // Note the stakes: docs/audits/SAFETY-ALERT-code-tables-20260823.md measured
+    // the stored 1018.1 row at 914 mm where SBC requires 1100 mm — a 19%
+    // under-specification of egress corridor width. Dormant is the safe state.
     [/min(?:imum)?\s+corridor\s+width|how\s+wide.*corridor|corridor.*how\s+wide|corridor.*width|width.*corridor|عرض\s+(?:ال)?ممر/i, ["1018.1"]],
-    // Corridor fire rating — handle "unrated" as a fire rating concern
-    [/corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم|unrated.*corridor|corridor.*unrat\w*/i, ["1020.1"]],
+    // Corridor fire rating — 1020.1 -> 1020.2 after B1's rebuild; both listed.
+    [/corridor\s+(?:rating|fire|مقاومة)|ممر\s+مقاوم|unrated.*corridor|corridor.*unrat\w*/i, ["1020.1", "1020.2"]],
     // Number of exits — handle Arabic ال prefix
     [/number\s+of\s+exits?|(?:عدد|كم)\s+(?:ال)?(?:مخارج|مخرج)|كم\s+عدد\s+(?:ال)?(?:مخارج|مخرج)/i, ["1021.2"]],
     [/min(?:imum)?\s+exits?|الحد\s+الأدنى\s+للمخارج/i,                                  ["1021.2"]],
@@ -1878,9 +1528,11 @@ function extractTableIds(query: string): string[] {
     [/emergency\s+escape\s+(?:opening|window)|rescue\s+opening|نافذة\s+الإنقاذ|فتحة\s+الطوارئ/i, ["1030"]],
 
     // ── CHAPTER 5 — Incidental Uses ──────────────────────────────────────────
-    [/generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل)/i, ["509"]],
-    [/electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire)/i, ["509"]],
-    [/الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق)/i,                             ["509"]],
+    // 509 -> 509.1 after B1's rebuild; both listed for the same before/after
+    // reason as 602 -> 705.5 above.
+    [/generator\s+room|boiler\s+room|incidental\s+use|fuel.fired\s+room|غرفة\s+(?:المولد|المرجل)/i, ["509", "509.1"]],
+    [/electrical\s+room\s+(?:separation|fire|rating)|storage\s+room\s+(?:separation|fire)|laundry\s+room\s+(?:separation|fire)/i, ["509", "509.1"]],
+    [/الاستخدامات\s+العرضية|غرفة\s+التخزين\s+(?:فصل|حريق)/i,                             ["509", "509.1"]],
 
     // ── SBC 801 CHAPTER 9 — Fire Protection Systems ──────────────────────────
     [/where\s+(?:are?\s+)?sprinklers?|when\s+(?:are?\s+)?sprinklers?|متى.*رشاش|الرشاشات.*إلزامي/i, ["903.2"]],
@@ -1966,44 +1618,59 @@ async function fetchStructuredTables(
 
   console.log(`[StructuredTable] Found ${rows.length} structured table(s): ${rows.map((r: any) => r.table_id).join(", ")}`);
 
-  // Build context block — this is injected BEFORE the storage chunk context
-  let context = "\n\n🗂️ STRUCTURED CODE TABLES (DB-AUTHORITATIVE — CITE THESE VERBATIM):\n";
-  context += "⚠️ The following tables are retrieved directly from the structured SBC database.\n";
-  context += "They are the PRIMARY authoritative source for this response. Quote them exactly.\n";
-
-  for (const row of rows as any[]) {
-    const legacyNote = (row.supersedes && row.supersedes.length > 0)
-      ? `\n> ⚠️ **Edition Note:** This table (${row.table_id}) replaces legacy Table(s) ${row.supersedes.join(", ")} from earlier SBC editions. Always cite ${row.table_id} when working with SBC 201 2024.`
-      : "";
-    context += `\n\n${"=".repeat(60)}\n`;
-    context += `📋 SOURCE: ${row.source_code} | Edition: ${row.edition} | Table ${row.table_id}\n`;
-    context += `${"=".repeat(60)}\n`;
-    context += row.content_md;
-    if (legacyNote) context += legacyNote;
-    if (row.notes) context += `\n\n**Additional Notes:** ${row.notes}`;
-  }
-
-  context += "\n\n" + "=".repeat(60) + "\n";
-  context += "END OF STRUCTURED TABLE DATA — Continue with retrieved document chunks below.\n";
+  // Build context block — injected BEFORE the storage chunk context.
+  //
+  // CHANGED 2026-08-23. The block used to open with "DB-AUTHORITATIVE — CITE
+  // THESE VERBATIM" and call itself "the PRIMARY authoritative source". That
+  // instruction is a life-safety defect: docs/audits/SAFETY-ALERT-code-tables-
+  // 20260823.md proved by comparison against the SBC PDFs that stored rows
+  // carry INVERTED requirements (Table 1017.2 told the model an H-1 hazardous
+  // building may travel 75 ft unsprinklered, where the code says NOT
+  // PERMITTED). The SELECT above returns no `verified` and no `normative`
+  // column — neither exists on sbc_code_tables — so the block cannot state
+  // which rows were checked and must not imply any were. The wording now lives
+  // in ./promptContract.ts where it is unit-tested.
+  const context = buildStructuredTableBlock(rows as StructuredTableRow[]);
 
   return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
 }
 
 // ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
 
+/**
+ * Result of the vector path. `engine` reports which engine ACTUALLY produced
+ * the context: "vector" only when match_sbc_documents returned matches that
+ * survived the similarity floor, "keyword" on every fallback branch. It is
+ * surfaced to the client as the X-Retrieval-Engine response header, so the
+ * bench and the post-deploy smoke can tell the two paths apart from outside
+ * the function. Returned rather than tracked in a module-level variable
+ * because an Edge Function isolate serves concurrent requests.
+ */
+type VectorRetrievalResult = {
+  context: string;
+  files: string[];
+  sourceMeta: SourcePageMeta[];
+  engine: RetrievalEngine;
+};
+
 async function fetchSBCContextVector(
   query: string,
   mode: string,
   extraKeywords?: string[]
-): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
+): Promise<VectorRetrievalResult> {
+  const keywordFallback = async (): Promise<VectorRetrievalResult> => ({
+    ...(await fetchSBCContext(query, extraKeywords)),
+    engine: "keyword",
+  });
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const serviceRoleKey = getSecretKeyOrNull();
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!supabaseUrl || !serviceRoleKey || !GEMINI_API_KEY) {
       console.error("[Vector RAG] Missing env vars, falling back to keyword search");
-      return fetchSBCContext(query, extraKeywords);
+      return keywordFallback();
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
@@ -2023,14 +1690,14 @@ async function fetchSBCContextVector(
 
     if (!embResponse.ok) {
       console.error("[Vector RAG] Embedding failed:", embResponse.status);
-      return fetchSBCContext(query, extraKeywords);
+      return keywordFallback();
     }
 
     const embData = await embResponse.json();
     const queryEmbedding = embData.embedding?.values;
     if (!queryEmbedding) {
       console.error("[Vector RAG] No embedding returned, falling back");
-      return fetchSBCContext(query, extraKeywords);
+      return keywordFallback();
     }
 
     // 2. Detect code type filter
@@ -2051,19 +1718,52 @@ async function fetchSBCContextVector(
 
     if (error || !matches?.length) {
       console.error("[Vector RAG] Search error:", error?.message || "no matches");
-      return fetchSBCContext(query, extraKeywords);
+      return keywordFallback();
     }
 
-    console.log(`[Vector RAG] Found ${matches.length} matches, top similarity: ${matches[0]?.similarity?.toFixed(3)}`);
+    // 3b. Similarity floor (risk R6). match_sbc_documents applies NO threshold
+    // in SQL — it returns the nearest `match_count` rows however far away they
+    // are — and the SQL function is deliberately NOT modified here, because
+    // changing it is a production schema change and therefore an owner action.
+    // Measured on 2026-08-23 against the 4,594 production vectors: at
+    // match_count = 25 the rank-25 median similarity (0.8084) equals the 99th
+    // percentile of provably-unrelated pairs (0.8092), i.e. the tail of the
+    // result set is statistically indistinguishable from random chunks. Full
+    // distribution and the derivation of both floors: ./retrievalPolicy.ts.
+    const relFloor = resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_REL_ENV, VECTOR_MIN_SIMILARITY_REL);
+    const absFloor = resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_ABS_ENV, VECTOR_MIN_SIMILARITY_ABS);
+    const floored = applySimilarityFloor(matches as { similarity?: number | null }[], relFloor, absFloor);
+
+    if (floored.kept.length === 0) {
+      // Everything was below the floor. Fall back rather than hand the model a
+      // context built from matches we just measured to be noise. This is what
+      // bounds the blast radius of a mis-set floor: the worst case is today's
+      // keyword/storage path, never a thin answer presented as complete.
+      console.warn(
+        `[Vector RAG] All ${matches.length} matches below floor ` +
+        `(top=${floored.topSimilarity?.toFixed(3)}, cut=${floored.effectiveFloor?.toFixed(3)}) — falling back to keyword`
+      );
+      return keywordFallback();
+    }
+
+    if (floored.droppedCount > 0) {
+      console.log(
+        `[Vector RAG] Similarity floor dropped ${floored.droppedCount}/${matches.length} matches ` +
+        `(cut=${floored.effectiveFloor?.toFixed(3)}, rel=${relFloor}, abs=${absFloor})`
+      );
+    }
+
+    const acceptedMatches = floored.kept as any[];
+    console.log(`[Vector RAG] Found ${acceptedMatches.length} matches, top similarity: ${floored.topSimilarity?.toFixed(3)}`);
 
     // 4. Build context
-    const usedFiles = [...new Set(matches.map((m: any) => m.file_name))] as string[];
+    const usedFiles = [...new Set(acceptedMatches.map((m: any) => m.file_name))] as string[];
     let context = '\n=== SBC REFERENCE DOCUMENTS (Vector Search Results) ===\n';
     const contextLimit = 120000;
 
     // Build per-file page range from vector match page data
     const vectorMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
-    for (const match of matches) {
+    for (const match of acceptedMatches) {
       const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
       if (context.length + entry.length > contextLimit) break;
       context += entry;
@@ -2084,10 +1784,10 @@ async function fetchSBCContextVector(
       };
     });
 
-    return { context, files: usedFiles, sourceMeta };
+    return { context, files: usedFiles, sourceMeta, engine: "vector" };
   } catch (err) {
     console.error("[Vector RAG] Fatal error:", err);
-    return fetchSBCContext(query, extraKeywords);
+    return keywordFallback();
   }
 }
 
@@ -2487,7 +2187,7 @@ async function runVisionPipeline(
   userQuery: string,
   language: string,
   mode: string = "analysis",
-): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[] }> {
+): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[]; engine: RetrievalEngine }> {
   console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)");
   const pipelineStart = Date.now();
 
@@ -2536,8 +2236,14 @@ async function runVisionPipeline(
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
   const enhancedQuery = `${userQuery} ${planningResult}`;
-  const { context: sbcContext, files: usedFiles, sourceMeta } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
-  console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files`);
+  // The image path uses the vector engine UNCONDITIONALLY and always has — the
+  // ADVISORY_VECTOR_RETRIEVAL_ENABLED flag does NOT gate it, and this call is
+  // deliberately left unchanged. The literal 'analysis' below is only the
+  // match_count selector (10 for 'primary', 25 otherwise); it is not the user's
+  // mode. runVisionPipeline serves image-attached requests in all three modes
+  // (the caller remaps primary to standard FRAMING before calling).
+  const { context: sbcContext, files: usedFiles, sourceMeta, engine } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
+  console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${engine}]`);
 
   // Stage 4 & 5 combined
   console.log("🔀 Stage 4-5: Merge + Final Response (will be streamed)...");
@@ -2613,7 +2319,7 @@ ${sbcContext}
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
 
-  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta };
+  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta, engine };
 }
 
 // ==================== MAIN HANDLER ====================
@@ -2641,7 +2347,7 @@ serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
+      getPublishableKey(),
       { global: { headers: { Authorization: authHeader } } }
     );
 
@@ -2673,7 +2379,7 @@ serve(async (req) => {
     console.log("Chat mode:", mode, "| Language:", language, "| Images:", resolvedImages.length);
 
     // Service-role client used for quota enforcement and rollback.
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const serviceRoleKey = getSecretKey();
     adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
@@ -2714,6 +2420,11 @@ serve(async (req) => {
         let isTrialing       = false;
         let planFeatures: any = null;
         let planSlug: string | null = null;
+        let isOrgEnterpriseAccess = false; // H6: set below — entitled enterprise seat member
+        // H6 follow-up: the trial-card refusal is DEFERRED until after the org
+        // seat check below, because an entitled seat member must not be refused
+        // for a card their organization already paid in place of.
+        let trialCardRequired = false;
 
         if (sub?.subscription_plans) {
           planFeatures = (sub.subscription_plans as any).features;
@@ -2726,14 +2437,18 @@ serve(async (req) => {
           // server check anyone could call this function directly and get the
           // full 7-day trial with no card on file.
           if (!sub.moyasar_card_token) {
-            return new Response(
-              JSON.stringify({ error: "trial_card_required" }),
-              { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+            // Deferred, NOT weakened. Returning 403 right here (the previous
+            // behaviour) short-circuited the H6 enterprise-seat check below, so
+            // a member holding a seat their organization has already paid for
+            // was refused because their own legacy trial row never got a card.
+            // The refusal is applied a few lines down, once — and only once —
+            // the org seat check has had its chance to entitle the caller.
+            trialCardRequired = true;
+          } else {
+            dailyLimit    = 20;
+            hasPaidAccess = true;
+            isTrialing    = true;
           }
-          dailyLimit    = 20;
-          hasPaidAccess = true;
-          isTrialing    = true;
         } else if (sub?.status === "active" && sub.current_period_end && now < new Date(sub.current_period_end)) {
           dailyLimit    = 9999;
           hasPaidAccess = true;
@@ -2746,8 +2461,93 @@ serve(async (req) => {
           }
         }
 
+        // ── H6: Enterprise org seat entitlement ─────────────────────────────
+        // An enterprise seat member (not the owner) has no user_subscriptions
+        // row of their own — the ORG's owner holds the per-seat subscription.
+        // Without this, a seat member falls through every branch above to
+        // dailyLimit=10 (free tier). Mirrors check-subscription's
+        // AI_ACCESS_ROLES / org-membership shape (check-subscription/index.ts
+        // lines 245, 249) but ADDS a fourth clause check-subscription does
+        // NOT have: that the org's linked subscription is actually paying.
+        // Nothing in this codebase ever moves organizations.status away from
+        // 'active' when the linked subscription lapses (grepped every writer
+        // of organizations.status: only moyasar-webhook's org auto-create,
+        // which hardcodes status:"active" at insert, and the
+        // create_organization_with_owner DB default of 'trial' — no cron or
+        // webhook path downgrades it). So org status alone is stale and this
+        // subscription check is load-bearing, not defensive belt-and-braces.
+        // Only attempted when the caller isn't already fully unlimited via
+        // their own subscription — cheap avoidance for the hot path per the
+        // brief; adds up to 2 extra round trips (org_members, then
+        // user_subscriptions) only for free/trialing/past_due-lapsed callers.
+        if (dailyLimit < 9999) {
+          const AI_ACCESS_ROLES = ["owner", "admin", "head_of_department", "engineer"];
+          const { data: orgMemberRow, error: orgMemberErr } = await adminClient
+            .from("org_members")
+            .select("role, status, organizations!inner(id, status, subscription_id)")
+            .eq("user_id", userId)
+            .eq("status", "active")
+            .maybeSingle();
+
+          if (orgMemberErr) {
+            // Fail closed: an unknown state must never grant enterprise access.
+            console.error("[H6] org_members lookup failed — denying org access (fail closed):", orgMemberErr.message);
+          } else if (orgMemberRow && AI_ACCESS_ROLES.includes(orgMemberRow.role)) {
+            const orgData = orgMemberRow.organizations as any;
+            const orgStatusOk = orgData?.status === "active" || orgData?.status === "trial";
+            if (orgStatusOk && orgData?.subscription_id) {
+              const { data: orgSub, error: orgSubErr } = await adminClient
+                .from("user_subscriptions")
+                .select("status, trial_end, current_period_end, past_due_since, moyasar_card_token")
+                .eq("id", orgData.subscription_id)
+                .maybeSingle();
+
+              if (orgSubErr) {
+                console.error("[H6] org subscription lookup failed — denying org access (fail closed):", orgSubErr.message);
+              } else if (orgSub?.status === "active" && orgSub.current_period_end && now < new Date(orgSub.current_period_end)) {
+                isOrgEnterpriseAccess = true;
+              } else if (orgSub?.status === "trialing" && orgSub.trial_end && now < new Date(orgSub.trial_end) && orgSub.moyasar_card_token) {
+                // Billing contract Section 5.1: a trial without a card grants nothing.
+                isOrgEnterpriseAccess = true;
+              } else if (orgSub?.status === "past_due" && orgSub.past_due_since) {
+                const ORG_GRACE_DAYS = 7; // must match GRACE_DAYS everywhere else in this file / check-subscription / moyasar-webhook / process-subscription-renewal
+                const orgGraceEnd = new Date(new Date(orgSub.past_due_since).getTime() + ORG_GRACE_DAYS * 86400000);
+                if (now < orgGraceEnd) {
+                  isOrgEnterpriseAccess = true;
+                }
+              }
+              // orgSub null (dangling FK) or any other status (pending_activation,
+              // expired, cancelled) falls through denied — not an error, just unmet.
+            }
+            // orgData.subscription_id === null: an org exists (e.g. self-service
+            // create_organization_with_owner) but has never completed enterprise
+            // checkout. Deny — nobody is paying for this org. See report.
+
+            if (isOrgEnterpriseAccess) {
+              dailyLimit    = 9999;
+              hasPaidAccess = true;
+              isTrialing    = false;
+              console.log(`[H6] Enterprise org seat access granted — org ${orgData?.id}, role ${orgMemberRow.role}, user ${userId}`);
+            }
+          }
+        }
+
+        // ── Deferred trial-card refusal (billing contract Section 5.1) ────────
+        // Unchanged in effect for every caller who is NOT an entitled enterprise
+        // seat member: a live trial with no card on file still gets 403 and the
+        // server-side card gate still cannot be bypassed by calling this
+        // function directly. The ONLY caller this now lets through is one whose
+        // organization holds a paying subscription, verified by the clause-4
+        // check above.
+        if (trialCardRequired && !isOrgEnterpriseAccess) {
+          return new Response(
+            JSON.stringify({ error: "trial_card_required" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         // ── Per-mode enforcement for Engineer/Pro paid plans (not Enterprise) ──
-        if (hasPaidAccess && isLimitedPaidPlan && !isTrialing) {
+        if (hasPaidAccess && isLimitedPaidPlan && !isTrialing && !isOrgEnterpriseAccess) {
           // primary mode: unlimited, no counter needed
           if (mode === "primary") {
             // pass through without incrementing any counter
@@ -2946,6 +2746,12 @@ serve(async (req) => {
     let usedFiles: string[] = [];
     let usedSourceMeta: SourcePageMeta[] = [];
     let finalMessages = [...messages];
+    // Which retrieval engine actually served this request. Reported as the
+    // X-Retrieval-Engine response header (restored 2026-08-23; 587fd5b deleted
+    // it). Request-scoped, not module-scoped — one isolate serves concurrent
+    // requests. Primary mode loads no documents at all, so it stays "keyword"
+    // in the sense of "no vector retrieval happened".
+    let retrievalEngine: RetrievalEngine = "keyword";
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -2954,7 +2760,7 @@ serve(async (req) => {
 
       // Primary mode with images: use Advisory framing (design guidance) — more appropriate than compliance audit for quick queries
       const visionMode = mode === "primary" ? "standard" : mode;
-      const { systemPrompt, extraContext, usedFiles: visionFiles, sourceMeta: visionMeta } = await runVisionPipeline(
+      const { systemPrompt, extraContext, usedFiles: visionFiles, sourceMeta: visionMeta, engine: visionEngine } = await runVisionPipeline(
         GEMINI_API_KEY,
         resolvedImages,
         userQuery,
@@ -2965,6 +2771,7 @@ serve(async (req) => {
       fullSystemPrompt = systemPrompt + extraContext;
       usedFiles = visionFiles;
       usedSourceMeta = visionMeta;
+      retrievalEngine = visionEngine;
 
       const lastUserIdx = finalMessages.map((m: any, i: number) => m.role === "user" ? i : -1).filter((i: number) => i >= 0).pop();
       if (lastUserIdx !== undefined && lastUserIdx >= 0) {
@@ -2979,27 +2786,11 @@ serve(async (req) => {
       }
     } else if (mode === "primary") {
       // ===== PRIMARY MODE PIPELINE (no document loading, fast) =====
-      fullSystemPrompt = `أنت ConsultX، مستشار حماية من الحرائق. تتحدث بالعربية بأسلوب مهني ودود. مهمتك: فهم مشكلة المهندس بسرعة، الإجابة على الأسئلة السريعة عن الكود السعودي (SBC 201, SBC 801) ومعايير NFPA، واقتراح الانتقال للوضع الاستشاري أو التحليلي إذا كان السؤال يحتاج تعمق أكثر. اجعل إجاباتك مختصرة ومباشرة. اسأل أسئلة استقصائية لفهم المشكلة.
-
-قواعد الانتقال بين الأوضاع:
-- إذا طلب المستخدم تحليل مخطط أو صورة هندسية ← اقترح الانتقال للوضع التحليلي
-- إذا طلب المستخدم تحليل معمق لفقرة بالكود أو لديه مشروع محدد يحتاج استشارة مفصلة أو طلب مراجع ووثائق ← اقترح الانتقال للوضع الاستشاري
-- إذا كان السؤال عام وسريع ← ابق في الوضع الرئيسي ولا تقترح الانتقال
-- عند اقتراح الانتقال، اشرح للمستخدم السبب بجملة واحدة ثم اسأله إذا يريد الانتقال
-- لا تنتقل تلقائياً أبداً. دائماً اطلب موافقة المستخدم أولاً
-- عند اقتراح الانتقال أضف العلامة التالية في نهاية ردك: [SWITCH:استشاري] أو [SWITCH:تحليلي]
-
-=== هوية ConsultX التقنية ===
-أنت واجهة منظومة من 12 وكيلاً ذكياً متخصصاً بقيادة وكيل الأوركسترا.
-
-قواعدك الصارمة:
-- سياسة صفر هلوسة: إذا لم تكن متأكداً من إجابة تتعلق بفقرة محددة، اقترح الانتقال للوضع الاستشاري حيث تنشط وكلاء مراجعة الكود
-- مصدر الحقيقة الوحيد: الكود السعودي (إصدار 2024) ومعايير NFPA/SFPE حصرياً
-- سيادة الدفاع المدني: عند أي توصية تقنية، ذكّر أن الكود هو الحد الأدنى الفني وأن الدفاع المدني يملك حق التعديل ميدانياً
-
-ملاحظة صادقة عن الإجابات المحددة: عندما تجيب على سؤال محدد جداً عن مادة أو فقرة أو متطلب معين من الكود (مثل "ما هي متطلبات SBC 201 القسم 312؟")، أضف تنبيهاً واضحاً يقول: "للاطلاع على النص الكامل والمراجع المفصلة من الكود الأصلي، أنصحك بالانتقال للوضع الاستشاري." ثم أضف [SWITCH:استشاري]. هذا لا ينطبق على الأسئلة العامة (مثل شرح المفاهيم أو المقارنات) — فقط على الأسئلة المحددة جداً حول نصوص وفقرات معينة.
-
-قاعدة إضافية صارمة: إذا سُئلت عن رقم فقرة محددة أو متطلب تقني دقيق ولم تكن متأكداً من الإجابة، اقترح الانتقال للوضع الاستشاري من خلال إضافة [SWITCH:استشاري] في نهاية ردك.`;
+      // MOVED 2026-08-23 to ./promptContract.ts getPrimaryPrompt(). The move
+      // dropped the NFPA source claim (primary mode loads NO documents, so it
+      // could never have quoted one) and made the [SWITCH:...] markers single-
+      // sourced with src/utils/chatRouting.ts.
+      fullSystemPrompt = getPrimaryPrompt();
       usedFiles = [];
       console.log("Primary mode: using lightweight prompt with escalation rules, no document loading");
     } else {
@@ -3009,12 +2800,15 @@ serve(async (req) => {
 
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
 
-      // ── 1. Structured Table Path (DB-first, highest priority) ─────────────
-      // If the query references a known SBC table ID, fetch its exact structured
-      // row from sbc_code_tables before running any storage/vector retrieval.
+      // ── 1. Structured Table Path (DB transcription layer, injected first) ──
+      // If the query references a known SBC table ID, fetch its stored row from
+      // sbc_code_tables before running any storage/vector retrieval. Injected
+      // first for visibility, NOT for authority — the rows are an unverified
+      // transcription layer and the injected block says so. See the provenance
+      // warning above fetchStructuredTables.
       const supabaseAdminForTables = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        getSecretKey(),
       );
       const { context: structuredTableContext, matchedTableIds } =
         await fetchStructuredTables(userQuery, supabaseAdminForTables);
@@ -3023,12 +2817,49 @@ serve(async (req) => {
         console.log(`[StructuredTable] Matched and injected tables: ${matchedTableIds.join(", ")}`);
       }
 
-      // ── 2. Storage/keyword retrieval (always runs; supplements structured tables) ──
-      // Use keyword/storage path directly — vector RPC (match_sbc_documents) is not provisioned
-      const { context: sbcContext, files, sourceMeta: keywordMeta } = await fetchSBCContext(userQuery);
+      // ── 2. Document retrieval (always runs; supplements structured tables) ──
+      //
+      // CORRECTED 2026-08-23. The comment that used to sit here read:
+      //   "Use keyword/storage path directly — vector RPC
+      //    (match_sbc_documents) is not provisioned"
+      // That was FALSE and it is what kept the advisory path on keyword search.
+      // Verified directly against production on 2026-08-23:
+      //   - match_sbc_documents EXISTS in pg_proc, with identity arguments
+      //     (query_embedding vector, match_count integer, filter_code text);
+      //   - sbc_documents holds 4,630 rows of which 4,594 carry an embedding
+      //     (2,775 SBC201 / 1,855 SBC801; the 36 nulls are all SBC201).
+      // The RPC is provisioned and the data is there. What is actually true is
+      // that the vector path is not TRUSTED yet, which is a different claim and
+      // is why it sits behind a reversible, default-OFF flag rather than behind
+      // a false statement about the database:
+      //   - ADVISORY_VECTOR_RETRIEVAL_ENABLED must be exactly "1" to enable it;
+      //   - unset / "" / "0" / "true" all mean OFF, and with it OFF this branch
+      //     calls fetchSBCContext exactly as before — no behaviour change;
+      //   - no head-to-head vector-vs-keyword benchmark has been run against
+      //     real query embeddings yet, so there is no measurement that would
+      //     justify turning it on. See
+      //     docs/audits/advisory-vector-bench-20260823.md.
+      // Turning it back off is an env-var change, not a deploy.
+      const useVector = shouldUseVectorForAdvisory(mode, Deno.env.get);
+      let sbcContext: string;
+      let files: string[];
+      let keywordMeta: SourcePageMeta[];
+      if (useVector) {
+        const vec = await fetchSBCContextVector(userQuery, "standard");
+        sbcContext = vec.context;
+        files = vec.files;
+        keywordMeta = vec.sourceMeta;
+        retrievalEngine = vec.engine;
+      } else {
+        const kw = await fetchSBCContext(userQuery);
+        sbcContext = kw.context;
+        files = kw.files;
+        keywordMeta = kw.sourceMeta;
+        retrievalEngine = "keyword";
+      }
       usedFiles = files;
       usedSourceMeta = keywordMeta;
-      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files`);
+      console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${retrievalEngine}]`);
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
@@ -3037,8 +2868,9 @@ serve(async (req) => {
 
       fullSystemPrompt = basePrompt;
 
-      // Structured table context is injected FIRST (highest citation priority).
-      // Storage chunk context follows.
+      // Structured table context is injected FIRST for visibility. It is NOT the
+      // higher-trust source: its own block instructs the model that retrieved SBC
+      // document text (appended below) overrides it on any conflict.
       if (structuredTableContext) {
         fullSystemPrompt += structuredTableContext;
       }
@@ -3062,8 +2894,14 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // If only structuredTableContext loaded (storage failed), we still proceed —
-      // the DB table data alone is sufficient to answer the specific table query.
+      // If only structuredTableContext loaded (storage failed), we still proceed.
+      // NOT because the stored row is sufficient — it is an unverified
+      // transcription (see the provenance warning above fetchStructuredTables) —
+      // but because its injected block instructs the model to label the values
+      // unverified, apply the unsprinklered-vs-sprinklered sanity gate, and refuse
+      // to answer from a row that fails it. Behaviour deliberately unchanged here;
+      // whether this branch should instead 503 is an owner decision, not a
+      // comment-level one.
       
       // Final binding reminder: diagnostic protocol takes precedence over reference context
       const finalBindingReminder = language === "en"
@@ -3224,6 +3062,9 @@ serve(async (req) => {
         "Content-Type": "text/event-stream",
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
+        // Reports the engine that ACTUALLY produced the context, including the
+        // case where the vector path was attempted and fell back to keyword.
+        [RETRIEVAL_ENGINE_HEADER]: retrievalEngine,
       },
     });
   } catch (error) {
