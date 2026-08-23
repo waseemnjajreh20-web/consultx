@@ -80,6 +80,39 @@ tables plus `user_public_profiles.phone` are readable by any signed-in user.
 
 ---
 
+## SAFETY ALERT — curated code tables give inverted engineering guidance (2026-08-23)
+
+**CRITICAL. Live in production right now. Fire and life-safety impact.**
+
+`public.sbc_code_tables` (93 rows) is injected into the AI prompt labelled
+`STRUCTURED CODE TABLES (DB-AUTHORITATIVE — CITE THESE VERBATIM)`
+(`fire-safety-chat/index.ts:1970`). Verified directly against production and the
+original SBC PDF:
+
+Table 1017.2 (exit access travel distance) has its sprinkler columns INVERTED for
+Group H. The stored row tells an engineer that a non-sprinklered H-1 detonation
+hazard building may have 75 ft of travel distance and that a SPRINKLERED H-1 is
+"Not Permitted". SBC 201-CC-2024 says the exact opposite: Not Permitted without
+sprinklers, 23 m with. Every H and I row grants a distance where the code says
+Not Permitted. The values are imperial (IBC), not the SBC's metric.
+
+The error is self-evidently impossible: no code grants a LONGER travel distance
+without sprinklers than with them.
+
+Scope: 57 of 93 rows (61%) carry imperial units. An audit checked 7 rows in depth
+against the PDFs; 5 failed, including the single-exit table (1006.2.1, deletes
+every non-sprinklered "Not Permitted") and the corridor width table (1018.1, gives
+914 mm where the code requires 1100 mm).
+
+**Action: run the reversible quarantine in
+`docs/audits/SAFETY-ALERT-code-tables-20260823.md` Section 4.** It renames the
+affected table_ids so they stop being matched and injected; no data is deleted and
+it is reversible with one statement. Expected result: 57 quarantined, 36 active.
+
+Status: `[ ]` pending
+
+---
+
 ## Cron secret mismatch — LAUNCH BLOCKER (found 2026-08-23)
 
 **CONFIRMED in production.** The hourly pg_cron job `process-subscription-renewal`
