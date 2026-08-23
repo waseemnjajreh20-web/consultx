@@ -30,7 +30,7 @@ No action needed: the Vercel OIDC token expired on its own, and the Supabase
 
 | # | Task | Where | Why | Status |
 |---|---|---|---|---|
-| 19 | **Drop the mis-scoped policy on `mode_daily_usage`** | Supabase Dashboard → SQL Editor | A policy named "Service role full access" was granted `TO public` as `ALL / USING(true) / WITH CHECK(true)`. PUBLIC includes `anon`, so **anyone holding the public anon key can read, zero out, or delete any user's daily quota rows** — an entitlement bypass on the table gating Advisory and Analytical, both billed at `gemini-2.5-pro`. Verified against production with `SET LOCAL ROLE anon`: 18 rows across 5 users visible with no JWT. | `[ ]` |
+| 19 | ~~**Drop the mis-scoped policy on `mode_daily_usage`**~~ **DONE 2026-08-23** | Supabase Dashboard → SQL Editor | A policy named "Service role full access" was granted `TO public` as `ALL / USING(true) / WITH CHECK(true)`. PUBLIC includes `anon`, so **anyone holding the public anon key can read, zero out, or delete any user's daily quota rows** — an entitlement bypass on the table gating Advisory and Analytical, both billed at `gemini-2.5-pro`. Verified against production with `SET LOCAL ROLE anon`: 18 rows across 5 users visible with no JWT. **Fixed and re-verified: anon now sees 0 rows.** | `[x]` |
 | 20 | **Change the two test-account passwords** | Supabase Auth dashboard | `njajrehwaseem+consultxrelease1@`, `+consultxrelease2@`, `+consultxinvite1@`. Passwords were committed in the E2E scripts and remain in git history. Code no longer contains them (commit `2630d3f`). | `[ ]` |
 
 Exact SQL, verification queries, rollback and post-apply smoke test:
