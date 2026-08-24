@@ -34,7 +34,6 @@ Required environment variables:
 Exit codes: 0 = pass, 1 = configuration error or assertion failure.
 """
 import argparse
-import os
 import sys
 
 import httpx
@@ -47,17 +46,6 @@ REQUIRED_ENV_VARS = [
 ]
 
 CONTACT_URL = f"{common.SUPABASE_URL}/functions/v1/send-contact-message"
-
-
-def check_env() -> None:
-    missing = [name for name in REQUIRED_ENV_VARS if not os.environ.get(name)]
-    if missing:
-        raise SystemExit(
-            "Missing required environment variable(s): "
-            + ", ".join(missing)
-            + ". Set them before running this script. No fallback or committed "
-            "value is ever used."
-        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -78,7 +66,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def run_check() -> bool:
-    email = os.environ["CONSULTX_TEST_EMAIL"]
+    email = common.env_value("CONSULTX_TEST_EMAIL")
     anon_key = common.get_anon_key()
 
     payload = {
@@ -124,7 +112,7 @@ def run_check() -> bool:
 
 def main() -> int:
     args = parse_args()
-    check_env()
+    common.check_env(REQUIRED_ENV_VARS)
 
     if args.dry_run:
         print("[DRY RUN] Configuration OK (all required environment variables "

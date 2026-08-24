@@ -301,7 +301,19 @@ serve(async (req) => {
     // from Moyasar and compare critical fields before any DB activation.
     const moyasarSecretKey = Deno.env.get("MOYASAR_SECRET_KEY");
     if (!moyasarSecretKey) {
+      // R4-HIGH-3. Transient (a missing secret is fixed by configuring it, and
+      // Moyasar will redeliver), but the event concerns a payment that may
+      // already be CAPTURED, and this file's own invariant is that no captured
+      // payment leaves without a trace. A misconfigured function would otherwise
+      // 500 silently for as long as the secret is missing, and once Moyasar
+      // exhausts its retries the capture is gone with nothing recorded anywhere.
       console.error("MOYASAR_SECRET_KEY not configured — cannot re-verify payment");
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_secret_missing",
+        payload,
+      });
       return new Response(JSON.stringify({ error: "Verification unavailable" }), {
         status: 500,
         headers: corsHeaders,
@@ -317,10 +329,19 @@ serve(async (req) => {
         },
       });
     } catch (verifyNetErr) {
+      // R4-HIGH-3. Transient, and redelivery is the right answer — but the
+      // deduped letter is what makes a sustained outage visible instead of a
+      // silent run of 500s against captured payments.
       console.error(
         "Moyasar re-verification network error:",
         verifyNetErr instanceof Error ? verifyNetErr.message : String(verifyNetErr),
       );
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_network_error",
+        payload,
+      });
       return new Response(JSON.stringify({ error: "Verification network error" }), {
         status: 500,
         headers: corsHeaders,
@@ -367,7 +388,16 @@ serve(async (req) => {
     }
 
     if (verifyResponse.status >= 500) {
+      // R4-HIGH-3. Same reasoning as the two paths above, and the structurally
+      // identical invalid-JSON path below already did this — the omission here
+      // was an inconsistency, not a decision.
       console.error("Moyasar re-verification 5xx:", verifyResponse.status);
+      await insertDeadLetter(adminClient, {
+        paymentId,
+        moyasarStatus: status,
+        reason: "verification_api_error_5xx",
+        payload,
+      });
       return new Response(JSON.stringify({ error: "Verification upstream error" }), {
         status: 500,
         headers: corsHeaders,
@@ -1206,6 +1236,15 @@ serve(async (req) => {
       headers: corsHeaders,
     });
   } catch (error) {
+    // R4-HIGH-3, deliberately NOT given a dead letter. `adminClient` is declared
+    // inside the try block, so it is out of scope here and may legitimately not
+    // exist yet (this catch also covers failures before the client is built, and
+    // before signature verification — where an unauthenticated caller could
+    // otherwise write rows into webhook_dead_letters at will). The 500 makes
+    // Moyasar redeliver, and the redelivery is then handled by the classified
+    // paths above, which do write letters. Constructing a second admin client
+    // just for this catch was considered and rejected: it would hand an
+    // unauthenticated request a write primitive.
     console.error("Webhook unhandled error:", {
       message: error instanceof Error ? error.message : String(error),
     });

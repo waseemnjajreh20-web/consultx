@@ -115,8 +115,22 @@ export const TRIAL_CONVERSION_FORFEIT_REASON = "trial_conversion_forfeited";
  *     `user_subscriptions_one_live_row_per_user` counts `trialing` as LIVE —
  *     blocks any new subscription the customer buys.
  *   - 3 ticks (about 3 hours on the hourly schedule) leaves three dated dead
- *     letters and three loud log lines before anything is closed, which is
- *     enough for the daily ops sweep to see the row in its pre-closure state.
+ *     letters and three loud log lines before anything is closed.
+ *
+ * R4-MEDIUM-4 — CORRECTION. An earlier version of this comment justified the
+ * value as "enough for the daily ops sweep to see the row in its pre-closure
+ * state". That was arithmetically impossible: a sweep that runs once a day
+ * cannot be relied on to observe a three-hour window, so the stated rationale
+ * was fiction and would have misled the next reader into trusting a safety net
+ * that does not exist. The honest rationale is the two bullets above: the
+ * refusal is deterministic so waiting longer changes nothing, and the value is
+ * simply a small bound that leaves a durable ledger in `webhook_dead_letters`
+ * for a human to find AFTER the fact rather than before it.
+ *
+ * NOT RESOLVED, owner decision: no customer email is sent before the row is
+ * closed and the customer's 1.00 SAR verification is forfeited. Changing this
+ * value, or adding that notice, needs owner direction — see the billing
+ * contract, Section 12.7.
  *
  * TRANSIENT refusals (Moyasar unreachable) are NOT counted here and never
  * dead-lettered — see the call site.
@@ -165,7 +179,11 @@ export const STALE_INITIATED_AFTER_MS = 2 * 60 * 60 * 1000;
 export const STALE_INITIATED_LOOKUP_CAP = 25;
 
 export type StaleInitiatedAction =
-  /** Safe to mark the transaction `failed`: no money can have moved. */
+  /**
+   * Mark the transaction `failed` so it stops blocking the idempotency guards.
+   * R4-CRITICAL-2: this is NOT a claim that no money moved - for an unstamped
+   * row that is unknowable from here. Callers must dead-letter such closures.
+   */
   | "mark_failed"
   /** Money DID move (or may still). Never flip it — dead-letter for a replay. */
   | "dead_letter_paid"
@@ -233,5 +251,10 @@ export function resolveStaleInitiated(moyasarStatus: unknown): StaleInitiatedRes
   };
 }
 
-/** `failure_code` for a stale row that never reached Moyasar at all. */
+/**
+ * `failure_code` for a stale row that carries no Moyasar payment id.
+ * R4-CRITICAL-2: the name predates the finding and is kept for continuity with
+ * rows already written. It means "no payment id was stamped", NOT "no charge was
+ * ever sent" - the id is stamped after the POST, so a charge may exist upstream.
+ */
 export const STALE_INITIATED_NO_PAYMENT_ID_CODE = "STALE_INITIATED_NO_PAYMENT_ID";

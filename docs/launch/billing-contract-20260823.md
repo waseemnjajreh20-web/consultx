@@ -665,13 +665,30 @@ row is moved to `expired` with `profiles.plan_type` synced to `free`.
 > checkout is an `immediate_charge` at the full plan price with no credit. The
 > alternative was an invisible row that is never billed and never closed. The
 > dead letter exists so a human can refund the 1.00 SAR.
+>
+> **OWNER RATIFICATION REQUIRED.** No customer email precedes this forfeiture -
+> the row is closed and the 1.00 SAR is kept with no notice sent. The bound of 3
+> refusals is a small deterministic cap, not an observation window (an earlier
+> comment claimed it gave a daily ops sweep time to react, which is
+> arithmetically impossible; corrected in code). Changing the bound or adding a
+> pre-closure notice is an owner decision.
 
 **M9 / M11 - stale `initiated` transactions.** A `payment_transactions` row stuck
 at `initiated` blocks BOTH idempotency guards, so that subscription is never
 charged again. A pass now resolves rows older than `STALE_INITIATED_AFTER_MS`.
 It is deliberately asymmetric, because getting this wrong double-charges:
-`moyasar_payment_id IS NULL` means the charge never reached Moyasar and is marked
-`failed`; a row WITH a payment id is re-fetched, and a Moyasar status of **`paid`
+`moyasar_payment_id IS NULL` means only that **no id was ever stamped** - it does
+NOT mean the charge never reached Moyasar. Both writers insert the row *before*
+the Moyasar POST, and `moyasar-initiate-token-payment`'s stamp-failure path
+deliberately leaves exactly this shape *after* a real charge. Such a row is still
+closed to `failed` (an open one starves its subscription forever) but with an
+honest `failure_message` and a **deduped dead letter**
+(`stale_initiated_no_payment_id`) carrying the subscription id and the insert
+time, so a human can search Moyasar by `metadata.subscription_id` and reconcile.
+These rows deliberately **remain counted** by `chargeRetryEligibility`: if the
+charge never left, the cost is one delayed renewal; if it left and was captured,
+excluding it would clear the backoff and double-charge a real customer. We cannot
+tell the two apart from inside the job, so the safer error is chosen; a row WITH a payment id is re-fetched, and a Moyasar status of **`paid`
 is never marked failed** - it is dead-lettered for a webhook replay. `created_at`
 is never rewritten, because `chargeRetryEligibility` derives the 24h backoff from
 it. The pass never changes `user_subscriptions.status`: the outcome of a lost
@@ -745,6 +762,34 @@ strictly after `cancelled_at`. Both unknown-timestamp cases fail closed. The fla
 is never cleared by an abandoned checkout, which is what would have re-armed the
 Section 12.1 escalation.
 
+**OWNER RATIFICATION - the second 1.00 SAR is never credited (R4-LOW-8).** A
+customer who cancels mid-trial and resubscribes inside the trial window pays a
+second 1.00 SAR card verification. `computeCharge` credits the verification at
+most once (`priorPaidCount === 0`), so the second 1.00 SAR is kept and never
+appears against their first invoice. No code change was made: the correct
+behaviour (credit both, or refuse the second verification) is a commercial
+decision. Related to Section 10 item 8. Maximum exposure is 1.00 SAR per affected
+customer.
+
+**NARROWED, NOT CLOSED - the attempt-row TOCTOU (R4-MEDIUM-7).** The duplicate
+guard in `moyasar-initiate-token-payment` reads recent attempts and then inserts,
+so two requests racing inside that gap can both pass. The window is small and the
+downstream guards bound the damage, but the check is not atomic and must not be
+described as if it were. The real fix is a database constraint, proposed here as
+an **owner-decision migration for post-launch** and deliberately NOT added now
+(it changes insert behaviour on the live payment path and wants its own soak):
+
+```sql
+-- POST-LAUNCH, OWNER DECISION. Not applied.
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS payment_transactions_one_inflight_per_sub
+  ON public.payment_transactions (subscription_id)
+  WHERE status = 'initiated';
+```
+
+Before applying it, the stale-initiated pass (Section 12.7) must be confirmed to
+be running, or a single orphaned `initiated` row would block that subscription's
+next checkout entirely.
+
 **REJECTED FOR LAUNCH - a unique index on `webhook_dead_letters`.** A
 `CREATE UNIQUE INDEX ... ON (charge_id, reason)` was proposed to enforce the H8
 dedupe in the database. **It must not be created.** Section 12.7's H7 mechanism
@@ -790,11 +835,17 @@ check, and only for callers the org check did not entitle. The server-side card
 gate is unchanged for everyone else, and the refusal still precedes every
 quota-increment call, so no caller can be charged a unit and then refused.
 
-**KNOWN AND ACCEPTED - UI/server divergence.** `check-subscription` grants org AI
-access on role plus org status alone, with no paying check. A seat member of a
-lapsed org therefore sees "enterprise" in the UI but receives free-tier service in
-chat. The server favours protecting the money; the disagreement is real and is
-recorded for the next review rather than fixed here.
+**KNOWN AND ACCEPTED - UI/server divergence (scope corrected, R4-MEDIUM-6).**
+`check-subscription` grants org AI access on role plus org status alone, with no
+paying check. The exposure is wider than "a lapsed org": because
+`create_organization_with_owner` is granted to `authenticated`, **any** user can
+self-create a `trial` organization that has never paid anything and
+`check-subscription` will report enterprise org AI access for it. This is a
+UI-trust problem only - the server side is protected, because `fire-safety-chat`
+requires clause 4 (a paying linked subscription) and denies a NULL
+`subscription_id` outright, so no free AI is actually served. What the customer
+sees and what the server enforces disagree. Recorded for the next review rather
+than fixed here, since `check-subscription` is outside this lane.
 
 ### 12.10 The quota rollback that never ran (A7)
 
@@ -836,3 +887,48 @@ idempotent and safe to re-run.
 | `20260823000011_decrement_daily_usage.sql` | creates the missing rollback RPC (A7) | Main-mode users keep losing a quota unit on every provider failure |
 
 `20260823000011` additionally requires `NOTIFY pgrst, 'reload schema';`.
+
+
+### 12.12 The mid-trial canceller's only way back (R4-CRITICAL-1)
+
+`decideActivation` refused every flow except `immediate_charge` **before**
+reaching its timestamp discriminator. But `deriveFlow` returns
+**`post_trial_first_charge`** for every lapsed `trialing` row - never
+`immediate_charge`. The two facts together broke the only recovery path a
+mid-trial canceller has:
+
+1. customer cancels during the trial (`status` stays `trialing`,
+   `cancel_at_period_end = true`);
+2. the trial lapses;
+3. they come back through `/subscribe`. `moyasar-create-subscription` reuses that
+   same live row and never inspects `cancel_at_period_end`, and
+   `moyasar-initiate-token-payment` admits a `trialing` row, so the charge goes
+   through at plan price minus the 1.00 SAR credit;
+4. the webhook then **refused** the activation and wrote a `paid_after_cancel`
+   dead letter.
+
+**Charged, not subscribed, and told nothing.** The window was unbounded for as
+long as the cron-401 blocker kept trials from converting.
+
+`post_trial_first_charge` is now admitted through the **same** discriminator.
+That is safe because such a payment has only two possible authors, and the
+timestamp separates them exactly:
+
+- the renewal cron's conversion pass, which selects with
+  `.eq("cancel_at_period_end", false)` and therefore can only ever create one for
+  a row that was not cancelled at creation time - so if the customer cancels
+  afterwards the payment necessarily **predates** `cancelled_at` and is still
+  refused (this is the original R3-C2 race, unchanged);
+- the customer's own authenticated checkout, which by definition **follows** the
+  cancellation it is walking back.
+
+`renewal` remains refused: it is cron-only, no checkout derives it, and its pass
+carries the same filter, so a renewal created after a cancellation cannot
+legitimately exist.
+
+**The test that hid this.** The case asserting this path passed
+`flow: "immediate_charge"` together with `subStatus: "trialing"` - a pair
+`deriveFlow` cannot produce. A pure-function test that hand-builds an impossible
+input shape is exactly as blind as an assertion against a mock. The tests now
+**derive** the flow from a realistic row, and pin both directions of the
+discriminator plus the continued refusal of the other flows.

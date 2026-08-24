@@ -49,9 +49,11 @@
 --     ever incremented, so a no-op is the correct outcome; inserting a row there
 --     would fabricate usage history that never happened.
 --
--- NOTE ON search_path: written as `SET search_path = public`, which is the house
--- style in this repo's own migrations. It is identical in meaning to the
--- `SET search_path TO 'public'` form that Supabase introspection renders back.
+-- NOTE ON search_path: `SET search_path = public, pg_temp`. R4-LOW-10 aligned
+-- this with 20260823000004_job_locks.sql. Pinning pg_temp explicitly is the
+-- hardening that matters on a SECURITY DEFINER function: without it a caller
+-- who can create temp objects could shadow a referenced name. Equivalent in
+-- meaning to the `SET search_path TO '...'` form Supabase introspection renders.
 
 BEGIN;
 
@@ -59,7 +61,7 @@ CREATE OR REPLACE FUNCTION public.decrement_daily_usage(p_user_id uuid)
 RETURNS void
 LANGUAGE sql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $func$
   UPDATE public.daily_message_usage
   SET message_count = GREATEST(0, message_count - 1),

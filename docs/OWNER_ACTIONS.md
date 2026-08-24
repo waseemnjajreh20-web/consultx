@@ -104,12 +104,24 @@ against the PDFs; 5 failed, including the single-exit table (1006.2.1, deletes
 every non-sprinklered "Not Permitted") and the corridor width table (1018.1, gives
 914 mm where the code requires 1100 mm).
 
-**Action: run the reversible quarantine in
-`docs/audits/SAFETY-ALERT-code-tables-20260823.md` Section 4.** It renames the
-affected table_ids so they stop being matched and injected; no data is deleted and
-it is reversible with one statement. Expected result: 57 quarantined, 36 active.
+**Update 2026-08-23 — the initial reversible quarantine has already been run.**
+The owner executed the Section 4 quarantine from
+`docs/audits/SAFETY-ALERT-code-tables-20260823.md`. Verified directly against
+production: **42 quarantined / 51 active, zero imperial units among the
+active rows**, and table 1006.2.1 (the single-exit table called out above) is
+quarantined. The "57 quarantined / 36 active" figures earlier in this item
+were the pre-quarantine estimate and are now stale — do not use them.
 
-Status: `[ ]` pending
+**Remaining action: the full rebuild**, not another quarantine pass. The
+forward plan is `docs/audits/code-tables-rebuild-20260823.sql`, which
+re-derives the table from source PDFs and ends at **16 verified-active / 77
+quarantined**. Operator steps for running it are in
+`docs/launch/deploy-runbook-20260823.md` — specifically the code-tables
+rebuild step, which follows the edge-function deploy step in that runbook.
+Run the rebuild SQL from there rather than improvising a new quarantine
+statement here.
+
+Status: `[ ]` pending — quarantine done, rebuild SQL not yet run
 
 ---
 
@@ -191,15 +203,50 @@ secret rotation that would log out every user.
 The project already has new-style keys provisioned (`sb_publishable_...` and
 `sb_secret_...` on the API Keys page). Rotating the legacy `service_role` key
 means rotating the JWT secret, which invalidates the anon key AND every live
-user session. The migration path avoids that:
+user session. The migration path avoids that.
+
+**Update 2026-08-23 — the code side of this is already shipped**, and the
+step below that used to say "migrate the edge functions to a manually-set
+secret holding the `sb_secret_...` value" was wrong on two counts and is
+corrected here:
+
+1. Nothing in the shipped code reads a manually-set secret named anything
+   like that. The shipped design is the dual-mode helper
+   `supabase/functions/_shared/supabaseKeys.ts`: it prefers the
+   **platform-injected** `SUPABASE_SECRET_KEYS` / `SUPABASE_PUBLISHABLE_KEYS`
+   env vars — JSON objects keyed by name, read via
+   `JSON.parse(...)["default"]` — and falls back to the legacy plain
+   `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_ANON_KEY` until legacy keys are
+   disabled. Every edge function that touches these keys already goes
+   through that helper.
+2. The `SUPABASE_` prefix is reserved by the platform, so a custom secret
+   named `SUPABASE_...` cannot even be set via `supabase secrets set` —
+   the old instruction described something that is not possible to do.
+
+The helper is already deployed and inert (it just takes the legacy-fallback
+branch) until the owner flips the switch below. Actual remaining steps:
 
 1. Point the frontend `VITE_SUPABASE_PUBLISHABLE_KEY` (Vercel) at the
-   `sb_publishable_...` key and redeploy.
-2. Migrate the 18 edge functions that read `SUPABASE_SERVICE_ROLE_KEY` to a
-   manually-set secret holding the `sb_secret_...` value. The platform-injected
-   `SUPABASE_SERVICE_ROLE_KEY` stops working once legacy keys are disabled, so
-   this is a code change, not just a secret swap.
-3. Only then disable the legacy `anon` / `service_role` keys.
+   `sb_publishable_...` key's **value** and redeploy. The variable **name**
+   does not change, and `src/integrations/supabase/client.ts` needs no code
+   change — it already reads that same env var name.
+2. Confirm the edge functions carrying `_shared/supabaseKeys.ts` are deployed
+   (they are part of this release — see the deploy runbook). Do this BEFORE
+   step 3; disabling legacy keys first would break every function still on
+   the old direct `Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")` pattern, if any
+   remained un-deployed.
+3. Only then disable the legacy `anon` / `service_role` keys in the Supabase
+   dashboard. This is now safe specifically because step 2 is done.
+
+**Dev-tooling caveat:** three local scripts are NOT part of the shipped
+edge-function code and do NOT go through `_shared/supabaseKeys.ts` — they
+read the legacy anon key straight from the environment and will **silently
+stop working** the day legacy keys are disabled. This is expected, not a
+bug to chase:
+
+- `orchestrator.cjs:9` — `process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY`
+- `scripts/upload-source-pdfs.mjs`
+- `scripts/build-source-map.mjs`
 
 Gemini rotation is independent and has no such constraint: delete the old key in
 AI Studio, create a new one, update the `GOOGLE_GEMINI_API_KEY` Supabase secret.

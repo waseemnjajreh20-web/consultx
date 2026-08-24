@@ -24,8 +24,19 @@ as an EXPECTED, reported outcome here (it proves the gate itself works),
 not a failure — this script only hard-fails on a genuinely wrong status
 (e.g. 401, 500, or a 200 with no content).
 
-Read-only / non-destructive: sends up to three chat messages, no writes to
-billing or subscription state.
+NOT read-only: this sends up to three real chat messages through
+`fire-safety-chat` as the test account (one per mode attempted), each of
+which increments that user's per-mode daily quota counter
+(`increment_mode_daily_count` / `increment_daily_usage` in
+fire-safety-chat/index.ts) and, on that account's first-ever call, can write
+`launch_trial_status` on its `profiles` row. A `mode_locked` 403 response
+(see below) does not consume quota, since the gate rejects before the quota
+increment. It makes no writes to billing or payment-provider state
+(Moyasar). A full run of the three chat-calling P3 smoke scripts together
+(this one, p3_smoke_citations.py, p3_smoke_free_tier.py) consumes up to 5 of
+the free tier's 10 messages/day for the test account; a repeat run the same
+day may return HTTP 429, which means the daily quota is exhausted, not a
+product failure.
 
 Usage:
     python p3_smoke_three_modes.py
@@ -41,7 +52,6 @@ Exit codes: 0 = pass, 1 = configuration error or assertion failure.
 """
 import argparse
 import json
-import os
 import sys
 
 import httpx
@@ -62,17 +72,6 @@ MODE_QUERIES = {
 }
 
 SWITCH_MARKERS = ["[SWITCH:استشاري]", "[SWITCH:تحليلي]"]
-
-
-def check_env() -> None:
-    missing = [name for name in REQUIRED_ENV_VARS if not os.environ.get(name)]
-    if missing:
-        raise SystemExit(
-            "Missing required environment variable(s): "
-            + ", ".join(missing)
-            + ". Set them before running this script. No fallback or committed "
-            "value is ever used."
-        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -171,7 +170,7 @@ def run_check() -> bool:
 
 def main() -> int:
     args = parse_args()
-    check_env()
+    common.check_env(REQUIRED_ENV_VARS)
 
     if args.dry_run:
         print("[DRY RUN] Configuration OK (all required environment variables "

@@ -1147,17 +1147,65 @@ describe("R3-C2 activation guard — decideActivation", () => {
     expect(d.activate).toBe(true);
   });
 
-  it("ACTIVATES a resubscribe on a trialing row the user had scheduled to end", () => {
-    // User cancels during the trial, changes their mind, and checks out again.
+  // R4-CRITICAL-1. The previous version of this test hardcoded
+  // `flow: "immediate_charge"` alongside `subStatus: "trialing"` — a pair
+  // `deriveFlow` can NEVER produce. It therefore "proved" a path that does not
+  // exist while the real one (post_trial_first_charge) was refused, charging the
+  // customer and dead-lettering them. The flow is now DERIVED from a realistic
+  // row, so the test cannot drift away from production again.
+  it("derives post_trial_first_charge for a lapsed trialing row (guards the test itself)", () => {
+    expect(deriveFlow(lapsedTrialSub(), NOW)).toBe("post_trial_first_charge");
+  });
+
+  it("ACTIVATES the resubscribe of a mid-trial canceller whose trial then lapsed", () => {
+    // The real journey: cancel during the trial, let it lapse, come back through
+    // /subscribe. moyasar-create-subscription reuses the same trialing row, so
+    // the server derives the flow from THAT row — not from an invented one.
+    const row = lapsedTrialSub();
+    const derivedFlow = deriveFlow(row, NOW);
+    expect(derivedFlow).toBe("post_trial_first_charge"); // not immediate_charge
+
+    const d = decideActivation(at({
+      subStatus: row.status,
+      cancelAtPeriodEnd: true,
+      cancelledAtMs: T0902,
+      flow: derivedFlow,
+      paymentCreatedAtMs: T0905 - 30_000, // the customer's own checkout, AFTER the cancel
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(true);
+  });
+
+  it("REFUSES that same derived flow when the payment PREDATES the cancellation", () => {
+    // The cron created the conversion charge at 09:00, the customer cancelled at
+    // 09:02. Admitting post_trial_first_charge must not reopen the R3-C2 race.
     const d = decideActivation(at({
       subStatus: "trialing",
       cancelAtPeriodEnd: true,
       cancelledAtMs: T0902,
-      flow: "immediate_charge",
-      paymentCreatedAtMs: T0905 - 30_000, // created AFTER the cancellation
+      flow: deriveFlow(lapsedTrialSub(), NOW),
+      paymentCreatedAtMs: T0900,
       nowMs: T0905,
     }));
-    expect(d.activate).toBe(true);
+    expect(d.activate).toBe(false);
+    expect(d.reason).toBe("paid_after_cancel");
+  });
+
+  // ── A2 guard pin: the OTHER flows must stay refused after a cancellation ──
+  // If a later change widens the admitted set again, these fail.
+  it("REFUSES renewal and trial_card_verification after a cancellation, whatever the timestamps", () => {
+    for (const flow of ["renewal", "trial_card_verification"] as const) {
+      const d = decideActivation(at({
+        subStatus: "trialing",
+        cancelAtPeriodEnd: true,
+        cancelledAtMs: T0902,
+        flow,
+        paymentCreatedAtMs: T0905 - 30_000, // fresh AND after the cancel — still refused
+        nowMs: T0905,
+      }));
+      expect(d.activate, `flow ${flow} must not activate a cancelled subscription`).toBe(false);
+      expect(d.reason).toBe("paid_after_cancel");
+    }
   });
 
   // ── The freshness bound ────────────────────────────────────────────────────
@@ -1265,18 +1313,43 @@ describe("R3-C2 activation guard — decideActivation", () => {
     expect(decideActivation(at({ cancelAtPeriodEnd: undefined })).activate).toBe(true);
   });
 
-  it("REFUSES an unattended cron flow on a cancelled row even when it is fresh", () => {
-    // Only a deliberate checkout (immediate_charge) may revive a closed row.
-    for (const flow of ["post_trial_first_charge", "renewal"] as const) {
-      const d = decideActivation(at({
-        subStatus: "cancelled",
-        cancelledAtMs: T0902,
-        flow,
-        paymentCreatedAtMs: T0905 - 1000, // created AFTER the cancel, still refused
-        nowMs: T0905,
-      }));
-      expect(flow + "=" + d.activate).toBe(flow + "=false");
-    }
+  it("REFUSES renewal on a cancelled row even when it is fresh", () => {
+    // `renewal` is cron-only — no checkout derives it — and the renewal pass
+    // filters `cancel_at_period_end = false`, so a renewal created after a
+    // cancellation cannot legitimately exist. Refusing it is defence in depth.
+    const d = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: T0902,
+      flow: "renewal",
+      paymentCreatedAtMs: T0905 - 1000, // fresh AND after the cancel — still refused
+      nowMs: T0905,
+    }));
+    expect(d.activate).toBe(false);
+  });
+
+  it("post_trial_first_charge on a closed row is decided by the timestamp, not the flow", () => {
+    // R4-CRITICAL-1. This case previously asserted a blanket refusal, which is
+    // what charged a returning mid-trial canceller and then dead-lettered them.
+    // The flow is admitted; the discriminator does the work. Both directions are
+    // pinned here so neither can regress into the other.
+    const predatesCancel = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: T0902,
+      flow: "post_trial_first_charge",
+      paymentCreatedAtMs: T0900, // the cron's charge, before the cancel
+      nowMs: T0905,
+    }));
+    expect(predatesCancel.activate).toBe(false);
+    expect(predatesCancel.reason).toBe("paid_after_cancel");
+
+    const followsCancel = decideActivation(at({
+      subStatus: "cancelled",
+      cancelledAtMs: T0902,
+      flow: "post_trial_first_charge",
+      paymentCreatedAtMs: T0905 - 1000, // the customer's own checkout, after the cancel
+      nowMs: T0905,
+    }));
+    expect(followsCancel.activate).toBe(true);
   });
 });
 
@@ -2044,7 +2117,10 @@ describe("resubscribing inside the trial withdraws the scheduled cancellation", 
     const d = decideTrialCancelClear(at({
       paymentCreatedAtMs: T0905 + CLOCK_SKEW_TOLERANCE_MS + 1000,
     }));
-    expect(d.reason).toBe("stale_payment");
+    // R4-LOW-9: distinct from "stale_payment". A future-dated payment is a clock
+    // or data fault, not an old one, and ops must not be sent hunting the wrong
+    // cause. Pinned so the two reasons cannot be collapsed back together.
+    expect(d.reason).toBe("future_dated_payment");
   });
 
   it("tolerates ordinary clock skew on an otherwise valid resubscribe", () => {

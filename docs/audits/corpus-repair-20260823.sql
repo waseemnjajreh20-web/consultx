@@ -20,9 +20,42 @@
 --      *_backup_20260823_* table first, and states the exact rollback
 --      statement in a comment. Nothing here is a hard delete of live data.
 --
--- SCOPE: this file touches only public.sbc_documents and public.source_registry.
--- public.document_tables is NOT modified — see Section 5, which is a
--- recommendation (no DELETE), not an executed repair.
+-- SCOPE — CORRECTED 2026-08-24 after the 4th adversarial review.
+--   ROWS MODIFIED: only in public.sbc_documents and public.source_registry.
+--   public.document_tables has NO row modified — Section 5 is a recommendation
+--   (no DELETE), not an executed repair.
+--
+--   BUT THIS FILE DOES CONTAIN DDL. It CREATEs five backup tables:
+--       sbc_documents_backup_20260823_codetype
+--       sbc_documents_backup_20260823_language
+--       sbc_documents_backup_20260823_toc_metadata
+--       source_registry_backup_20260823
+--       document_tables_backup_20260823
+--   The earlier "touches only ..." wording was false by omission and has been
+--   replaced. Read the SECURITY note below before running anything.
+--
+-- ============================================================================
+-- SECURITY — WHY EVERY BACKUP TABLE BELOW IS LOCKED DOWN AT CREATION
+-- ============================================================================
+-- Finding from the 4th adversarial review, measured against this project:
+-- public.pg_default_acl grants anon AND authenticated ALL privileges on newly
+-- created public tables; row-level security defaults to OFF; there is no RLS
+-- event trigger; and pgrst_ddl_watch exposes a new public table over the REST
+-- API immediately. A bare `CREATE TABLE ... AS SELECT` therefore publishes a
+-- world-readable AND world-writable copy of a life-safety dataset the moment
+-- it runs.
+--
+-- Every CREATE below is followed immediately by:
+--     ALTER TABLE ... ENABLE ROW LEVEL SECURITY;
+--     REVOKE ALL ON ... FROM PUBLIC, anon, authenticated;
+--
+-- RESTORABILITY IS PRESERVED. The owner runs this file as `postgres` in the
+-- Supabase SQL Editor, and `service_role` bypasses RLS; neither is affected by
+-- the REVOKE, which targets PUBLIC, anon and authenticated only. Enabling RLS
+-- with no policy denies all normal-role access, which is the intended state for
+-- a backup table. Every rollback statement quoted in this file runs as the
+-- table owner and therefore still works. Verify on the first section before
+-- proceeding to the others.
 -- ============================================================================
 
 
@@ -54,6 +87,10 @@ SELECT id, code_type
 FROM sbc_documents
 WHERE code_type = 'SBC201'
   AND content ~ 'SBC\s*801\s*-?\s*CC\s*-?\s*\d{4}';
+
+-- Lock it down immediately (see the SECURITY note in the file header).
+ALTER TABLE sbc_documents_backup_20260823_codetype ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON sbc_documents_backup_20260823_codetype FROM PUBLIC, anon, authenticated;
 
 -- --- Verify before update ---
 -- EXPECTED: 308  (0 if this section has already been applied)
@@ -111,6 +148,10 @@ CREATE TABLE IF NOT EXISTS sbc_documents_backup_20260823_language AS
 SELECT id, language, metadata
 FROM sbc_documents
 WHERE language = 'AR';
+
+-- Lock it down immediately (see the SECURITY note in the file header).
+ALTER TABLE sbc_documents_backup_20260823_language ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON sbc_documents_backup_20260823_language FROM PUBLIC, anon, authenticated;
 
 -- --- Verify before update ---
 -- EXPECTED: total_ar=4630 (or less if already partially run), to_flip_to_en=4622,
@@ -192,6 +233,10 @@ WHERE content ~ '\.{4,}\s*\d+'
    OR content ~ '(\.\s){4,}\d+'
    OR content ~ '…\s*\d+';
 
+-- Lock it down immediately (see the SECURITY note in the file header).
+ALTER TABLE sbc_documents_backup_20260823_toc_metadata ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON sbc_documents_backup_20260823_toc_metadata FROM PUBLIC, anon, authenticated;
+
 -- --- Verify before update ---
 -- EXPECTED: 71
 SELECT count(*) AS toc_dot_leader_rows
@@ -253,6 +298,10 @@ CREATE TABLE IF NOT EXISTS source_registry_backup_20260823 AS
 SELECT *
 FROM source_registry
 WHERE source_id IN ('SBC201', 'SBC801');
+
+-- Lock it down immediately (see the SECURITY note in the file header).
+ALTER TABLE source_registry_backup_20260823 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON source_registry_backup_20260823 FROM PUBLIC, anon, authenticated;
 
 -- --- Verify before update ---
 -- EXPECTED: SBC201 edition_year=2024 (already correct, no-op), vector_indexed=false (to fix)
@@ -368,6 +417,10 @@ ORDER BY id;
 -- recommendation above. Not required if no DELETE is run.
 CREATE TABLE IF NOT EXISTS document_tables_backup_20260823 AS
 SELECT * FROM document_tables;
+
+-- Lock it down immediately (see the SECURITY note in the file header).
+ALTER TABLE document_tables_backup_20260823 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON document_tables_backup_20260823 FROM PUBLIC, anon, authenticated;
 
 -- NOT RECOMMENDED — provided only if the owner explicitly overrides the
 -- analysis above and wants the 3 genuinely-pending empty shells removed

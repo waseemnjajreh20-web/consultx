@@ -9,17 +9,79 @@ from pathlib import Path
 
 import httpx
 
+
+def env_value(name: str) -> str:
+    """Return an environment variable's value with whitespace stripped.
+
+    A value consisting only of whitespace (e.g. a single space) is treated
+    exactly like an unset variable and returns "". Without this, a
+    whitespace-only value passes a plain `if not os.environ.get(name)`
+    truthiness check and then gets sent to the server as a real credential.
+    """
+    return os.environ.get(name, "").strip()
+
+
+def missing_env_vars(names: list[str]) -> list[str]:
+    """Return the subset of `names` that are unset or whitespace-only."""
+    return [name for name in names if not env_value(name)]
+
+
+def check_env(required_vars: list[str]) -> None:
+    """Exit non-zero with a clear message if any required env var is unset
+    or whitespace-only. Call this before any network call.
+
+    Shared by every p2/p3 script so the whitespace-is-missing rule (see
+    `env_value`) is enforced in exactly one place instead of being
+    reimplemented per script.
+    """
+    missing = missing_env_vars(required_vars)
+    if missing:
+        raise SystemExit(
+            "Missing required environment variable(s): "
+            + ", ".join(missing)
+            + ". Set them before running this script. No fallback or committed "
+            "value is ever used."
+        )
+
+
+SMOKE_CONFIRM_VAR = "CONSULTX_SMOKE_CONFIRM"
+
+
+def require_smoke_confirm(production_action: str) -> None:
+    """Fail closed unless the operator explicitly opts in to a script that
+    fires a live request against PRODUCTION without needing test-account
+    credentials (so the normal credential gate never protects it).
+
+    `production_action` should be a short clause describing what the script
+    is about to POST to production, e.g. "POST an unauthenticated request to
+    the live process-subscription-renewal endpoint".
+
+    Call this after --help/--dry-run handling but before any network call.
+    Absent or not equal to "yes" (case-insensitive, after stripping
+    whitespace) -> exits non-zero having sent nothing.
+    """
+    value = env_value(SMOKE_CONFIRM_VAR)
+    if value.lower() != "yes":
+        raise SystemExit(
+            f"Refusing to run: this script will {production_action} — a "
+            "real network call against LIVE PRODUCTION. This script needs no "
+            "user credentials, so the usual test-credential gate does not "
+            f"protect it. Set {SMOKE_CONFIRM_VAR}=yes to confirm you intend "
+            "this, then rerun. No network call was made."
+        )
+
+
 BASE_URL = os.environ.get("CONSULTX_BASE_URL", "https://www.consultx.app").rstrip("/")
 SUPABASE_URL = os.environ.get(
     "CONSULTX_SUPABASE_URL", "https://hrnltxmwoaphgejckutk.supabase.co"
 ).rstrip("/")
-SUPABASE_ANON_KEY = os.environ.get("CONSULTX_SUPABASE_ANON_KEY", "")
+SUPABASE_ANON_KEY = env_value("CONSULTX_SUPABASE_ANON_KEY")
 
 CHAT_URL = f"{SUPABASE_URL}/functions/v1/fire-safety-chat"
 CHECK_SUBSCRIPTION_URL = f"{SUPABASE_URL}/functions/v1/check-subscription"
 
-TEST_EMAIL = os.environ.get("CONSULTX_TEST_EMAIL", "")
-TEST_PASSWORD = os.environ.get("CONSULTX_TEST_PASSWORD", "")
+TEST_EMAIL = env_value("CONSULTX_TEST_EMAIL")
+TEST_PASSWORD = env_value("CONSULTX_TEST_PASSWORD")
 
 E2E_DIR = Path(__file__).parent
 

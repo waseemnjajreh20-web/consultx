@@ -26,11 +26,17 @@ Usage:
 
 Required environment variables:
     CONSULTX_SUPABASE_ANON_KEY   Supabase anon key
+    CONSULTX_SMOKE_CONFIRM       must be set to "yes" for a real (non
+                                  --dry-run) run. This script needs no test
+                                  account credentials, so it POSTs to a LIVE
+                                  PRODUCTION endpoint the moment the anon key
+                                  is set — this variable is the only thing
+                                  that gates that. Not required for --dry-run
+                                  or --help.
 
 Exit codes: 0 = pass, 1 = configuration error or assertion failure.
 """
 import argparse
-import os
 import sys
 
 import httpx
@@ -42,17 +48,6 @@ REQUIRED_ENV_VARS = [
 ]
 
 RENEWAL_URL = f"{common.SUPABASE_URL}/functions/v1/process-subscription-renewal"
-
-
-def check_env() -> None:
-    missing = [name for name in REQUIRED_ENV_VARS if not os.environ.get(name)]
-    if missing:
-        raise SystemExit(
-            "Missing required environment variable(s): "
-            + ", ".join(missing)
-            + ". Set them before running this script. No fallback or committed "
-            "value is ever used."
-        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -101,12 +96,17 @@ def run_check() -> bool:
 
 def main() -> int:
     args = parse_args()
-    check_env()
+    common.check_env(REQUIRED_ENV_VARS)
 
     if args.dry_run:
         print("[DRY RUN] Configuration OK (all required environment variables "
               "are set). No network calls made.")
         return 0
+
+    common.require_smoke_confirm(
+        "POST an unauthenticated request to the live production "
+        "process-subscription-renewal endpoint"
+    )
 
     ok = run_check()
     return 0 if ok else 1

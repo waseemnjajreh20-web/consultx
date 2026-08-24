@@ -21,11 +21,11 @@ means that bug is dormant right now, purely by accident, because the request
 never reaches the charging logic. If the cron secret is fixed **before** the
 corrected function code is deployed, the moment the cron starts succeeding it
 will recharge live saved cards on an hourly loop. That is why the cron secret
-is Step 6 — dead last — and why Step 3 (function deploy) must land first.
+is Step 7 — dead last — and why Step 3 (function deploy) must land first.
 Symmetrically, the frontend must not go live pointing at a backend that still
-runs stale functions (Step 4 after Step 3), and the storage bucket must not
+runs stale functions (Step 5 after Step 3), and the storage bucket must not
 flip to private before the frontend that knows how to fetch signed URLs is
-live (bucket flip after Step 4, not with it). Step 2 is now two sub-steps:
+live (bucket flip after Step 5, not with it). Step 2 is now two sub-steps:
 2a confirms the seat-RPC hardening applied in Step 1a, and 2b revokes
 `anon`/`authenticated` execute privilege on the six quota-RPC functions — a
 CONFIRMED CRITICAL, currently-open production hole
@@ -50,19 +50,19 @@ by simple omission; nothing here is allowed to be unaccounted for again.
 | `20260823000002_seat_rpc_hardening.sql` | Pending | **Step 1a** |
 | `20260823000003_billing_columns.sql` | Pending | **Step 1b** |
 | `20260823000004_job_locks.sql` | CONFIRMED absent — `public.job_locks` table and both `try_acquire_job_lock`/`release_job_lock` RPCs do not exist | **Step 1c** |
-| `20260823000010_source_pdfs_private.sql` | Pending | **Step 4b** — deliberately **NOT** applied here |
+| `20260823000010_source_pdfs_private.sql` | Pending | **Step 5b** — deliberately **NOT** applied here |
 | `20260823000011_decrement_daily_usage.sql` | Landed during this runbook's drafting (produced by a parallel lane); `public.decrement_daily_usage` CONFIRMED absent in production (its sibling `increment_daily_usage` CONFIRMED present) | **Step 1e** |
 
 Apply 1a, 1b, 1c now, in that order. **1c is mandatory, not precautionary**
 — its two RPCs and their table are CONFIRMED absent in production as of
-2026-08-23, not merely "may be missing" — and it must land before Step 6
-arms the cron (see Step 6's preconditions). 1d is a verify-then-apply step,
+2026-08-23, not merely "may be missing" — and it must land before Step 7
+arms the cron (see Step 7's preconditions). 1d is a verify-then-apply step,
 expected to be a no-op given the confirmation above; run its check anyway.
 1e's file has since landed (see Step 1e for what was verified against its
 actual contents) and can be applied any time relative to the others — see
-its own ordering note. **1a, 1b, and 1c must all land before Step 6** — each
+its own ordering note. **1a, 1b, and 1c must all land before Step 7** — each
 bears directly on renewal correctness or safety (seat cap, VAT/verification
-columns, the single-flight lease). 1d and 1e do not gate Step 6 specifically
+columns, the single-flight lease). 1d and 1e do not gate Step 7 specifically
 — neither touches the renewal/cron path — but both should be in place by
 the time Step 3 deploys, since that is what the newly deployed
 `fire-safety-chat` code already assumes on the profiles and quota side; see
@@ -89,6 +89,8 @@ next cron conversion. The new version:
 - preserves every previously-existing check verbatim (auth, positive integer,
   row exists, caller owns the row, plan is a per-seat plan, `plan.min_seats`
   floor, linked-org active-member floor).
+
+Between this step landing and Step 5a shipping the frontend, a seat-cap or non-active-status rejection surfaces to the user as a raw Postgres exception (`SEAT_CAP_EXCEEDED` / `SEAT_CHANGE_REQUIRES_CHECKOUT`, no frontend handler yet) rather than a friendly message — accepted deliberately, since shipping the frontend first would leave the seat-abuse hole (R3-C1) open even longer.
 
 Run the full file contents in the SQL Editor (it is wrapped in its own
 `BEGIN; ... COMMIT;`).
@@ -196,7 +198,7 @@ invocation, or a slow run overlapping the next tick) can both pass the
 per-subscription idempotency checks and both charge the same stored card.
 That is a double-charge risk on the very first armed cron tick if this step
 is skipped — the exact failure class this runbook's whole ordering exists to
-prevent elsewhere. **Apply this before Step 6 arms the cron.**
+prevent elsewhere. **Apply this before Step 7 arms the cron.**
 
 Run the full file contents in the SQL Editor, in one paste (the `NOTIFY` at
 the end matters — see below).
@@ -388,7 +390,7 @@ schema';` on its own and re-check.
 `supabase/migrations/20260823000010_source_pdfs_private.sql` (the
 `source-pdfs` bucket flip to private), which is deliberately **NOT** applied
 in this step even though its filename would otherwise sort into this
-sequence. It is applied in **Step 4b**, after the frontend that fetches
+sequence. It is applied in **Step 5b**, after the frontend that fetches
 signed URLs is live — flipping the bucket now would blank every PDF in the
 sources panel for every current user (see the migration's own header comment
 for the exact failure mode).
@@ -515,8 +517,12 @@ comment inside it says exactly this) — re-run it any time after applying
 the six `REVOKE` statements.
 
 **Expected output:** `Success. No rows returned` for each of the six
-`REVOKE` statements. The verification `SELECT` returns one row per function
-(six rows total), with `anon = f`, `authed = f`, `svc = t` on every row.
+`REVOKE` statements. The verification `SELECT` returns one row per
+matching function — six or seven rows: seven once Step 1e
+(`20260823000011`) has been applied, because that migration's new
+`decrement_daily_usage` function also matches this query's
+`%daily_usage%` filter. With `anon = f`, `authed = f`, `svc = t` on every
+row — the seventh row, once present, must read the same.
 
 **If it did not work:** if any row still shows `anon = t` or `authed = t`,
 the root cause the audit identified (Section 2, part a) is `pg_default_acl`
@@ -561,11 +567,11 @@ agree on flow derivation, amount validation and status transitions.
 **first-time deploys** — they do not exist in production yet
 (`docs/audits/production-truth-20260823.md`, Section 5, and this batch's own
 list below). `get-source-pdf-url` is being produced by a parallel lane (C1)
-for the signed-URL PDF panel refactor that Step 4b depends on; if its source
+for the signed-URL PDF panel refactor that Step 5b depends on; if its source
 file is not yet present under `supabase/functions/get-source-pdf-url/` when
 you run this step, deploy the other 20 now and deploy
 `get-source-pdf-url` separately the moment it lands — do not block the whole
-batch on it, but do not skip Step 4b's dependency on it being live either.
+batch on it, but do not skip Step 5b's dependency on it being live either.
 
 Run every line below (from the repo root; each is independent, order among
 them does not matter since none of them import from each other except via
@@ -595,16 +601,16 @@ npx supabase functions deploy send-eid50-campaign --project-ref hrnltxmwoaphgejc
 npx supabase functions deploy send-founding10-campaign --project-ref hrnltxmwoaphgejckutk
 ```
 
-That is 21 functions: the 20 that already exist in production
+That is 21 functions: the 18 that already exist in production
 (`admin-manage-user`, `admin-stats`, `auto-trial`, `cancel-subscription`,
 `check-subscription`, `corporate-trial`, `delete-case-document`,
 `fire-safety-chat`, `get-case-document-url`, `get-public-case-tracking`,
 `launch-trial-activate`, `moyasar-create-subscription`,
 `moyasar-initiate-token-payment`, `moyasar-webhook`,
 `process-subscription-renewal`, `sbc-graph-indexer`, `send-eid50-campaign`,
-`send-founding10-campaign`, plus the two never-deployed
-`delete-account` and `send-contact-message`) and the new 21st,
-`get-source-pdf-url`.
+`send-founding10-campaign`) plus the three first-time deploys —
+`delete-account`, `send-contact-message`, and `get-source-pdf-url`
+(18 + 3 = 21).
 
 **Expected output per line:** CLI prints a deploy progress indicator and
 ends with something like
@@ -627,24 +633,213 @@ specific attention to `process-subscription-renewal`,
 `moyasar-create-subscription`, and `check-subscription` — these are the
 payment-critical functions that were confirmed 3–4 months stale; their
 `updated_at` moving to today is the concrete proof the recharge-bug fix
-(`462ded7`) is now live, which Step 6 depends on.
+(`462ded7`) is now live, which Step 7 depends on.
 
 **If it did not work:** if a specific function still shows a stale
 `updated_at`, re-run only that function's `deploy` line — deploys are
 independent and idempotent (re-deploying the same source just creates a new
 version). If the CLI reports an auth or project-ref error, confirm you are
 logged in (`npx supabase login`) and linked to the correct project
-(`hrnltxmwoaphgejckutk`) before retrying — do not proceed to Step 4 until
+(`hrnltxmwoaphgejckutk`) before retrying — do not proceed to Step 5 until
 every payment-critical function's `updated_at` is today's.
 
 ---
 
-## Step 4 — Deploy the frontend, then flip the PDF bucket
+## Step 4 — Rebuild the curated code tables and repair the corpus (before the frontend ships)
 
-### 4a. Merge to `main` and deploy
+Three independent data-layer fixes land here, after the function deploy
+(Step 3) and before the frontend deploy (Step 5). They share one step
+number because all three are same-day, SQL-Editor- or Dashboard-driven,
+backend-only data corrections with no code dependency of their own — not
+because they depend on each other. 4a and 4b each carry their own ordering
+rule in their own sub-step; 4c is explicitly independent of both.
+
+### 4a. Apply `docs/audits/code-tables-rebuild-20260823.sql`
+
+**What it does:** rewrites and re-labels rows in `public.sbc_code_tables`
+— the curated table layer injected into the AI prompt verbatim as
+"DB-AUTHORITATIVE" guidance
+(`docs/audits/SAFETY-ALERT-code-tables-20260823.md`). Sixteen tables are
+rebuilt from the original SBC PDFs with correct metric values and, where
+the file's own header calls for it, corrected/renumbered `table_id`s; a
+further batch of previously-active tables is quarantined for the first
+time (their `table_id` gets a `QUARANTINED_` prefix so the retrieval code
+no longer matches or injects them).
+
+**Reference the file by name only — do not copy, quote, or inline its SQL
+here.** Lane B is actively correcting two wrong cells in TABLE 601 inside
+that same file while this runbook step is being written; anything copied
+out of it here would go stale the moment lane B saves. Run the repo's
+version of `docs/audits/code-tables-rebuild-20260823.sql` **as of deploy
+time** — an earlier draft carried those two wrong TABLE 601 cells, so a
+local copy taken before lane B's fix must be discarded and re-pulled from
+the repo, never run from memory or a saved scratch copy.
+
+**Pre-checks, taken from the file's own header (reflected here, not
+invented):**
+- The file's own deploy-order banner requires the updated `fire-safety-chat`
+  Edge Function to be live FIRST — already satisfied, because this step
+  runs after Step 3, not before it (see "Why this must come after Step 3"
+  below).
+- The file's own "REVERSIBILITY" note requires its Step 0 to run first: an
+  idempotent
+  `CREATE TABLE IF NOT EXISTS public.sbc_code_tables_backup_20260823 AS
+  SELECT * FROM public.sbc_code_tables`, wrapped in the same
+  `BEGIN; ... COMMIT;` as the rest of the file — do not skip ahead of it.
+- Before each of the sixteen rebuilt-table blocks, the file has its own
+  "Owner pre-check" `SELECT` showing that row as it stands before the
+  change — run each pre-check immediately before its paired `UPDATE`, in
+  the order the file presents them.
+
+**Why this must come after Step 3:** the file's own header states the
+ordering rule in its own words ("Deploy the updated `fire-safety-chat` Edge
+Function FIRST. THEN apply this SQL") because the deployed code hard-codes
+today's table ids in `KNOWN_TABLE_IDS` / `PARENT_ALIASES`; applying this
+SQL against the currently-deployed (old) code would make the rebuilt
+`1006.3.4(1)` table completely unreachable and degrade three others to
+matching only when the user literally types the word "Table". Today that
+rule lives only inside the SQL file's own header — nowhere
+operator-facing — which is why it is being restated here rather than left
+only in the file.
+
+**The dark-to-live consequence — stated plainly, because it is the whole
+risk of this step:** applying this file shrinks the curated-table layer
+from 51 active rows to 16 verified-active rows — **16 verified-active /
+77 quarantined**, out of 93 total, once this file lands. This is intended,
+not a regression: fewer tables that are correct beats more tables where
+some invert life-safety guidance, which is exactly what
+`docs/audits/SAFETY-ALERT-code-tables-20260823.md` documented live in
+production (the 1017.2 exit-travel-distance table telling an engineer a
+**non**-sprinklered H-1 building may use a **longer** travel distance than
+a sprinklered one — the opposite of what the Saudi code says). Do not read
+a smaller active-table count after this step as something having gone
+wrong.
+
+**Expected output:** `Success. No rows returned` for the whole
+`BEGIN...COMMIT` block (the file's `UPDATE`s and the guarded backup-table
+`CREATE`, none of which return rows).
+
+**Verify it worked:**
+```sql
+SELECT count(*) FILTER (WHERE table_id LIKE 'QUARANTINED_%') AS quarantined,
+       count(*) FILTER (WHERE table_id NOT LIKE 'QUARANTINED_%') AS still_active
+FROM public.sbc_code_tables;
+```
+Expected: `still_active = 16`, `quarantined = 77`. Re-run this at deploy
+time rather than trusting the count above — production may have drifted
+since it was last measured, the same as every other reconciliation query
+in this runbook.
+
+**If it did not work:** the file carries its own reversal block in a
+trailing comment (a full restore from `sbc_code_tables_backup_20260823`,
+and a narrower quarantine-only reversal) — use the file's own reversal by
+name; do not hand-write a substitute from memory.
+
+### 4b. Apply `docs/audits/corpus-repair-20260823.sql`
+
+**What it does:** four independent, section-by-section data repairs
+against `public.sbc_documents` and `public.source_registry` (produced by
+sub-agent B5, knowledge lane; each verified against production by a direct
+`SELECT` before it was written). Section 1 relabels 308 rows' `code_type`
+from `SBC201` to `SBC801` where the in-text running header proves the
+chunk is actually SBC 801 content (112 further rows are ambiguous by the
+file's own stated rule and are deliberately left untouched — an owner/B1
+follow-up, not a defect in this file). Section 2 flips `language` from
+`AR` to `EN` on rows a full-table Arabic-Unicode sweep proves are actually
+English, leaving the genuinely Arabic rows (8, by the file's own count)
+flagged. Section 3 flags 71 TOC/index dot-leader junk chunks via metadata
+(flagged, not deleted). Section 4 reconciles
+`source_registry.edition_year` / `vector_indexed` / `ingestion_status` for
+the SBC201/SBC801 rows. **Section 5 is a recommendation only — it
+contains no executable `DELETE` and is not part of this step**; it is left
+for a separate owner decision on `public.document_tables`.
+
+**Why this is a step now and was not before:** this file already exists in
+the repo but, until this line, was referenced in no operator-facing
+document — Finding 7 of the adversarial review. Without a runbook step it
+would sit in `docs/audits/` indefinitely and never actually run against
+production.
+
+**Expected output / how to run:** the file is written to be run ONE
+SECTION AT A TIME, in order — do not paste the whole file at once. Before
+every `UPDATE`/`DELETE` there is a `SELECT` carrying an `-- EXPECTED: N`
+comment; run that `SELECT` first, and if the count returned does not match
+N, STOP — production has drifted since the file was written and the
+`WHERE` clause needs re-verification before the paired `UPDATE` runs. Each
+section opens its own `BEGIN` and closes its own `COMMIT` around a second,
+in-transaction verification `SELECT` — read that output before typing
+`COMMIT`; type `ROLLBACK` instead if anything looks wrong.
+
+**Verify it worked:** each section's own in-transaction verification
+`SELECT`, described above — there is no single end-of-file check, because
+the four sections touch different tables and columns.
+
+**If it did not work:** each section backs up only the exact rows it
+touches into its own `*_backup_20260823_*` table first, and states its own
+rollback `UPDATE` in a trailing comment — use that section's own rollback,
+not a hand-written substitute.
+
+### 4c. Dashboard blob replacement — independent of 4a and 4b
+
+**What it does:** replace three objects in Supabase Storage in place, using
+the corrected local files staged at
+`C:\Users\TOSHIBA\Desktop\consultx-blob-upload\`, keeping the exact same
+object names/paths so no code or database reference changes are needed.
+
+**This step has no dependency on 4a or 4b, and neither of them depends on
+it — do not sequence it as if it depends on the corpus-repair step above.**
+It is an owner-driven file replacement in Storage, not a SQL change.
+
+**Destination:** Supabase Dashboard -> Storage -> bucket `ssss`. That is the
+same bucket `fire-safety-chat` reads its retrieval corpus from, which is why
+the object names must not change.
+
+**The three objects, replaced IN PLACE with upsert/overwrite enabled** (names
+are identical to the three files already staged in the folder above — do not
+rename, do not add a folder prefix):
+
+| Object name (unchanged) | Expected size after upload |
+|---|---|
+| `SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json` | 1,029,906 bytes |
+| `SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json` | 1,007,765 bytes |
+| `SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json` | 527,061 bytes |
+
+Sizes verified against the staged local files on 2026-08-24. If the Dashboard
+reports a different size after upload, the wrong file was selected — re-upload
+before moving on.
+
+**Expected output:** the Dashboard's own per-file upload-confirmation UI, with
+each file showing as replaced rather than added alongside a duplicate.
+
+**Verify it worked:** confirm the three objects carry the new sizes and fresh
+timestamps:
+```sql
+SELECT name, (metadata->>'size')::bigint AS size_bytes, updated_at
+FROM storage.objects
+WHERE bucket_id = 'ssss'
+  AND name IN (
+    'SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json',
+    'SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json',
+    'SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json'
+  )
+ORDER BY name;
+```
+Expected: exactly 3 rows, sizes matching the table above, `updated_at` stamped
+today. Fewer than 3 rows means an upload silently created a differently-named
+object instead of replacing — check for duplicates in the bucket before
+retrying.
+
+**If it did not work:** re-upload from the same source folder — this is a
+plain object replacement with no transactional state to roll back.
+
+---
+
+## Step 5 — Deploy the frontend, then flip the PDF bucket
+
+### 5a. Merge to `main` and deploy
 
 Vercel deploys from `main`. All of this work is on
-`recovery/stabilization-2026-08-23`, currently 22 commits ahead of `main` and
+`recovery/stabilization-2026-08-23`, currently 27 commits ahead of `main` (recount at deploy time — this number drifts) and
 unmerged, so the recovery branch must be merged into `main` before Vercel
 will ever serve it. **Deploying the frontend before Step 1 or Step 3 would
 put a UI in front of a backend that cannot serve it** — e.g. a frontend that
@@ -689,9 +884,9 @@ from this specific step failing. Read the Vercel build log for the failing
 step (typically `npm run build` / `tsc` errors) and fix before retrying;
 do not force-promote a failed build.
 
-### 4b. NOW apply the bucket-flip migration
+### 5b. NOW apply the bucket-flip migration
 
-Only after 4a is verified live. Apply
+Only after 5a is verified live. Apply
 `supabase/migrations/20260823000010_source_pdfs_private.sql` in the SQL
 Editor:
 ```sql
@@ -701,7 +896,7 @@ WHERE id = 'source-pdfs';
 ```
 **Why last:** the currently-deployed `SourcePanel.tsx` (pre-refactor) builds
 a direct public storage URL and loads it into an `<iframe>`. The frontend
-deployed in 4a is the version that fetches short-lived signed URLs through
+deployed in 5a is the version that fetches short-lived signed URLs through
 the new `get-source-pdf-url` function instead. Flipping the bucket to
 private before that frontend is live breaks every PDF preview in the sources
 panel for every user, immediately, because the old code has no signed-URL
@@ -721,21 +916,21 @@ that is easiest to verify by eye rather than by query, because it is a
 rendering behavior).
 
 **If it did not work / if the panel breaks:** see the rollback for this step
-in Step 8 — it is a one-statement revert to public.
+in Step 9 — it is a one-statement revert to public.
 
 ---
 
-## Step 5 — Four read-only reconciliation queries (run BEFORE the cron is armed)
+## Step 6 — Four read-only reconciliation queries (run BEFORE the cron is armed)
 
 Run all four now, with fresh data — the counts in
 `docs/audits/production-truth-20260823.md` are a 2026-08-23 snapshot and
 **must be re-run at deploy time**; do not treat them as still current. The
 audit confirmed **4 `trialing` rows total** as of that snapshot (not 4 rows
-in the cohort below — query 5a determines how many of those 4, if any, are
+in the cohort below — query 6a determines how many of those 4, if any, are
 actually past `trial_end` with a card on file) and confirmed (b), (c), (d)
 were all `0` at that time.
 
-### 5a. `trialing` rows past `trial_end` with a card on file
+### 6a. `trialing` rows past `trial_end` with a card on file
 
 ```sql
 SELECT id, user_id, trial_end, moyasar_card_token IS NOT NULL AS has_card
@@ -746,12 +941,12 @@ WHERE status = 'trialing'
 ```
 **What this cohort means:** every row here is a lapsed trial with a saved
 card — exactly the `trial_conversion_pending` population from the billing
-contract (Section 4). The **first successful cron tick after Step 6**
+contract (Section 4). The **first successful cron tick after Step 7**
 charges every one of these via `post_trial_first_charge`
 (`plan_price − 1.00 SAR` credit, per Section 8.1). Count them now so that
 count is the expected volume for the first tick, not a surprise. **If this
 number is unexpectedly large** (materially more than the ~4 total trialing
-rows seen in the snapshot), stop before Step 6 and investigate why — it
+rows seen in the snapshot), stop before Step 7 and investigate why — it
 means either trial volume grew a lot since the snapshot, or something is
 silently keeping subscriptions in `trialing` past when they should have
 lapsed to `expired`.
@@ -763,7 +958,7 @@ the live total at deploy time since this is exactly what re-running this
 query is for). Zero rows is a healthy result too — it means no lapsed trial
 currently has a saved card.
 
-### 5b. `past_due` with `past_due_since IS NULL`
+### 6b. `past_due` with `past_due_since IS NULL`
 
 ```sql
 SELECT id, user_id, status, past_due_since, current_period_end
@@ -781,12 +976,12 @@ to act on them.
 
 **Expected output:** `0` rows. CONFIRMED — `docs/audits/production-truth-20260823.md`
 records no `past_due` rows at all in production as of the 2026-08-23
-snapshot, so both this query and 5c below (which also filters on
+snapshot, so both this query and 6c below (which also filters on
 `status = 'past_due'`) are expected empty. A non-zero count here means new
 `past_due` rows have appeared since the snapshot without a `past_due_since`
 stamp — re-check before treating it as routine.
 
-### 5c. `past_due` older than the grace window
+### 6c. `past_due` older than the grace window
 
 ```sql
 SELECT id, user_id, status, past_due_since, now() - past_due_since AS age
@@ -801,16 +996,16 @@ successful cron tick, every one of these converts to `expired`** (or
 `cancelled` if the user had opted out) and `profiles.plan_type` syncs to
 `free`. If this number is large, expect a corresponding wave of access
 revocations the moment the cron starts succeeding — not a bug, but size it
-before Step 6 so it is not read as one.
+before Step 7 so it is not read as one.
 
-**Expected output:** `0` rows, for the same reason as 5b — CONFIRMED no
+**Expected output:** `0` rows, for the same reason as 6b — CONFIRMED no
 `past_due` rows exist in production as of the 2026-08-23 snapshot
 (`docs/audits/production-truth-20260823.md`). Re-run at deploy time rather
 than trusting the snapshot; a non-zero count here sizes a real,
 one-time wave of access revocations on the first tick, not a failure of
 this query.
 
-### 5d. `seat_count > 100`
+### 6d. `seat_count > 100`
 
 ```sql
 SELECT id, user_id, plan_id, seat_count
@@ -831,13 +1026,13 @@ a default action this runbook should take.
 **Expected output:** `0` rows. CONFIRMED — `docs/audits/production-truth-20260823.md`
 Section 3 records no `seat_count > 100` rows as of the 2026-08-23 snapshot.
 Re-run at deploy time; any row returned needs the owner decision above
-before Step 6, not after.
+before Step 7, not after.
 
 ---
 
-## Step 6 — LAST: the cron secret, set in BOTH places with the SAME value
+## Step 7 — LAST: the cron secret, set in BOTH places with the SAME value
 
-**Do not perform this step until Steps 1–5 above are complete and verified.**
+**Do not perform this step until Steps 1–6 above are complete and verified.**
 This is intentionally the final step. Reproduced from
 `docs/OWNER_ACTIONS.md` ("Cron secret mismatch — LAUNCH BLOCKER"):
 
@@ -911,22 +1106,22 @@ places in the same sitting (do not assume the previous value from step (a)
 is still what you think it is; regenerate and reset both). If it shows a
 `500` instead of `401`/`200`, `CRON_SECRET` is unset entirely on the
 function side — re-run step (a). **If it charges more accounts than Step
-5a's count predicted**, treat that as an active incident — see the cron
-rollback in Step 8, which is the fastest kill switch. Do not consider Step 6
-closed out until Step 7's monitoring criteria are met.
+6a's count predicted**, treat that as an active incident — see the cron
+rollback in Step 9, which is the fastest kill switch. Do not consider Step 7
+closed out until Step 8's monitoring criteria are met.
 
 ---
 
-## Step 7 — Monitor the first successful cron tick
+## Step 8 — Monitor the first successful cron tick
 
-Step 6 makes the cron secret match; it does not by itself prove renewals are
+Step 7 makes the cron secret match; it does not by itself prove renewals are
 actually happening correctly. This step is the dedicated, time-boxed,
 read-only observation window the approved safe order calls for as its final
 item ("(7) first-tick monitoring") — it is deliberately separate from Step
-6's own pass/fail check, because a `200` alone does not confirm charge
+7's own pass/fail check, because a `200` alone does not confirm charge
 volume or catch a function that runs but silently does nothing.
 
-**When:** the top of the next UTC hour after Step 6 (the job schedule is
+**When:** the top of the next UTC hour after Step 7 (the job schedule is
 `0 * * * *`, CONFIRMED in `docs/audits/production-truth-20260823.md`,
 Section 1).
 
@@ -951,67 +1146,56 @@ for months. Check A is the one that actually proves the call was accepted;
 treat Check B only as a secondary confirmation that the job fired at all.
 
 **Check C — the function's own logs.** Supabase Dashboard → Edge Functions →
-`process-subscription-renewal` → Logs. The function
-(`supabase/functions/process-subscription-renewal/index.ts`) emits these
-exact strings (all re-verified against the current working-tree file, not
-carried over from an earlier read — this file changed shape after this
-runbook's Step 7 was first drafted, adding the single-flight lease of
-Step 1c, so every line number below is a fresh read):
+`process-subscription-renewal` → Logs. Grep the log string itself — that
+is the primary instruction here, not the line number next to it. Line
+numbers in `supabase/functions/process-subscription-renewal/index.ts`
+drift on every edit to the file (they have already drifted once since
+this section was first drafted); treat every number below as approximate
+and verify by searching for the quoted string, not by opening the file to
+that exact line. Numbers below were refreshed by grepping the current
+working-tree file on 2026-08-24:
 - On success, when there is nothing due:
   `"Renewal job: no subscriptions due for conversion, renewal or retry"`
-  (line 242).
+  (approximately line 243 — verify by string).
 - On success, when something is due:
   `` `Renewal job: ${trialDueSubs?.length ?? 0} trials to convert, ${dueSubscriptions?.length ?? 0} active due, ${pastDueSubs?.length ?? 0} past_due retries, ${expiredTrials} trials expired (no card)` ``
-  (line 259), followed at the end of the run by
-  `console.log("Renewal job complete:", JSON.stringify(summary))` (line 617).
+  (approximately line 260), followed at the end of the run by
+  `console.log("Renewal job complete:", JSON.stringify(summary))`
+  (approximately line 618).
 - On an auth rejection (mismatched secret): `"Renewal job rejected: invalid
-  or missing x-cron-secret"` (line 101), returned with HTTP `401`.
+  or missing x-cron-secret"` (approximately line 102), returned with HTTP
+  `401`.
 - On a missing secret on the function side: `"Renewal job refused:
   CRON_SECRET is not configured. This job charges stored cards and will not
   run unauthenticated. Set CRON_SECRET on the function and on the pg_cron
-  caller."` (line 91), returned with HTTP `500`.
-- **Lease not acquired (line 136):** `"Renewal job: lease not acquired
-  (another run holds it, or the lock state is unknown) — skipping this
-  tick"`, returned with HTTP `200`. Benign once — the work is picked up an
-  hour later. Suspicious if it appears on every tick in a row, which means
-  something is holding (or is believed to be holding) the lease
-  continuously. If it is accompanied by a preceding line reading
+  caller."` (approximately line 92), returned with HTTP `500`.
+- **Lease not acquired (approximately line 137):** `"Renewal job: lease
+  not acquired (another run holds it, or the lock state is unknown) —
+  skipping this tick"`, returned with HTTP `200`. Benign once — the work
+  is picked up an hour later. Suspicious if it appears on every tick in a
+  row, which means something is holding (or is believed to be holding) the
+  lease continuously. If it is accompanied by a preceding line reading
   `"Renewal job: lock acquisition failed — treating the lock as HELD and
-  skipping this tick: <message>"` (line 828), the "locked" outcome was
-  **not** ordinary contention with another run — the lock RPC itself
-  errored (e.g. a grants or connectivity problem on `public.job_locks`) and
-  the function is failing closed out of caution. That combination on
-  repeated ticks needs investigation, not just patience.
-- **Single-flight lock unavailable (line 816-821) — STOP AND FIX, not a
-  warning to note:** `"Renewal job: SINGLE-FLIGHT LOCK UNAVAILABLE —
-  public.try_acquire_job_lock does not exist. Apply
+  skipping this tick: <message>"` (approximately line 829), the "locked"
+  outcome was **not** ordinary contention with another run — the lock RPC
+  itself errored (e.g. a grants or connectivity problem on
+  `public.job_locks`) and the function is failing closed out of caution.
+  That combination on repeated ticks needs investigation, not just
+  patience.
+- **Single-flight lock unavailable (approximately line 818 onward) — STOP
+  AND FIX, not a warning to note:** `"Renewal job: SINGLE-FLIGHT LOCK
+  UNAVAILABLE — public.try_acquire_job_lock does not exist. Apply
   supabase/migrations/20260823000004_job_locks.sql by hand in the Supabase
   SQL Editor (never \`supabase db push\`), then run: NOTIFY pgrst, 'reload
-  schema'. Continuing WITHOUT the lease so trials still convert and renewals
-  still run — until the migration is applied, two overlapping runs of this
-  job could double-charge a stored card."` If this appears on any tick,
-  Step 1c was not actually applied (or the PostgREST schema cache was not
-  reloaded) despite Step 6 having been armed. The job is running
-  unprotected against double-charging on stored cards. Go back to Step 1c,
-  re-run its verification query, and re-check `NOTIFY pgrst, 'reload
-  schema';` before letting any further ticks fire.
-
-Three other `Renewal job:`-prefixed lines exist in the file (closed
-unbillable trial(s) at line 683, closed/stamped past_due bookkeeping at
-lines 763-767 and 771, and the lease-release failure at lines 846/851) and
-are deliberately **not** listed as operator checks here: the first three are
-routine bookkeeping that duplicate what Step 5b/5c's cohort counts already
-size in advance, and the lease-release failure is explicitly non-fatal by
-the code's own logic — the TTL lease expires on its own, so at worst a
-handful of ticks are skipped, which the two-consecutive-ticks close-out
-criterion below already tolerates. None of the three changes what the
-operator should DO during this window.
-
-Expect `Renewal job:` lines showing normal processing (line 242 or 259/617),
-not `Renewal job rejected` / `Renewal job refused` lines, and not a repeated
-SINGLE-FLIGHT LOCK UNAVAILABLE line.
-
-**Check D — reconcile charge volume against Step 5a's cohort count.** Count
+  schema'. Continuing WITHOUT the lease so trials still convert and
+  renewals still run — until the migration is applied, two overlapping
+  runs of this job could double-charge a stored card."` If this appears on
+  any tick, Step 1c was not actually applied (or the PostgREST schema
+  cache was not reloaded) despite Step 7 having been armed. The job is
+  running unprotected against double-charging on stored cards. Go back to
+  Step 1c, re-run its verification query, and re-check `NOTIFY pgrst,
+  'reload schema';` before letting any further ticks fire.
+**Check D — reconcile charge volume against Step 6a's cohort count.** Count
 charges created in the last hour, using only columns confirmed to exist on
 `payment_transactions` (`docs/audits/production-truth-20260823.md`, Section 2:
 `created_at`, `status`, `payment_type`, `amount`):
@@ -1022,17 +1206,17 @@ where created_at >= now() - interval '1 hour'
 group by payment_type, status
 order by payment_type, status;
 ```
-**Stop condition:** if the total row count here exceeds Step 5a's
+**Stop condition:** if the total row count here exceeds Step 6a's
 pre-recorded cohort count, do not keep diagnosing — go immediately to the
-emergency stop in Step 8.
+emergency stop in Step 9.
 
 **Stop conditions and what each means:**
-- Still `401` — secrets still mismatched. Go back to Step 6's "If it did not
+- Still `401` — secrets still mismatched. Go back to Step 7's "If it did not
   work."
-- `500` — `CRON_SECRET` is unset on the function side; re-run Step 6, sub-step
+- `500` — `CRON_SECRET` is unset on the function side; re-run Step 7, sub-step
   2(a).
 - `200` but zero `Renewal job:` lines showing any processed/converted rows —
-  the function ran and found nothing to do; normal if Step 5a's cohort was
+  the function ran and found nothing to do; normal if Step 6a's cohort was
   empty, not itself a failure.
 - `200` but the log shows SINGLE-FLIGHT LOCK UNAVAILABLE — Step 1c was not
   actually applied (or its schema reload did not take). The tick still ran
@@ -1043,17 +1227,17 @@ emergency stop in Step 8.
   continuously, or whether the acquisition RPC is erroring (check for the
   preceding "lock acquisition failed" line, 828); do not assume it will
   clear itself indefinitely.
-- More charges than Step 5a predicted — emergency stop; go straight to the
-  cron rollback in Step 8 before investigating root cause.
+- More charges than Step 6a predicted — emergency stop; go straight to the
+  cron rollback in Step 9 before investigating root cause.
 
 **How long to watch:** the close-out criterion is **two consecutive
 successful hourly ticks** (Check A `200` both times) with charge volume
-matching Step 5a's cohort count (Check D). Only after that should Step 6/
-Step 7 be considered closed and the deploy fully live.
+matching Step 6a's cohort count (Check D). Only after that should Step 7/
+Step 8 be considered closed and the deploy fully live.
 
 ---
 
-## Step 8 — Rollback triggers and rollback commands
+## Step 9 — Rollback triggers and rollback commands
 
 ### A function deploy that breaks
 
@@ -1073,11 +1257,24 @@ git checkout HEAD -- supabase/functions/<function-name>/   # restore working tre
 ```
 Verify with the same `functions list` check as Step 3.
 
-### The bucket flip (4b) breaking the sources panel
+### The bucket flip (5b) breaking the sources panel
 
 **Symptom:** PDF previews in the sources panel go blank, "Open in new tab"
 gives a broken link, `PdfFrame`'s error handler fires for every SBC-201/801
 citation.
+
+**Diagnose FIRST — the two rollbacks below are not interchangeable, and
+picking the wrong one fixes nothing.** Step 5a already documents how to
+tell which frontend is actually live: compare the deployed
+`/assets/index-*.js` hash against what was live before the Step 5 deploy
+(Step 5a's own "Verify it worked"). Run that check now rather than
+guessing from the symptom alone.
+
+**If Step 5a is NOT actually promoted** (the old, pre-refactor bundle is
+still being served): the rollback below is correct **for this case only**.
+The old `SourcePanel.tsx` builds a direct public storage URL and loads it
+into an `<iframe>`, with no signed-URL fallback, so the bucket must stay
+(or go back to) public while that old frontend is what users are getting.
 
 **Rollback — one statement, immediate:**
 ```sql
@@ -1090,9 +1287,25 @@ measure while the actual frontend deploy issue is fixed, not a permanent
 answer — re-apply the private flip as soon as the frontend is confirmed
 working.
 
+**If Step 5a IS live:** re-publishing `source-pdfs` fixes nothing. **There
+is no bucket flip that helps in this case.** The live frontend never reads
+that bucket at all — it fetches `sbc_pdfs_private` through short-lived
+signed URLs minted by `get-source-pdf-url`. The fix targets that function
+(or `sbc_pdfs_private`'s own grants/RLS), using the same per-function
+rollback pattern already given above under "A function deploy that
+breaks":
+```bash
+git log --oneline -- supabase/functions/get-source-pdf-url/
+git checkout <last-good-commit> -- supabase/functions/get-source-pdf-url/
+npx supabase functions deploy get-source-pdf-url --project-ref hrnltxmwoaphgejckutk
+git checkout HEAD -- supabase/functions/get-source-pdf-url/   # restore working tree after
+```
+Verify the same way as Step 3 (`functions list`, `updated_at` moved to
+today) and by re-opening a source citation in the live app.
+
 ### The cron charging unexpectedly (EMERGENCY STOP)
 
-**Symptom:** more accounts charged than Step 5a predicted, duplicate charges
+**Symptom:** more accounts charged than Step 6a predicted, duplicate charges
 on the same subscription, or any charge amount that does not match the
 plan's published price. This is the fastest kill switch available and
 should be the **first** action taken, before diagnosing root cause.
@@ -1130,7 +1343,7 @@ running in production was hand-modified at some point to read the secret
 from Postgres Vault instead. Re-arming from the migration file would
 recreate a job that sends an empty/null `x-cron-secret` header, which gets
 401'd forever while `cron.job_run_details` reports "succeeded" — silently
-re-introducing the exact launch blocker Step 6 exists to close, with no
+re-introducing the exact launch blocker Step 7 exists to close, with no
 visible symptom until someone notices renewals still are not happening. The
 correct re-arm reproduces the LIVE command form (verbatim from the
 production-truth audit, cross-checked against the `select ... from cron.job`
@@ -1152,7 +1365,7 @@ select cron.schedule(
 );
 ```
 After re-arming, confirm the next tick returns `200` in `net._http_response`
-before considering the incident closed (same verification query as Step 6,
+before considering the incident closed (same verification query as Step 7,
 Step 3).
 
 ---
@@ -1170,4 +1383,10 @@ Step 3).
   script's `--help` for usage; all read credentials from environment
   variables only). These are read-only / non-destructive except
   `p3_smoke_contact_form.py`, which sends one real, clearly-marked test email
-  through the live contact form.
+  through the live contact form. A full run across all five scripts also
+spends real product quota: the chat-mode scripts sign in as the free-tier
+test account and send real chat messages, so a full run costs 5 of that
+account's 10 messages/day — a same-day repeat run can come back HTTP
+`429`, which means QUOTA EXHAUSTED on the test account, not a product
+failure. Wait for the next daily reset or point the scripts at a fresh
+test account instead of treating a `429` here as a regression.

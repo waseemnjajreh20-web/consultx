@@ -1046,9 +1046,16 @@ async function recordTrialConversionRefusal(
  * charge the customer a second time. Every branch is therefore biased toward
  * leaving the row alone:
  *
- *   moyasar_payment_id IS NULL -> the charge never reached Moyasar, so no money
- *                                 can have moved. Closed in bulk with an
- *                                 explicit failure_code.
+ *   moyasar_payment_id IS NULL -> the id was never stamped. This does NOT mean
+ *                                 the charge never reached Moyasar: both writers
+ *                                 insert the row BEFORE the POST, and
+ *                                 moyasar-initiate-token-payment's stamp-failure
+ *                                 path leaves exactly this shape AFTER a real
+ *                                 charge. Closed anyway (an open row starves the
+ *                                 subscription forever) but with an honest
+ *                                 failure_message and a deduped dead letter, so
+ *                                 a human can reconcile it against Moyasar.
+ *                                 R4-CRITICAL-2.
  *   Moyasar "initiated"        -> created-but-not-captured; after
  *                                 STALE_INITIATED_AFTER_MS it will never
  *                                 complete. Closed.
@@ -1062,6 +1069,19 @@ async function recordTrialConversionRefusal(
  * `created_at` is NEVER modified. chargeRetryEligibility derives the 24h backoff
  * from it, and preserving it is what stops a resolved row from being re-charged
  * in the same or the next tick.
+ *
+ * R4-CRITICAL-2 (iv) - are STALE_INITIATED_NO_PAYMENT_ID rows counted by
+ * chargeRetryEligibility's failedCount? YES, deliberately, and they are not
+ * excluded. The argument is asymmetric-risk, not tidiness:
+ *   * If the charge truly never left, counting it costs the customer one of four
+ *     attempts and delays their renewal by the 24h backoff. Recoverable, visible
+ *     in the dead letter, and the past-due expiry closes the episode loudly.
+ *   * If the charge DID leave and was captured, excluding it would clear the
+ *     backoff and let the very next tick charge the same card again. That is an
+ *     unrecoverable double charge on a real customer.
+ * We cannot tell the two apart from inside this job - that is the entire reason
+ * the dead letter exists - so the count stays, and the backoff it imposes is a
+ * FEATURE: it buys 24h for the lost webhook to arrive or for ops to act.
  *
  * `user_subscriptions.status` is NEVER modified here either. The charge outcome
  * for a lost payment is not certain enough to cut access or to stamp `past_due`.
@@ -1080,27 +1100,74 @@ async function resolveStaleInitiatedTransactions(
   try {
     const staleCutoff = new Date(Date.now() - STALE_INITIATED_AFTER_MS).toISOString();
 
-    // (a) Never reached Moyasar. No payment id was ever stamped on the row, so
-    // no money can have moved and no lookup is needed.
+    // (a) No Moyasar payment id was ever stamped on this row.
+    //
+    // R4-CRITICAL-2. This branch used to claim "never reached Moyasar, so no
+    // money can have moved". That premise is FALSE and it was load-bearing:
+    //   * both writers INSERT the `initiated` row BEFORE the Moyasar POST and
+    //     stamp the id afterwards, so the unstamped window covers a real charge;
+    //   * moyasar-initiate-token-payment's stamp-failure path deliberately
+    //     LEAVES this exact shape after a charge has already been sent, and its
+    //     own comment records that no pass reconciles such rows.
+    // An unstamped row therefore proves only that the id is missing. A payment
+    // may exist upstream and may even have been captured.
+    //
+    // The row is still closed, because leaving it `initiated` blocks BOTH
+    // idempotency guards and that subscription would never be charged again.
+    // But it is closed HONESTLY and every closure is dead-lettered: the only way
+    // to learn the truth is to search Moyasar by metadata.subscription_id around
+    // the insert time, and that needs a human.
     const { data: noPaymentId, error: noPaymentIdError } = await adminClient
       .from("payment_transactions")
       .update({
         status: "failed",
         failure_code: STALE_INITIATED_NO_PAYMENT_ID_CODE,
-        failure_message: "Stuck at initiated with no Moyasar payment id — the charge never reached Moyasar",
+        failure_message:
+          "Closed by the stale-initiated pass: no Moyasar payment id was ever stamped on this row. " +
+          "This does NOT prove the charge never reached Moyasar - a payment may exist upstream, " +
+          "possibly captured. Search Moyasar by metadata.subscription_id around created_at.",
       })
       .eq("status", "initiated")
       .lt("created_at", staleCutoff)
       .is("moyasar_payment_id", null)
-      .select("id");
+      .select("id, subscription_id, user_id, amount, currency, payment_type, created_at");
 
     if (noPaymentIdError) {
       console.error("Stale-initiated pass: bulk close failed:", noPaymentIdError.message);
     } else if (noPaymentId && noPaymentId.length > 0) {
       out.markedFailed += noPaymentId.length;
-      console.log(
-        `Stale-initiated pass: closed ${noPaymentId.length} transaction(s) that never reached Moyasar`,
+      console.warn(
+        `Stale-initiated pass: closed ${noPaymentId.length} transaction(s) with no Moyasar payment id. ` +
+        `A charge MAY exist upstream for each - see the stale_initiated_no_payment_id dead letters.`,
       );
+
+      // R4-CRITICAL-2 (i). One deduped letter per closed row. Deduped on
+      // (reason, charge_id) so a row can only ever produce one, and keyed by the
+      // transaction id because these rows have no payment id to key on - that is
+      // the whole condition being reported.
+      for (const row of noPaymentId as Array<Record<string, any>>) {
+        await insertDeadLetterOnce(adminClient, {
+          chargeId: `tx:${row.id}`,
+          status: "unknown",
+          reason: "stale_initiated_no_payment_id",
+          payload: {
+            note:
+              "payment_transactions row sat at `initiated` with no moyasar_payment_id for longer " +
+              "than STALE_INITIATED_AFTER_MS and was closed as failed so it stops blocking the " +
+              "idempotency guards. The charge may or may not have reached Moyasar. Search Moyasar " +
+              "by metadata.subscription_id for payments created around inserted_at; if one was " +
+              "captured, reconcile it manually and refund any duplicate.",
+            transaction_id: row.id,
+            subscription_id: row.subscription_id ?? null,
+            user_id: row.user_id ?? null,
+            amount: row.amount ?? null,
+            currency: row.currency ?? null,
+            payment_type: row.payment_type ?? null,
+            inserted_at: row.created_at ?? null,
+            closed_at: new Date().toISOString(),
+          },
+        });
+      }
     }
 
     // (b) Reached Moyasar: the truth is upstream. Bounded to

@@ -181,7 +181,22 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "corridor": { sbc201: [10], sbc801: [] },
   "ممر": { sbc201: [10], sbc801: [] },
   "travel distance": { sbc201: [10], sbc801: [] },
-  "مسافة": { sbc201: [10], sbc801: [] },
+  // "مسافة" is the bare Arabic noun "distance", not "travel distance"
+  // ("مسافة سفر"). It therefore fires on BOTH senses the code uses:
+  //   - exit access travel distance -> SBC 201 ch 10 "Means of Egress" (measured
+  //     title), which this entry already covered;
+  //   - FIRE SEPARATION DISTANCE -> SBC 201 ch 7 "Fire and Smoke Protection
+  //     Features" (measured title), whose Section 705 "Exterior Walls" carries
+  //     the fire-separation-distance provisions and their opening-protection
+  //     table.
+  // ADDED 2026-08-24 (finding 8 of the 4th adversarial review): chapter 7 is
+  // measured at pp.39-322 of volume "501-1000" — 284 pages, the largest single
+  // chapter in SBC 201 — and with sbc201 [10] alone this keyword reached only
+  // "1001-1250" and "1251-1500". scoreFile() gives 0 to any volume outside the
+  // selected ranges, so a fire-separation-distance question was silently
+  // excluded from the volume that holds the answer. 10 is KEPT, not replaced:
+  // travel distance is the more common reading and must stay reachable.
+  "مسافة": { sbc201: [7, 10], sbc801: [] },
   "occupant load": { sbc201: [10], sbc801: [] },
   "حمل": { sbc201: [10], sbc801: [] },
   "door": { sbc201: [10], sbc801: [] },
@@ -282,8 +297,26 @@ const CHAPTER_KEYWORDS: Record<string, { sbc201: number[]; sbc801: number[] }> =
   "زجاج": { sbc201: [24], sbc801: [] },
   "glazing": { sbc201: [24], sbc801: [] },
   "تزجيج": { sbc201: [24], sbc801: [] },
-  "cladding": { sbc201: [23], sbc801: [] },
-  "كسوة": { sbc201: [23], sbc801: [] },
+  // CORRECTED 2026-08-24 (finding 8 of the 4th adversarial review).
+  // Was sbc201: [23]. SBC 201 chapter 23's MEASURED title is "Woods" — a
+  // structural-material chapter. Exterior cladding is chapter 14, measured title
+  // "Exterior Walls"; ./chapterIndex.ts lists "cladding", "veneer", "كسوة" and
+  // "تكسية" as measured topics of volume "1251-1500", the volume whose measured
+  // chapters end with 14, and repeats "exterior walls" for volume "1501-1750",
+  // where chapter 14 continues (measured ch14 pp.1-5). Chapter 14 therefore
+  // reaches BOTH volumes that hold it.
+  // Chapter 23 is NOT retained as a secondary: no measured chapter title and no
+  // measured topic list ties "Woods" to cladding, and this map's standing rule
+  // is that a mapping must come from a measured title, never from a plausible
+  // association (wood siding). Dropping it costs nothing in reachability —
+  // volume "1751-2000" (ch 23-30) stays reachable via "glass"/"زجاج" (ch 24),
+  // "gypsum"/"جبس" (25), "electrical" (27) and "elevator"/"مصعد" (30), and
+  // volume "1501-1750" via "structural"/"إنشائي" (16, 17), "concrete" (19) and
+  // "steel"/"حديد" (22). A query about wood as a material still routes through
+  // those structural keywords; what it no longer does is send a facade question
+  // to the timber chapter.
+  "cladding": { sbc201: [14], sbc801: [] },
+  "كسوة": { sbc201: [14], sbc801: [] },
   "gypsum": { sbc201: [25], sbc801: [] },
   "جبس": { sbc201: [25], sbc801: [] },
   
@@ -956,15 +989,22 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
   
   console.log("=== SBC SMART RETRIEVAL START ===");
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = getSecretKeyOrNull();
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error("❌ Missing environment variables");
-    return { context: "", files: [], sourceMeta: [] };
-  }
-  
   try {
+    // Key resolution lives INSIDE the try on purpose. getSecretKeyOrNull()
+    // returns null when no key is configured (the tolerate-absence case the
+    // guard below handles), but it THROWS when SUPABASE_SECRET_KEYS is present
+    // and malformed -- a configuration error must not masquerade as absence.
+    // Outside the try that throw would escape fetchSBCContext uncaught; inside,
+    // the catch at the end of this function logs it and returns the same empty
+    // result the guard returns, so retrieval degrades instead of 500-ing.
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = getSecretKeyOrNull();
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error("❌ Missing environment variables");
+      return { context: "", files: [], sourceMeta: [] };
+    }
+
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
     
     const { data: files, error: listError } = await supabaseAdmin.storage
@@ -2490,8 +2530,23 @@ serve(async (req) => {
             .maybeSingle();
 
           if (orgMemberErr) {
-            // Fail closed: an unknown state must never grant enterprise access.
-            console.error("[H6] org_members lookup failed — denying org access (fail closed):", orgMemberErr.message);
+            // R4-MEDIUM-5. `.maybeSingle()` returns PGRST116 when MORE THAN ONE
+            // row matches, so a user with an active membership in TWO orgs lands
+            // here — not in a real error. The deny is correct and unchanged (we
+            // cannot tell which org should fund the seat, and picking one would
+            // be guessing about money), but logging it as an infrastructure
+            // failure sent an operator hunting a database fault that does not
+            // exist. This is the same inversion the renewal job already fixed on
+            // its idempotency query. Multi-org entitlement is future work.
+            if ((orgMemberErr as any)?.code === "PGRST116") {
+              console.warn(
+                "[H6] user holds an active membership in more than one organization — " +
+                "denying org access because the funding org is ambiguous (data condition, not an error). " +
+                `user ${userId}`,
+              );
+            } else {
+              console.error("[H6] org_members lookup failed — denying org access (fail closed):", orgMemberErr.message);
+            }
           } else if (orgMemberRow && AI_ACCESS_ROLES.includes(orgMemberRow.role)) {
             const orgData = orgMemberRow.organizations as any;
             const orgStatusOk = orgData?.status === "active" || orgData?.status === "trial";

@@ -97,7 +97,8 @@ export function parseTimestampMs(raw: unknown): number | null {
  *
  * A closed subscription may ONLY be activated by a deliberate new checkout:
  *   - the flow must be `immediate_charge`. An unattended cron charge is never
- *     `immediate_charge`, so this alone excludes the reported race.
+ *     `immediate_charge` or `post_trial_first_charge` — see R4-CRITICAL-1 in the
+ *     body for why admitting the second one is safe, and why `renewal` is not.
  *   - the payment must be fresh — created within RESUBSCRIBE_WINDOW_MS.
  *   - the payment must have been created AFTER the cancellation. This is the
  *     precise discriminator: in the race the payment predates the cancel; in a
@@ -112,7 +113,40 @@ export function decideActivation(input: ActivationInput): ActivationDecision {
 
   if (!terminated && !cancelPending) return ALLOW;
 
-  if (input.flow !== "immediate_charge") return REFUSE;
+  // R4-CRITICAL-1 (2026-08-23). This used to be `flow !== "immediate_charge"`,
+  // which refused BEFORE the timestamp discriminator below could run. That
+  // silently broke the only recovery path a mid-trial canceller has:
+  //
+  //   deriveFlow (_shared/billing.ts) returns `post_trial_first_charge` for
+  //   EVERY lapsed `trialing` row — not `immediate_charge`. So a customer who
+  //   cancelled during the trial, let it lapse, and then came back through
+  //   /subscribe was CHARGED (plan price minus the 1.00 SAR credit) and then
+  //   REFUSED here, landing a `paid_after_cancel` dead letter. Money taken,
+  //   nothing delivered, and nothing in the product told them why.
+  //
+  // WHY ADMITTING THIS FLOW IS SAFE — the property that carries it:
+  // `post_trial_first_charge` payments have exactly two possible authors.
+  //   1. The renewal cron's conversion pass. It selects with
+  //      `.eq("cancel_at_period_end", false)`
+  //      (process-subscription-renewal/index.ts, trial-conversion query), so it
+  //      can only ever create such a payment for a row that was NOT cancelled at
+  //      creation time. If the customer cancels afterwards, the payment
+  //      necessarily PREDATES `cancelled_at` and the discriminator below refuses
+  //      it — which is precisely the 09:00 / 09:02 / 09:05 race R3-C2 exists for.
+  //   2. The customer's own authenticated checkout, which is by definition
+  //      created AFTER the cancellation they are walking back.
+  // The two cases are therefore separated exactly by "was this payment created
+  // after `cancelled_at`?" — the same discriminator, no new signal required.
+  //
+  // `renewal` stays refused. It is cron-only (a checkout never derives it) and
+  // that pass carries the same `cancel_at_period_end = false` filter, so a
+  // renewal created after a cancellation cannot legitimately exist. Refusing it
+  // is defence in depth, not a behaviour anyone can reach.
+  const ACTIVATABLE_AFTER_CANCEL: readonly ActivationFlow[] = [
+    "immediate_charge",
+    "post_trial_first_charge",
+  ];
+  if (!ACTIVATABLE_AFTER_CANCEL.includes(input.flow)) return REFUSE;
 
   const createdAtMs = input.paymentCreatedAtMs;
   if (createdAtMs === null) return REFUSE;
@@ -170,6 +204,7 @@ export type TrialCancelClearDecision =
         | "nothing_to_clear"
         | "not_trialing"
         | "unknown_payment_time"
+        | "future_dated_payment"
         | "stale_payment"
         | "unknown_cancel_time"
         | "payment_predates_cancel";
@@ -201,7 +236,12 @@ export function decideTrialCancelClear(
   if (createdAtMs === null) return { clear: false, reason: "unknown_payment_time" };
 
   const ageMs = input.nowMs - createdAtMs;
-  if (ageMs < -CLOCK_SKEW_TOLERANCE_MS) return { clear: false, reason: "stale_payment" };
+  // R4-LOW-9: these are two different anomalies and must not share one label.
+  // A payment dated in the FUTURE beyond clock-skew tolerance is a clock or data
+  // fault; a payment older than the resubscribe window is genuinely stale. Ops
+  // reads these reasons out of the dead letters, and calling a future-dated
+  // payment "stale" sends the reader looking for the wrong problem.
+  if (ageMs < -CLOCK_SKEW_TOLERANCE_MS) return { clear: false, reason: "future_dated_payment" };
   if (ageMs >= RESUBSCRIBE_WINDOW_MS) return { clear: false, reason: "stale_payment" };
 
   if (input.cancelledAtMs === null) return { clear: false, reason: "unknown_cancel_time" };

@@ -32,7 +32,23 @@
 -- Companion report: docs/audits/code-tables-rebuild-20260823.md
 --
 -- THIS FILE PERFORMS WRITES. Read it before running it.
--- It contains no DDL and touches no table other than public.sbc_code_tables.
+--
+-- DDL DISCLOSURE
+--   Step 0 CREATES ONE TABLE: public.sbc_code_tables_backup_20260823 (the
+--   reversibility backup). Apart from that one CREATE, the file touches no
+--   table other than public.sbc_code_tables.
+--
+-- SECURITY - why step 0 locks the backup down immediately
+--   The ALTER DEFAULT PRIVILEGES on this project grant anon and authenticated ALL
+--   privileges on every newly created table in the public schema, new tables
+--   are born with RLS DISABLED, and the pgrst_ddl_watch event trigger reloads
+--   the PostgREST cache at once - so an unguarded backup would be readable AND
+--   WRITABLE over the public REST API within seconds of creation. Step 0
+--   therefore enables RLS (with deliberately no policy) and revokes all
+--   privileges from PUBLIC, anon and authenticated in the same transaction.
+--   Restorability is unaffected: the owner runs this in the SQL Editor as the
+--   table owner, and service_role bypasses RLS, so the reversal UPDATE below
+--   still works.
 --
 -- REVERSIBILITY
 --   Step 0 below takes a full backup of the table into
@@ -68,6 +84,14 @@ BEGIN
       SELECT * FROM public.sbc_code_tables;
   END IF;
 END $$;
+
+-- Lock the backup down. Runs every time (all four statements are idempotent),
+-- so a backup created by an earlier partial run is secured too. See the
+-- SECURITY note in the header for why this is not optional.
+ALTER TABLE public.sbc_code_tables_backup_20260823 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.sbc_code_tables_backup_20260823 FROM PUBLIC;
+REVOKE ALL ON TABLE public.sbc_code_tables_backup_20260823 FROM anon;
+REVOKE ALL ON TABLE public.sbc_code_tables_backup_20260823 FROM authenticated;
 
 -- ===============================================================
 -- 1. 1004.5  ->  table_id 1004.5   [MATCH]
@@ -628,7 +652,7 @@ UPDATE public.sbc_code_tables SET
 -- 11. 506.2  ->  table_id 506.2   [MATCH]
 --    source   : SBC 201 - The Saudi General Building Code-251-500.pdf
 --    page     : page_index_0based=244 (printed page 467)
---    caption  : TABLE 506.2 a, b - ALLOWABLE AREA FACTOR (A = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE T METERS
+--    caption  : TABLE 506.2 a, b - ALLOWABLE AREA FACTOR (At = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE METERS
 --    checks   : (a) PASS  (b) PASS  (c) N/A  (d) PASS
 --    note     : Spans printed pages 467 and 468 (page indices 244 and 245); the SBC
 --    note     : repeats the caption on the continuation page.
@@ -640,16 +664,16 @@ UPDATE public.sbc_code_tables SET
 
 UPDATE public.sbc_code_tables SET
     table_id    = '506.2',
-    table_title = 'ALLOWABLE AREA FACTOR (A = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE T METERS',
+    table_title = 'ALLOWABLE AREA FACTOR (At = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE METERS',
     edition     = '2024',
     section     = '506.2',
     notes       = 'Transcribed verbatim from the printed SBC table. Provenance: SBC 201 - The Saudi General Building Code-251-500.pdf, page_index_0based=244, printed page 467, caption ''TABLE 506.2 a, b''. Units exactly as printed (the SBC prints this table in metric). Spans printed pages 467 and 468 (page indices 244 and 245); the SBC repeats the caption on the continuation page.',
-    content_md  = '## Table 506.2 - ALLOWABLE AREA FACTOR (A = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE T METERS
+    content_md  = '## Table 506.2 - ALLOWABLE AREA FACTOR (At = NS, S1, S13R, OR SM, AS APPLICABLE) IN SQUARE METERS
 **SBC 201-CC-2024 | Chapter 5 | printed page 467**
 
 > **[STRUCTURED_FACT - Source: TABLE 506.2, SBC 201-CC-2024, printed page 467]**
 > Transcribed verbatim from the printed table with pdfplumber.
-> Provenance: `SBC 201 - The Saudi General Building Code-251-500.pdf`, page_index_0based=244, printed_page=467.
+> Provenance: `SBC 201 - The Saudi General Building Code-251-500.pdf`, page_index_0based=244-245, printed_page=467-468 (the table spans two printed pages; rows I-4 through U come from page 468).
 > Units are exactly as printed in the Saudi Building Code. Every NOT PERMITTED / NP cell is reproduced verbatim.
 
 | OCCUPANCY CLASSIFICATION | SEE FOOTNOTES | TYPE OF CONSTRUCTION - TYPE I - A | TYPE OF CONSTRUCTION - TYPE I - B | TYPE OF CONSTRUCTION - TYPE II - A | TYPE OF CONSTRUCTION - TYPE II - B | TYPE OF CONSTRUCTION - TYPE III - A | TYPE OF CONSTRUCTION - TYPE III - B | TYPE OF CONSTRUCTION - TYPE IV - A | TYPE OF CONSTRUCTION - TYPE IV - B | TYPE OF CONSTRUCTION - TYPE IV - C | TYPE OF CONSTRUCTION - TYPE IV - HT | TYPE OF CONSTRUCTION - TYPE V - A | TYPE OF CONSTRUCTION - TYPE V - B |
@@ -749,6 +773,14 @@ UPDATE public.sbc_code_tables SET
 - g. New Group I-4 occupancies see Exceptions 2 and 3 of Section 903.2.6 .
 - h. New Group R occupancies are required to be protected by an automatic sprinkler system in accordance with Section 903.2.8 .
 - i. The maximum allowable area for a single story non-sprinklered Group U greenhouse is permitted to be 435 m2 or shall be permitted to comply with Table C102.1of Appendix C in this code.
+
+> **[AMBIGUITY IN THE PRINTED CODE - READ BEFORE USING THIS TABLE]**
+> For Group I-4, construction Type I-B, the printed page (468) gives NS = 5620, S1 = 11,250 and SM = 16,870.
+> Everywhere else in this table S1 (one storey, sprinklered) is LARGER than SM (multi-storey, sprinklered) -
+> typically S1 = 4 x NS and SM = 3 x NS. In this one cell S1 = 2 x NS, smaller than SM, which no other row does.
+> The values are transcribed exactly as printed; nothing was corrected. The anomaly is CONSERVATIVE in
+> direction (it understates the allowable single-storey area), so using the printed value is safe but may be
+> stricter than intended. Origin: UNKNOWN. Needs the authority having jurisdiction.
 '
   WHERE id = '74ba6a33-3cfc-41f6-8cfe-7dd0a4e80c4d';
 
@@ -856,12 +888,12 @@ UPDATE public.sbc_code_tables SET
 | Electrical installations and transformers | See Sections 110.26 through 110.34 and Sections 450.8<br>through 450.48 of NFPA 70 for protection and separation<br>requirements. |
 
 **Notes, legend and footnotes as printed:**
-- a. Where an automatic fire-extinguishing system is provided, it need only be provided in the incidental use room or area. FIGURE 503.1.2(1) BUILDINGS ON SAME LOT
+- a. Where an automatic fire-extinguishing system is provided, it need only be provided in the incidental use room or area.
 '
   WHERE id = '24f1239a-3b0c-42bf-a015-94411e42315c';
 
 -- ===============================================================
--- 14. 601  ->  table_id 601   [MATCH]
+-- 14. QUARANTINED_601  ->  table_id 601   [RE-ACTIVATED, corrected]
 --    source   : SBC 201 - The Saudi General Building Code-501-1000.pdf
 --    page     : page_index_0based=32 (printed page 505)
 --    caption  : TABLE 601 - FIRE-RESISTANCE RATING REQUIREMENTS FOR BUILDING ELEMENTS (HOURS)
@@ -887,7 +919,11 @@ UPDATE public.sbc_code_tables SET
 **SBC 201-CC-2024 | Chapter 6 | printed page 505**
 
 > **[STRUCTURED_FACT - Source: TABLE 601, SBC 201-CC-2024, printed page 505]**
-> Transcribed verbatim from the printed table with pdfplumber.
+> Transcribed from the printed table and re-verified glyph by glyph with a second PDF
+> engine (PyMuPDF) plus a geometric fraction-bar check, after the first transcription
+> silently dropped two fractional ratings that the original extractor could not decode.
+> Fractional hour ratings are printed in the SBC as a stacked fraction; they are written
+> here as ''1 1/2'', meaning one and one half hours.
 > Provenance: `SBC 201 - The Saudi General Building Code-501-1000.pdf`, page_index_0based=32, printed_page=505.
 > Units are exactly as printed in the Saudi Building Code. Every NOT PERMITTED / NP cell is reproduced verbatim.
 
@@ -898,11 +934,10 @@ UPDATE public.sbc_code_tables SET
 | Non-bearing walls and<br>partitions Exterior | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 | See Table 705.5 |
 | Non-bearing walls and<br>partitions Interiord | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | See Section<br>2304.11.2 | 0 | 0 |
 | Floor construction and<br>associated secondary structural<br>members (see Section 202) | 2 | 2 | 1 | 0 | 1 | 0 | 2 | 2 | 2 | HT | 1 | 0 |
-| Floor construction and<br>associated secondary structural<br>members (see Section 202) | b<br>  | 1b, c | 1b, c | 0c | 1b, c | 0 | 1 | 1 | 1 | HT | 1b, c | 0 |
+| Floor construction and<br>associated secondary structural<br>members (see Section 202) | 1 1/2b | 1b, c | 1b, c | 0c | 1b, c | 0 | 1 1/2 | 1 | 1 | HT | 1b, c | 0 |
 
 **Notes, legend and footnotes as printed:**
-- Permitted1;
-- UL = Unlimited; NP = Not N S = Buildings not equipped throughou1t with an automatic sprinkler system; S1 = Buildings a - 2 maximum of one story above grade plane equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 ; SM = Buildings two or more stories above grade plane equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 ; S13R = Buildings equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.2 ; S13D = Buildings equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.3 .
+- UL = Unlimited; NP = Not Permitted; NS = Buildings not equipped throughout with an automatic sprinkler system; S1 = Buildings a maximum of one story above grade plane equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 ; SM = Buildings two or more stories above grade plane equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.1 ; S13R = Buildings equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.2 ; S13D = Buildings equipped throughout with an automatic sprinkler system installed in accordance with Section 903.3.1.3 .
 - a. Roof supports: Fire-resistance ratings of primary structural frame and bearing walls are permitted to be reduced by 1 hour where supporting a roof only.
 - b. Except in Group F-1, H, M and S-1 occupancies, fire protection of structural members in roof construction shall not be required, including protection of primary structural frame members, roof framing and decking where every part of the roof construction is 6 meters or more above any floor immediately below. Fire-retardant-treated wood members shall be allowed to be used for such unprotected members.
 - c. In all occupancies, heavy timber complying with Section 2304.11 shall be allowed for roof construction, including primary structural frame members, where a 1hour or less fire-resistance rating is required.
@@ -912,16 +947,16 @@ UPDATE public.sbc_code_tables SET
 - g. Heavy timber bearing walls supporting more than two floors or more than a floor and a roof shall have a fire-resistance rating of not less than 1 hour.
 
 > **[AMBIGUITY IN THE PRINTED CODE - READ BEFORE USING THIS TABLE]**
-> The row label ''Floor construction and associated secondary structural members (see Section 202)'' is printed TWICE in this table, at y-top 262.7 and again at y-top 297.5 of the page, with DIFFERENT required fire-resistance ratings. The first prints ''2 | 2 | 1 | 0 | 1 | 0 | 2 | 2 | 2 | HT | 1 | 0''; the second prints ''b | 1b, c | 1b, c | 0c | 1b, c | 0 | 1 | 1 | 1 | HT | 1b, c | 0''. There is no categorical column separating the two rows, so there is no reading of the printed page under which both are simultaneously true for the same construction type. Note also that the word ''Roof'' does not appear as a row label anywhere in this table - it occurs only in the footnotes - so the table as printed states no roof-construction requirement at all.
+> The row label ''Floor construction and associated secondary structural members (see Section 202)'' is printed TWICE in this table, at y-top 262.7 and again at y-top 297.5 of the page, with DIFFERENT required fire-resistance ratings. The first prints ''2 | 2 | 1 | 0 | 1 | 0 | 2 | 2 | 2 | HT | 1 | 0''; the second prints ''1 1/2b | 1b, c | 1b, c | 0c | 1b, c | 0 | 1 1/2 | 1 | 1 | HT | 1b, c | 0''. There is no categorical column separating the two rows, so there is no reading of the printed page under which both are simultaneously true for the same construction type. Note also that the word ''Roof'' does not appear as a row label anywhere in this table - it occurs only in the footnotes - so the table as printed states no roof-construction requirement at all.
 > Both rows are transcribed above exactly as printed; neither has been dropped, merged or corrected.
-> **For design purposes the conservative value (the HIGHER rating in each column - a fire-resistance rating is a requirement, so the larger number is the stricter one (for example 2 hours rather than 1 hour for Types I-A and I-B)) governs until clarified by the authority having jurisdiction.**
+> **For design purposes the conservative value (the HIGHER rating in each column - a fire-resistance rating is a requirement, so the larger number is the stricter one (for example 2 hours rather than 1 1/2 hours for Type I-A, and 2 hours rather than 1 hour for Type I-B)) governs until clarified by the authority having jurisdiction.**
 > Origin of the contradiction: UNKNOWN. It is present in the printed page cited above.
 > What the second row was intended to say is UNKNOWN and is NOT inferred here. TABLE 601 is printed only once in the whole corpus (SBC 201 printed page 505), so no second printing is available to settle it. This needs the authority having jurisdiction.
 '
   WHERE id = 'e4dc98f4-8030-4ac5-bd8a-a9e708b04a39';
 
 -- ===============================================================
--- 15. 602  ->  table_id 705.5   [RENUMBERED]
+-- 15. QUARANTINED_602  ->  table_id 705.5   [RENUMBERED, re-activated]
 --    source   : SBC 201 - The Saudi General Building Code-501-1000.pdf
 --    page     : page_index_0based=184 (printed page 657)
 --    caption  : TABLE 705.5 - FIRE-RESISTANCE RATING REQUIREMENTS FOR EXTERIOR WALLS BASED ON FIRE SEPERATION DISTANCEa,d,g
@@ -945,7 +980,7 @@ UPDATE public.sbc_code_tables SET
     section     = '705.5',
     notes       = 'Transcribed verbatim from the printed SBC table. Provenance: SBC 201 - The Saudi General Building Code-501-1000.pdf, page_index_0based=184, printed page 657, caption ''TABLE 705.5''. Units exactly as printed (the SBC prints this table in metric). RENUMBERED from 602 to 705.5: the SBC does not print the former number. RENUMBERED 602 -> 705.5. SBC 201 prints no TABLE 602. The table titled ''FIRE-RESISTANCE RATING REQUIREMENTS FOR EXTERIOR WALLS BASED ON FIRE SEPARATION DISTANCE'' - which is what the production row is titled - is printed as TABLE 705.5.',
     content_md  = '## Table 705.5 - FIRE-RESISTANCE RATING REQUIREMENTS FOR EXTERIOR WALLS BASED ON FIRE SEPERATION DISTANCEa,d,g
-**SBC 201-CC-2024 | Chapter 6 | printed page 657**
+**SBC 201-CC-2024 | Chapter 7 | printed page 657**
 
 > **[STRUCTURED_FACT - Source: TABLE 705.5, SBC 201-CC-2024, printed page 657]**
 > Transcribed verbatim from the printed table with pdfplumber.
@@ -1379,6 +1414,11 @@ UPDATE public.sbc_code_tables
 --  ) ORDER BY table_id;
 --
 -- Expected after this file: 16 rows rebuilt, 42 newly quarantined.
+-- NOTE: 7 of the 16 rebuilt rows are DARK today (quarantined or unmatchable)
+-- and GO LIVE with this file: 1006.2.1, 1006.3.4(1), 1017.2, 509.1, 601,
+-- 705.5 - plus 1020.2-width, which is written but stays unmatchable by the
+-- retrieval layer pending the 1020.2/1020.3 renumber decision.
+-- Final state: 16 verified-active / 77 quarantined (of 93).
 
 COMMIT;
 
