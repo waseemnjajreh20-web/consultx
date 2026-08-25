@@ -911,7 +911,13 @@ WITH raw_ext AS (
   FROM sbc_documents d
   CROSS JOIN LATERAL regexp_matches(
     d.content,
-    'Sections?\s+[0-9]{2,4}(?:\.[0-9]+)*\s+of\s+((ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)(?:\s+[A-Za-z0-9.\-]+)?)',
+    -- {1,4} not {2,4}: design 2.3's census (206 occurrences / 141 rows) counts
+    -- single-digit-chapter citations too ("Section 4 of NFPA 13"). Measured
+    -- 2026-08-25: {2,4} yields 97/66, {1,4} reproduces the design's 206/141
+    -- exactly. The strips in Sections 3-5 deliberately KEEP {2,4}: an internal
+    -- edge target requires a 3-4 digit major, so single-digit external refs
+    -- can never poison an edge -- see docs/audits/xref-build-s4-band-note-20260825.md.
+    'Sections?\s+[0-9]{1,4}(?:\.[0-9]+)*\s+of\s+((ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)(?:\s+[A-Za-z0-9.\-]+)?)',
     'gi'
   ) AS m
   WHERE d.code_type IN ('SBC201', 'SBC801')
@@ -941,7 +947,8 @@ WITH raw_ext AS (
   FROM sbc_documents d
   CROSS JOIN LATERAL regexp_matches(
     d.content,
-    'Sections?\s+[0-9]{2,4}(?:\.[0-9]+)*\s+of\s+((ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)(?:\s+[A-Za-z0-9.\-]+)?)',
+    -- {1,4}: matches the census probe above (design 2.3's 206/141 basis).
+    'Sections?\s+[0-9]{1,4}(?:\.[0-9]+)*\s+of\s+((ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)(?:\s+[A-Za-z0-9.\-]+)?)',
     'gi'
   ) AS m
   WHERE d.code_type IN ('SBC201', 'SBC801')
