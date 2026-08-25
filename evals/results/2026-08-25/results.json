@@ -1,0 +1,2534 @@
+{
+  "run_date": "2026-08-25",
+  "mode": "dry-run",
+  "total": 86,
+  "tier_a": {
+    "exact_section_match_rate": 100,
+    "chain_match_rate": 100,
+    "refusal_correctness": 100,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 100,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 0,
+  "safety_critical_regressions": [],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 0,
+      "answer_length": 61
+    },
+    {
+      "id": "ADV-002",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 0,
+      "answer_length": 61
+    }
+  ],
+  "pass": true,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 4,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 128,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 302 | conf:medium] Dry-run placeholder — no API call made. Section 302, Section 304, Section 508, Section 508.3"
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 4,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 128,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 302 | conf:medium] Dry-run placeholder — no API call made. Section 302, Section 304, Section 508, Section 508.3"
+    },
+    {
+      "id": "ADV-002",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 311.2 | conf:medium] Dry-run placeholder — no API call made. Section 311.2, Section 508.2"
+    },
+    {
+      "id": "ADV-002",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 311.2 | conf:medium] Dry-run placeholder — no API call made. Section 311.2, Section 508.2"
+    },
+    {
+      "id": "ADV-003",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 115,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 303 | conf:medium] Dry-run placeholder — no API call made. Section 303, Section 305, Section 508.3"
+    },
+    {
+      "id": "ADV-003",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 115,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 303 | conf:medium] Dry-run placeholder — no API call made. Section 303, Section 305, Section 508.3"
+    },
+    {
+      "id": "ADV-004",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 127,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5, Section 1006.3.3, Section 1005.1"
+    },
+    {
+      "id": "ADV-004",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 127,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5, Section 1006.3.3, Section 1005.1"
+    },
+    {
+      "id": "ADV-005",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2"
+    },
+    {
+      "id": "ADV-005",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2"
+    },
+    {
+      "id": "ADV-006",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 125,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1005.1 | conf:medium] Dry-run placeholder — no API call made. Section 1005.1, Section 1020.2, Section 1004.5"
+    },
+    {
+      "id": "ADV-006",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 125,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1005.1 | conf:medium] Dry-run placeholder — no API call made. Section 1005.1, Section 1020.2, Section 1004.5"
+    },
+    {
+      "id": "ADV-007",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 119,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4, Section 503"
+    },
+    {
+      "id": "ADV-007",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 119,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4, Section 503"
+    },
+    {
+      "id": "ADV-008",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 506.2 | conf:medium] Dry-run placeholder — no API call made. Section 506.2, Section 504.3"
+    },
+    {
+      "id": "ADV-008",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 506.2 | conf:medium] Dry-run placeholder — no API call made. Section 506.2, Section 504.3"
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 112,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.11 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.11, Section 903.3"
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 112,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.11 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.11, Section 903.3"
+    },
+    {
+      "id": "ADV-010",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 114,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.1, Section 903.2.1.1"
+    },
+    {
+      "id": "ADV-010",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 114,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.1, Section 903.2.1.1"
+    },
+    {
+      "id": "ADV-011",
+      "category": "SBC-801-standpipe",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 110,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 905.3.1 | conf:medium] Dry-run placeholder — no API call made. Section 905.3.1, Section 905.4"
+    },
+    {
+      "id": "ADV-011",
+      "category": "SBC-801-standpipe",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 110,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 905.3.1 | conf:medium] Dry-run placeholder — no API call made. Section 905.3.1, Section 905.4"
+    },
+    {
+      "id": "ADV-012",
+      "category": "SBC-801-standpipe",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 125,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 905.3.1 | conf:medium] Dry-run placeholder — no API call made. Section 905.3.1, Section 905.4, Section 905.5"
+    },
+    {
+      "id": "ADV-012",
+      "category": "SBC-801-standpipe",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 125,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 905.3.1 | conf:medium] Dry-run placeholder — no API call made. Section 905.3.1, Section 905.4, Section 905.5"
+    },
+    {
+      "id": "ADV-013",
+      "category": "SBC-801-fire-pump",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 121,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2 | conf:medium] Dry-run placeholder — no API call made. Section 913.2, Section 913.3, Section 913.4"
+    },
+    {
+      "id": "ADV-013",
+      "category": "SBC-801-fire-pump",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 121,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2 | conf:medium] Dry-run placeholder — no API call made. Section 913.2, Section 913.3, Section 913.4"
+    },
+    {
+      "id": "ADV-014",
+      "category": "SBC-801-fire-pump",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 110,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 913.2.1, Section 913.4"
+    },
+    {
+      "id": "ADV-014",
+      "category": "SBC-801-fire-pump",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 110,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 913.2.1, Section 913.4"
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 126,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 508.4 | conf:medium] Dry-run placeholder — no API call made. Section 508.4, Section 903.2.1, Section 903.2.11"
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 126,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 508.4 | conf:medium] Dry-run placeholder — no API call made. Section 508.4, Section 903.2.1, Section 903.2.11"
+    },
+    {
+      "id": "ADV-016",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 123,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4, Section 903.2.3"
+    },
+    {
+      "id": "ADV-016",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 123,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4, Section 903.2.3"
+    },
+    {
+      "id": "ADV-017",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2, Section 903.3"
+    },
+    {
+      "id": "ADV-017",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2, Section 903.3"
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-019",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-019",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 215,
+      "latency_ms": 0,
+      "answer_preview": "يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX. This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently index"
+    },
+    {
+      "id": "ADV-021",
+      "category": "SBC-801-fire-pump",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2 | conf:medium] Dry-run placeholder — no API call made. Section 913.2, Section 913.4"
+    },
+    {
+      "id": "ADV-021",
+      "category": "SBC-801-fire-pump",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 913.2 | conf:medium] Dry-run placeholder — no API call made. Section 913.2, Section 913.4"
+    },
+    {
+      "id": "ADV-022",
+      "category": "SBC-801-foam-suppression",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 904.7 | conf:medium] Dry-run placeholder — no API call made. Section 904.7, Section 904.7.1"
+    },
+    {
+      "id": "ADV-022",
+      "category": "SBC-801-foam-suppression",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 904.7 | conf:medium] Dry-run placeholder — no API call made. Section 904.7, Section 904.7.1"
+    },
+    {
+      "id": "ADV-023",
+      "category": "SBC-801-clean-agent-suppression",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 904.9 | conf:medium] Dry-run placeholder — no API call made. Section 904.9, Section 904.9.1"
+    },
+    {
+      "id": "ADV-023",
+      "category": "SBC-801-clean-agent-suppression",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 904.9 | conf:medium] Dry-run placeholder — no API call made. Section 904.9, Section 904.9.1"
+    },
+    {
+      "id": "ADV-024",
+      "category": "SBC-801-smoke-dampers",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 909.7 | conf:medium] Dry-run placeholder — no API call made. Section 909.7, Section 909.7.1"
+    },
+    {
+      "id": "ADV-024",
+      "category": "SBC-801-smoke-dampers",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 909.7 | conf:medium] Dry-run placeholder — no API call made. Section 909.7, Section 909.7.1"
+    },
+    {
+      "id": "ADV-025",
+      "category": "SBC-201-accessible-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 109,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1009.6 | conf:medium] Dry-run placeholder — no API call made. Section 1009.6, Section 1009.7"
+    },
+    {
+      "id": "ADV-025",
+      "category": "SBC-201-accessible-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 109,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1009.6 | conf:medium] Dry-run placeholder — no API call made. Section 1009.6, Section 1009.7"
+    },
+    {
+      "id": "ADV-026",
+      "category": "SBC-201-fire-doors",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 113,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 716.2.6 | conf:medium] Dry-run placeholder — no API call made. Section 716.2.6, Section 1010.1.4"
+    },
+    {
+      "id": "ADV-026",
+      "category": "SBC-201-fire-doors",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 113,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 716.2.6 | conf:medium] Dry-run placeholder — no API call made. Section 716.2.6, Section 1010.1.4"
+    },
+    {
+      "id": "ADV-027",
+      "category": "SBC-801-high-piled-storage",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 109,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 3206.2 | conf:medium] Dry-run placeholder — no API call made. Section 3206.2, Section 3208.1"
+    },
+    {
+      "id": "ADV-027",
+      "category": "SBC-801-high-piled-storage",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 109,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 3206.2 | conf:medium] Dry-run placeholder — no API call made. Section 3206.2, Section 3208.1"
+    },
+    {
+      "id": "ADV-028",
+      "category": "SBC-801-fire-alarm-control",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 907.6 | conf:medium] Dry-run placeholder — no API call made. Section 907.6, Section 907.6.1"
+    },
+    {
+      "id": "ADV-028",
+      "category": "SBC-801-fire-alarm-control",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 907.6 | conf:medium] Dry-run placeholder — no API call made. Section 907.6, Section 907.6.1"
+    },
+    {
+      "id": "ADV-029",
+      "category": "SBC-801-fire-hydrant",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 507.1 | conf:medium] Dry-run placeholder — no API call made. Section 507.1, Section 507.5.1"
+    },
+    {
+      "id": "ADV-029",
+      "category": "SBC-801-fire-hydrant",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 108,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 507.1 | conf:medium] Dry-run placeholder — no API call made. Section 507.1, Section 507.5.1"
+    },
+    {
+      "id": "ADV-030",
+      "category": "SBC-801-hazard-classification",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 114,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.3.1.2 | conf:medium] Dry-run placeholder — no API call made. Section 903.3.1.2, Section 902.1"
+    },
+    {
+      "id": "ADV-030",
+      "category": "SBC-801-hazard-classification",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 114,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.3.1.2 | conf:medium] Dry-run placeholder — no API call made. Section 903.3.1.2, Section 902.1"
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 161,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.1, Section 903.3.1.1. Chain: Section 903.2.1 and Section 903.3.1.1."
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 161,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.1, Section 903.3.1.1. Chain: Section 903.2.1 and Section 903.3.1.1."
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 161,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.3 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.3, Section 903.3.1.1. Chain: Section 903.2.3 and Section 903.3.1.1."
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 161,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 903.2.3 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.3, Section 903.3.1.1. Chain: Section 903.2.3 and Section 903.3.1.1."
+    },
+    {
+      "id": "ADV-033",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 909.20.1 | conf:medium] Dry-run placeholder — no API call made. Section 909.20.1, Section 1010.1.3. Chain: Section 909.20.1 and Section 1010.1.3."
+    },
+    {
+      "id": "ADV-033",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 909.20.1 | conf:medium] Dry-run placeholder — no API call made. Section 909.20.1, Section 1010.1.3. Chain: Section 909.20.1 and Section 1010.1.3."
+    },
+    {
+      "id": "ADV-034",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 909.20.5 | conf:medium] Dry-run placeholder — no API call made. Section 909.20.5, Section 1010.1.3. Chain: Section 909.20.5 and Section 1010.1.3."
+    },
+    {
+      "id": "ADV-034",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 909.20.5 | conf:medium] Dry-run placeholder — no API call made. Section 909.20.5, Section 1010.1.3. Chain: Section 909.20.5 and Section 1010.1.3."
+    },
+    {
+      "id": "ADV-035",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1006.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 1006.2.1, Section 1006.3.2. Chain: Section 1006.2.1 and Section 1006.3.2."
+    },
+    {
+      "id": "ADV-035",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1006.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 1006.2.1, Section 1006.3.2. Chain: Section 1006.2.1 and Section 1006.3.2."
+    },
+    {
+      "id": "ADV-036",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1006.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 1006.2.1, Section 1006.3.4. Chain: Section 1006.2.1 and Section 1006.3.4."
+    },
+    {
+      "id": "ADV-036",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1006.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 1006.2.1, Section 1006.3.4. Chain: Section 1006.2.1 and Section 1006.3.4."
+    },
+    {
+      "id": "ADV-037",
+      "category": "SBC-801-fire-alarm-control",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 157,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 907.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 907.2.1, Section 907.5.2. Chain: Section 907.2.1 and Section 907.5.2."
+    },
+    {
+      "id": "ADV-037",
+      "category": "SBC-801-fire-alarm-control",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 157,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-801 Section 907.2.1 | conf:medium] Dry-run placeholder — no API call made. Section 907.2.1, Section 907.5.2. Chain: Section 907.2.1 and Section 907.5.2."
+    },
+    {
+      "id": "ADV-038",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 903.2.11.3 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.11.3, Section 508.4. Chain: Section 903.2.11.3 and Section 508.4."
+    },
+    {
+      "id": "ADV-038",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 162,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 903.2.11.3 | conf:medium] Dry-run placeholder — no API call made. Section 903.2.11.3, Section 508.4. Chain: Section 903.2.11.3 and Section 508.4."
+    },
+    {
+      "id": "ADV-039",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5"
+    },
+    {
+      "id": "ADV-039",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5"
+    },
+    {
+      "id": "ADV-040",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 112,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2, Section 903.3.1.1"
+    },
+    {
+      "id": "ADV-040",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 112,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1017.2 | conf:medium] Dry-run placeholder — no API call made. Section 1017.2, Section 903.3.1.1"
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4"
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 504.3 | conf:medium] Dry-run placeholder — no API call made. Section 504.3, Section 504.4"
+    },
+    {
+      "id": "ADV-042",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 506.2 | conf:medium] Dry-run placeholder — no API call made. Section 506.2, Section 504.3"
+    },
+    {
+      "id": "ADV-042",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 106,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 506.2 | conf:medium] Dry-run placeholder — no API call made. Section 506.2, Section 504.3"
+    },
+    {
+      "id": "ADV-043",
+      "category": "SBC-201-egress",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5"
+    },
+    {
+      "id": "ADV-043",
+      "category": "SBC-201-egress",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 1,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 93,
+      "latency_ms": 0,
+      "answer_preview": "[SBC-201 Section 1004.5 | conf:medium] Dry-run placeholder — no API call made. Section 1004.5"
+    }
+  ]
+}
