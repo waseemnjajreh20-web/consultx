@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveSourceMeta,
   resolveAllSources,
+  resolveSectionOnlyMatch,
   formatSourceLabel,
 } from '../utils/sourceMetadata';
 import { isKnownSbcPdfPath, KNOWN_SBC_PDF_PATHS } from '../utils/sourcePdfUrl';
@@ -183,6 +184,21 @@ describe('formatSourceLabel', () => {
     );
     const label = formatSourceLabel(meta, 'en');
     expect(label).toBe('📖 SBC 801 — Pages 201–400');
+  });
+
+  it('P5-R6: a section-only DB match (resolveSectionOnlyMatch) still renders the existing plain page-range label — no "exact section" wording, no new UI', () => {
+    const base = resolveSourceMeta(
+      'SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json'
+    );
+    const degraded = resolveSectionOnlyMatch(base, '903.2.7', 120, 122, 'exact_number');
+    expect(degraded.precision).toBe('chunk_range_only');
+    expect(degraded.sectionConfidence).toBe('medium');
+    // Same label text as any other chunk_range_only / page_range source —
+    // formatSourceLabel already treats both precisions identically (R19B),
+    // so degrading precision changes no visible text, only removes the
+    // "exact" claim carried by precision === 'page_range' elsewhere in the UI.
+    expect(formatSourceLabel(degraded, 'ar')).toBe('📖 SBC 201 — صفحات 120–122');
+    expect(formatSourceLabel(degraded, 'en')).toBe('📖 SBC 201 — Pages 120–122');
   });
 });
 

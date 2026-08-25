@@ -243,7 +243,22 @@ function escapeHtml(str: string): string {
 // Inline reference deep-linking helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Infer source document from leading section digits (heuristic). */
+/**
+ * Infer source document from leading section digits — HEURISTIC ONLY.
+ *
+ * P5-R6 (near-term): sbc_documents.section_number drifts from the true
+ * first in-text heading in 57.6%-73.1% of rows (see
+ * reports/advisory-section-drift-summary.md), so this leading-digit
+ * guess is not reliable evidence of which code a section actually belongs
+ * to. It is called ONLY for bare, unstructured references below (a lone
+ * "Section 903.2.7" or "903.2.7" with no SBC code attached) — never for
+ * structured citation tokens like "[SBC-201 Section 903.2.7 | conf:high]",
+ * where the token's explicit document code always wins (see Step 0 in
+ * applyInlineMarkdown, which protects those tokens from this heuristic via
+ * CXTOK placeholders before Step 1/Step 2 run). The real fix — a section ->
+ * document lookup backed by sbc_section_defs — lands post-G0; until then
+ * this stays a heuristic and callers must not treat its output as exact.
+ */
 function getSrc(sec: string): "sbc201" | "sbc801" {
   const n = parseInt(sec, 10);
   return (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
@@ -349,8 +364,17 @@ function replaceInTextNodes(
   });
 }
 
-// Apply inline markdown (bold, code, badges) to an already-escaped string
-function applyInlineMarkdown(
+// Apply inline markdown (bold, code, badges) to an already-escaped string.
+//
+// Exported for tests ONLY (see src/__tests__/citationRouting.test.ts). It is a
+// pure string -> string transform with no React/DOM dependency, and exporting
+// it is what lets the token-code-beats-heuristic precedence be asserted against
+// the REAL pipeline (Step 0 buffering tokens before Step 1/Step 2 run getSrc)
+// rather than against a copy of the heuristic, which would keep passing if the
+// step ordering ever regressed. Not part of the component's public API — no
+// production code outside this module imports it.
+// eslint-disable-next-line react-refresh/only-export-components
+export function applyInlineMarkdown(
   escaped: string,
   mode?: ChatMode,
   availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,

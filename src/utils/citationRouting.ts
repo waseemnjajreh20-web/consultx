@@ -4,6 +4,15 @@
  * Rule: an inline citation token's explicit document code (SBC-201 or SBC-801)
  * is authoritative. The click handler MUST NEVER open a PDF from a different
  * code family — even when DB lookups or chunk metadata point at one.
+ *
+ * P5-R6 note: every function below routes strictly off the already-parsed
+ * `srcKey` (the token's explicit SBC-201/SBC-801 code, from
+ * `parseCitationToken` in ./inlineCitation.ts) — none of them ever re-derive
+ * a family from a section number. The section-number "leading digit"
+ * heuristic (900-999 -> sbc801) lives only in
+ * `src/components/ChatMarkdownRenderer.tsx`'s `getSrc()`, and only applies to
+ * bare, unstructured references (no explicit SBC code in the text) — it is
+ * never consulted here and never overrides an explicit token code.
  */
 
 import type { SourceMeta } from "./sourceMetadata";

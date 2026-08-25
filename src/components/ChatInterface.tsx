@@ -36,7 +36,7 @@ import InChatUpgradePrompt from "./InChatUpgradePrompt";
 import LaunchTrialWelcomeBanner from "./LaunchTrialWelcomeBanner";
 import { TrialDaysIndicator } from "./ModeUsageIndicator";
 import SourcePanel, { CLOSED_PANEL, SourcePanelState } from "@/components/SourcePanel";
-import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, formatSourceLabel, type ChunkPageMeta, type SourceMeta } from "@/utils/sourceMetadata";
+import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, resolveSectionOnlyMatch, formatSourceLabel, type ChunkPageMeta, type SourceMeta } from "@/utils/sourceMetadata";
 import { expectedDocCode, isFamilyMatch, findSameFamilySource, availableFamilies } from "@/utils/citationRouting";
 import { usePreferences } from "@/hooks/usePreferences";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -1910,6 +1910,16 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               // Fallback: do NOT override pageStart — let sourceMeta from the edge
                               //   function answer (which retrieved contextually relevant chunks)
                               //   determine the open page.
+                              //
+                              // P5-R6 (near-term, default-OFF): section_number drifts from the
+                              // true heading in 57.6%-73.1% of sbc_documents rows, so a match
+                              // found ONLY by section_number equality/prefix below is not proof
+                              // the page range is exact. Behind this flag, activeMeta degrades to
+                              // page-range presentation (precision: "chunk_range_only") with
+                              // honest sectionConfidence instead of claiming an exact section
+                              // match. Flag OFF -> byte-identical to prior behavior.
+                              const driftHonestyEnabled =
+                                import.meta.env.VITE_ADVISORY_CITATION_DRIFT_HONESTY_ENABLED === "1";
                               if (sectionNum) {
                                 const codeType = srcKey === 'sbc201' ? 'SBC201' : 'SBC801';
                                 const MAX_SPAN = 25; // pages — tighter = more accurate
@@ -1945,7 +1955,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                       setSourcePanel({
                                         open: true,
                                         sources: effectiveSources,
-                                        activeMeta: { ...rowMeta, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
+                                        activeMeta: driftHonestyEnabled
+                                          ? resolveSectionOnlyMatch(rowMeta, sectionNum, tightest.page_start, tightest.page_end, 'exact_number')
+                                          : { ...rowMeta, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
                                       });
                                       return;
                                     }
@@ -1953,7 +1965,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                       setSourcePanel({
                                         open: true,
                                         sources: effectiveSources,
-                                        activeMeta: { ...docMatch, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
+                                        activeMeta: driftHonestyEnabled
+                                          ? resolveSectionOnlyMatch(docMatch, sectionNum, tightest.page_start, tightest.page_end, 'exact_number')
+                                          : { ...docMatch, pageStart: tightest.page_start, pageEnd: tightest.page_end, precision: 'page_range' as const },
                                       });
                                       return;
                                     }
@@ -1986,7 +2000,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                         setSourcePanel({
                                           open: true,
                                           sources: effectiveSources,
-                                          activeMeta: { ...sibMeta, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
+                                          activeMeta: driftHonestyEnabled
+                                            ? resolveSectionOnlyMatch(sibMeta, sectionNum, anchor, anchor + 4, 'sibling_anchor')
+                                            : { ...sibMeta, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
                                         });
                                         return;
                                       }
@@ -1994,7 +2010,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                                         setSourcePanel({
                                           open: true,
                                           sources: effectiveSources,
-                                          activeMeta: { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
+                                          activeMeta: driftHonestyEnabled
+                                            ? resolveSectionOnlyMatch(docMatch, sectionNum, anchor, anchor + 4, 'sibling_anchor')
+                                            : { ...docMatch, pageStart: anchor, pageEnd: anchor + 4, precision: 'chunk_range_only' as const },
                                         });
                                         return;
                                       }

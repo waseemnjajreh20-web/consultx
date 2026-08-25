@@ -276,6 +276,56 @@ export function resolveSourcesWithMeta(
 }
 
 /**
+ * P5-R6 (near-term) — drift-honest labeling for section-number-only DB matches.
+ *
+ * sbc_documents.section_number drifts from the true first in-text heading in
+ * 57.6%-73.1% of rows (reports/advisory-section-drift-summary.md). When the
+ * citation-click handler in ChatInterface.tsx resolves a deep-link ONLY by
+ * matching `section_number` in the DB (`.eq()` for the exact number, or
+ * `.like()` against a parent prefix for a sibling anchor), the row's own
+ * page numbers are NOT independent page evidence — the row's label is
+ * exactly the field that drifts, so it cannot be presented as proof the
+ * section is really at that page. Until the real fix ships
+ * (sbc_section_defs, post-G0), any SourceMeta built from such a match must
+ * degrade to plain page-range presentation:
+ *   - `precision` is always "chunk_range_only" (never "page_range", the
+ *     "exact" tier SourcePanel renders with a "دقيق"/"exact" badge) —
+ *     `formatSourceLabel` already renders both precisions as the same plain
+ *     "Pages X–Y" / "صفحات X–Y" text, so this alone is the degrade to
+ *     page-range presentation.
+ *   - `sectionConfidence` reuses the SAME "medium"/"ambiguous" values (and
+ *     the SourcePanel styling paths already keyed off them) that the inline
+ *     citation badges use for conf:medium / conf:ambiguous — no new UI.
+ *
+ * `kind`:
+ *   "exact_number"   — the row matched the clicked section_number exactly.
+ *                      Confidence: "medium" (right number, but the number
+ *                      itself may be mislabeled in the DB).
+ *   "sibling_anchor" — the row matched only a parent-prefix sibling (e.g.
+ *                      "1014.%" for "1014.6"); the page is an anchor guess,
+ *                      not even the requested section. Confidence:
+ *                      "ambiguous".
+ */
+export type SectionOnlyMatchKind = "exact_number" | "sibling_anchor";
+
+export function resolveSectionOnlyMatch(
+  base: SourceMeta,
+  sectionNum: string,
+  pageStart: number,
+  pageEnd: number,
+  kind: SectionOnlyMatchKind,
+): SourceMeta {
+  return {
+    ...base,
+    pageStart,
+    pageEnd,
+    precision: "chunk_range_only",
+    sectionRef: sectionNum,
+    sectionConfidence: kind === "exact_number" ? "medium" : "ambiguous",
+  };
+}
+
+/**
  * Format a SourceMeta as a short human-readable chip label.
  * Arabic: "📖 SBC 201 — صفحات 1–250"
  * English: "📖 SBC 201 — Pages 1–250"
