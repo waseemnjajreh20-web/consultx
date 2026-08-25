@@ -24,22 +24,27 @@ import {
   ABSENT_STANDARDS,
   ALL_MODE_PROMPTS,
   buildStructuredTableBlock,
+  CITATION_TOKEN_CONTRACT,
   CORE_RULES,
   EVIDENCE_LANGUAGE_CAP,
   findAbsentSourceClaims,
   getAnalysisPrompt,
+  getAudienceBlock,
   getPrimaryPrompt,
   getStandardPrompt,
   getValidationPrompt,
   INNER_FRAMING_NEUTRALISER,
   SECTION_SIGN,
+  SOURCE_SCOPE,
   STRUCTURED_TABLES_FOOTER,
   STRUCTURED_TABLES_HEADER,
   SWITCH_MARKER_ADVISORY,
   SWITCH_MARKER_ANALYTICAL,
+  type AudienceRole,
   type StructuredTableRow,
 } from "../../supabase/functions/fire-safety-chat/promptContract.ts";
 import { parseSwitchMarker } from "../utils/chatRouting";
+import { parseCitationToken } from "../utils/inlineCitation";
 
 /** Every prompt string the function can send, in both languages. */
 function everyPromptString(): Array<{ label: string; text: string }> {
@@ -665,5 +670,248 @@ describe("findAbsentSourceClaims", () => {
 
   it("ignores lines that name no absent standard", () => {
     expect(findAbsentSourceClaims("SBC 201 و SBC 801 فقط.")).toEqual([]);
+  });
+});
+
+// ===========================================================================
+// P5/P6 additions
+//
+// (1) CITATION_TOKEN_CONTRACT — docs/advisory-acceptance.md Section 2 (token
+//     grammar) and Section 3.1/3.2 (empty-corpus refusal sentence). Exported
+//     only: index.ts is the sole place allowed to append it, gated on
+//     ADVISORY_CITATION_TOKENS_ENABLED === "1". Nothing here wires it into a
+//     prompt, so the base prompts must not contain it.
+// (2) SOURCE_SCOPE Civil-Defense boundary line — unconditional, minimal,
+//     carries the "غير متوفر في مصادر النظام" anchor the benchmark scorer
+//     depends on.
+// (3) getAudienceBlock — presentation layer for the three non-engineer
+//     audiences, appended by index.ts only when explicitly requested.
+// ===========================================================================
+
+describe("CITATION_TOKEN_CONTRACT (Section 2 token grammar, exported only)", () => {
+  it("contains the exact token grammar samples from the task", () => {
+    expect(CITATION_TOKEN_CONTRACT).toContain("[SBC-201 Section 1017.2 | conf:high]");
+    expect(CITATION_TOKEN_CONTRACT).toContain("[SBC-801 Section 903.2.7 | conf:medium]");
+    expect(CITATION_TOKEN_CONTRACT).toContain("[SBC-201 pp.411-435 | conf:medium]");
+    expect(CITATION_TOKEN_CONTRACT).toContain("[SBC-201 Table 1004.5 | conf:high]");
+  });
+
+  it("every sample token round-trips through the frontend parser (src/utils/inlineCitation.ts)", () => {
+    const samples = [
+      "[SBC-201 Section 1017.2 | conf:high]",
+      "[SBC-801 Section 903.2.7 | conf:medium]",
+      "[SBC-201 pp.411-435 | conf:medium]",
+      "[SBC-201 Table 1004.5 | conf:high]",
+    ];
+    for (const s of samples) {
+      const parsed = parseCitationToken(s);
+      expect(parsed, `${s} failed to parse`).not.toBeNull();
+    }
+  });
+
+  it("states the conf:high / conf:medium precondition precisely", () => {
+    expect(CITATION_TOKEN_CONTRACT).toContain(
+      "conf:high يُستخدم فقط عندما يحتوي النص المسترجع حرفياً في السياق أعلاه على رقم القسم بعينه الذي يُستشهد به",
+    );
+    expect(CITATION_TOKEN_CONTRACT).toContain(
+      "conf:medium يُستخدم عندما يكون القسم مُستنتجاً من مقطع مجاور",
+    );
+  });
+
+  it("forbids inventing a token for text that was not retrieved", () => {
+    expect(CITATION_TOKEN_CONTRACT).toContain("ممنوع منعاً باتاً اختلاق رمز استشهاد لنص غير مسترجع");
+    expect(CITATION_TOKEN_CONTRACT).toContain(
+      "Inventing a citation token for a claim with no retrieved supporting text is forbidden",
+    );
+  });
+
+  it("carries both canonical Section 3.1/3.2 refusal sentences verbatim", () => {
+    expect(CITATION_TOKEN_CONTRACT).toContain(
+      "هذا الادعاء غير موثق في القاعدة المفهرسة الحالية، ويحتاج إلى مصدر معتمد قبل اعتماده هندسياً.",
+    );
+    expect(CITATION_TOKEN_CONTRACT).toContain(
+      "This claim is not documented in the currently indexed corpus and requires an authoritative source before engineering reliance.",
+    );
+  });
+
+  it("does not use the banned section-sign character", () => {
+    expect(CITATION_TOKEN_CONTRACT.includes(SECTION_SIGN)).toBe(false);
+  });
+
+  it("is exported only — none of the three mode prompts contain it", () => {
+    for (const { label, text } of everyPromptString()) {
+      expect(text, `${label} unexpectedly carries CITATION_TOKEN_CONTRACT`)
+        .not.toContain(CITATION_TOKEN_CONTRACT);
+      // Also guard the load-bearing grammar sample specifically, in case the
+      // full-block containment check above is ever satisfied by coincidence.
+      expect(text).not.toContain("[SBC-201 Section 1017.2 | conf:high]");
+    }
+  });
+
+  it("makes no unrestricted absent-standard claim on its own", () => {
+    expect(findAbsentSourceClaims(CITATION_TOKEN_CONTRACT)).toEqual([]);
+  });
+});
+
+describe("SOURCE_SCOPE Civil-Defense boundary (unconditional safety-contract fix)", () => {
+  const ANCHOR_PHRASE = "غير متوفر في مصادر النظام";
+
+  it("SOURCE_SCOPE itself carries the anchor phrase and names Civil Defense", () => {
+    expect(SOURCE_SCOPE).toContain(ANCHOR_PHRASE);
+    expect(SOURCE_SCOPE).toContain("الدفاع المدني");
+    expect(SOURCE_SCOPE).toContain("Civil Defense Boundary");
+  });
+
+  it("the anchor phrase reaches every prompt path that embeds SOURCE_SCOPE, in both languages", () => {
+    for (const lang of ["ar", "en"]) {
+      expect(getStandardPrompt(lang), `standard/${lang} missing Civil Defense anchor`)
+        .toContain(ANCHOR_PHRASE);
+      expect(getAnalysisPrompt(lang), `analysis/${lang} missing Civil Defense anchor`)
+        .toContain(ANCHOR_PHRASE);
+    }
+  });
+
+  it("keeps the AHJ supremacy note intact alongside the new boundary line", () => {
+    // The addition must not have displaced the existing supremacy reminder.
+    expect(SOURCE_SCOPE).toContain("سلطة الاختصاص (AHJ)");
+    expect(getStandardPrompt("ar")).toContain(
+      "الدفاع المدني يملك حق التعديل ميدانياً بناءً على تعاميمه العامة والخاصة",
+    );
+  });
+
+  it("does not trip findAbsentSourceClaims", () => {
+    expect(findAbsentSourceClaims(SOURCE_SCOPE)).toEqual([]);
+    for (const lang of ["ar", "en"]) {
+      expect(findAbsentSourceClaims(getStandardPrompt(lang))).toEqual([]);
+      expect(findAbsentSourceClaims(getAnalysisPrompt(lang))).toEqual([]);
+    }
+  });
+
+  it("leaves ABSENT_STANDARDS unchanged — Civil Defense is scope text, not a new absent standard", () => {
+    expect(ABSENT_STANDARDS).toEqual(["NFPA", "SFPE", "IBC", "IFC"]);
+  });
+
+  it("does not use the banned section-sign character", () => {
+    expect(SOURCE_SCOPE.includes(SECTION_SIGN)).toBe(false);
+  });
+
+  it("snapshot: the prompts changed ONLY by the Civil-Defense line, nothing else in SOURCE_SCOPE moved", () => {
+    // Reconstructed verbatim from before this task's edit (item 1-4 of the
+    // "القواعد الملزمة" list, unchanged). If this ever needs to change, the
+    // change belongs to a different task than the Civil-Defense addition.
+    const PRE_EXISTING_SOURCE_SCOPE = `
+═══════════════════════════════════════
+نطاق المصادر المتاحة فعلياً (Retrievable Source Scope)
+═══════════════════════════════════════
+
+المصادر التي يستطيع النظام استرجاعها ووضعها في هذا السياق هي حصراً:
+- كود البناء السعودي SBC 201
+- كود البناء السعودي SBC 801
+- التفسيرات (Commentary) الواردة داخل هذين المصدرين
+
+ما ليس في مصادر النظام: NFPA وSFPE وIBC وIFC غير مُفهرسة وغير قابلة للاسترجاع هنا. لا يستطيع النظام إحضار نصها، ولن يظهر أي منها في السياق المرفق مهما كان السؤال.
+
+القواعد الملزمة:
+1) ممنوع تقديم أي محتوى من NFPA أو SFPE أو IBC أو IFC على أنه استشهاد مسترجع أو اقتباس من مصادر النظام.
+2) يُسمح بذكر NFPA أو SFPE في حالتين فقط:
+   أ) أن يحيل إليها نص SBC المسترجع نفسه — عندها تُنسب الإحالة إلى نص SBC، لا إلى المعيار، وممنوع توسيع متطلبات المعيار خارج ما ورد في نص SBC المسترجع.
+   ب) كمعرفة هندسية عامة بلا مصدر — وعندها يجب أن تسبقها هذه العبارة بالحرف:
+      "معرفة هندسية عامة — لا يوجد مصدر مسترجع في النظام لهذه النقطة."
+3) ممنوع في كل الأحوال اختلاق رقم فقرة أو جدول أو صفحة من NFPA أو SFPE أو IBC أو IFC.
+4) إذا طلب المستخدم نص NFPA أو SFPE صراحة: قل إنه غير متوفر في مصادر النظام. لا تعوّضه من الذاكرة.
+`;
+    const CIVIL_DEFENSE_ADDITION =
+      "5) حدود الدفاع المدني (Civil Defense Boundary): إذا طلب المستخدم نص أنظمة أو تعاميم أو اشتراطات الدفاع المدني (Saudi Civil Defense) بعينها، فإن نص الدفاع المدني غير متوفر في مصادر النظام. المصدر المعياري (Normative) الوحيد لهذا النظام هو كود البناء السعودي SBC 201 و SBC 801 فقط — ممنوع اختلاق رقم تعميم أو لائحة دفاع مدني أو تعويضها من الذاكرة. هذا لا يمسّ سيادة الدفاع المدني بصفته سلطة الاختصاص (AHJ): يبقى له حق التعديل الميداني على متطلبات الكود بناءً على تعاميمه العامة والخاصة.\n";
+
+    const reconstructed = PRE_EXISTING_SOURCE_SCOPE.replace(/\n$/, "\n" + CIVIL_DEFENSE_ADDITION);
+    expect(SOURCE_SCOPE).toBe(reconstructed);
+  });
+});
+
+describe("getAudienceBlock (presentation layer, appended by index.ts only on explicit request)", () => {
+  const AUDIENCES: AudienceRole[] = ["decision_maker", "project_owner", "technician"];
+
+  it("returns '' for the engineer audience (defensive default, documented: fail-open, not a throw)", () => {
+    // "engineer" is deliberately not part of the AudienceRole union — a correct
+    // caller cannot pass it. This asserts the runtime fallback for a caller
+    // that does anyway (e.g. a bug upstream that forwards the UI's default
+    // value uncontrolled), bypassing the compile-time contract on purpose.
+    expect(getAudienceBlock("engineer" as unknown as AudienceRole, "ar")).toBe("");
+    expect(getAudienceBlock("engineer" as unknown as AudienceRole, "en")).toBe("");
+  });
+
+  it("returns '' for an unrecognized language too", () => {
+    expect(getAudienceBlock("technician", "fr" as unknown as "ar" | "en")).toBe("");
+  });
+
+  it("is non-empty for all three real audiences, in both languages", () => {
+    for (const audience of AUDIENCES) {
+      for (const lang of ["ar", "en"] as const) {
+        const block = getAudienceBlock(audience, lang);
+        expect(block, `${audience}/${lang} is empty`).toBeTruthy();
+        expect(block.length).toBeGreaterThan(50);
+      }
+    }
+  });
+
+  it("every non-engineer variant restates that citations and the Evidence Language Cap stay binding", () => {
+    for (const audience of AUDIENCES) {
+      const ar = getAudienceBlock(audience, "ar");
+      const en = getAudienceBlock(audience, "en");
+      expect(ar, `${audience}/ar missing binding restatement`).toContain(
+        "ملزم رغم تبسيط اللغة",
+      );
+      expect(ar).toContain("Evidence Language Cap");
+      expect(en, `${audience}/en missing binding restatement`).toContain(
+        "BINDING regardless of simplified language",
+      );
+      expect(en).toContain("Evidence Language Cap");
+    }
+  });
+
+  it("decision_maker orders verdict/risk/cost before evidence", () => {
+    const ar = getAudienceBlock("decision_maker", "ar");
+    expect(ar).toContain("الحكم (Verdict)");
+    expect(ar).toContain("المخاطرة (Risk)");
+    expect(ar.indexOf("الحكم (Verdict)")).toBeLessThan(ar.indexOf("الأدلة (Evidence)"));
+
+    const en = getAudienceBlock("decision_maker", "en");
+    expect(en).toContain("Verdict");
+    expect(en).toContain("Risk");
+    expect(en.indexOf("Verdict")).toBeLessThan(en.indexOf("Evidence"));
+  });
+
+  it("project_owner asks for plain-language, jargon-expanded guidance", () => {
+    const ar = getAudienceBlock("project_owner", "ar");
+    expect(ar).toContain("ما الذي يجب فعله ولماذا");
+    const en = getAudienceBlock("project_owner", "en");
+    expect(en).toContain("what you must do and why");
+    expect(en.toLowerCase()).toContain("plain language");
+  });
+
+  it("technician asks for install/inspect step lists and checklists", () => {
+    const ar = getAudienceBlock("technician", "ar");
+    expect(ar).toContain("Install Steps");
+    expect(ar).toContain("Inspection Checklist");
+    const en = getAudienceBlock("technician", "en");
+    expect(en).toContain("Install Steps");
+    expect(en).toContain("Inspection Checklist");
+  });
+
+  it("does not use the banned section-sign character in any variant", () => {
+    for (const audience of AUDIENCES) {
+      for (const lang of ["ar", "en"] as const) {
+        expect(getAudienceBlock(audience, lang).includes(SECTION_SIGN)).toBe(false);
+      }
+    }
+  });
+
+  it("is not appended to any base mode prompt — index.ts owns the call site, not this module", () => {
+    for (const { label, text } of everyPromptString()) {
+      for (const audience of AUDIENCES) {
+        expect(text, `${label} unexpectedly carries the ${audience} audience block`)
+          .not.toContain("Audience Layer:");
+      }
+    }
   });
 });

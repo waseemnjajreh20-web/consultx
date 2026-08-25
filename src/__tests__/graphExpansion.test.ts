@@ -3,9 +3,11 @@
  *
  * Subject: supabase/functions/fire-safety-chat/graphExpansion.ts — pure (no
  * Deno APIs, no I/O), imported and executed directly, the same pattern
- * retrievalPolicy.test.ts uses for retrievalPolicy.ts. This module is NOT
- * wired into index.ts yet (design doc docs/audits/graphrag-design-20260823.md
- * Sections 2.6-2.6.4, wave 2 wires it in), so nothing here touches index.ts.
+ * retrievalPolicy.test.ts uses for retrievalPolicy.ts. Sections 1-14 test that
+ * module in isolation and touch nothing else. Section 15, added with wave 2's
+ * wiring (design doc docs/audits/graphrag-design-20260823.md Sections
+ * 2.6-2.6.4), additionally asserts the index.ts wiring at the SOURCE level —
+ * index.ts is a Deno entry point and cannot be imported here.
  *
  * ---------------------------------------------------------------------------
  * ON THE TWO "BUILD BOTH PATHS AND COMPARE" INVARIANT-1 TESTS BELOW
@@ -33,6 +35,7 @@ import {
   DECAY,
   EXPANSION_BLOCK_HEADER,
   GLOBAL_EXPANSION_CAP,
+  GRAPH_EXPANSION_HEADER,
   HOP_MAX,
   MAX_EVIDENCE_CHARS,
   PER_SEED_EDGES,
@@ -58,9 +61,23 @@ import type {
   SeedMatch,
   XrefEdge,
 } from "../../supabase/functions/fire-safety-chat/graphExpansion.ts";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 /** Env reader stub: exactly the shape of Deno.env.get (same helper retrievalPolicy.test.ts uses). */
 const envOf = (map: Record<string, string>) => (k: string) => map[k];
+
+/**
+ * index.ts is a Deno Edge Function entry point: it calls serve() at module
+ * scope and reads Deno.*, so it cannot be imported into the Node/vitest
+ * runtime. The wiring assertions in section 15 therefore read its SOURCE, the
+ * same technique retrievalPolicy.test.ts already uses (INDEX_SRC there) for
+ * exactly this reason.
+ */
+const INDEX_SRC = readFileSync(
+  path.resolve(__dirname, "../../supabase/functions/fire-safety-chat/index.ts"),
+  "utf8",
+);
 
 // ===========================================================================
 // 1. FLAG SEMANTICS — only the exact string "1" enables it
@@ -319,6 +336,7 @@ describe("Invariant 2 (property): score(expanded) is strictly less than its pare
     const rng = makeLCG(0xC0FFEE);
     const ITERATIONS = 200;
     let totalCandidatesChecked = 0;
+    const violations: string[] = [];
 
     for (let iter = 0; iter < ITERATIONS; iter++) {
       const numSeeds = 1 + Math.floor(rng() * 10); // 1..10
@@ -361,13 +379,33 @@ describe("Invariant 2 (property): score(expanded) is strictly less than its pare
       const candidates = selectExpansionTargets(seeds, edges, indegree);
       const similarityBySeedId = new Map(seeds.map((s) => [s.id, s.similarity as number]));
 
+      // Violations are COLLECTED and asserted once after the loop rather than
+      // asserted per candidate. The invariant is unchanged and any breach still
+      // fails with the offending fixture named — but 200 fixtures produce many
+      // thousands of candidates, and a per-candidate expect() (each one building
+      // a matcher context and pushing onto vitest's assertion stack) pushed this
+      // single test past the 5s default testTimeout on a loaded machine, making
+      // the whole suite intermittently red. Two expects total instead of ~24000
+      // keeps it well inside the budget without weakening the property.
       for (const c of candidates) {
         const parentSimilarity = similarityBySeedId.get(c.parentSeedId);
-        expect(parentSimilarity, `candidate ${c.docId} names an unknown parent seed ${c.parentSeedId}`).toBeDefined();
-        expect(c.score).toBeLessThan(parentSimilarity as number);
+        if (parentSimilarity === undefined) {
+          violations.push(
+            `iter ${iter}: candidate ${c.docId} names an unknown parent seed ${c.parentSeedId}`,
+          );
+          continue;
+        }
+        if (!(c.score < parentSimilarity)) {
+          violations.push(
+            `iter ${iter}: candidate ${c.docId} score ${c.score} is not strictly less than parent seed ${c.parentSeedId} similarity ${parentSimilarity}`,
+          );
+        }
         totalCandidatesChecked++;
       }
     }
+
+    expect(violations, `Invariant 2 breached ${violations.length} time(s):\n${violations.slice(0, 10).join("\n")}`)
+      .toEqual([]);
 
     // Sanity: the property loop actually exercised real candidates across the
     // 200 fixtures, not 200 vacuously-empty runs.
@@ -1122,5 +1160,213 @@ describe("buildExpansionQuerySpec", () => {
     const seeds = Array.from({ length: 12 }, (_, i) => mkSeed(1, 0.9 - i * 0.01, 0)); // all id=1
     const spec = buildExpansionQuerySpec(seeds);
     expect(spec.srcDocIds).toEqual([1]);
+  });
+});
+
+// ===========================================================================
+// 12. X-Graph-Expansion header (index.ts wave-2 wiring)
+// ===========================================================================
+describe("GRAPH_EXPANSION_HEADER", () => {
+  it("is the exact header name index.ts emits", () => {
+    expect(GRAPH_EXPANSION_HEADER).toBe("X-Graph-Expansion");
+  });
+});
+
+// ===========================================================================
+// 13. composeContext.expansionEntries — the wiring's header value source
+// ===========================================================================
+//
+// index.ts's X-Graph-Expansion: "on:<n>" reports this field, not
+// candidates.length: a candidate can be offered to composeContext and still
+// not survive (unresolvable content, or the budget truncation), and the
+// header must report what actually reached the model, not what was merely
+// selected upstream.
+describe("composeContext: expansionEntries reports what was actually rendered", () => {
+  it("is 0 when there are no expansion candidates at all", () => {
+    const seeds = [mkSeed(1, 0.9, 50)];
+    const result = composeContext(seeds, [], new Map());
+    expect(result.expansionEntries).toBe(0);
+  });
+
+  it("equals candidates.length when every candidate is resolvable and comfortably fits", () => {
+    const seeds = [mkSeed(1, 0.9, 50)];
+    const expansions: ExpansionCandidate[] = [
+      { docId: 901, score: 0.5, parentSeedId: 1, parentSection: "903.2", tgtSection: "903.3.1.1", evidence: "see Section 903.3.1.1" },
+      { docId: 902, score: 0.4, parentSeedId: 1, parentSection: "903.2", tgtSection: "903.3.1.2", evidence: "see Section 903.3.1.2" },
+    ];
+    const contentById: ContentById = new Map([[901, mkDoc(901, 100)], [902, mkDoc(902, 100)]]);
+    const result = composeContext(seeds, expansions, contentById);
+    expect(result.expansionEntries).toBe(2);
+  });
+
+  it("drops unresolvable candidates from the count, exactly as it drops them from the block", () => {
+    const seeds = [mkSeed(1, 0.9, 50)];
+    const present: ExpansionCandidate = { docId: 901, score: 0.5, parentSeedId: 1, parentSection: "903.2", tgtSection: "903.3.1.1", evidence: "see Section 903.3.1.1" };
+    const missing: ExpansionCandidate = { docId: 902, score: 0.4, parentSeedId: 1, parentSection: "903.2", tgtSection: "903.3.1.2", evidence: "see Section 903.3.1.2" };
+    const contentById: ContentById = new Map([[901, mkDoc(901, 100)]]); // 902 absent
+    const result = composeContext(seeds, [present, missing], contentById);
+    expect(result.expansionEntries).toBe(1);
+  });
+
+  it("counts only what fits under EXPANSION_BUDGET_CHARS, not every candidate offered", () => {
+    const seeds = [mkSeed(1, 0.9, 100)];
+    const expansions: ExpansionCandidate[] = Array.from({ length: 20 }, (_, i) => ({
+      docId: 9000 + i,
+      score: 0.5 - i * 0.001,
+      parentSeedId: 1,
+      parentSection: "903.2",
+      tgtSection: `${900 + i}.1`,
+      evidence: `see Section ${900 + i}.1`,
+    }));
+    const contentById: ContentById = new Map(expansions.map((e) => [e.docId, mkDoc(e.docId, 3000)])); // 20 * 3000 = 60,000 > EXPANSION_BUDGET_CHARS
+    const result = composeContext(seeds, expansions, contentById);
+    expect(result.expansionEntries).toBeGreaterThan(0);
+    expect(result.expansionEntries).toBeLessThan(20);
+  });
+
+  it("is 0 exactly when expansionChars is 0 — the guard index.ts's header condition relies on", () => {
+    const seeds = [mkSeed(1, 0.9, 100)];
+    const tooBig: ExpansionCandidate = { docId: 999, score: 0.4, parentSeedId: 1, parentSection: "903.2", tgtSection: "903.3.1.1", evidence: "see Section 903.3.1.1" };
+    const contentById: ContentById = new Map([[999, mkDoc(999, EXPANSION_BUDGET_CHARS + 1000)]]);
+    const result = composeContext(seeds, [tooBig], contentById);
+    expect(result.expansionChars).toBe(0);
+    expect(result.expansionEntries).toBe(0);
+  });
+});
+
+// ===========================================================================
+// 14. Wiring shape: SEED_K_EXPANDED (18) slice interacts with SEEDS_EXPANDED
+// (6) traversal — the case index.ts's wiring introduces that no test above
+// exercises directly (every fixture above builds its seed array already at
+// whatever size the test wants; index.ts instead always slices a larger
+// accepted-match array down to 18 BEFORE any of these functions run).
+// ===========================================================================
+describe("wiring shape: acceptedMatches.slice(0, SEED_K_EXPANDED) before composition", () => {
+  it("a seed kept by the 18-slice but outside the top 6 still renders as a seed, yet is never used as an expansion source", () => {
+    // Simulates index.ts: up to 25 accepted matches, similarity DESC by
+    // construction (the RPC's own order), sliced deterministically to
+    // SEED_K_EXPANDED (18) before buildExpansionQuerySpec/selectExpansionTargets
+    // /composeContext ever see the array — exactly the carve the wiring does.
+    const acceptedMatches: SeedMatch[] = Array.from({ length: 20 }, (_, i) =>
+      mkSeed(1 + i, 0.99 - i * 0.01, 50),
+    );
+    const wiredSeeds = acceptedMatches.slice(0, SEED_K_EXPANDED);
+    expect(wiredSeeds).toHaveLength(18);
+    expect(wiredSeeds.map((s) => s.id)).toEqual(Array.from({ length: 18 }, (_, i) => i + 1));
+
+    // seed 1 (rank 1, inside the top SEEDS_EXPANDED=6 traversal sources) and
+    // seed 10 (rank 10, kept as a SEED by the 18-slice, but outside the top 6)
+    // each carry an outgoing edge. Seed 19 (rank 19) never enters wiredSeeds at
+    // all — dropped by the 18-slice itself, before any query is built.
+    const edges: XrefEdge[] = [mkEdge(1, 900), mkEdge(10, 901), mkEdge(19, 902)];
+    const indegree: IndegreeMap = new Map([[900, 0], [901, 0], [902, 0]]);
+
+    const spec = buildExpansionQuerySpec(wiredSeeds);
+    expect(spec.srcDocIds).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(spec.srcDocIds).not.toContain(10);
+    expect(spec.srcDocIds).not.toContain(19);
+
+    const candidates = selectExpansionTargets(wiredSeeds, edges, indegree);
+    // Only seed 1's edge is admitted. Seed 10's edge is dropped by the top-6
+    // traversal-source cut even though seed 10 itself is a kept seed; seed 19's
+    // edge was never even queried for.
+    expect(candidates.map((c) => c.docId)).toEqual([900]);
+
+    const contentById: ContentById = new Map([[900, mkDoc(900, 80)]]);
+    const composed = composeContext(wiredSeeds, candidates, contentById);
+    // Seed 10 still appears in the SEED block (it survived the 18-slice)...
+    expect(composed.contextText).toContain(wiredSeeds[9].file_name);
+    // ...but contributed nothing to the expansion block: exactly one entry,
+    // sourced from seed 1.
+    expect(composed.expansionEntries).toBe(1);
+  });
+
+  it("with 18 seeds instead of 25, the seed block's own budget is SEED_BUDGET_CHARS (90,000), not the flag-off 120,000", () => {
+    // Content sized so that 25 full-size seeds would have needed the flag-off
+    // 120,000 ceiling, but 18 stay comfortably under the flag-on 90,000 seed
+    // budget — the point of carving SEED_K_EXPANDED down in the first place.
+    const seeds = Array.from({ length: 18 }, (_, i) => mkSeed(1 + i, 0.9 - i * 0.001, 4000)); // 18 * 4000 = 72,000
+    const result = composeContext(seeds, [], new Map());
+    expect(result.seedChars).toBeLessThanOrEqual(SEED_BUDGET_CHARS);
+    expect(result.seedChars).toBeGreaterThan(70_000); // every seed fit, none truncated
+  });
+});
+
+// ===========================================================================
+// 15. index.ts WIRING GUARDS (source-level)
+// ===========================================================================
+//
+// These assert the properties that make the flag-OFF path byte-identical to
+// the pre-wiring commit. They are source assertions, not behavioural ones,
+// because index.ts cannot be imported here (see INDEX_SRC above) — the same
+// trade-off retrievalPolicy.test.ts accepts for its own index.ts guards.
+describe("index.ts G1 wiring: flag-OFF must be byte-identical to pre-wiring HEAD", () => {
+  it("the whole expansion block is gated on isGraphExpansionEnabled(Deno.env.get)", () => {
+    expect(INDEX_SRC).toContain("if (isGraphExpansionEnabled(Deno.env.get)) {");
+  });
+
+  it("the SEED_K_EXPANDED carve happens INSIDE the flag gate, never before it", () => {
+    // Invariant 1's precondition: with the flag off the pipeline must still
+    // compose every accepted match, so the 25 -> 18 slice may not sit on the
+    // unconditional path. Assert the gate opens BEFORE the only slice.
+    const gateAt = INDEX_SRC.indexOf("if (isGraphExpansionEnabled(Deno.env.get)) {");
+    const sliceAt = INDEX_SRC.indexOf("acceptedMatches.slice(0, SEED_K_EXPANDED)");
+    expect(gateAt).toBeGreaterThan(-1);
+    expect(sliceAt).toBeGreaterThan(gateAt);
+    // ...and that there is exactly one such slice, so no second, ungated copy
+    // of the carve can drift in later.
+    expect(INDEX_SRC.split("acceptedMatches.slice(0, SEED_K_EXPANDED)")).toHaveLength(2);
+  });
+
+  it("corsHeaders does NOT list X-Graph-Expansion — that constant is on every preflight and error response", () => {
+    // corsHeaders is spread into the OPTIONS preflight and every error
+    // response. Naming the header there would change response bytes on paths
+    // that never run graph expansion, with the flag off. The exposure belongs
+    // on the one response that actually carries the header (next test).
+    const corsBlock = INDEX_SRC.slice(
+      INDEX_SRC.indexOf("const corsHeaders = {"),
+      INDEX_SRC.indexOf("// ==================== CORE RULES"),
+    );
+    expect(corsBlock).toContain("Access-Control-Expose-Headers");
+    expect(corsBlock).not.toMatch(/"Access-Control-Expose-Headers":[^\n]*GRAPH_EXPANSION_HEADER/);
+    // The pre-existing X-Retrieval-Engine exposure must survive untouched.
+    expect(corsBlock).toMatch(/"Access-Control-Expose-Headers":[^\n]*RETRIEVAL_ENGINE_HEADER/);
+  });
+
+  it("both the header and its Expose-Headers entry are emitted only when graphExpansionCount !== null", () => {
+    const guardAt = INDEX_SRC.indexOf("...(graphExpansionCount !== null");
+    expect(guardAt).toBeGreaterThan(-1);
+    const guarded = INDEX_SRC.slice(guardAt, guardAt + 500);
+    expect(guarded).toContain("[GRAPH_EXPANSION_HEADER]: `on:${graphExpansionCount}`");
+    expect(guarded).toContain('"Access-Control-Expose-Headers":');
+    // Exactly one emission site: a second, unguarded one would leak the header.
+    expect(INDEX_SRC.split("[GRAPH_EXPANSION_HEADER]:")).toHaveLength(2);
+  });
+
+  it("the keyword fallback never reports an expansion", () => {
+    expect(INDEX_SRC).toMatch(/engine: "keyword",[\s\S]{0,120}graphExpansionCount: null,/);
+  });
+
+  it("fail-open: `context` is assigned once, only after composeContext returns, and never in the catch", () => {
+    // This is the property the mid-sequence-failure case rests on: if the
+    // indegree query throws after the edges query succeeded, `context` was
+    // never touched, so the returned context is the FULL unexpanded
+    // composition — not a half-expanded one.
+    const blockStart = INDEX_SRC.indexOf("if (isGraphExpansionEnabled(Deno.env.get)) {");
+    const blockEnd = INDEX_SRC.indexOf('return { context, files: usedFiles, sourceMeta, engine: "vector"');
+    expect(blockEnd).toBeGreaterThan(blockStart);
+    const block = INDEX_SRC.slice(blockStart, blockEnd);
+    // Exactly one assignment to `context`, and it reads composeContext's result.
+    expect(block.split(/\bcontext = /)).toHaveLength(2);
+    expect(block).toContain("context = composed.contextText;");
+    // The catch body restores nothing and reassigns nothing but the counter.
+    const catchAt = block.indexOf("} catch (expansionErr) {");
+    expect(catchAt).toBeGreaterThan(-1);
+    expect(block.slice(catchAt)).not.toMatch(/\bcontext = /);
+  });
+
+  it("the header value format is exactly `on:<n>`, matching GRAPH_EXPANSION_HEADER's documented contract", () => {
+    expect(GRAPH_EXPANSION_HEADER).toBe("X-Graph-Expansion");
+    expect(INDEX_SRC).toContain("`on:${graphExpansionCount}`");
   });
 });

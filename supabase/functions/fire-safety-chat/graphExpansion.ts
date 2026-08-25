@@ -8,12 +8,17 @@
  * as ./retrievalPolicy.ts, ./chapterIndex.ts, ./promptContract.ts and
  * ./geminiResilience.ts.
  *
- * Created 2026-08-25 (P4, wave 1 — design/build only). This file is NOT wired
- * into index.ts yet: `sbc_xref_edges` / `sbc_xref_indegree` do not exist in
- * production, index.ts never imports this module, and the flag below has no
- * reader anywhere in the request path. Wave 2 wires selectExpansionTargets /
- * composeContext into the advisory pipeline and wires
- * buildExpansionQuerySpec's output into a real `sbc_xref_edges` query.
+ * Created 2026-08-25 (P4, wave 1 — design/build only; wave 2, same day, wires
+ * it in). index.ts's fetchSBCContextVector now imports this module and, when
+ * retrievalEngine === "vector" and isGraphExpansionEnabled(Deno.env.get) is
+ * true, runs selectExpansionTargets / composeContext against a real
+ * `sbc_xref_edges` + `sbc_xref_indegree` + `sbc_documents` round trip built
+ * from buildExpansionQuerySpec's output. That query, and everything
+ * downstream of it, is wrapped in its own try/catch that fails OPEN to the
+ * unexpanded seed-only context on any error — including the "relation does
+ * not exist" error these tables produce in production today, since neither
+ * table is provisioned there yet. See VectorRetrievalResult /
+ * GRAPH_EXPANSION_HEADER in index.ts for the response-header contract.
  *
  * Provenance: docs/audits/graphrag-design-20260823.md, Sections 2.6-2.6.4
  * ("2.6 التركيب مع المسار المتجهي — لا استبداله" through
@@ -77,6 +82,16 @@
 // ===========================================================================
 
 export const ADVISORY_GRAPH_FLAG_ENV = "ADVISORY_GRAPH_EXPANSION_ENABLED";
+
+/**
+ * Response header index.ts emits when — and only when — graph expansion
+ * actually ran for this request (flag on, no fail-open fallback triggered).
+ * Value is `on:<n>` where n is the number of expansion entries actually
+ * composed into the context (composeContext's `expansionEntries`). Absent
+ * entirely when the flag is off or the attempt fell back, matching
+ * RETRIEVAL_ENGINE_HEADER's pattern in ./retrievalPolicy.ts.
+ */
+export const GRAPH_EXPANSION_HEADER = "X-Graph-Expansion";
 
 export type EnvReader = (key: string) => string | undefined;
 
@@ -271,6 +286,15 @@ export interface ComposeContextResult {
   totalChars: number;
   seedChars: number;
   expansionChars: number;
+  /**
+   * Count of expansion entries actually rendered into contextText — 0 whenever
+   * expansionChars is 0 (no candidates, none resolvable, or none fit the
+   * budget). Added for wave 2's wiring: index.ts reports this as the `<n>` in
+   * the X-Graph-Expansion: "on:<n>" response header (see GRAPH_EXPANSION_HEADER
+   * above). Purely additive — every existing caller that destructures only the
+   * four original fields is unaffected.
+   */
+  expansionEntries: number;
 }
 
 /** The single-round-trip query index.ts will issue against sbc_xref_edges once wired (wave 2). */
@@ -652,6 +676,7 @@ export function composeContext(
     totalChars: contextText.length,
     seedChars: seedBlock.text.length,
     expansionChars: expansionText.length,
+    expansionEntries: expansionText.length > 0 ? expansionBlock.entriesIncluded : 0,
   };
 }
 

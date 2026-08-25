@@ -89,6 +89,7 @@ export const SOURCE_SCOPE = `
       "معرفة هندسية عامة — لا يوجد مصدر مسترجع في النظام لهذه النقطة."
 3) ممنوع في كل الأحوال اختلاق رقم فقرة أو جدول أو صفحة من NFPA أو SFPE أو IBC أو IFC.
 4) إذا طلب المستخدم نص NFPA أو SFPE صراحة: قل إنه غير متوفر في مصادر النظام. لا تعوّضه من الذاكرة.
+5) حدود الدفاع المدني (Civil Defense Boundary): إذا طلب المستخدم نص أنظمة أو تعاميم أو اشتراطات الدفاع المدني (Saudi Civil Defense) بعينها، فإن نص الدفاع المدني غير متوفر في مصادر النظام. المصدر المعياري (Normative) الوحيد لهذا النظام هو كود البناء السعودي SBC 201 و SBC 801 فقط — ممنوع اختلاق رقم تعميم أو لائحة دفاع مدني أو تعويضها من الذاكرة. هذا لا يمسّ سيادة الدفاع المدني بصفته سلطة الاختصاص (AHJ): يبقى له حق التعديل الميداني على متطلبات الكود بناءً على تعاميمه العامة والخاصة.
 `;
 
 // Compact form for the primary (fast) mode, which loads no documents at all.
@@ -173,6 +174,64 @@ Self-Check قبل الإرسال:
 2. قرار الرش وقرار الإنذار في مسارين منفصلين.
 3. لا يوجد رمز قسم في النص.
 4. ممنوع تقديم أي محتوى NFPA / SFPE / IBC / IFC كاستشهاد مسترجع.
+`;
+
+// ==================== INLINE CITATION TOKEN CONTRACT (Phase B, exported only) ====================
+// Implements docs/advisory-acceptance.md Section 2 (Citation Discipline) and the
+// Section 3.1/3.2 empty-corpus refusal sentence.
+//
+// EXPORTED ONLY. No function in this module appends this text to a prompt —
+// same discipline as buildStructuredTableBlock's caller-driven injection below.
+// Per CLAUDE.md's default-OFF flag rule, index.ts is the only place that may
+// append CITATION_TOKEN_CONTRACT, and only when
+// Deno.env.get("ADVISORY_CITATION_TOKENS_ENABLED") === "1" (exact string "1").
+// With the flag OFF or absent, getStandardPrompt/getAnalysisPrompt/getPrimaryPrompt
+// are byte-identical to this commit — this export changes nothing on its own.
+//
+// The token grammar is written to match src/utils/inlineCitation.ts
+// parseCitationToken() exactly: SBC_CODE_RX, SECTION_RX, TABLE_RX, CONF_RX and
+// PP_RX all match the four sample tokens quoted below verbatim, and
+// src/utils/citationRouting.ts expects the hyphenated "SBC-201"/"SBC-801" form
+// used here. If either side's grammar drifts, the frontend citation chips
+// silently stop rendering — this module's own tests assert the sample tokens;
+// keep them in sync with the frontend parser tests.
+export const CITATION_TOKEN_CONTRACT = `
+═══════════════════════════════════════
+رمز الاستشهاد الداخلي الإلزامي (Mandatory Inline Citation Token)
+═══════════════════════════════════════
+
+كل جملة تنص على اشتراط كودي — رقماً أو عتبة أو استثناءً أو قيمة منسوبة إلى SBC — يجب أن تُختم برمز استشهاد داخلي بأحد الأشكال التالية بالحرف. لا تُبدَّل الصياغة، ولا تُحذف الأقواس، ولا يُترك حقل conf فارغاً.
+
+الأشكال المسموحة (Token Grammar):
+1) قسم مسترجع حرفياً في السياق أعلاه:
+   [SBC-201 Section 1017.2 | conf:high]
+   [SBC-801 Section 903.2.7 | conf:medium]
+2) صفحة فقط بلا رقم قسم مؤكد (page fallback):
+   [SBC-201 pp.411-435 | conf:medium]
+3) صف جدول مسترجع (table form):
+   [SBC-201 Table 1004.5 | conf:high]
+
+قاعدة الثقة (conf) — إلزامية وغير قابلة للتفاوض:
+- conf:high يُستخدم فقط عندما يحتوي النص المسترجع حرفياً في السياق أعلاه على رقم القسم بعينه الذي يُستشهد به، ورأس النص (heading) مطابق تماماً لرقم القسم.
+- conf:medium يُستخدم عندما يكون القسم مُستنتجاً من مقطع مجاور في نفس الملف، أو عندما لا يتوفر سوى نطاق صفحات بلا رقم قسم مؤكد.
+- ممنوع منعاً باتاً اختلاق رمز استشهاد لنص غير مسترجع في السياق أعلاه. إن لم يوجد نص مسترجع يدعم الادعاء، فلا يُصدر رمز استشهاد إطلاقاً — تُصدر بدلاً منه جملة الرفض القياسية أدناه.
+
+CITATION TOKEN GRAMMAR (English restatement, binding equally):
+- Exact section retrieved verbatim → [SBC-{201|801} Section {section_ref} | conf:high]
+- Section inferred from an adjacent chunk in the same file, OR only a page range is available → [SBC-{201|801} Section {section_ref} | conf:medium] or [SBC-{201|801} pp.{start}-{end} | conf:medium]
+- Structured table row → [SBC-{201|801} Table {table_id} | conf:high]
+- No retrieved source supports the claim → do NOT emit a token; emit the refusal sentence below instead.
+- conf:high is reserved for a section number that appears in the literal retrieved text under a matching heading — never assign it to a section number produced by pattern-matching or memory alone.
+- Inventing a citation token for a claim with no retrieved supporting text is forbidden, with no exception.
+- This token is IN ADDITION to the verbatim English quotation already required by CORE_RULES rule 3️⃣ (VERBATIM QUOTATION) — it does not replace it.
+
+جملة الرفض القياسية عند غياب المصدر — الصياغة المطلوبة بالحرف (لا تُعاد صياغتها):
+
+العربية:
+"هذا الادعاء غير موثق في القاعدة المفهرسة الحالية، ويحتاج إلى مصدر معتمد قبل اعتماده هندسياً."
+
+English (do not paraphrase):
+"This claim is not documented in the currently indexed corpus and requires an authoritative source before engineering reliance."
 `;
 
 // ==================== CORE RULES (Non-negotiable) ====================
@@ -856,6 +915,110 @@ export function buildStructuredTableBlock(rows: StructuredTableRow[]): string {
   context += STRUCTURED_TABLES_FOOTER;
 
   return context;
+}
+
+// ==================== AUDIENCE PRESENTATION LAYER (Phase B) ====================
+// Presentation-layer instruction, appended by index.ts ONLY when a non-engineer
+// audience is explicitly requested (e.g. a UI role toggle or an API parameter).
+// The engineer audience — and no audience selected at all — gets nothing
+// appended: index.ts simply never calls this function in that case, which is
+// what keeps the assembled prompt byte-identical to today's output. That gate
+// lives at the call site, not here; this function is pure and knows nothing
+// about the caller's default.
+//
+// Every returned block ends with the same binding restatement: presentation
+// simplification never relaxes citation discipline or the Evidence Language
+// Cap. This matters more here than in the engineer-facing prompt, not less —
+// a decision-maker, project-owner or technician reading plain language is
+// exactly the reader least equipped to notice an uncited claim dressed up as
+// a simple one.
+export type AudienceRole = "decision_maker" | "project_owner" | "technician";
+
+const AUDIENCE_BINDING_RESTATEMENT: Readonly<Record<"ar" | "en", string>> = {
+  ar: "ملزم رغم تبسيط اللغة: رمز الاستشهاد الداخلي والاقتباس الحرفي (CORE_RULES 3️⃣) وسقف لغة اليقين (Evidence Language Cap) تبقى ملزمة بلا استثناء. لا يُعفى أي جمهور من الاستشهاد مقابل تبسيط اللغة — التبسيط في العرض فقط، لا في الإسناد.",
+  en: "BINDING regardless of simplified language: the inline citation token, verbatim quotation (CORE_RULES 3️⃣), and the Evidence Language Cap remain binding without exception. No audience is exempt from citation in exchange for simpler language — simplification applies to presentation only, never to grounding.",
+};
+
+const AUDIENCE_BLOCK_BODY: Readonly<Record<AudienceRole, Readonly<Record<"ar" | "en", string>>>> = {
+  decision_maker: {
+    ar: `═══════════════════════════════════════
+طبقة عرض الجمهور — صانع القرار (Audience Layer: Decision-Maker)
+═══════════════════════════════════════
+
+هذا الرد موجَّه لصانع قرار غير مهندس (مالك استثمار، مدير تنفيذي). رتّب المحتوى بهذا الترتيب الصارم:
+1) الحكم (Verdict): مطلوب أم لا أم مشروط — جملة واحدة مباشرة، بلا تمهيد.
+2) المخاطرة (Risk): ما الذي يتعرّض له المشروع إن لم يُنفَّذ هذا الاشتراط، بلغة تنفيذية لا هندسية.
+3) الأثر على التكلفة/الجدول الزمني (Cost/Schedule Impact): إن كان واضحاً من السياق؛ وإلا صرّح أنه غير متوفر ولا تخمّنه.
+4) الأدلة (Evidence): تُعرض بعد الحكم والمخاطرة والتكلفة، لا قبلها.`,
+    en: `═══════════════════════════════════════
+PRESENTATION LAYER — AUDIENCE: DECISION-MAKER
+═══════════════════════════════════════
+
+This response targets a non-engineer decision-maker (owner, executive). Order the content in this strict sequence:
+1) Verdict — required, not required, or conditional — one direct sentence, no preamble.
+2) Risk — what the project is exposed to if this requirement is not met, in executive rather than engineering language.
+3) Cost/Schedule Impact — state it if clear from context; otherwise say it is not available. Do not estimate it.
+4) Evidence — presented AFTER the verdict, risk and cost, never before.`,
+  },
+  project_owner: {
+    ar: `═══════════════════════════════════════
+طبقة عرض الجمهور — مالك المشروع (Audience Layer: Project-Owner)
+═══════════════════════════════════════
+
+هذا الرد موجَّه لمالك مشروع غير مهندس. استخدم لغة واضحة يومية:
+1) اشرح "ما الذي يجب فعله ولماذا" بجملتين إلى ثلاث لكل بند، بدون اختصارات كودية غير مشروحة.
+2) عند استخدام أي مصطلح هندسي (رشاشات، مخارج، تصنيف إشغال...) أضف شرحاً موجزاً بين قوسين بلغة يومية فور ذكره.
+3) تجنّب الجداول الكثيفة؛ إن كان جدول ضرورياً فاجعله قصيراً بأعمدة قليلة مشروحة.`,
+    en: `═══════════════════════════════════════
+PRESENTATION LAYER — AUDIENCE: PROJECT-OWNER
+═══════════════════════════════════════
+
+This response targets a non-engineer project owner. Use plain, everyday language:
+1) Explain "what you must do and why" in two to three sentences per item, with no unexplained code abbreviations.
+2) Whenever an engineering term is used (sprinklers, egress, occupancy classification...) expand it in plain language immediately, in parentheses.
+3) Avoid dense tables; if a table is necessary, keep it short with few, explained columns.`,
+  },
+  technician: {
+    ar: `═══════════════════════════════════════
+طبقة عرض الجمهور — الفني (Audience Layer: Technician)
+═══════════════════════════════════════
+
+هذا الرد موجَّه لفني تركيب أو تفتيش ميداني. رتّب المحتوى كخطوات تنفيذية:
+1) قائمة خطوات تركيب مرقّمة (Install Steps) أو قائمة تفقّد (Inspection Checklist) حسب طبيعة السؤال.
+2) كل خطوة: الإجراء ← القيمة أو المعيار المطلوب ← طريقة التحقق منه ميدانياً.
+3) استخدم صيغة قائمة مرجعية (☐) عند الحاجة، وتجنّب الشرح النظري غير اللازم للتنفيذ.`,
+    en: `═══════════════════════════════════════
+PRESENTATION LAYER — AUDIENCE: TECHNICIAN
+═══════════════════════════════════════
+
+This response targets a field installation or inspection technician. Structure the content as actionable steps:
+1) A numbered Install Steps list or an Inspection Checklist, depending on the question.
+2) Each step: the action → the required value/criterion → how to verify it in the field.
+3) Use a checklist format (☐) where useful, and skip theory not needed for execution.`,
+  },
+};
+
+/**
+ * Presentation-layer instruction for a non-engineer audience.
+ *
+ * Returns "" for any audience not in AudienceRole (including "engineer", which
+ * is deliberately excluded from the AudienceRole type so a correct caller
+ * cannot pass it) and for any language not in {"ar","en"}. This is a defensive
+ * default, not an error: a caller bug degrades to "append nothing" rather than
+ * throwing inside a streaming response, matching the fail-open discipline used
+ * for every other optional lookup in this codebase. index.ts must still gate
+ * the call site so "engineer" / no audience never reaches here in the first
+ * place — that is what keeps the byte-identical guarantee; this fallback is
+ * the second line of defence, not the mechanism the guarantee relies on.
+ */
+export function getAudienceBlock(
+  audience: AudienceRole,
+  language: "ar" | "en",
+): string {
+  const body = AUDIENCE_BLOCK_BODY[audience]?.[language];
+  const restatement = AUDIENCE_BINDING_RESTATEMENT[language];
+  if (!body || !restatement) return "";
+  return `${body}\n\n${restatement}\n`;
 }
 
 // ==================== CONTRACT SELF-CHECKS (used by tests) ====================

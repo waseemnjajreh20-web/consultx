@@ -17,8 +17,10 @@ import {
 } from "./chapterIndex.ts";
 import {
   buildStructuredTableBlock,
+  CITATION_TOKEN_CONTRACT,
   CORE_RULES,
   getAnalysisPrompt,
+  getAudienceBlock,
   getPrimaryPrompt,
   getStandardPrompt,
   getValidationPrompt,
@@ -37,6 +39,41 @@ import {
   type RetrievalEngine,
 } from "./retrievalPolicy.ts";
 import { clampAssembledContext, TOTAL_CONTEXT_CAP } from "./contextBudget.ts";
+import { buildTableSourceSignals, formatExternalRefsBlock, type ExternalRefRow } from "./sourceSignals.ts";
+import {
+  buildExpansionQuerySpec,
+  composeContext,
+  GRAPH_EXPANSION_HEADER,
+  isGraphExpansionEnabled,
+  SEED_K_EXPANDED,
+  selectExpansionTargets,
+  type ContentById,
+  type IndegreeMap,
+  type SeedMatch,
+  type XrefEdge,
+} from "./graphExpansion.ts";
+import {
+  buildMachineFactsBlock,
+  buildQueryAnalysisPrompt,
+  isQueryAnalysisEnabled,
+  parseQueryFacts,
+  resolveAudience,
+  type QueryFacts,
+} from "./queryAnalysis.ts";
+import {
+  deriveTargetSections,
+  isDerivationEnabled,
+  type DerivedSection,
+} from "./derivationMap.ts";
+import {
+  buildPageManifestBlock,
+  isVisionPageManifestEnabled,
+  LEGEND_JSON_CONTRACT_EXTENSION,
+  mergeLegendKeywords,
+  parseLegendSymbols,
+  sanitizeManifestEntries,
+  type PageManifestEntry,
+} from "./visionManifest.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +82,16 @@ const corsHeaders = {
   // which retrieval engine actually served the request ("vector" | "keyword"),
   // so the bench and the post-deploy smoke can tell the two paths apart from
   // outside the function. Must stay in Expose-Headers or the browser hides it.
+  //
+  // X-Graph-Expansion (G1, wave 2) is deliberately NOT listed here. This
+  // constant is spread into EVERY response this function builds — the OPTIONS
+  // preflight and all thirteen error responses included — so adding a name to
+  // it unconditionally changes response bytes on paths that have nothing to do
+  // with graph expansion, even with the flag off. The G1 contract is that a
+  // flag-off response is byte-identical to HEAD, so the exposure is added
+  // instead on the one response that actually carries the header (see the
+  // streaming Response near the end of the handler). Expose-Headers is only
+  // ever read from the actual response anyway, never from the preflight.
   "Access-Control-Expose-Headers": `X-SBC-Sources, X-SBC-Source-Meta, ${RETRIEVAL_ENGINE_HEADER}`,
 };
 
@@ -1629,9 +1676,9 @@ function extractTableIds(query: string): string[] {
 async function fetchStructuredTables(
   query: string,
   supabaseAdmin: any,
-): Promise<{ context: string; matchedTableIds: string[] }> {
+): Promise<{ context: string; matchedTableIds: string[]; matchedTables: StructuredTableRow[] }> {
   const tableIds = extractTableIds(query);
-  if (tableIds.length === 0) return { context: "", matchedTableIds: [] };
+  if (tableIds.length === 0) return { context: "", matchedTableIds: [], matchedTables: [] };
 
   console.log(`[StructuredTable] Query references table IDs: ${tableIds.join(", ")}`);
 
@@ -1639,7 +1686,7 @@ async function fetchStructuredTables(
   const LEGACY_IDS = new Set(["503", "1004.1.2", "1004.1"]);
   const fetchIds = tableIds.filter(id => !LEGACY_IDS.has(id));
 
-  if (fetchIds.length === 0) return { context: "", matchedTableIds: [] };
+  if (fetchIds.length === 0) return { context: "", matchedTableIds: [], matchedTables: [] };
 
   const { data: rows, error } = await supabaseAdmin
     .from("sbc_code_tables")
@@ -1649,12 +1696,12 @@ async function fetchStructuredTables(
 
   if (error) {
     console.error("[StructuredTable] DB error:", error.message);
-    return { context: "", matchedTableIds: [] };
+    return { context: "", matchedTableIds: [], matchedTables: [] };
   }
 
   if (!rows || rows.length === 0) {
     console.log("[StructuredTable] No rows found for IDs:", fetchIds.join(", "));
-    return { context: "", matchedTableIds: [] };
+    return { context: "", matchedTableIds: [], matchedTables: [] };
   }
 
   console.log(`[StructuredTable] Found ${rows.length} structured table(s): ${rows.map((r: any) => r.table_id).join(", ")}`);
@@ -1673,7 +1720,12 @@ async function fetchStructuredTables(
   // in ./promptContract.ts where it is unit-tested.
   const context = buildStructuredTableBlock(rows as StructuredTableRow[]);
 
-  return { context, matchedTableIds: rows.map((r: any) => r.table_id) };
+  // matchedTables (P5) carries source_code through to the caller so it can
+  // build the __sbc_table__::SBC-XXX::<table_id> response-header sentinel via
+  // ./sourceSignals.ts buildTableSourceSignals() — matchedTableIds alone
+  // (kept for the log line above and any other existing reader) loses that
+  // field.
+  return { context, matchedTableIds: rows.map((r: any) => r.table_id), matchedTables: rows as StructuredTableRow[] };
 }
 
 // ==================== VECTOR SEMANTIC SEARCH (pgvector + Gemini Embeddings) ====================
@@ -1692,16 +1744,60 @@ type VectorRetrievalResult = {
   files: string[];
   sourceMeta: SourcePageMeta[];
   engine: RetrievalEngine;
+  /**
+   * P5: sbc_documents.id for every match that survived the similarity floor
+   * this call. Only ever populated on the engine==="vector" success path —
+   * every keyword-fallback branch below leaves it []. Feeds the
+   * sbc_external_refs honesty-block lookup in the STANDARD/ADVISORY TEXT
+   * PIPELINE (index.ts, behind ADVISORY_CITATION_TOKENS_ENABLED), which per
+   * task spec only runs "vector path has ids; keyword path skip".
+   */
+  docIds: number[];
+  /**
+   * G1 graph expansion (wave 2 wiring, ./graphExpansion.ts). Non-null ONLY on
+   * the engine==="vector" success path, AND only when
+   * ADVISORY_GRAPH_EXPANSION_ENABLED is exactly "1", AND only when the
+   * expansion attempt completed without error (fail-open: any query error,
+   * including the "table does not exist" case production has today, leaves
+   * this null exactly like the flag was off). The value is the number of
+   * expansion entries actually composed into `context` — see
+   * ComposeContextResult.expansionEntries. Every keyword-fallback branch and
+   * every flag-off call leaves this null, which is what tells the caller not
+   * to emit X-Graph-Expansion at all (header absent = HEAD behaviour).
+   */
+  graphExpansionCount: number | null;
+};
+
+/**
+ * P6 reasoning-layer hints, optional and additive. Both fields default to the
+ * ordinary regex/`query`-derived behaviour when omitted (or when the caller
+ * passes `undefined` for a field), which is what keeps every existing call
+ * site — and every call site with ADVISORY_QUERY_ANALYSIS_ENABLED off —
+ * byte-identical:
+ *   - embeddingQuery: text sent to the embedding model INSTEAD OF `query`.
+ *     Never affects filterCode detection or keywordFallback() below, both of
+ *     which keep reading the original `query` — this only enriches retrieval
+ *     targeting for the vector path, never the user-visible message.
+ *   - codeHint: when present, used directly as filter_code instead of the
+ *     regex heuristic. keywordFallback() never sees it (fetchSBCContext takes
+ *     no such parameter), matching "keyword path untouched" verbatim.
+ */
+type VectorReasoningHints = {
+  embeddingQuery?: string;
+  codeHint?: "SBC201" | "SBC801";
 };
 
 async function fetchSBCContextVector(
   query: string,
   mode: string,
-  extraKeywords?: string[]
+  extraKeywords?: string[],
+  reasoningHints?: VectorReasoningHints
 ): Promise<VectorRetrievalResult> {
   const keywordFallback = async (): Promise<VectorRetrievalResult> => ({
     ...(await fetchSBCContext(query, extraKeywords)),
     engine: "keyword",
+    docIds: [],
+    graphExpansionCount: null,
   });
 
   try {
@@ -1717,13 +1813,18 @@ async function fetchSBCContextVector(
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     // 1. Generate query embedding
+    // P6: reasoningHints.embeddingQuery, when present, replaces `query` here
+    // ONLY — see the VectorReasoningHints doc comment above. Falls back to
+    // `query` unchanged when the hint is absent (flag off or facts did not
+    // parse), so this line is byte-identical to HEAD in that case.
+    const embeddingSourceText = reasoningHints?.embeddingQuery ?? query;
     const embResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content: { role: "user", parts: [{ text: query.substring(0, 8000) }] },
+          content: { role: "user", parts: [{ text: embeddingSourceText.substring(0, 8000) }] },
           outputDimensionality: 768,
         }),
       }
@@ -1742,8 +1843,15 @@ async function fetchSBCContextVector(
     }
 
     // 2. Detect code type filter
+    // P6: reasoningHints.codeHint (query-analysis facts.code_hint), when
+    // present, is PREFERRED over the regex heuristic below — see the
+    // VectorReasoningHints doc comment above. Absent (flag off, facts did not
+    // parse, or the model did not state a code) falls through to the same
+    // regex this branch has always run, byte-identical to HEAD.
     let filterCode: string | null = null;
-    if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
+    if (reasoningHints?.codeHint) {
+      filterCode = reasoningHints.codeHint;
+    } else if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
       filterCode = 'SBC801';
     } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
       filterCode = 'SBC201';
@@ -1825,7 +1933,118 @@ async function fetchSBCContextVector(
       };
     });
 
-    return { context, files: usedFiles, sourceMeta, engine: "vector" };
+    // docIds: same source set as usedFiles above (all matches that survived
+    // the similarity floor, not gated by the contextLimit break in the loop
+    // above — usedFiles already has that same characteristic, so this stays
+    // consistent with what "used" already means at this call site).
+    // `id` is a Postgres bigint (public.sbc_documents.id) — PostgREST/
+    // supabase-js normally serialises it as a JSON number, but accept a
+    // numeric string too rather than silently dropping every id if a
+    // driver/PostgREST version ever stringifies bigint columns.
+    const docIds = [...new Set(
+      acceptedMatches
+        .map((m: any) => (typeof m.id === "number" ? m.id : typeof m.id === "string" ? Number(m.id) : NaN))
+        .filter((id: number) => Number.isFinite(id))
+    )] as number[];
+
+    // ── G1 graph expansion (wave 2 wiring, ./graphExpansion.ts) ─────────────
+    // Default OFF; exact-string "1" via ADVISORY_GRAPH_EXPANSION_ENABLED. With
+    // the flag unset this whole block is skipped — acceptedMatches is never
+    // sliced and `context`/`sourceMeta`/`docIds` above (already fully built)
+    // are returned exactly as they are today: byte-identical.
+    //
+    // Nested try/catch, deliberately NOT the outer function's catch above: any
+    // failure here (sbc_xref_edges / sbc_xref_indegree do not exist in
+    // production yet, so "relation does not exist" is the expected common
+    // case) must fail OPEN to the unexpanded 25-seed `context` already built
+    // above — NOT to keywordFallback(), which would also flip `engine` to
+    // "keyword" and drop docIds, a much larger behaviour change than "graph
+    // expansion didn't run this time".
+    let graphExpansionCount: number | null = null;
+    if (isGraphExpansionEnabled(Deno.env.get)) {
+      try {
+        // Design carve: the fetch above still returns up to 25 matches: only
+        // the seed set actually composed into context is reduced to
+        // SEED_K_EXPANDED (18), sliced deterministically off the existing
+        // similarity-ordered array — no re-sort.
+        const seeds: SeedMatch[] = acceptedMatches.slice(0, SEED_K_EXPANDED).map((m: any) => ({
+          id: typeof m.id === "number" ? m.id : Number(m.id),
+          file_name: m.file_name,
+          section_number: m.section_number ?? null,
+          page_start: m.page_start ?? null,
+          page_end: m.page_end ?? null,
+          similarity: typeof m.similarity === "number" ? m.similarity : null,
+          content: m.content,
+        }));
+
+        const querySpec = buildExpansionQuerySpec(seeds);
+
+        let edges: XrefEdge[] = [];
+        if (querySpec.srcDocIds.length > 0) {
+          const { data: edgeRows, error: edgeErr } = await supabaseAdmin
+            .from("sbc_xref_edges")
+            .select("src_doc_id, tgt_doc_id, tgt_code, tgt_section, edge_kind, cue, evidence")
+            .in("src_doc_id", querySpec.srcDocIds)
+            .eq("edge_kind", querySpec.edgeKind);
+          if (edgeErr) throw edgeErr;
+          edges = (edgeRows ?? []) as XrefEdge[];
+        }
+
+        const targetIds = [...new Set(edges.map((e) => e.tgt_doc_id))];
+        const indegree: IndegreeMap = new Map();
+        if (targetIds.length > 0) {
+          const { data: indegreeRows, error: indegreeErr } = await supabaseAdmin
+            .from("sbc_xref_indegree")
+            .select("doc_id, in_degree")
+            .in("doc_id", targetIds);
+          if (indegreeErr) throw indegreeErr;
+          for (const row of (indegreeRows ?? []) as { doc_id: number; in_degree: number }[]) {
+            indegree.set(row.doc_id, row.in_degree);
+          }
+        }
+
+        const candidates = selectExpansionTargets(seeds, edges, indegree);
+
+        const contentById: ContentById = new Map();
+        if (candidates.length > 0) {
+          const candidateIds = [...new Set(candidates.map((c) => c.docId))];
+          const { data: contentRows, error: contentErr } = await supabaseAdmin
+            .from("sbc_documents")
+            .select("id, file_name, section_number, page_start, page_end, content")
+            .in("id", candidateIds);
+          if (contentErr) throw contentErr;
+          for (const row of (contentRows ?? []) as {
+            id: number;
+            file_name: string;
+            section_number: string | null;
+            page_start: number | null;
+            page_end: number | null;
+            content: string;
+          }[]) {
+            contentById.set(row.id, {
+              file_name: row.file_name,
+              section_number: row.section_number,
+              page_start: row.page_start,
+              page_end: row.page_end,
+              content: row.content,
+            });
+          }
+        }
+
+        const composed = composeContext(seeds, candidates, contentById);
+        context = composed.contextText;
+        graphExpansionCount = composed.expansionEntries;
+      } catch (expansionErr) {
+        // Fail-open: `context` stays exactly what the unexpanded loop above
+        // built (the pre-existing 25-seed composition). No header is emitted
+        // for a failed attempt — from outside, a failed ON attempt must look
+        // identical to OFF.
+        console.error("[Graph Expansion] Fail-open, falling back to unexpanded context:", expansionErr);
+        graphExpansionCount = null;
+      }
+    }
+
+    return { context, files: usedFiles, sourceMeta, engine: "vector", docIds, graphExpansionCount };
   } catch (err) {
     console.error("[Vector RAG] Fatal error:", err);
     return keywordFallback();
@@ -2228,18 +2447,41 @@ async function runVisionPipeline(
   userQuery: string,
   language: string,
   mode: string = "analysis",
-): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[]; engine: RetrievalEngine }> {
+  // P7 (vision page-manifest wiring). Both default to the "feature off" shape
+  // ([] / false) so every existing call in this codebase — and any future one
+  // that does not pass these — reproduces today's byte-identical prompts.
+  // pageManifests is expected pre-sanitized (./visionManifest.ts's
+  // sanitizeManifestEntries) by the caller; this function does no further
+  // validation of it. pageManifestFeatureEnabled is the single resolved
+  // VISION_PAGE_MANIFEST_ENABLED flag value (Deno.env.get, exact string "1"),
+  // read exactly once by the caller — this function never touches Deno.env.
+  pageManifests: PageManifestEntry[] = [],
+  pageManifestFeatureEnabled: boolean = false,
+): Promise<{ systemPrompt: string; extraContext: string; usedFiles: string[]; sourceMeta: SourcePageMeta[]; engine: RetrievalEngine; graphExpansionCount: number | null }> {
   console.log("🎯 === VISION PIPELINE START ===", imageBase64s.length, "image(s)");
   const pipelineStart = Date.now();
 
   // Stage 1: Planning Agent
   console.log("📋 Stage 1: Planning Agent...");
-  const planningPrompt = getVisionPlanningPrompt(language);
+  // P7: with the flag off (default) or unset, planningPrompt is EXACTLY
+  // getVisionPlanningPrompt(language) — byte-identical to HEAD. With the flag
+  // on, the Stage-1 JSON contract extension (legend-first reading order +
+  // five new fields) is always appended, and the PAGE RENDER MANIFEST block
+  // is appended additionally whenever the caller actually sanitized at least
+  // one manifest entry (a plain image upload with no PDF pages has none, and
+  // gets the contract extension only).
+  let planningPrompt = getVisionPlanningPrompt(language);
+  if (pageManifestFeatureEnabled) {
+    planningPrompt += "\n\n" + LEGEND_JSON_CONTRACT_EXTENSION;
+    if (pageManifests.length > 0) {
+      planningPrompt += "\n\n" + buildPageManifestBlock(pageManifests);
+    }
+  }
   const imageContent: any[] = [
     ...imageBase64s.map((url: string) => ({ type: "image_url", image_url: { url } })),
     { type: "text", text: userQuery || (language === "en" ? "Analyze this engineering drawing for fire safety compliance." : "حلل هذا المخطط الهندسي من ناحية الامتثال للسلامة من الحرائق.") },
   ];
-  
+
   let planningResult: string;
   try {
     planningResult = await callAINonStreaming(apiKey, planningPrompt, imageContent);
@@ -2257,7 +2499,7 @@ async function runVisionPipeline(
   try {
     cotResult = await callAINonStreaming(apiKey, cotPrompt, [{ type: "text", text: planningResult }]);
     console.log("✅ Stage 2 complete:", cotResult.slice(0, 200));
-    
+
     try {
       const cotParsed = JSON.parse(cotResult.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
       if (cotParsed.searchKeywords) {
@@ -2274,6 +2516,20 @@ async function runVisionPipeline(
     cotResult = '{"checklist":[],"searchKeywords":[]}';
   }
 
+  // P7: fold Stage-1's legend_symbols (only ever present in planningResult
+  // when the flag above actually asked the model for them) additively into
+  // the Stage-2 search keywords, BEFORE Stage 3 consumes searchKeywords.
+  // parseLegendSymbols is fail-open — a flag-off contract (no legend_symbols
+  // field), a Stage-1 parse failure, or the model simply omitting the field
+  // all yield [] here, making this a no-op and leaving searchKeywords exactly
+  // what Stage 2 produced, byte-identical to HEAD.
+  if (pageManifestFeatureEnabled) {
+    const legendSymbols = parseLegendSymbols(planningResult);
+    if (legendSymbols.length > 0) {
+      searchKeywords = mergeLegendKeywords(searchKeywords, legendSymbols);
+    }
+  }
+
   // Stage 3: Parallel Processing - fetch SBC context
   console.log("⚡ Stage 3: Parallel Processing (SBC retrieval)...");
   const enhancedQuery = `${userQuery} ${planningResult}`;
@@ -2283,7 +2539,7 @@ async function runVisionPipeline(
   // match_count selector (10 for 'primary', 25 otherwise); it is not the user's
   // mode. runVisionPipeline serves image-attached requests in all three modes
   // (the caller remaps primary to standard FRAMING before calling).
-  const { context: sbcContext, files: usedFiles, sourceMeta, engine } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
+  const { context: sbcContext, files: usedFiles, sourceMeta, engine, graphExpansionCount } = await fetchSBCContextVector(enhancedQuery, 'analysis', searchKeywords);
   console.log(`✅ Stage 3 complete: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${engine}]`);
 
   // Stage 4 & 5 combined
@@ -2360,7 +2616,7 @@ ${sbcContext}
 
   console.log(`🎯 === VISION PIPELINE STAGES 1-3 DONE in ${Date.now() - pipelineStart}ms ===`);
 
-  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta, engine };
+  return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta, engine, graphExpansionCount };
 }
 
 /**
@@ -2424,11 +2680,17 @@ serve(async (req) => {
 
     // Parse body first — mode is needed for per-mode trial limit checks
     const body = await req.json();
-    const { messages, retry, mode = "standard", image, images, documentTexts, output_format, preferred_standards } = body;
+    const { messages, retry, mode = "standard", image, images, documentTexts, pageManifests, output_format, preferred_standards, audience } = body;
     language = body.language === "en" ? "en" : "ar";
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
     const resolvedDocTexts: Array<{ name: string; content: string }> = Array.isArray(documentTexts) ? documentTexts : [];
+    // pageManifests: PageManifestEntry[] (see src/lib/pdfToImages.ts) — per-page
+    // PDF render status/drawing-type hints from the frontend. Raw and
+    // UNVALIDATED here; only sanitized (VISION_PAGE_MANIFEST_ENABLED path,
+    // below) is it ever used. With the flag off this value is read into a
+    // local and never touched again — same "destructure but ignore" shape as
+    // every other flagged addition in this file.
     const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
     if (!GEMINI_API_KEY) {
@@ -2826,6 +3088,13 @@ serve(async (req) => {
     // requests. Primary mode loads no documents at all, so it stays "keyword"
     // in the sense of "no vector retrieval happened".
     let retrievalEngine: RetrievalEngine = "keyword";
+    // G1 graph expansion (./graphExpansion.ts, wave 2). Non-null only when
+    // fetchSBCContextVector actually ran and completed an expansion for this
+    // request (flag on, no fail-open fallback) — see VectorRetrievalResult.
+    // Reported as the X-Graph-Expansion response header ONLY when non-null,
+    // so header-absent is the default for every existing behaviour (flag off,
+    // keyword engine, primary mode, or a failed expansion attempt).
+    let graphExpansionCount: number | null = null;
     // User-document text blocks AFTER the P2 combined-context clamp. Set only
     // by the STANDARD/ADVISORY TEXT PIPELINE branch below — the only branch
     // whose structured tables + SBC context can stack past the combined cap.
@@ -2842,18 +3111,47 @@ serve(async (req) => {
 
       // Primary mode with images: use Advisory framing (design guidance) — more appropriate than compliance audit for quick queries
       const visionMode = mode === "primary" ? "standard" : mode;
-      const { systemPrompt, extraContext, usedFiles: visionFiles, sourceMeta: visionMeta, engine: visionEngine } = await runVisionPipeline(
+
+      // ── P7 (vision page-manifest wiring): VISION_PAGE_MANIFEST_ENABLED ──────
+      // Exact string "1", checked once here (Deno.env.get) — the ONLY flag
+      // check for this feature; ./visionManifest.ts is a pure module and takes
+      // this resolved boolean rather than reading Deno.env itself. With the
+      // flag off (default), pageManifestFeatureEnabled is false and
+      // sanitizedPageManifests stays [] — runVisionPipeline's manifest
+      // parameters below are then no-ops and every prompt it builds is
+      // byte-identical to HEAD. sanitizeManifestEntries (see its module header)
+      // never throws on its own, but the whole call is still wrapped: the raw
+      // `pageManifests` value is client-supplied JSON of unknown shape, and a
+      // hostile getter/Proxy on it reading a property could throw before
+      // sanitizeManifestEntries' own type checks ever run — fail-open here
+      // means that degrades to "no manifest data" rather than failing the
+      // whole vision request.
+      const pageManifestFeatureEnabled = isVisionPageManifestEnabled(Deno.env.get);
+      let sanitizedPageManifests: PageManifestEntry[] = [];
+      if (pageManifestFeatureEnabled) {
+        try {
+          sanitizedPageManifests = sanitizeManifestEntries(pageManifests);
+        } catch (manifestErr) {
+          console.warn("[VisionManifest] sanitizeManifestEntries failed (fail-open):", manifestErr);
+          sanitizedPageManifests = [];
+        }
+      }
+
+      const { systemPrompt, extraContext, usedFiles: visionFiles, sourceMeta: visionMeta, engine: visionEngine, graphExpansionCount: visionGraphExpansionCount } = await runVisionPipeline(
         GEMINI_API_KEY,
         resolvedImages,
         userQuery,
         language,
         visionMode,
+        sanitizedPageManifests,
+        pageManifestFeatureEnabled,
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
       usedFiles = visionFiles;
       usedSourceMeta = visionMeta;
       retrievalEngine = visionEngine;
+      graphExpansionCount = visionGraphExpansionCount;
 
       const lastUserIdx = finalMessages.map((m: any, i: number) => m.role === "user" ? i : -1).filter((i: number) => i >= 0).pop();
       if (lastUserIdx !== undefined && lastUserIdx >= 0) {
@@ -2882,6 +3180,148 @@ serve(async (req) => {
 
       console.log("Fetching SBC context for query:", userQuery.slice(0, 100));
 
+      // ── P6 (reasoning layer): query analysis — BEFORE any retrieval ────────
+      // Behind ADVISORY_QUERY_ANALYSIS_ENABLED (exact string "1"). One
+      // non-streaming call to gemini-2.5-flash-lite via
+      // fetchGeminiNonStreamingWithRetry — the SAME ./geminiResilience.ts
+      // machinery callAINonStreaming() (used elsewhere in this file) is built
+      // on, called directly here (rather than through callAINonStreaming)
+      // because that wrapper hardcodes the gemini-2.5-pro/flash chain and this
+      // step needs the fixed, cheaper gemini-2.5-flash-lite model instead. No
+      // retry is added beyond what fetchGeminiNonStreamingWithRetry already
+      // does on its own.
+      //
+      // FAIL-OPEN, per task contract: any error, non-OK response, or a parse
+      // failure leaves queryFacts null; a hard 8s timeout (Promise.race)
+      // guarantees this step can never stall the request past that budget.
+      // With the flag off (default) — or on any failure/timeout — queryFacts
+      // stays null and every consumer below (embedding enrichment, filter_code
+      // preference, the machine-facts prompt block, derivation) behaves
+      // exactly as if the flag were OFF. See ./queryAnalysis.ts's module
+      // header for what the extracted facts are and are not.
+      let queryFacts: QueryFacts | null = null;
+      if (isQueryAnalysisEnabled(Deno.env.get)) {
+        try {
+          const analysisPrompt = buildQueryAnalysisPrompt(userQuery);
+          const { systemInstruction: qaSystemInstruction, contents: qaContents } = convertToGeminiFormat([
+            { role: "system", content: analysisPrompt },
+            { role: "user", content: userQuery },
+          ]);
+          const QUERY_ANALYSIS_MODEL = "gemini-2.5-flash-lite";
+          const QUERY_ANALYSIS_TIMEOUT_MS = 8000;
+
+          const call = (async (): Promise<string | null> => {
+            try {
+              const { response } = await fetchGeminiNonStreamingWithRetry(
+                GEMINI_API_KEY,
+                QUERY_ANALYSIS_MODEL,
+                qaSystemInstruction,
+                qaContents,
+              );
+              if (!response.ok) return null;
+              const data = await response.json();
+              return (data.candidates?.[0]?.content?.parts?.[0]?.text as string | undefined) ?? null;
+            } catch (callErr) {
+              // Caught INSIDE the raced promise, not just by the outer
+              // try/catch below: if the timeout wins the race first, this
+              // promise is never awaited again, so an uncaught rejection here
+              // would surface as an unhandled rejection. Converting every
+              // failure to `null` keeps `call` a promise that always resolves.
+              console.warn("[QueryAnalysis] Model call failed (fail-open):", callErr);
+              return null;
+            }
+          })();
+          // The timer handle is kept so the WINNING-call case can cancel it.
+          // Without the clearTimeout below, every request that completes the
+          // analysis quickly still leaves an 8s timer (and its closure) pending
+          // in the isolate long after this block is done — harmless per
+          // request, but it is real retained state per request on a long-lived
+          // Edge isolate, and "the timeout cancels cleanly" should be true in
+          // both directions, not only in the timeout-wins direction.
+          // ReturnType<typeof setTimeout>, not `number`: the checker resolves
+          // setTimeout to the Node-typed overload here (Timeout), so hardcoding
+          // `number` fails type checking.
+          let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+          const timeout = new Promise<null>((resolve) => {
+            timeoutHandle = setTimeout(() => resolve(null), QUERY_ANALYSIS_TIMEOUT_MS);
+          });
+
+          let raw: string | null;
+          try {
+            raw = await Promise.race([call, timeout]);
+          } finally {
+            // Safe in both directions: clearing an already-fired timer is a
+            // no-op, and the abandoned `call` promise still always resolves
+            // (its own internal catch), so nothing is left to reject.
+            if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+          }
+          if (raw) {
+            queryFacts = parseQueryFacts(raw);
+          }
+        } catch (qaErr) {
+          console.warn("[QueryAnalysis] Fail-open, proceeding without facts:", qaErr);
+          queryFacts = null;
+        }
+      }
+
+      // Embedding-only query enrichment (P6 items 2b/3 — never the
+      // user-visible message). Starts as userQuery; with the flag(s) off or
+      // facts absent this stays reference-unequal but VALUE-identical to
+      // userQuery, so fetchSBCContextVector's embedding call below is
+      // unchanged. userQuery itself — used for structured tables, the keyword
+      // fallback, and finalMessages — is never touched by this.
+      let embeddingQueryText = userQuery;
+      if (queryFacts && queryFacts.en_search_terms.length > 0) {
+        const enrichment = (" " + queryFacts.en_search_terms.join(" ")).slice(0, 300);
+        embeddingQueryText += enrichment;
+      }
+
+      // ── P6 (reasoning layer): derivation ────────────────────────────────────
+      // Behind ADVISORY_QUERY_DERIVATION_ENABLED AND query-analysis facts
+      // actually available (facts absent — flag off or extraction failed —
+      // leaves derivedSections empty, a no-op below). Appends retrieval-
+      // targeting section numbers to the SAME embedding-only text above, never
+      // to the prompt (see ./derivationMap.ts's module header: this is a
+      // curated retrieval hint, not a citation source). The known-item lookup
+      // that would fetch sbc_section_defs rows for these numbers directly is
+      // deferred until G0 data exists — this only widens the vector query.
+      let derivedSections: DerivedSection[] = [];
+      if (isDerivationEnabled(Deno.env.get) && queryFacts) {
+        derivedSections = deriveTargetSections({
+          occupancy_group: queryFacts.occupancy_group,
+          question_type: queryFacts.question_type,
+        });
+        if (derivedSections.length > 0) {
+          embeddingQueryText += " " + derivedSections.map((s) => s.section).join(" ");
+        }
+      }
+
+      // ── Audience resolution (P6 item 4) ─────────────────────────────────────
+      // Gated by its OWN default-OFF flag, ADVISORY_AUDIENCE_LAYER_ENABLED
+      // (exact string "1", same semantics as every other flag in this file).
+      //
+      // The gate is NOT optional polish. The request-level `audience` field and
+      // the frontend selector that sends it (src/components/ChatInterface.tsx,
+      // src/utils/audiencePref.ts) are both new in this wave, so without a flag
+      // a user picking a non-default audience would change the assembled prompt
+      // with every env flag off — which is exactly the byte-identity guarantee
+      // this wave is required to hold. "No audience selected" happening to be
+      // byte-identical is not the same thing as the feature being off.
+      //
+      // Flag ON: precedence is explicit request `audience` → a valid
+      // queryFacts?.audience_hint (only ever set when ADVISORY_QUERY_ANALYSIS_ENABLED
+      // is also on AND facts parsed) → "engineer". See ./queryAnalysis.ts's
+      // resolveAudience for the full contract. "engineer" resolves here but
+      // still appends nothing below.
+      //
+      // Flag OFF (default): resolvedAudience is forced to "engineer" without
+      // consulting either input, so the getAudienceBlock call further down is
+      // never reached and this branch is byte-identical to HEAD.
+      const audienceLayerEnabled = Deno.env.get("ADVISORY_AUDIENCE_LAYER_ENABLED") === "1";
+      const resolvedAudience = audienceLayerEnabled
+        ? resolveAudience(audience, queryFacts?.audience_hint)
+        : "engineer";
+
       // ── 1. Structured Table Path (DB transcription layer, injected first) ──
       // If the query references a known SBC table ID, fetch its stored row from
       // sbc_code_tables before running any storage/vector retrieval. Injected
@@ -2892,12 +3332,36 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_URL")!,
         getSecretKey(),
       );
-      const { context: structuredTableContext, matchedTableIds } =
+      const { context: structuredTableContext, matchedTableIds, matchedTables } =
         await fetchStructuredTables(userQuery, supabaseAdminForTables);
 
       if (matchedTableIds.length > 0) {
         console.log(`[StructuredTable] Matched and injected tables: ${matchedTableIds.join(", ")}`);
       }
+
+      // P5 flagless truth fix (unconditional — sanctioned as the one
+      // flagless change in this task). fetchStructuredTables() already
+      // injects matched sbc_code_tables rows into the PROMPT above, but that
+      // provenance never reached the client: X-SBC-Sources /
+      // X-SBC-Source-Meta only ever carried PDF-chunk filenames. This builds
+      // the `__sbc_table__::SBC-XXX::<table_id>` sentinel
+      // src/utils/sourceMetadata.ts's resolveSourceMeta() (~116-141) already
+      // parses, so structured-table evidence shows up in SourcePanel like
+      // any other source. Empty input -> empty output, so when no table
+      // matched this changes nothing; when one did, it ONLY adds header
+      // entries below (usedFiles/usedSourceMeta) — the assembled PROMPT
+      // bytes are untouched (structuredTableContext / fullSystemPrompt are
+      // not read or written here).
+      const { files: tableSourceFiles, sourceMeta: tableSourceMeta } =
+        buildTableSourceSignals(matchedTables);
+
+      // P5: single read of the citation-tokens flag, shared by the
+      // CITATION_TOKEN_CONTRACT append (step 3 below) and the
+      // sbc_external_refs honesty block (also step 3) — "the same flag" per
+      // task spec. Exact-string "1" only; unset/""/"0"/anything else is OFF,
+      // matching every other flag in this file (see ADVISORY_VECTOR_*_ENABLED
+      // in ./retrievalPolicy.ts).
+      const citationTokensEnabled = Deno.env.get("ADVISORY_CITATION_TOKENS_ENABLED") === "1";
 
       // ── 2. Document retrieval (always runs; supplements structured tables) ──
       //
@@ -2926,6 +3390,12 @@ serve(async (req) => {
       let sbcContext: string;
       let files: string[];
       let keywordMeta: SourcePageMeta[];
+      // P5: sbc_documents.id list feeding the sbc_external_refs honesty-block
+      // lookup below. Per task spec, "vector path has ids; keyword path
+      // skip" — the keyword/storage path (fetchSBCContext) has no doc-row
+      // ids to resolve, so it stays [] rather than being taught a new
+      // concept it never had.
+      let retrievedDocIds: number[] = [];
       if (useVector) {
         // Pass the ACTUAL request mode, not a hardcoded "standard" literal.
         // matchCount inside this function is `mode === 'primary' ? 10 : 25`
@@ -2938,11 +3408,20 @@ serve(async (req) => {
         // at the image/vision call site above (which passes a literal, not the
         // request mode) is an image-token-budget artifact of that separate call
         // site — it is deliberately left unchanged.
-        const vec = await fetchSBCContextVector(userQuery, mode);
+        // P6: reasoningHints carries the embedding-only enrichment and the
+        // code_hint filter_code preference computed above. Both default back
+        // to fetchSBCContextVector's own regex/`query` behaviour when absent
+        // (flag off or facts did not parse) — see VectorReasoningHints.
+        const vec = await fetchSBCContextVector(userQuery, mode, undefined, {
+          embeddingQuery: embeddingQueryText,
+          codeHint: queryFacts?.code_hint,
+        });
         sbcContext = vec.context;
         files = vec.files;
         keywordMeta = vec.sourceMeta;
         retrievalEngine = vec.engine;
+        retrievedDocIds = vec.docIds;
+        graphExpansionCount = vec.graphExpansionCount;
       } else {
         const kw = await fetchSBCContext(userQuery);
         sbcContext = kw.context;
@@ -2950,9 +3429,59 @@ serve(async (req) => {
         keywordMeta = kw.sourceMeta;
         retrievalEngine = "keyword";
       }
-      usedFiles = files;
-      usedSourceMeta = keywordMeta;
+      // P5 flagless truth fix: append the structured-table sentinel entries
+      // built above (empty arrays when no table matched, so this is a no-op
+      // then). This is the only line that changes X-SBC-Sources /
+      // X-SBC-Source-Meta for structured-table matches — everything else in
+      // this branch is unchanged.
+      usedFiles = [...files, ...tableSourceFiles];
+      usedSourceMeta = [...keywordMeta, ...tableSourceMeta];
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${retrievalEngine}]`);
+
+      // ── P5-R4: External-standard honesty block (flag-gated, fail-open) ──────
+      // The retrieved SBC text routinely cites external standards (NFPA/ASTM/
+      // UL/...) ConsultX does not hold. When citationTokensEnabled and the
+      // vector path resolved doc rows, look up public.sbc_external_refs
+      // (supabase/migrations/20260824100005_sbc_external_refs.sql) for those
+      // rows via the SAME service client already created above
+      // (supabaseAdminForTables) and, if any citations exist, build a short
+      // labelled block to append after the retrieved text below.
+      //
+      // FAIL-OPEN IS THE CONTRACT, NOT DEFENSIVE POLISH: that table DOES NOT
+      // EXIST IN PRODUCTION YET. Any error — missing table (42P01), network,
+      // anything else — or a zero-row result must leave externalRefsBlock ""
+      // and therefore leave fullSystemPrompt exactly as it would be with the
+      // flag OFF.
+      let externalRefsBlock = "";
+      if (citationTokensEnabled && retrievedDocIds.length > 0) {
+        try {
+          // Ordered, not just filtered. formatExternalRefsBlock caps the block
+          // at 5 distinct references, so WHICH 5 survive depends on row order —
+          // and PostgREST gives no order guarantee without an explicit sort.
+          // Unordered, two byte-identical repeat requests could assemble
+          // different prompts, which is the same reproducibility defect the
+          // deterministic (embedding, id ASC) tie-break in
+          // 20260824100001_match_sbc_documents_v2.sql exists to prevent. Sorting
+          // by standard_ref then standard makes the selected 5 a pure function
+          // of the retrieved doc set. Both columns are covered by
+          // idx_sbc_external_refs_doc's filter, so this is a sort of an already
+          // tiny row set. If the ORDER is ever rejected the query returns an
+          // error and the fail-open path below leaves the block "" — same as
+          // flag OFF.
+          const { data: extRefRows, error: extRefError } = await supabaseAdminForTables
+            .from("sbc_external_refs")
+            .select("standard, standard_ref")
+            .in("doc_id", retrievedDocIds)
+            .order("standard_ref", { ascending: true, nullsFirst: false })
+            .order("standard", { ascending: true });
+          if (!extRefError && extRefRows && extRefRows.length > 0) {
+            externalRefsBlock = formatExternalRefsBlock(extRefRows as ExternalRefRow[]);
+          }
+        } catch (extRefFatalErr) {
+          console.warn("[ExternalRefs] Lookup failed (fail-open, no block appended):", extRefFatalErr);
+          externalRefsBlock = "";
+        }
+      }
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
@@ -2960,6 +3489,30 @@ serve(async (req) => {
         : getStandardPrompt(language);
 
       fullSystemPrompt = basePrompt;
+
+      // P6: machine-extracted query facts, appended immediately AFTER the
+      // base prompt (labelled block — see MACHINE_FACTS_LABEL) so it sits
+      // right next to the diagnostic protocol's Step 1 that base prompt
+      // defines. Only when the flag is on AND facts actually parsed;
+      // otherwise fullSystemPrompt stays byte-identical to basePrompt at this
+      // point. buildMachineFactsBlock's own wording is declarative-only and
+      // explicitly does not bypass the clarify-first gate — see
+      // ./queryAnalysis.ts's module header.
+      if (queryFacts) {
+        fullSystemPrompt += "\n\n" + buildMachineFactsBlock(queryFacts);
+      }
+
+      // P5: inline citation-token contract (flag-gated, standard/analysis
+      // text requests only — never primary, never vision, matching task
+      // spec exactly: this whole branch IS the standard/analysis text
+      // pipeline). See promptContract.ts's CITATION_TOKEN_CONTRACT header:
+      // index.ts is documented there as the only place allowed to append it,
+      // gated on the exact string "1". OFF/absent (default) leaves
+      // fullSystemPrompt byte-identical to basePrompt at this point — no
+      // behaviour change versus HEAD.
+      if (citationTokensEnabled) {
+        fullSystemPrompt += CITATION_TOKEN_CONTRACT;
+      }
 
       // sbcWarningMsg / the 503 decision are evaluated on the RAW retrieval
       // results, before any context-budget clamping below — they are about
@@ -3041,6 +3594,27 @@ serve(async (req) => {
       if (sbcContext) {
         fullSystemPrompt += clamped.sbcContext;
         fullSystemPrompt += sbcWarningMsg;
+        // P5-R4: external-standard honesty block, appended AFTER the
+        // retrieved text per task spec. "" (flag OFF, no doc ids, lookup
+        // failed/table missing, or zero rows) is always safe to append.
+        if (externalRefsBlock) {
+          fullSystemPrompt += externalRefsBlock;
+        }
+      }
+
+      // P6 item 4: audience presentation layer. Appended when (and only when)
+      // resolvedAudience computed above is not "engineer". With
+      // ADVISORY_AUDIENCE_LAYER_ENABLED off (default) resolvedAudience is
+      // hard-forced to "engineer" at its declaration above, so this block is
+      // unreachable and fullSystemPrompt stays byte-identical to HEAD no matter
+      // what the client sends. With the flag on, "engineer" and "absent" both
+      // resolve to "engineer" and still append nothing here.
+      // getAudienceBlock's own AudienceRole type excludes "engineer"; this
+      // guard is what makes that call safe.
+      // Standard/analysis text requests only — this line lives inside that
+      // branch, never in the vision or primary branches.
+      if (resolvedAudience !== "engineer") {
+        fullSystemPrompt += "\n\n" + getAudienceBlock(resolvedAudience, language);
       }
 
       // Final binding reminder: diagnostic protocol takes precedence over reference context
@@ -3206,6 +3780,24 @@ serve(async (req) => {
         // Reports the engine that ACTUALLY produced the context, including the
         // case where the vector path was attempted and fell back to keyword.
         [RETRIEVAL_ENGINE_HEADER]: retrievalEngine,
+        // G1 graph expansion (./graphExpansion.ts, wave 2). Present ONLY when
+        // graphExpansionCount is non-null — flag on AND the expansion attempt
+        // completed without falling back. Absent in every other case: flag
+        // off, keyword engine, primary mode, or a fail-open fallback. Off =
+        // header absent = HEAD behaviour.
+        //
+        // The Expose-Headers override rides in the SAME conditional, on
+        // purpose: it is what lets `corsHeaders` above stay byte-identical to
+        // HEAD on every preflight and every error response while the browser
+        // can still read X-Graph-Expansion on the one response that carries
+        // it. `...corsHeaders` is spread first above, so this key wins.
+        ...(graphExpansionCount !== null
+          ? {
+              "Access-Control-Expose-Headers":
+                `${corsHeaders["Access-Control-Expose-Headers"]}, ${GRAPH_EXPANSION_HEADER}`,
+              [GRAPH_EXPANSION_HEADER]: `on:${graphExpansionCount}`,
+            }
+          : {}),
       },
     });
   } catch (error) {

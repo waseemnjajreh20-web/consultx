@@ -391,3 +391,44 @@ export function buildMachineFactsBlock(facts: QueryFacts): string {
 
   return lines.join("\n");
 }
+
+// ===========================================================================
+// 7. AUDIENCE RESOLUTION (P6, request-level — independent of both P6 flags)
+// ===========================================================================
+//
+// Resolves which audience a standard/analysis text response should be
+// written for. Precedence: an explicit, VALID request-level audience wins
+// outright (including the literal "engineer" — an explicit "engineer"
+// request is not "no audience", it is a request FOR the engineer default,
+// and it still must outrank a facts.audience_hint the same way any other
+// explicit value would); otherwise a valid facts.audience_hint (query-
+// analysis extraction, ADVISORY_QUERY_ANALYSIS_ENABLED) is used; otherwise
+// the default is "engineer".
+//
+// Both inputs are untrusted — the request body comes straight from the
+// caller and the facts hint is echoed back from the user's own question by
+// the extraction model (see the module header's note on QueryFacts values)
+// — so both are typed `unknown` and validated against the exact
+// AUDIENCE_HINTS set. An invalid, malformed, or adversarial value in EITHER
+// slot degrades to "not provided" and falls through to the next tier; this
+// function never throws and never resolves to anything outside the four
+// known values.
+//
+// index.ts is the only caller: it appends promptContract.ts's
+// getAudienceBlock(audience, language) to the system prompt when (and only
+// when) the resolved value here is not "engineer" — that gate is what keeps
+// index.ts's byte-identical-when-absent guarantee intact when no audience
+// was requested and no hint was extracted. This resolution itself runs
+// regardless of ADVISORY_QUERY_ANALYSIS_ENABLED / ADVISORY_QUERY_DERIVATION_ENABLED
+// — an explicit request-level audience must work even with both flags off.
+export type AudienceValue = (typeof AUDIENCE_HINTS)[number];
+
+export function resolveAudience(requestAudience: unknown, factsHint?: unknown): AudienceValue {
+  if (typeof requestAudience === "string" && (AUDIENCE_HINTS as readonly string[]).includes(requestAudience)) {
+    return requestAudience as AudienceValue;
+  }
+  if (typeof factsHint === "string" && (AUDIENCE_HINTS as readonly string[]).includes(factsHint)) {
+    return factsHint as AudienceValue;
+  }
+  return "engineer";
+}
