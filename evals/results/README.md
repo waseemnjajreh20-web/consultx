@@ -1,127 +1,104 @@
 # Advisory Benchmark Results
 
-Time-stamped output from `evals/run_advisory_benchmark.ts` lives here.
-Each run creates a `{YYYY-MM-DD}/` subdirectory containing:
+Time-stamped output from `evals/run_advisory_benchmark.ts`. Each run creates
+a `{YYYY-MM-DD}/` folder with `results.json` (per-question, per-mode scores)
+and `report.md` (human-readable table). **Authority:**
+`docs/advisory-brain-runbook.md` governs flag rollout order and bench gates
+and wins where this README differs — it only covers invoking the harness and
+reading output.
 
-- `results.json` — per-question scores and aggregate metrics
-- `report.md` — human-readable pass/fail table
+## Running it
 
----
+**Dry-run** (no API calls, no secrets, never a release gate): `npm run
+bench:dry` = `npx deno run --allow-read --allow-write --allow-env
+evals/run_advisory_benchmark.ts`. Scores synthetic placeholder answers,
+proving only that the JSONL parses and the report renders.
 
-## Running the benchmark
-
-### Dry-run (safe — no API calls, no secrets needed)
-
-Run from the repo root:
-
-```
-deno run --allow-read --allow-write --allow-env \
-  evals/run_advisory_benchmark.ts
-```
-
-Dry-run scores synthetic placeholder answers against the JSONL question set.
-Use it to verify the harness parses correctly and produces a baseline report.
-
-### Live mode (calls the deployed edge function)
+**Live** (the only run that can justify a flag flip — runbook Section 1):
 
 ```
-CONSULTX_EVAL_LIVE=1 \
-CONSULTX_EDGE_URL=https://<project-ref>.supabase.co/functions/v1/fire-safety-chat \
-CONSULTX_SERVICE_KEY=<supabase-service-role-jwt> \
-SMOKE_USER_ID=<uuid-of-smoke-user> \
-deno run --allow-read --allow-write --allow-env --allow-net \
-  evals/run_advisory_benchmark.ts
+CONSULTX_EVAL_LIVE=1 CONSULTX_EDGE_URL=https://<ref>.supabase.co/functions/v1/fire-safety-chat \
+CONSULTX_SERVICE_KEY=<service-role-jwt> SMOKE_USER_ID=<smoke-user-uuid> \
+npx deno run --allow-read --allow-write --allow-env --allow-net evals/run_advisory_benchmark.ts
 ```
 
-**Never commit secrets.** Pass them as env vars or use a `.env` loader.
+Never commit secrets. `CONSULTX_SERVICE_KEY` = Supabase Project Settings ->
+API -> service_role; `SMOKE_USER_ID` = `SELECT id FROM auth.users WHERE
+email = 'smoke_retrieval_test_042026@mailnull.com'`. Live mode reads the
+response as SSE (falls back to JSON/raw-text) and records
+`X-Retrieval-Engine` / `X-SBC-Sources` / `X-SBC-Source-Meta` per row, so a
+run proves which engine actually served each question.
 
-#### How to get each value
+**Coverage:** every question runs in **both** `standard` and `analysis` mode
+(two rows each), plus a fixed two-question `primary`-mode smoke check (first
+two JSONL rows) asserting no malformed/bare `[SWITCH:...]` token leaks — a
+well-formed `[SWITCH:استشاري]`/`[SWITCH:تحليلي]` is fine, stripping it is the
+frontend's job. A `safety_critical: true` row that fails tier-A **fails the
+whole run** regardless of aggregates — collected into
+`safety_critical_regressions`, a `*** REGRESSION ***` banner names the
+`{id, mode}` pairs, `report.md` leads with them, exit is non-zero. One
+regressed safety-critical question is a stop, never a trade-off (runbook
+Section 1, item 2).
 
-| Variable | Where to find it |
-|---|---|
-| `CONSULTX_EDGE_URL` | Supabase dashboard → Functions → fire-safety-chat → URL |
-| `CONSULTX_SERVICE_KEY` | Supabase dashboard → Project Settings → API → service_role key |
-| `SMOKE_USER_ID` | SQL: `SELECT id FROM auth.users WHERE email = 'smoke_retrieval_test_042026@mailnull.com'` |
+## Two scoring tiers
 
-> **Note on streaming:** the live scorer reads the response as JSON then
-> falls back to raw text. If `fire-safety-chat` returns Server-Sent Events,
-> adjust the response-parsing block in `liveScore()` to assemble the SSE
-> stream before scoring. Check the edge function's `Content-Type` header.
+Predicates: `evals/lib/scoring.ts`; combined per-row in `computeMetrics()`.
 
----
+- **tier-A (binding, gates pass/fail):** expected sections found; both
+  members of each `chain_pairs` entry found; no `forbidden_claims`
+  mentioned; no fabricated NFPA/SFPE/IBC/IFC clause; `must_refuse` rows need
+  one literal canonical/boundary refusal sentence (acceptance doc Section 3)
+  via exact-phrase match, not a semantic "did it decline" judgment.
+- **tier-B (reported only):** checks for the structured `[SBC-{201|801}
+  Section {ref} | conf:{high|medium|low}]` token. No producer emits it yet —
+  ~0% expected until `ADVISORY_CITATION_TOKENS_ENABLED` ships, which is also
+  what should re-gate this metric (runbook Section 3).
 
-## Pass/fail thresholds
-
-Defined in [`docs/advisory-acceptance.md`](../../docs/advisory-acceptance.md) Section 5.3.
-The runner exits with code 0 on pass, 1 on fail.
-
-| Metric | Definition | Phase B gate | Phase D gate |
+| Metric | Tier | Threshold | Gates? |
 |---|---|---|---|
-| **Citation discipline rate** | % of non-refuse answers that contain a valid `[SBC-... Section ... \| conf:...]` token | >= 80% | >= 80% |
-| **Exact-section match rate** | % of `expected_section_refs` entries found in the answer | >= 60% | >= 60% (must not regress vs. legacy) |
-| **Refusal correctness** | % of `must_refuse: true` rows that emit a canonical refusal sentence and avoid `forbidden_claims` | 100% | 100% |
-| **Hallucination rate** | % of non-refuse answers that mention a `forbidden_claims` entry | <= 5% | <= 5% |
-| **Latency p95** | Wall-clock p95 across 20 questions | <= 45 000ms | <= 45 000ms |
+| Exact-section match | A | >= 60% | yes |
+| Chain-pair match | A | reported | no |
+| Refusal correctness | A | 100% | yes |
+| Hallucination rate | A | <= 5% | yes |
+| Latency p95 (live only) | — | <= 45 000ms | yes |
+| Citation discipline | B | informational | no |
+| Any `safety_critical` regression | A | zero | overrides all above |
 
-**Phase B exit** — all thresholds pass against the keyword-retrieval (legacy) engine.
+Derivations: `docs/advisory-acceptance.md` Section 5.3/5.4. Per-flag gate
+mapping: `docs/advisory-brain-runbook.md` Section 3.
 
-**Phase D exit** — all thresholds pass with `RETRIEVAL_ENGINE=graph`; exact-section
-match rate must not regress by more than 5 points relative to the Phase B baseline run.
+## Question set — 43 rows
 
----
+- `ADV-001`..`ADV-020` — frozen original set (SBC 201/801 occupancy, egress,
+  height/area, sprinkler, standpipe, fire-pump, cross-document, NFPA-bait,
+  Civil-Defense-bait).
+- `ADV-021`..`ADV-043` — 23 rows added 2026-08-25: Arabic questions outside
+  the existing glossary/sampler taxonomy, citation-chain questions (via
+  `chain_pairs`), table-value questions (`expected_table_ids`). Added the
+  `safety_critical`, `chain_pairs`, `language` fields.
 
-## Question composition
+Schema: acceptance doc Section 5.2. `language` (`ar`/`en`) selects
+`question_ar`/`question_en`. New rows: next `ADV-NNN` id; run `npm run
+bench:dry` to validate parsing before committing.
 
-The 20 questions in `evals/advisory_benchmark.jsonl` are distributed as:
+## Known limits
 
-| Category | Count |
-|---|---|
-| SBC 201 — occupancy classification | 3 |
-| SBC 201 — egress (occupant load, exit count, travel distance) | 3 |
-| SBC 201 — height/area allowances | 2 |
-| SBC 801 — sprinkler requirement | 2 |
-| SBC 801 — standpipe class | 2 |
-| SBC 801 — fire pump capacity | 2 |
-| Cross-document (SBC 201 + SBC 801 interaction) | 3 |
-| NFPA-bait (must trigger refusal sentence) | 2 |
-| Civil Defense AHJ scenario (must trigger refusal sentence) | 1 |
-| **Total** | **20** |
+- `expected_table_ids` is **collected but not yet scored** (12 rows carry
+  it; no predicate reads it today), and **live mode requires a deployed
+  `fire-safety-chat` function** — there is no offline live-mode path.
+- **Refusal correctness is partly a prompt-contract gap, not a harness
+  bug.** The prompt guarantees only one of the five accepted sentences;
+  Civil-Defense-bait rows have no instructed refusal phrasing at all. A
+  first live-run failure here likely reflects that gap, not a retrieval
+  regression — see runbook Section 5 before loosening the scorer.
 
----
-
-## Canonical refusal sentences
-
-The scorer detects these exact substrings (from `docs/advisory-acceptance.md` Section 3):
-
-**Arabic — empty corpus:**
-> هذا الادعاء غير موثق في القاعدة المفهرسة الحالية، ويحتاج إلى مصدر معتمد قبل اعتماده هندسياً.
-
-**English — empty corpus:**
-> This claim is not documented in the currently indexed corpus and requires an authoritative source before engineering reliance.
-
-**Arabic — NFPA/Civil Defense boundary:**
-> يتطلب هذا المرجع حزمة مصادر NFPA أو الدفاع المدني المقابلة، وهي غير مفهرسة حالياً في ConsultX.
-
-**English — NFPA/Civil Defense boundary:**
-> This reference requires the corresponding NFPA or Civil Defense source pack, which is not currently indexed in ConsultX.
-
----
-
-## Citation token format
-
-The scorer looks for this pattern in answers (never the section-symbol character — render `Section X.X.X` in full):
+## Verification before any commit touching this stack
 
 ```
-[SBC-{201|801} Section {ref} | conf:{high|medium|low}]
-[SBC-{201|801} Table {id}]
-[SBC-{201|801} pp.{start}-{end} | conf:{high|medium|low}]
+npx tsc --noEmit -p tsconfig.app.json
+npm test
+npm run build
+npx deno check <changed functions>
 ```
 
----
-
-## Adding questions
-
-Append one JSON object per line to `evals/advisory_benchmark.jsonl` following
-the schema in `docs/advisory-acceptance.md` Section 5.2. Assign the next
-sequential `ADV-NNN` id. Run the dry-run harness to validate parsing before
-committing.
+A green `npm run bench:dry` is a harness smoke-check, not a release gate.

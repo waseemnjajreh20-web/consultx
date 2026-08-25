@@ -31,17 +31,20 @@ import {
 /**
  * Canonical refusal sentences from docs/advisory-acceptance.md Section 3.
  *
- * PROVENANCE WARNING — read before trusting a green refusal_correctness.
- * These four sentences are SPEC-SIDE. Grepped against the whole repository on
- * 2026-08-25 they appear only in docs/advisory-acceptance.md, evals/results/
- * README.md and this harness — NOT in promptContract.ts, and not in any
- * prompt the system actually sends. No mode instructs the model to emit them,
- * so in a LIVE run they are aspirational: the model can only satisfy a
- * must_refuse row by accident, or via the one genuinely contract-backed
- * phrase in SOURCE_SCOPE_BOUNDARY_PATTERNS below. They are kept because the
- * acceptance doc defines them as the target wording and the dry-run scorer
- * emits them, but a live refusal_correctness of 100% is NOT evidence that the
- * prompt contract taught the model to refuse.
+ * PROVENANCE STATUS — updated 2026-08-25 (wiring wave W1/W2).
+ * The Section 3.1 (Arabic) and 3.2 (English) sentences are now carried
+ * VERBATIM inside promptContract.CITATION_TOKEN_CONTRACT, and index.ts
+ * appends that block to the standard/analysis prompts when
+ * ADVISORY_CITATION_TOKENS_ENABLED === "1". So:
+ *   - flag OFF (default): the sentences are still spec-side only — no sent
+ *     prompt instructs them; a live must_refuse pass comes either by accident
+ *     or via the contract-backed SOURCE_SCOPE phrases (including the
+ *     Civil-Defense boundary line added in W1) matched by
+ *     SOURCE_SCOPE_BOUNDARY_PATTERNS below.
+ *   - flag ON: these sentences are instructed output, and a live
+ *     refusal_correctness score becomes real evidence about the contract.
+ * Do not dismiss a refusal_correctness signal as "aspirational" without first
+ * checking the flag state recorded in the run's metadata.
  */
 export const CANONICAL_REFUSAL_MARKERS = [
   "هذا الادعاء غير موثق في القاعدة المفهرسة الحالية",

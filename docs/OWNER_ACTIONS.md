@@ -253,6 +253,27 @@ AI Studio, create a new one, update the `GOOGLE_GEMINI_API_KEY` Supabase secret.
 
 ---
 
+## العقل الاستشاري — 2026-08-25
+
+Advisory Brain rollout. Ordered — do not reorder, do not batch. Each item is
+one line here; the full command, expected output, safety rationale and "do not"
+list for every step is in **`reports/advisory-brain-owner-actions-2026-08-25.md`**.
+
+- [ ] **1. إصلاح المتن** — run `docs/audits/corpus-repair-20260823.sql` section by section in the SQL Editor (sections 1–4; section 5 is a recommendation, not executed). EXPECTED values re-verified against production 2026-08-25 with zero drift (`reports/corpus-repair-freshness-2026-08-25.md`).
+- [ ] **2. تعبئة التضمينات** — `node scripts/generate-embeddings.mjs <SERVICE_KEY> <GEMINI_KEY> --backfill --dry-run` must print `Rows selected: 36` (all SBC201) before re-running without `--dry-run`.
+- [ ] **3. رفع الملفات الثلاثة + إغلاق الدلو** — upload the 3 rebuilt SBC801 blobs from `.archive/laneB-20260823/rebuilt_chunks/` to bucket `ssss` (same filenames, overwrite), then verify `ssss` is a private bucket — copyright exposure, readiness item 8. Precondition CONFIRMED: every `ssss` reader goes through the service-role admin client, so making the bucket private breaks no retrieval path.
+- [ ] **4. الترحيلات** — apply `20260824100001`, `100002`, `100004`, `100005`, `100006` by hand in the Supabase SQL Editor (there is no `100003`), each followed by its post-apply verification SELECT. **NEVER `supabase db push`.**
+- [ ] **5. مفاتيح القياس** — provide `CONSULTX_EDGE_URL`, `CONSULTX_SERVICE_KEY`, `SMOKE_USER_ID` and the Gemini embedding key as shell env vars for the bench session only — never committed, never pasted in chat.
+- [ ] **6. رسم الإحالات + مراجعة الخمسين حافة** — run `scripts/build-xref-graph.sql` (section by section), then `node scripts/build-xref-graph-verify.mjs`, then `node scripts/sample-xref-edges.mjs`, then human-review the 50-edge sheet: **accuracy >= 90% gate, reviewer = وسيم or a licensed fire-protection engineer.** No G1 without it.
+- [ ] **7. رفع الأعلام** — flip `ADVISORY_*` flags strictly in the runbook order, one flag per measurement, each gated by a **live** bench run (`CONSULTX_EVAL_LIVE=1`) with **zero `safety_critical` regressions**. `ADVISORY_QUERY_DERIVATION_ENABLED` additionally requires a licensed fire-protection engineer's review of `DERIVATION_MAP` (9 entries are self-labelled extrapolations; review sheet: `reports/derivation-map-review-2026-08-25.md`). Two flags sit outside the strict order with their own gates (see the gate table in the report): `ADVISORY_AUDIENCE_LAYER_ENABLED` (the visible audience selector has no effect until this is ON — flip it in the same window as the frontend deploy) and `VISION_PAGE_MANIFEST_ENABLED` (image path, validate all three modes).
+
+Absolute "do not" list for this rollout: no `supabase db push`; no re-ingest from
+the truncated `ssss` blobs; no flag flip without a live bench; and no reordering
+of the cron-401 fix sequence — the advisory deploys ride the existing launch
+runbook (`docs/launch/deploy-runbook-20260823.md`), they do not precede it.
+
+---
+
 ## Reference
 
 - What was deleted during cleanup and how to recover it: `docs/ARCHIVE_INDEX.md`
