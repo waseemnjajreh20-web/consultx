@@ -1,7 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
-import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Flame, FileText, AlertTriangle, RefreshCw, BookOpen, FlaskConical, ClipboardList, MessageSquare, Plus, Paperclip, FolderOpen, X, Eye, UserCircle, ShieldCheck, Lock, Copy, Share2, FileDown, Users, Check } from "lucide-react";
 import { usePendingFiles } from "@/hooks/usePendingFiles";
 import FilePreviewGrid from "@/components/FilePreviewGrid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  loadAudiencePref,
+  saveAudiencePref,
+  audienceBodyField,
+  DEFAULT_AUDIENCE_PREF,
+  type AudiencePref,
+} from "@/utils/audiencePref";
 import TrialCountdownBanner from "./TrialCountdownBanner";
 import TrialExpiryModal from "./TrialExpiryModal";
 import { useProfile } from "@/hooks/useProfile";
@@ -97,6 +105,23 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+// ===== AUDIENCE PREFERENCE — who the answer is written for =====
+// Labels are Arabic per owner spec regardless of UI language toggle.
+const AUDIENCE_OPTIONS: { value: AudiencePref; label: string }[] = [
+  { value: "engineer", label: "مهندس" },
+  { value: "decision_maker", label: "صاحب قرار" },
+  { value: "project_owner", label: "صاحب مشروع" },
+  { value: "technician", label: "فني" },
+];
+
+function getAudienceStorage(): Storage | null {
+  try {
+    return typeof window !== "undefined" ? window.localStorage : null;
+  } catch {
+    return null;
+  }
+}
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fire-safety-chat`;
 const MAX_RETRIES = 3;
@@ -637,7 +662,7 @@ function trimMessageHistory(
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
   documentTexts, pageManifests,
-  output_format, preferred_standards,
+  output_format, preferred_standards, audience,
   onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, onThinkingStatus, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
@@ -645,6 +670,7 @@ async function streamChat({
   pageManifests?: { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string }[];
   output_format?: string;
   preferred_standards?: string[];
+  audience?: AudiencePref;
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
@@ -669,7 +695,10 @@ async function streamChat({
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: chatHeaders,
-    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards }),
+    // audienceBodyField() is {} for the default ("engineer") and for any
+    // absent/invalid value, so the serialized body stays byte-identical to
+    // the pre-selector body unless a non-default audience is selected.
+    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards, ...audienceBodyField(audience) }),
     signal,
   });
   if (!resp.ok) {
@@ -955,6 +984,16 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [sourcePanel, setSourcePanel] = useState<SourcePanelState>(CLOSED_PANEL);
   const { preferences } = usePreferences();
 
+  // Audience preference — who the answer is written for. Persisted client-side
+  // (localStorage) only; default "engineer" reproduces today's behavior exactly.
+  const [audiencePref, setAudiencePref] = useState<AudiencePref>(() => loadAudiencePref(getAudienceStorage()));
+  const [audienceMenuOpen, setAudienceMenuOpen] = useState(false);
+  const handleAudienceChange = useCallback((value: AudiencePref) => {
+    setAudiencePref(value);
+    saveAudiencePref(getAudienceStorage(), value);
+    setAudienceMenuOpen(false);
+  }, []);
+
   // Sync source-panel state to parent (AppShell renders it as 3rd pane)
   useEffect(() => { onSourceStateChange?.(sourcePanel); }, [sourcePanel, onSourceStateChange]);
 
@@ -1162,6 +1201,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
     currentRetryCount: number = 0, currentMode: ChatMode = "standard",
     convId: string | null = null, currentLanguage: string = "ar", imageBase64s?: string[],
     docTexts?: { name: string; content: string }[], pageManifests?: { pageNumber: number; fileName: string; renderStatus: string; textPreview: string; drawingTypeHint: string }[],
+    currentAudience: AudiencePref = DEFAULT_AUDIENCE_PREF,
   ) => {
     // Abort any previous request
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -1210,6 +1250,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         pageManifests,
         output_format: preferences.output_format,
         preferred_standards: preferences.preferred_standards,
+        audience: currentAudience,
         signal: controller.signal,
         onDelta: upsertAssistant,
         onThinkingStatus: (msg) => setDynamicThinkingMsg(msg),
@@ -1234,7 +1275,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
           if (!validation.valid && currentRetryCount < MAX_RETRIES - 1) {
             setRetryCount(currentRetryCount + 1);
             setChatItems(prev => prev.filter(item => ("type" in item) || item.id !== assistantId));
-            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
+            handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests, currentAudience);
           } else {
             stopLoading();
             if (convId) saveMessage(convId, "assistant", fullContent, currentSources);
@@ -1252,7 +1293,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             if (shouldAutoRetry && currentRetryCount < 1) {
               shouldAutoRetry = false;
               setAutoRetrying(false);
-              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
+              handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests, currentAudience);
               return;
             }
             return; // ignore other aborts (mode switch)
@@ -1309,7 +1350,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         if (shouldAutoRetry && currentRetryCount < 1) {
           shouldAutoRetry = false;
           setAutoRetrying(false);
-          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests);
+          handleSendWithRetry(chatMessages, `${assistantId}-timeout-retry`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests, currentAudience);
           return;
         }
         return; // ignore mode-switch aborts
@@ -1420,6 +1461,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       pagesToSend.length > 0 ? pagesToSend : undefined,
       docTextsToSend.length > 0 ? docTextsToSend : undefined,
       manifestToSend.length > 0 ? manifestToSend : undefined,
+      audiencePref,
     );
   };
 
@@ -2214,11 +2256,58 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
 
           {/* Daily usage counter + Mode indicator */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="mode-indicator-dot" style={{ background: getModeDotColor(chatMode) }} />
               <span className="text-xs text-muted-foreground">
                 {t("currentModeLabel")} <span className="font-medium" style={{ color: getModeDotColor(chatMode) }}>{modeLabelText}</span>
               </span>
+
+              {/* Audience preference selector — compact popover, Arabic labels per owner spec.
+                  Default "engineer" = today's behavior; changing it only affects the request
+                  body when a non-default value is selected (see streamChat). */}
+              <Popover open={audienceMenuOpen} onOpenChange={setAudienceMenuOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    dir="rtl"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md px-1.5 py-0.5 border border-transparent hover:border-border/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    title={language === "en" ? "Answer written for" : "الإجابة موجّهة لـ"}
+                    aria-label={language === "en" ? "Answer written for" : "الإجابة موجّهة لـ"}
+                  >
+                    <Users className="w-3.5 h-3.5 shrink-0" />
+                    <span>{AUDIENCE_OPTIONS.find(o => o.value === audiencePref)?.label}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  dir="rtl"
+                  side="top"
+                  align="start"
+                  role="radiogroup"
+                  aria-label={language === "en" ? "Answer written for" : "الإجابة موجّهة لـ"}
+                  className="w-52 p-1.5 bg-[rgba(10,14,20,0.97)] border-white/10"
+                >
+                  {AUDIENCE_OPTIONS.map(opt => {
+                    const isActive = audiencePref === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={isActive}
+                        onClick={() => handleAudienceChange(opt.value)}
+                        className={cn(
+                          "w-full flex items-center justify-between gap-2 text-sm rounded-md px-2.5 py-2 transition-colors",
+                          isActive ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                        )}
+                        style={isActive ? { background: "rgba(0,212,255,0.12)", color: "#00D4FF" } : undefined}
+                      >
+                        <span>{opt.label}</span>
+                        {isActive && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
+                      </button>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
             </div>
             {dailyLimit < 9999 && (
               <div className={cn("text-xs font-medium", isAtDailyLimit ? "text-destructive" : "text-muted-foreground")}>
