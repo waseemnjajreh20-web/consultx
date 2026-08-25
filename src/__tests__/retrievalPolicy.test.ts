@@ -31,6 +31,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
+  ADVISORY_VECTOR_ANALYSIS_FLAG_ENV,
   ADVISORY_VECTOR_FLAG_ENV,
   applySimilarityFloor,
   isAdvisoryVectorEnabled,
@@ -89,15 +90,109 @@ describe("ADVISORY_VECTOR_RETRIEVAL_ENABLED (restored; deleted by 587fd5b)", () 
     },
   );
 
-  it("with the flag ON, only mode 'standard' routes to the vector engine", () => {
+  it("with the master flag ON alone (analysis sub-flag unset), only mode 'standard' routes to the vector engine", () => {
     const on = envOf({ [ADVISORY_VECTOR_FLAG_ENV]: "1" });
     expect(shouldUseVectorForAdvisory("standard", on)).toBe(true);
-    // The three fixed mode ids are primary / standard / analysis. Analysis text
-    // retrieval is deliberately NOT moved by this flag.
+    // Analysis needs its own sub-flag too (P2 two-key design) — the master
+    // flag alone is not enough to move it.
     expect(shouldUseVectorForAdvisory("analysis", on)).toBe(false);
     expect(shouldUseVectorForAdvisory("primary", on)).toBe(false);
     // Case-sensitive: the mode ids are fixed lowercase strings.
     expect(shouldUseVectorForAdvisory("Standard", on)).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // P2 (2026-08-25): two-key design — ADVISORY_VECTOR_ANALYSIS_ENABLED stages
+  // "analysis" text retrieval behind its own sub-flag, on top of the master.
+  // -------------------------------------------------------------------------
+  describe("ADVISORY_VECTOR_ANALYSIS_ENABLED (P2 two-key design)", () => {
+    const MODES = ["primary", "standard", "analysis", ""];
+    const MASTER_VALUES: (string | undefined)[] = [undefined, "", "0", "1", "true"];
+    const SUB_VALUES: (string | undefined)[] = [undefined, "1", "0"];
+
+    /** Exact expected boolean, reproduced independently of the implementation. */
+    function expected(mode: string, master: string | undefined, sub: string | undefined): boolean {
+      if (master !== "1") return false;
+      if (mode === "standard") return true;
+      if (mode === "analysis") return sub === "1";
+      return false;
+    }
+
+    const envFor = (master: string | undefined, sub: string | undefined) => (key: string) => {
+      if (key === ADVISORY_VECTOR_FLAG_ENV) return master;
+      if (key === ADVISORY_VECTOR_ANALYSIS_FLAG_ENV) return sub;
+      return undefined;
+    };
+
+    for (const mode of MODES) {
+      for (const master of MASTER_VALUES) {
+        for (const sub of SUB_VALUES) {
+          it(`mode=${JSON.stringify(mode)} master=${JSON.stringify(master)} sub=${JSON.stringify(sub)} -> ${expected(mode, master, sub)}`, () => {
+            expect(shouldUseVectorForAdvisory(mode, envFor(master, sub))).toBe(expected(mode, master, sub));
+          });
+        }
+      }
+    }
+
+    it("the analysis sub-flag alone (master unset) enables NOTHING — the master is a hard gate checked first", () => {
+      const subOnly = envOf({ [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: "1" });
+      expect(shouldUseVectorForAdvisory("analysis", subOnly)).toBe(false);
+      expect(shouldUseVectorForAdvisory("standard", subOnly)).toBe(false);
+      expect(shouldUseVectorForAdvisory("primary", subOnly)).toBe(false);
+      expect(shouldUseVectorForAdvisory("", subOnly)).toBe(false);
+    });
+
+    it("both flags ON: standard and analysis both route to the vector engine", () => {
+      const bothOn = envOf({
+        [ADVISORY_VECTOR_FLAG_ENV]: "1",
+        [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: "1",
+      });
+      expect(shouldUseVectorForAdvisory("standard", bothOn)).toBe(true);
+      expect(shouldUseVectorForAdvisory("analysis", bothOn)).toBe(true);
+      expect(shouldUseVectorForAdvisory("primary", bothOn)).toBe(false);
+    });
+
+    it("mode matching is exact and case-sensitive — 'ANALYSIS'/'Analysis'/' analysis' never route to vector", () => {
+      // The mode ids are fixed lowercase strings (primary / standard /
+      // analysis). A case or whitespace variant must fall through to the
+      // final `return false`, not be normalised into a match — routing a
+      // life-safety retrieval path on a fuzzy string compare is exactly the
+      // kind of silent enablement the exact-string rule exists to prevent.
+      const bothOn = envOf({
+        [ADVISORY_VECTOR_FLAG_ENV]: "1",
+        [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: "1",
+      });
+      for (const variant of ["ANALYSIS", "Analysis", "aNaLySiS", " analysis", "analysis ", "STANDARD", "Standard"]) {
+        expect(shouldUseVectorForAdvisory(variant, bothOn), `mode ${JSON.stringify(variant)}`).toBe(false);
+      }
+    });
+
+    it("a missing/undefined mode is false, with both flags ON and with them OFF", () => {
+      // The handler always passes a string, but shouldUseVectorForAdvisory is
+      // the single decision point and must not throw or default-to-true if a
+      // caller ever hands it nothing.
+      const bothOn = envOf({
+        [ADVISORY_VECTOR_FLAG_ENV]: "1",
+        [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: "1",
+      });
+      const allOff = envOf({});
+      for (const missing of [undefined, null]) {
+        expect(shouldUseVectorForAdvisory(missing as unknown as string, bothOn)).toBe(false);
+        expect(shouldUseVectorForAdvisory(missing as unknown as string, allOff)).toBe(false);
+      }
+    });
+
+    it('the sub-flag is exact-string-"1" only, same rule as the master', () => {
+      const master = { [ADVISORY_VECTOR_FLAG_ENV]: "1" };
+      for (const bad of ["", "0", "true", "TRUE", "yes", " 1", "1 "]) {
+        expect(
+          shouldUseVectorForAdvisory("analysis", envOf({ ...master, [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: bad })),
+        ).toBe(false);
+      }
+      expect(
+        shouldUseVectorForAdvisory("analysis", envOf({ ...master, [ADVISORY_VECTOR_ANALYSIS_FLAG_ENV]: "1" })),
+      ).toBe(true);
+    });
   });
 });
 

@@ -27,14 +27,51 @@
 //   - the env var must be exactly the string "1" to enable. Anything else —
 //     unset, "", "0", "true", "TRUE", "yes" — is OFF. A typo cannot silently
 //     turn on a life-safety retrieval path.
-//   - only the advisory/standard TEXT path is governed. Primary mode loads no
-//     documents; the image path calls the vector search unconditionally and
-//     always did (see the note in section 2).
+//   - only the advisory/standard and analysis TEXT paths are governed, and
+//     analysis needs a second key (see "TWO-KEY DESIGN" below). Primary mode
+//     loads no documents; the image path calls the vector search
+//     unconditionally and always did (see the note in section 2).
 //
 // Reversibility: unsetting the env var restores the keyword/storage path with
 // no code change and no deploy.
+//
+// ---------------------------------------------------------------------------
+// TWO-KEY DESIGN (P2, 2026-08-25): staging analysis behind its own sub-flag
+// ---------------------------------------------------------------------------
+// P2 extends vector retrieval from "standard" only to "standard" and
+// "analysis", but the two modes do not earn trust on the same evidence: the
+// standard rollout already has the R6 similarity floor and the fallback-on-
+// empty behaviour proven in this file, while analysis TEXT retrieval has not
+// been sent a single production request through the vector engine yet (the
+// image path is a different call site and was already unconditional — see
+// section 2). One flag cannot represent two different amounts of confidence,
+// so there are two:
+//
+//   - the MASTER flag (ADVISORY_VECTOR_RETRIEVAL_ENABLED) is the switch this
+//     file already had. OFF means every mode is byte-identical to HEAD,
+//     exactly as before P2 — it is still the single kill switch for the
+//     whole advisory text vector path.
+//   - the ANALYSIS sub-flag (ADVISORY_VECTOR_ANALYSIS_FLAG_ENV) only matters
+//     once the master is ON. It stages "analysis" behind its own soak period
+//     instead of letting it ride in on standard's proof:
+//       master ON,  sub unset/not "1" -> standard uses vector, analysis does not
+//       master ON,  sub "1"           -> both standard and analysis use vector
+//       master OFF, sub anything      -> nothing uses vector for either mode
+//                                        (the sub-flag alone decides nothing)
+//
+// Rolling analysis back alone is one env var, not a deploy: turn the sub-flag
+// off and standard keeps running on vector while analysis drops back to the
+// keyword path, no code change on either side.
 
 export const ADVISORY_VECTOR_FLAG_ENV = "ADVISORY_VECTOR_RETRIEVAL_ENABLED";
+
+/**
+ * The analysis-mode sub-flag (P2). Meaningless unless the master flag above
+ * is also "1" — shouldUseVectorForAdvisory checks the master first and
+ * returns false before this constant is ever read, so the sub-flag can never
+ * enable analysis (or anything else) on its own.
+ */
+export const ADVISORY_VECTOR_ANALYSIS_FLAG_ENV = "ADVISORY_VECTOR_ANALYSIS_ENABLED";
 
 export type EnvReader = (key: string) => string | undefined;
 
@@ -44,14 +81,25 @@ export function isAdvisoryVectorEnabled(env: EnvReader): boolean {
 }
 
 /**
- * The single decision point for the advisory/standard TEXT pipeline.
+ * The single decision point for the advisory/standard and analysis TEXT
+ * pipelines (P2 two-key design; see "TWO-KEY DESIGN" above).
  *
- * Returns true only for mode "standard" with the flag on. With the flag off
- * this returns false for every mode, which is what makes flag-OFF behaviour
- * identical to the keyword-only path that shipped before this change.
+ *   - master flag OFF -> false for every mode. This is what keeps flag-OFF
+ *     behaviour byte-identical to the keyword-only path that shipped before
+ *     any vector flag existed.
+ *   - master flag ON, mode "standard" -> true unconditionally. Standard is
+ *     the rollout this module's floor and fallback logic were proven against.
+ *   - master flag ON, mode "analysis" -> true only if the analysis sub-flag
+ *     is also exactly "1". Analysis shares the same floor and fallback code
+ *     but is gated separately because it has not been soaked yet.
+ *   - "primary" and any other mode -> always false; primary loads no
+ *     documents at all.
  */
 export function shouldUseVectorForAdvisory(mode: string, env: EnvReader): boolean {
-  return mode === "standard" && isAdvisoryVectorEnabled(env);
+  if (!isAdvisoryVectorEnabled(env)) return false;
+  if (mode === "standard") return true;
+  if (mode === "analysis") return env(ADVISORY_VECTOR_ANALYSIS_FLAG_ENV) === "1";
+  return false;
 }
 
 /** Which engine actually produced the context that was sent to the model. */

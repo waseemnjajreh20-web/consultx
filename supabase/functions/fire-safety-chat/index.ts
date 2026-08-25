@@ -36,6 +36,7 @@ import {
   VECTOR_MIN_SIMILARITY_REL_ENV,
   type RetrievalEngine,
 } from "./retrievalPolicy.ts";
+import { clampAssembledContext, TOTAL_CONTEXT_CAP } from "./contextBudget.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2362,6 +2363,24 @@ ${sbcContext}
   return { systemPrompt: finalSystemPrompt, extraContext, usedFiles, sourceMeta, engine };
 }
 
+/**
+ * Render user-uploaded text documents (CSV/TXT/schedule files) as the
+ * per-file blocks that go into the system prompt.
+ *
+ * EXTRACTED 2026-08-25 (P2) from the inline loop in the handler's document
+ * injection section, unchanged: same 8,000-char per-file truncation, same
+ * "...[truncated]" suffix, same delimiters. It is a function now only so the
+ * standard/advisory branch can weigh the blocks against the combined context
+ * budget (see ./contextBudget.ts) BEFORE they are concatenated, while the
+ * injection section keeps producing byte-identical output for every branch.
+ */
+function buildDocTextBlocks(docTexts: Array<{ name: string; content: string }>): string[] {
+  return docTexts.map((doc) => {
+    const truncated = doc.content.length > 8000 ? doc.content.slice(0, 8000) + "\n...[truncated]" : doc.content;
+    return `\n--- File: ${doc.name} ---\n${truncated}\n--- End of ${doc.name} ---\n`;
+  });
+}
+
 // ==================== MAIN HANDLER ====================
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -2807,6 +2826,14 @@ serve(async (req) => {
     // requests. Primary mode loads no documents at all, so it stays "keyword"
     // in the sense of "no vector retrieval happened".
     let retrievalEngine: RetrievalEngine = "keyword";
+    // User-document text blocks AFTER the P2 combined-context clamp. Set only
+    // by the STANDARD/ADVISORY TEXT PIPELINE branch below — the only branch
+    // whose structured tables + SBC context can stack past the combined cap.
+    // Left null by the vision and primary branches, in which case the single
+    // shared injection section further down builds the blocks itself exactly
+    // as it always did. There is deliberately still only ONE place that emits
+    // the document block, so its wrapper text cannot drift between branches.
+    let clampedDocBlocks: string[] | null = null;
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -2900,7 +2927,18 @@ serve(async (req) => {
       let files: string[];
       let keywordMeta: SourcePageMeta[];
       if (useVector) {
-        const vec = await fetchSBCContextVector(userQuery, "standard");
+        // Pass the ACTUAL request mode, not a hardcoded "standard" literal.
+        // matchCount inside this function is `mode === 'primary' ? 10 : 25`
+        // (see its definition above), and this branch only runs when mode is
+        // already NOT "primary" (that case is handled earlier), so mode here is
+        // "standard" or "analysis" — both resolve to the same 25-match profile.
+        // The result: when shouldUseVectorForAdvisory has let an analysis text
+        // request through (both flags ON), it gets the same retrieval depth as
+        // standard, not a smaller one by accident. The unrelated 10-match value
+        // at the image/vision call site above (which passes a literal, not the
+        // request mode) is an image-token-budget artifact of that separate call
+        // site — it is deliberately left unchanged.
+        const vec = await fetchSBCContextVector(userQuery, mode);
         sbcContext = vec.context;
         files = vec.files;
         keywordMeta = vec.sourceMeta;
@@ -2923,19 +2961,14 @@ serve(async (req) => {
 
       fullSystemPrompt = basePrompt;
 
-      // Structured table context is injected FIRST for visibility. It is NOT the
-      // higher-trust source: its own block instructs the model that retrieved SBC
-      // document text (appended below) overrides it on any conflict.
-      if (structuredTableContext) {
-        fullSystemPrompt += structuredTableContext;
-      }
-
+      // sbcWarningMsg / the 503 decision are evaluated on the RAW retrieval
+      // results, before any context-budget clamping below — they are about
+      // whether retrieval found anything at all, not about how much of it fits.
+      let sbcWarningMsg = "";
       if (sbcContext) {
-        fullSystemPrompt += sbcContext;
-        const warningMsg = language === "en"
+        sbcWarningMsg = language === "en"
           ? `\n\n⚠️ CRITICAL: Cite exact clause numbers from above. If not found, say: "The required information is not available in the current files."`
           : `\n\n⚠️ هام: استشهد بأرقام المواد الدقيقة من المستندات أعلاه. إذا لم تجد، قل: "المعلومات المطلوبة غير متوفرة في الملفات الحالية."`;
-        fullSystemPrompt += warningMsg;
       } else if (!structuredTableContext) {
         // No SBC content loaded at all (neither structured tables nor storage chunks).
         // Return a clean 503 instead of calling Gemini with no context (which produces
@@ -2958,6 +2991,58 @@ serve(async (req) => {
       // whether this branch should instead 503 is an owner decision, not a
       // comment-level one.
       
+      // ── Context budget clamp (P2) ────────────────────────────────────────────
+      // structuredTableContext + sbcContext + the user-document blocks can
+      // stack past TOTAL_CONTEXT_CAP: each piece is capped on its own
+      // (sbcContext at MAX_TOTAL_CONTEXT inside retrieval, each doc block at
+      // 8,000 chars) but nothing capped their SUM, and the vector path's
+      // 25-match retrieval widens that surface further. clampAssembledContext
+      // enforces the combined cap deterministically: tableBlock is never
+      // touched, docBlocks are dropped/truncated from the end first, sbcContext
+      // only after that.
+      //
+      // The cap is applied ONLY on the flag-gated vector path. On the keyword
+      // path an infinite cap is passed, which makes clampAssembledContext an
+      // exact identity pass-through (its first branch returns the inputs
+      // unchanged, same string values and same array reference). That is what
+      // keeps flag-OFF behaviour byte-identical to HEAD at ANY size rather than
+      // only when the total happens to fit: with the flag off this branch
+      // cannot truncate anything HEAD would have sent. Whether the keyword path
+      // should also be capped is a separate, pre-existing question and is not
+      // silently answered here.
+      //
+      // The doc blocks are built here (rather than only in the shared injection
+      // section further down) solely so they can be weighed against the same
+      // budget; each still carries its own unchanged 8,000-char per-file
+      // truncation.
+      const clamped = clampAssembledContext(
+        {
+          tableBlock: structuredTableContext || "",
+          sbcContext: sbcContext || "",
+          docBlocks: buildDocTextBlocks(resolvedDocTexts),
+        },
+        useVector ? TOTAL_CONTEXT_CAP : Number.POSITIVE_INFINITY,
+      );
+      if (clamped.truncated) {
+        console.warn(
+          `[ContextBudget] Assembled context exceeded ${TOTAL_CONTEXT_CAP} chars — ` +
+          `clamped to ${clamped.totalChars} chars (dropped ${clamped.droppedDocBlocks} doc block(s))`
+        );
+      }
+      clampedDocBlocks = clamped.docBlocks;
+
+      // Structured table context is injected FIRST for visibility. It is NOT the
+      // higher-trust source: its own block instructs the model that retrieved SBC
+      // document text (appended below) overrides it on any conflict.
+      if (clamped.tableBlock) {
+        fullSystemPrompt += clamped.tableBlock;
+      }
+
+      if (sbcContext) {
+        fullSystemPrompt += clamped.sbcContext;
+        fullSystemPrompt += sbcWarningMsg;
+      }
+
       // Final binding reminder: diagnostic protocol takes precedence over reference context
       const finalBindingReminder = language === "en"
         ? `\n\n🔒 FINAL INSTRUCTION: The reference text above is for grounding only. It does NOT mean the user inputs are sufficient. If critical variables (occupancy, height, area) are missing, you MUST stop and ask 1–3 clarifying questions first. Do not produce a final A-F answer until inputs are sufficient. Do not assume missing variables.`
@@ -2970,18 +3055,19 @@ serve(async (req) => {
     // specifications). Injected AFTER the SBC context so they appear as user-provided
     // project data, clearly distinct from code references.
     if (resolvedDocTexts.length > 0) {
+      // Prefer the budget-clamped blocks when the standard/advisory text branch
+      // produced them; the vision and primary branches never clamp, so they
+      // build the same blocks here from the same helper — identical output.
+      const docBlocks = clampedDocBlocks ?? buildDocTextBlocks(resolvedDocTexts);
       let docTextBlock = language === "en"
         ? `\n\n=== USER-PROVIDED DOCUMENTS (Text/CSV/Schedule Files) ===\n`
         : `\n\n=== وثائق المستخدم المرفوعة (ملفات نصية / CSV / جداول) ===\n`;
-      for (const doc of resolvedDocTexts) {
-        const truncated = doc.content.length > 8000 ? doc.content.slice(0, 8000) + "\n...[truncated]" : doc.content;
-        docTextBlock += `\n--- File: ${doc.name} ---\n${truncated}\n--- End of ${doc.name} ---\n`;
-      }
+      docTextBlock += docBlocks.join("");
       docTextBlock += language === "en"
         ? `\n=== END USER-PROVIDED DOCUMENTS ===\nNOTE: The above documents are user-supplied project data (schedules, specifications, material lists). Treat them as CONFIRMED project inputs. Reference them explicitly when analyzing compliance. Do not confuse them with code references.\n`
         : `\n=== نهاية وثائق المستخدم ===\nملاحظة: الوثائق أعلاه بيانات مشروع مرفوعة من المستخدم (جداول، مواصفات، قوائم مواد). اعتبرها مدخلات مشروع مؤكدة. أشر إليها صراحة عند تحليل الامتثال. لا تخلطها مع مراجع الكود.\n`;
       fullSystemPrompt += docTextBlock;
-      console.log(`[DocText] Injected ${resolvedDocTexts.length} document(s) into prompt`);
+      console.log(`[DocText] Injected ${docBlocks.length} of ${resolvedDocTexts.length} document(s) into prompt`);
     }
 
     // ── Apply user preferences to system prompt ────────────────────────────
