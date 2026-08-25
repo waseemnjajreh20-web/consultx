@@ -1,0 +1,19 @@
+{
+  "case_id": "NHC-DWG-24",
+  "review_status": "seed_pending_owner_review",
+  "source_file": "NHC-DWG-24.pdf",
+  "source_facts_reference": "D:/sbc_consultx/derived/project_facts/nhc_dwg_24_project_facts.json + D:/sbc_consultx/derived/plan_parse/nhc_dwg_24_page_inventory.json",
+  "scope_note": "Seeded for page 1 only. That is the page project_facts attributes ALL document_identity, contact_identity, drawing_identity and legend_identity facts to, and page_inventory tags it likely_sheet_type='life_safety'. Pages 2-22 (fire_alarm, fire_fighting, site, unknown sheets per page_inventory) are NOT covered by this seed — extend cases.json with additional page-scoped cases before scoring those pages.",
+  "expected_sheet_type": "life_safety",
+  "expected_occupancy_group": null,
+  "expected_device_counts": {},
+  "expected_legend_symbols": [
+    "ES: EXIT SEPRATION",
+    "DD: DIAGONAL DISTANCE",
+    "DEAD END DISTANCE",
+    "COMMON PATH OF TRAVEL",
+    "TRAVEL DISTANCE"
+  ],
+  "expected_unreadable_pages": [],
+  "notes": "expected_occupancy_group and expected_device_counts are intentionally null/empty: no occupancy classification or per-device-type counts exist anywhere in nhc_dwg_24_project_facts.json (fact_groups present are only document_identity, contact_identity, floor_identity, drawing_identity, legend_identity, explicit_dimension_or_distance, system_identity, room_label_identity) — none of those groups contain a device count or an SBC-201-style occupancy group, so nothing was fabricated to fill them. expected_legend_symbols lists the 5 distance_legend_marker facts whose source_page is 1 (ES/DD/DEAD END/COMMON PATH/TRAVEL DISTANCE). expected_unreadable_pages is empty because page_inventory reports a normal text_block_count (133) and image_block_count (43) for page 1 with no illegibility flag — this is NOT a claim that the page is perfectly legible, only that the derived extraction found no reason to mark it unreadable. Owner review required before this seed is used to gate anything."
+}

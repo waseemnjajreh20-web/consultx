@@ -1,0 +1,13 @@
+{
+  "case_id": "shorebase-ele-018",
+  "review_status": "todo_owner_fills",
+  "source_file": "05-624000-4800000700-ASB-ELE-DRG-000018_B.pdf",
+  "source_facts_reference": null,
+  "scope_note": "Skeleton only. Nothing below has been reviewed or confirmed by the owner. No derived project_facts / page_inventory extraction exists yet for this drawing (that pipeline has only been run against D:/sbc_consultx/raw/plans so far) — this case was selected purely from the digest's file listing of the D:/وسيم fire-alarm submittal set, not from any derived facts.",
+  "expected_sheet_type": null,
+  "expected_occupancy_group": null,
+  "expected_device_counts": {},
+  "expected_legend_symbols": [],
+  "expected_unreadable_pages": [],
+  "notes": "TODO(owner): open the drawing at the page(s) listed in cases.json, read the legend/title block by eye, and fill expected_sheet_type / expected_occupancy_group / expected_device_counts / expected_legend_symbols / expected_unreadable_pages with only what is actually visible. Set review_status to 'reviewed' once done."
+}

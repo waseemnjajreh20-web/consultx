@@ -1,0 +1,23 @@
+[
+  {
+    "id": "NHC-DWG-24",
+    "title": "NHC-DWG-24.pdf - page 1 (title block + distance/legend sheet, 'Layout life safety' / 'Evacuation Plan')",
+    "source_path": "D:/sbc_consultx/raw/plans/NHC-DWG-24.pdf",
+    "pages": [1],
+    "expected_facts_file": "expected/nhc-dwg-24.json"
+  },
+  {
+    "id": "test_plan",
+    "title": "test_plan.pdf - page 1 (life_safety sheet per derived page inventory)",
+    "source_path": "D:/sbc_consultx/raw/plans/test_plan.pdf",
+    "pages": [1],
+    "expected_facts_file": "expected/test_plan.json"
+  },
+  {
+    "id": "shorebase-ele-018",
+    "title": "05-624000-4800000700-ASB-ELE-DRG-000018_B.pdf - Shore Base electrical/fire-alarm submittal drawing (BOOK 4 STAGE 3C SUBMITTED), ~5.2MB, chosen over the 123MB FLS-DRG-000001 sheet in the same folder",
+    "source_path": "D:/وسيم/بن ظفرة - fire alarm + emergency lighting 11-12-2025/BOOK 4 SHORE BASE STAGE 3C (SUBMITTED)/05-624000-4800000700-ASB-ELE-DRG-000018_B.pdf",
+    "pages": [1],
+    "expected_facts_file": "expected/shorebase-ele-018.json"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "case_id": "test_plan",
+  "review_status": "todo_owner_fills",
+  "source_file": "test_plan.pdf",
+  "source_facts_reference": null,
+  "scope_note": "Skeleton only. Nothing below has been reviewed or confirmed by the owner. cases.json currently scopes this case to page 1 (derived page_inventory tags it likely_sheet_type='life_safety', text_block_count=219) — re-derive the values against that same page before filling this in, or change 'pages' in cases.json first if a different page should be the target.",
+  "expected_sheet_type": null,
+  "expected_occupancy_group": null,
+  "expected_device_counts": {},
+  "expected_legend_symbols": [],
+  "expected_unreadable_pages": [],
+  "notes": "TODO(owner): open D:/sbc_consultx/raw/plans/test_plan.pdf at the page(s) listed in cases.json, read the legend/title block by eye, and fill expected_sheet_type / expected_occupancy_group / expected_device_counts / expected_legend_symbols / expected_unreadable_pages with only what is actually visible. Set review_status to 'reviewed' once done."
+}
