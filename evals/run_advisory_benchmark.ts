@@ -297,6 +297,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // A paced run can outlive a 1h user-session JWT. When CONSULTX_TOKEN_FILE is
 // set, the Bearer token is re-read from that file before every call, so an
 // outer wrapper can refresh the session and rewrite the file mid-run.
+// CONSULTX_EVAL_SUBSET: comma-separated question ids (e.g. "ADV-001,ADV-021")
+// to run a reduced, quota-friendly sample instead of the full 43. Scores are
+// computed over the subset only and the report labels itself accordingly.
+const EVAL_SUBSET = new Set(
+  (Deno.env.get("CONSULTX_EVAL_SUBSET") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+);
+
 const TOKEN_FILE = Deno.env.get("CONSULTX_TOKEN_FILE") ?? "";
 function liveAuthKey(fallback: string): string {
   if (!TOKEN_FILE) return fallback;
@@ -691,8 +698,12 @@ async function main() {
       Deno.exit(1);
     }
 
+    const liveRows = EVAL_SUBSET.size > 0 ? rows.filter((r) => EVAL_SUBSET.has(r.id)) : rows;
+    if (EVAL_SUBSET.size > 0) {
+      console.log(`  SUBSET RUN: ${liveRows.length}/${rows.length} questions (${[...EVAL_SUBSET].join(", ")})`);
+    }
     results = [];
-    for (const row of rows) {
+    for (const row of liveRows) {
       for (const evalMode of EVAL_MODES) {
         console.log(`  Running ${row.id} [${evalMode}] (${row.category})...`);
         const result = await liveScore(row, evalMode, edgeUrl, serviceKey, userId);
