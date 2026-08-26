@@ -282,7 +282,58 @@ interface LiveCallResult {
   error?: string;
 }
 
+// Pacing + provider-rate-limit resilience (added 2026-08-26 after the first
+// live run): 86 back-to-back heavy calls exhausted the Gemini per-minute
+// quota after ~9 questions — every later call came back as the function's
+// honest 503 GEMINI_RATE_LIMIT passthrough, contaminating the scores.
+//   CONSULTX_EVAL_DELAY_MS  — fixed pause between questions (default 15000)
+//   On HTTP 503, the call is retried up to 4 times with a 75s backoff —
+//   long enough for a per-minute provider quota window to reset.
+const EVAL_DELAY_MS = Number(Deno.env.get("CONSULTX_EVAL_DELAY_MS") ?? "15000");
+const RATE_LIMIT_RETRIES = 4;
+const RATE_LIMIT_BACKOFF_MS = 75_000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// A paced run can outlive a 1h user-session JWT. When CONSULTX_TOKEN_FILE is
+// set, the Bearer token is re-read from that file before every call, so an
+// outer wrapper can refresh the session and rewrite the file mid-run.
+const TOKEN_FILE = Deno.env.get("CONSULTX_TOKEN_FILE") ?? "";
+function liveAuthKey(fallback: string): string {
+  if (!TOKEN_FILE) return fallback;
+  try {
+    const t = Deno.readTextFileSync(TOKEN_FILE).trim();
+    return t.length > 0 ? t : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 async function callEdgeFunction(
+  questionText: string,
+  mode: EvalMode | "primary",
+  language: "ar" | "en",
+  edgeUrl: string,
+  serviceKey: string,
+  userId: string,
+): Promise<LiveCallResult> {
+  let last: LiveCallResult = {
+    answer: "",
+    latency_ms: 0,
+    headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
+    error: "not attempted",
+  };
+  for (let attempt = 0; attempt <= RATE_LIMIT_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log(`    503 rate-limited — waiting ${RATE_LIMIT_BACKOFF_MS / 1000}s (retry ${attempt}/${RATE_LIMIT_RETRIES})`);
+      await sleep(RATE_LIMIT_BACKOFF_MS);
+    }
+    last = await callEdgeFunctionOnce(questionText, mode, language, edgeUrl, serviceKey, userId);
+    if (!(last.error ?? "").startsWith("HTTP 503")) return last;
+  }
+  return last;
+}
+
+async function callEdgeFunctionOnce(
   questionText: string,
   mode: EvalMode | "primary",
   language: "ar" | "en",
@@ -296,7 +347,7 @@ async function callEdgeFunction(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${serviceKey}`,
+        "Authorization": `Bearer ${liveAuthKey(serviceKey)}`,
       },
       body: JSON.stringify({
         messages: [{ role: "user", content: questionText }],
@@ -648,6 +699,7 @@ async function main() {
         results.push(result);
         const suffix = result.error ? ` ERROR: ${result.error}` : ` ${result.latency_ms}ms`;
         console.log(`    ${result.id} [${evalMode}] done.${suffix}`);
+        if (EVAL_DELAY_MS > 0) await sleep(EVAL_DELAY_MS);
       }
     }
 
@@ -657,6 +709,7 @@ async function main() {
       const s = await livePrimarySmoke(row, edgeUrl, serviceKey, userId);
       smoke.push(s);
       console.log(`    ${s.id} [primary] ${s.passed ? "PASS" : "FAIL"} — ${s.detail}`);
+      if (EVAL_DELAY_MS > 0) await sleep(EVAL_DELAY_MS);
     }
   }
 
