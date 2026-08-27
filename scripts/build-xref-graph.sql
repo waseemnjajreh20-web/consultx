@@ -1066,14 +1066,35 @@ WHERE tc.table_name = 'sbc_xref_edges'
   AND tc.constraint_type = 'FOREIGN KEY'
   AND kcu.column_name = 'tgt_doc_id';
 
--- 8c. Zero edges whose evidence still shows an external-standard citation
--- (i.e. the Section 3 strip-before-extraction actually worked -- design 2.3
--- zero-tolerance requirement).
+-- 8c. Zero edges whose evidence still shows a {2,4}-digit external-standard
+-- citation -- i.e. the Section 3 strip-before-extraction actually worked
+-- (design 2.3 zero-tolerance requirement). SCOPE (2026-08-27 review): this
+-- gate audits exactly the citation shape the strip removes ({2,4}-digit
+-- majors). It is structurally blind to single-digit citations ("Section 4 of
+-- NFPA 13"), which the strip deliberately does NOT remove -- see 8c-ii.
 -- EXPECTED: 0
 SELECT count(*) AS edges_with_leaked_external_citation
 FROM sbc_xref_edges
 WHERE extractor_ver = 'xref_v1'
   AND evidence ~* 'Sections?\s+[0-9]{2,4}(\.[0-9]+)*\s+of\s+(ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)';
+
+-- 8c-ii. INFORMATIONAL (not a gate): edges whose evidence carries a
+-- SINGLE-digit external-standard citation ("Section 4 of NFPA 13"). These
+-- can never mint a false edge (every edge-target regex requires a 3-4 digit
+-- major), and the strip keeps {2,4} on purpose so the certified xref_v1
+-- extraction stays byte-reproducible -- but such text CAN sit inside the
+-- +/-80-char evidence excerpt of a genuine internal edge. Counted here for
+-- visibility; widening the strip to {1,4} is a G2 candidate that requires an
+-- extractor_ver bump and a rebuild.
+-- EXPECTED: report (non-zero acceptable -- record the count, monitor drift)
+-- MEASURED 2026-08-27 against production xref_v1: 16 edges (e.g. "Section
+-- 4.6 of NFPA 221", "Section 7.3.3.1 of NFPA 14" inside otherwise-valid
+-- internal-edge evidence).
+SELECT count(*) AS edges_with_single_digit_external_citation_in_evidence
+FROM sbc_xref_edges
+WHERE extractor_ver = 'xref_v1'
+  AND evidence ~* 'Sections?\s+[0-9](\.[0-9]+)*\s+of\s+(ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)'
+  AND evidence !~* 'Sections?\s+[0-9]{2,4}(\.[0-9]+)*\s+of\s+(ICC|NFPA|ASTM|UL|ASME|ANSI|ISO|API|AWS)';
 
 -- 8d. Top-10 in-degree -- PLAUSIBILITY probe, not a pass/fail gate. Design
 -- 2.5 predicts 903.3.1.1 (automatic sprinkler systems) at the top in BOTH

@@ -143,3 +143,25 @@ unaffected; probe 8c (leak check) covers all poison-capable shapes.
   state; safe per the argument above).
 - Design bands (196–216 / 134–148) UNCHANGED — the fix makes the file meet
   the original expectation rather than adjusting the expectation.
+
+## Follow-up 2026-08-27 — 8c blind spot closed with an informational probe
+
+The 2026-08-27 code review (CONFIRMED finding) showed the claim above —
+"probe 8c covers all poison-capable shapes" — is true for EDGE poisoning but
+incomplete for EVIDENCE contamination: after Section 6 redefined an external
+citation as `{1,4}` digits, single-digit citations ("Section 4.6 of NFPA
+221") are (a) deliberately NOT removed by the `{2,4}` strips, (b) unable to
+mint any edge (targets require 3–4 digit majors), yet (c) able to sit inside
+the ±80-char stored `evidence` excerpt of a genuine internal edge — where 8c,
+still `{2,4}`, is structurally blind to them.
+
+Disposition:
+- 8c stays a **zero-tolerance gate** with its comment narrowed to the truth:
+  it audits exactly the `{2,4}` shapes the strip removes.
+- New probe **8c-ii** (informational, non-gating) counts single-digit
+  external citations in evidence. MEASURED against production `xref_v1`
+  2026-08-27 (read-only): **8c = 0 (gate holds), 8c-ii = 16 edges**.
+- Widening the strips to `{1,4}` would clean these 16 excerpts but changes
+  extraction input, so it requires an `extractor_ver` bump and a rebuild —
+  queued as a **G2 candidate**, not done here (the certified xref_v1 build
+  stays byte-reproducible).
