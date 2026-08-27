@@ -56,3 +56,6 @@ testsprite_tests/
 .verdent/testing/e2e/*_results.json
 
 __pycache__/
+
+# Live-bench wrapper local state: session JWT token file + run logs (never commit)
+evals/live/.local/

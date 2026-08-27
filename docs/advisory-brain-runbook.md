@@ -163,6 +163,27 @@ npx deno run --allow-read --allow-write --allow-env --allow-net \
 - Output lands in `evals/results/{YYYY-MM-DD}/results.json` and
   `evals/results/{YYYY-MM-DD}/report.md` — keep both; the dated directory is
   the audit trail that Section 1, item 2 asks for when reporting a stop.
+  A `CONSULTX_EVAL_SUBSET` run writes to `evals/results/{YYYY-MM-DD}-subset/`
+  instead, so a reduced sample can never overwrite the day's canonical
+  full-run record, and its report opens with a `SUBSET RUN` banner.
+- Optional pacing/resilience env vars (added 2026-08-26/27 after the first
+  live run exhausted the provider quota):
+
+  | Variable | Default | Meaning |
+  |---|---|---|
+  | `CONSULTX_EVAL_DELAY_MS` | `15000` | Pause between questions. Must be a non-negative number of milliseconds — a malformed value (`"15s"`) aborts the run rather than silently disabling pacing. |
+  | `CONSULTX_TOKEN_FILE` | unset | Path to a file holding the smoke user's session JWT; re-read before every call so a wrapper can refresh a >1h run. The producing wrapper is `evals/live/bench-live2.mjs` (mints the session, refreshes every 25 min). Fallbacks to `CONSULTX_SERVICE_KEY` are warned, never silent. |
+  | `CONSULTX_EVAL_SUBSET` | unset | Comma-separated question ids for a reduced, quota-friendly sample. Unknown ids abort the run (a typo must not shrink it silently); smoke rows derive from the subset. |
+
+  Genuine rate limits (HTTP 503 with `error_code: GEMINI_RATE_LIMIT`, or
+  HTTP 429) are retried up to 4 times with a 75s backoff; every other
+  failure — including deterministic 503s — returns immediately. Three
+  consecutive questions that exhaust their retries abort the whole run with
+  exit code 2 and **no report** (infrastructure starvation is not a
+  measurement). The report records retry counts and total backoff so a clean
+  latency p95 can be distinguished from one obtained through retries.
+  Launch helpers: `node evals/live/bench-live2.mjs` (foreground) or
+  `node evals/live/bench-launch.mjs` (detached; log in `evals/live/.local/`).
 - The safety-critical check is **enforced by the harness, not manual**.
   `computeMetrics()` collects every `safety_critical: true` row that failed
   tier-A into `safety_critical_regressions`; a non-empty list forces

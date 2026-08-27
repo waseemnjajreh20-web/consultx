@@ -119,6 +119,14 @@ interface EvalResult {
   latency_ms: number;
   answer_preview: string;
   error?: string;
+  // Rate-limit retry visibility (live mode): how many attempts the answer
+  // took and how long the harness slept in backoff to obtain it. latency_ms
+  // stays per-successful-attempt by design; these expose the difference.
+  attempts?: number;
+  backoff_ms?: number;
+  // True when the whole retry ladder was exhausted by a rate limit — feeds
+  // the main loop's starvation circuit breaker.
+  rate_limit_starved?: boolean;
 }
 
 interface SmokeResult {
@@ -135,7 +143,13 @@ interface SmokeResult {
 interface RunReport {
   run_date: string;
   mode: "dry-run" | "live";
+  // Present only on CONSULTX_EVAL_SUBSET runs: the requested question ids.
+  // Subset artifacts also land in a separate "<date>-subset" directory so a
+  // reduced sample can never overwrite the day's canonical full-run record.
+  subset?: string[];
   total: number;
+  // Live-mode retry visibility: rate-limit retries across the run.
+  rate_limit_retries?: { retried_questions: number; total_retries: number; total_backoff_ms: number };
   tier_a: {
     exact_section_match_rate: number;
     chain_match_rate: number;
@@ -280,6 +294,12 @@ interface LiveCallResult {
   latency_ms: number;
   headers: ResponseHeaders;
   error?: string;
+  // Structured error state (2026-08-27 review fixes): the retry decision and
+  // the report read these, never the formatted `error` string.
+  status?: number;
+  error_code?: string;
+  attempts: number;
+  backoff_ms: number;
 }
 
 // Pacing + provider-rate-limit resilience (added 2026-08-26 after the first
@@ -287,30 +307,77 @@ interface LiveCallResult {
 // quota after ~9 questions — every later call came back as the function's
 // honest 503 GEMINI_RATE_LIMIT passthrough, contaminating the scores.
 //   CONSULTX_EVAL_DELAY_MS  — fixed pause between questions (default 15000)
-//   On HTTP 503, the call is retried up to 4 times with a 75s backoff —
-//   long enough for a per-minute provider quota window to reset.
-const EVAL_DELAY_MS = Number(Deno.env.get("CONSULTX_EVAL_DELAY_MS") ?? "15000");
+//   Genuine rate limits (503 + error_code GEMINI_RATE_LIMIT, or 429) are
+//   retried up to 4 times with a 75s backoff — long enough for a per-minute
+//   provider quota window to reset. All other failures return immediately.
+// Malformed values ("15s", "15 000") must fail loudly, not silently disable
+// pacing: Number("15s") is NaN and `NaN > 0` is false at every guard site.
+// An exported-but-empty var (?? misses it) falls back to the default.
+const EVAL_DELAY_MS = (() => {
+  const raw = Deno.env.get("CONSULTX_EVAL_DELAY_MS");
+  if (raw === undefined || raw.trim() === "") return 15_000;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) {
+    console.error(
+      `CONSULTX_EVAL_DELAY_MS="${raw}" is not a non-negative number of milliseconds — refusing to run unpaced.`,
+    );
+    Deno.exit(1);
+  }
+  return n;
+})();
 const RATE_LIMIT_RETRIES = 4;
 const RATE_LIMIT_BACKOFF_MS = 75_000;
+// Abort the whole run once this many consecutive questions exhaust their
+// retry ladder on a provider rate limit: the quota is gone for longer than a
+// window and every further question would burn 5 minutes to learn nothing.
+const STARVATION_ABORT_AFTER = 3;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // A paced run can outlive a 1h user-session JWT. When CONSULTX_TOKEN_FILE is
 // set, the Bearer token is re-read from that file before every call, so an
 // outer wrapper can refresh the session and rewrite the file mid-run.
 // CONSULTX_EVAL_SUBSET: comma-separated question ids (e.g. "ADV-001,ADV-021")
-// to run a reduced, quota-friendly sample instead of the full 43. Scores are
-// computed over the subset only and the report labels itself accordingly.
+// to run a reduced, quota-friendly sample instead of the full 43. Unknown ids
+// are a hard error, smoke rows come from the subset, the report carries a
+// SUBSET banner, and artifacts land in "<date>-subset/" so a sample can never
+// overwrite the day's canonical full-run record.
 const EVAL_SUBSET = new Set(
   (Deno.env.get("CONSULTX_EVAL_SUBSET") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 );
 
 const TOKEN_FILE = Deno.env.get("CONSULTX_TOKEN_FILE") ?? "";
+// A fallback to the service key changes the auth principal (different quota
+// and RLS path), so it must never happen silently — warn once per cause.
+const tokenWarned = new Set<string>();
+function warnTokenOnce(cause: string) {
+  if (tokenWarned.has(cause)) return;
+  tokenWarned.add(cause);
+  console.warn(`    WARNING: token file ${cause} — falling back to CONSULTX_SERVICE_KEY for this and similar calls`);
+}
+function jwtExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return typeof payload.exp === "number" && payload.exp * 1000 < Date.now();
+  } catch {
+    return false; // not a decodable JWT — let the server judge it
+  }
+}
 function liveAuthKey(fallback: string): string {
   if (!TOKEN_FILE) return fallback;
   try {
     const t = Deno.readTextFileSync(TOKEN_FILE).trim();
-    return t.length > 0 ? t : fallback;
+    if (t.length === 0) {
+      warnTokenOnce("is empty");
+      return fallback;
+    }
+    if (jwtExpired(t)) {
+      // Still send it (the wrapper may be mid-refresh); the warning names the
+      // real cause so a page of 401s is not misread as a model regression.
+      warnTokenOnce("holds an EXPIRED JWT (wrapper refresh stalled?)");
+    }
+    return t;
   } catch {
+    warnTokenOnce("could not be read");
     return fallback;
   }
 }
@@ -323,21 +390,31 @@ async function callEdgeFunction(
   serviceKey: string,
   userId: string,
 ): Promise<LiveCallResult> {
-  let last: LiveCallResult = {
-    answer: "",
-    latency_ms: 0,
-    headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
-    error: "not attempted",
-  };
-  for (let attempt = 0; attempt <= RATE_LIMIT_RETRIES; attempt++) {
-    if (attempt > 0) {
-      console.log(`    503 rate-limited — waiting ${RATE_LIMIT_BACKOFF_MS / 1000}s (retry ${attempt}/${RATE_LIMIT_RETRIES})`);
-      await sleep(RATE_LIMIT_BACKOFF_MS);
-    }
-    last = await callEdgeFunctionOnce(questionText, mode, language, edgeUrl, serviceKey, userId);
-    if (!(last.error ?? "").startsWith("HTTP 503")) return last;
+  // Retry ONLY genuine rate limits, decided on structured fields:
+  //   - 503 with error_code GEMINI_RATE_LIMIT (provider per-minute quota)
+  //   - 429 (the function's per-user quota limiter)
+  // Deterministic 503s (empty SBC context, GEMINI_PROVIDER_ERROR) and every
+  // other failure return immediately — waiting 75s changes nothing for them.
+  let backoffTotal = 0;
+  for (let attempt = 0; ; attempt++) {
+    const r = await callEdgeFunctionOnce(questionText, mode, language, edgeUrl, serviceKey, userId);
+    r.attempts = attempt + 1;
+    r.backoff_ms = backoffTotal;
+    const rateLimited = (r.status === 503 && r.error_code === "GEMINI_RATE_LIMIT") || r.status === 429;
+    if (!rateLimited || attempt >= RATE_LIMIT_RETRIES) return r;
+    console.log(
+      `    ${r.status} rate-limited (${r.error_code ?? "no error_code"}) — waiting ${RATE_LIMIT_BACKOFF_MS / 1000}s (retry ${attempt + 1}/${RATE_LIMIT_RETRIES})`,
+    );
+    await sleep(RATE_LIMIT_BACKOFF_MS);
+    backoffTotal += RATE_LIMIT_BACKOFF_MS;
   }
-  return last;
+}
+
+// True when a result burned its whole retry ladder on a rate limit — the
+// signal the main loop's starvation circuit breaker counts.
+function exhaustedByRateLimit(r: LiveCallResult): boolean {
+  return r.attempts > RATE_LIMIT_RETRIES &&
+    ((r.status === 503 && r.error_code === "GEMINI_RATE_LIMIT") || r.status === 429);
 }
 
 async function callEdgeFunctionOnce(
@@ -366,11 +443,22 @@ async function callEdgeFunctionOnce(
 
     if (!res.ok) {
       const body = await res.text();
+      // The function's error envelope always carries error_code
+      // (GEMINI_RATE_LIMIT / GEMINI_PROVIDER_ERROR / ...) — parse it BEFORE
+      // slicing so the retry decision never depends on message formatting.
+      let errorCode: string | undefined;
+      try {
+        errorCode = JSON.parse(body)?.error_code ?? undefined;
+      } catch { /* non-JSON error body — leave error_code unset */ }
       return {
         answer: "",
         latency_ms: Date.now() - t0,
         headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
         error: `HTTP ${res.status}: ${body.slice(0, 200)}`,
+        status: res.status,
+        error_code: errorCode,
+        attempts: 1,
+        backoff_ms: 0,
       };
     }
 
@@ -405,13 +493,17 @@ async function callEdgeFunctionOnce(
 
     // Latency covers the full round trip including stream assembly, not
     // just time-to-first-byte, so p95 reflects what a real user waits for.
-    return { answer, latency_ms: Date.now() - t0, headers };
+    // (Deliberately per-attempt: retry backoffs are harness pacing, not user
+    // experience — the report surfaces attempts/backoff_ms separately.)
+    return { answer, latency_ms: Date.now() - t0, headers, status: res.status, attempts: 1, backoff_ms: 0 };
   } catch (err) {
     return {
       answer: "",
       latency_ms: Date.now() - t0,
       headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
       error: String(err),
+      attempts: 1,
+      backoff_ms: 0,
     };
   }
 }
@@ -442,6 +534,9 @@ async function liveScore(
     latency_ms: call.latency_ms,
     answer_preview: call.answer.slice(0, 200),
     error: call.error,
+    attempts: call.attempts,
+    backoff_ms: call.backoff_ms,
+    rate_limit_starved: exhaustedByRateLimit(call),
   };
 }
 
@@ -490,11 +585,15 @@ async function livePrimarySmoke(
 // selection is preferable to a random one.
 const SMOKE_ROW_COUNT = 2;
 const EVAL_MODES: EvalMode[] = ["standard", "analysis"];
+// Set once in main() after the JSONL loads; the subset banner uses it to show
+// "N/43" honestly even if the benchmark grows.
+let FULL_BENCHMARK_ROWS = 0;
 
 function computeMetrics(
   results: EvalResult[],
   smoke: SmokeResult[],
   mode: "dry-run" | "live",
+  subset?: string[],
 ): RunReport {
   const date = new Date().toISOString().slice(0, 10);
   const total = results.length;
@@ -551,9 +650,20 @@ function computeMetrics(
 
   const pass = metricsPass && smokePass && safetyCriticalRegressions.length === 0;
 
+  const retriedRows = results.filter((r) => (r.attempts ?? 1) > 1);
+  const rateLimitRetries = mode === "live"
+    ? {
+      retried_questions: retriedRows.length,
+      total_retries: retriedRows.reduce((s, r) => s + (r.attempts ?? 1) - 1, 0),
+      total_backoff_ms: retriedRows.reduce((s, r) => s + (r.backoff_ms ?? 0), 0),
+    }
+    : undefined;
+
   return {
     run_date: date,
     mode,
+    subset,
+    rate_limit_retries: rateLimitRetries,
     total,
     tier_a: {
       exact_section_match_rate: Math.round(sectionMatchRate * 100),
@@ -585,6 +695,22 @@ function renderReport(report: RunReport): string {
     `**Overall result: ${status}**`,
     "",
   ];
+
+  if (report.subset && report.subset.length > 0) {
+    lines.push(
+      `> **SUBSET RUN (${report.results.length / EVAL_MODES.length}/${FULL_BENCHMARK_ROWS} questions): ${report.subset.join(", ")}**`,
+      "> Scores below cover ONLY this sample — not comparable to a full-run report.",
+      "",
+    );
+  }
+
+  if (report.rate_limit_retries && report.rate_limit_retries.total_retries > 0) {
+    const rl = report.rate_limit_retries;
+    lines.push(
+      `> Rate-limit retries: ${rl.total_retries} across ${rl.retried_questions} question(s), total backoff ${Math.round(rl.total_backoff_ms / 1000)}s. Latency figures exclude backoff.`,
+      "",
+    );
+  }
 
   if (report.safety_critical_regressions.length > 0) {
     lines.push(
@@ -671,19 +797,40 @@ async function main() {
     .filter((line) => line.trim().length > 0)
     .map((line) => JSON.parse(line));
 
+  FULL_BENCHMARK_ROWS = rows.length;
   console.log(`Loaded ${rows.length} benchmark questions.`);
   console.log(`Mode: ${isLive ? "LIVE — calling deployed edge function" : "DRY-RUN — no API calls"}`);
+  if (isLive) console.log(`  Pacing: ${EVAL_DELAY_MS}ms between questions.`);
 
   if (!isLive) {
     console.log("Set CONSULTX_EVAL_LIVE=1 to run against the deployed edge function.\n");
   }
 
-  const smokeRows = rows.slice(0, SMOKE_ROW_COUNT);
+  // Subset validation applies to both modes so a dry run exercises the same
+  // path. Unknown ids are a hard error — an id typo must never shrink the run
+  // silently (an empty selection used to score as a vacuous PASS).
+  const selectedRows = EVAL_SUBSET.size > 0 ? rows.filter((r) => EVAL_SUBSET.has(r.id)) : rows;
+  if (EVAL_SUBSET.size > 0) {
+    const knownIds = new Set(rows.map((r) => r.id));
+    const unknown = [...EVAL_SUBSET].filter((id) => !knownIds.has(id));
+    if (unknown.length > 0) {
+      console.error(
+        `CONSULTX_EVAL_SUBSET contains id(s) not in the benchmark: ${unknown.join(", ")} — refusing to run.`,
+      );
+      Deno.exit(1);
+    }
+    console.log(`  SUBSET RUN: ${selectedRows.length}/${rows.length} questions (${[...EVAL_SUBSET].join(", ")})`);
+  }
+
+  // Smoke rows derive from the SELECTED rows: a 1-question subset makes only
+  // that question's calls, and the pass verdict never hinges on rows the
+  // operator excluded.
+  const smokeRows = selectedRows.slice(0, SMOKE_ROW_COUNT);
   let results: EvalResult[];
   let smoke: SmokeResult[];
 
   if (!isLive) {
-    results = rows.flatMap((row) => EVAL_MODES.map((m) => buildDryRunResult(row, m)));
+    results = selectedRows.flatMap((row) => EVAL_MODES.map((m) => buildDryRunResult(row, m)));
     smoke = smokeRows.map(buildDryRunSmoke);
   } else {
     const edgeUrl = Deno.env.get("CONSULTX_EDGE_URL");
@@ -698,18 +845,27 @@ async function main() {
       Deno.exit(1);
     }
 
-    const liveRows = EVAL_SUBSET.size > 0 ? rows.filter((r) => EVAL_SUBSET.has(r.id)) : rows;
-    if (EVAL_SUBSET.size > 0) {
-      console.log(`  SUBSET RUN: ${liveRows.length}/${rows.length} questions (${[...EVAL_SUBSET].join(", ")})`);
-    }
     results = [];
-    for (const row of liveRows) {
+    // Starvation circuit breaker: consecutive questions that exhaust the
+    // retry ladder on a rate limit mean the quota is gone for longer than a
+    // window — abort WITHOUT writing a report (infrastructure failure, not a
+    // model result) instead of burning 5 minutes per remaining question.
+    let consecutiveStarved = 0;
+    for (const row of selectedRows) {
       for (const evalMode of EVAL_MODES) {
         console.log(`  Running ${row.id} [${evalMode}] (${row.category})...`);
         const result = await liveScore(row, evalMode, edgeUrl, serviceKey, userId);
         results.push(result);
         const suffix = result.error ? ` ERROR: ${result.error}` : ` ${result.latency_ms}ms`;
         console.log(`    ${result.id} [${evalMode}] done.${suffix}`);
+        consecutiveStarved = result.rate_limit_starved ? consecutiveStarved + 1 : 0;
+        if (consecutiveStarved >= STARVATION_ABORT_AFTER) {
+          console.error(
+            `\nABORT: ${consecutiveStarved} consecutive calls exhausted their rate-limit retries — ` +
+            `provider quota is gone. No report written (partial scores would be contamination, not measurement).`,
+          );
+          Deno.exit(2);
+        }
         if (EVAL_DELAY_MS > 0) await sleep(EVAL_DELAY_MS);
       }
     }
@@ -724,9 +880,16 @@ async function main() {
     }
   }
 
-  const report = computeMetrics(results, smoke, mode);
+  const report = computeMetrics(
+    results,
+    smoke,
+    mode,
+    EVAL_SUBSET.size > 0 ? [...EVAL_SUBSET] : undefined,
+  );
 
-  const dateDir = `./evals/results/${report.run_date}`;
+  // Subset artifacts get their own directory: a reduced sample must never
+  // overwrite the day's canonical full-run record.
+  const dateDir = `./evals/results/${report.run_date}${EVAL_SUBSET.size > 0 ? "-subset" : ""}`;
   await Deno.mkdir(dateDir, { recursive: true });
   await Deno.writeTextFile(`${dateDir}/results.json`, JSON.stringify(report, null, 2));
   await Deno.writeTextFile(`${dateDir}/report.md`, renderReport(report));
@@ -746,6 +909,10 @@ async function main() {
   console.log(`  ${report.tier_b.note}`);
   console.log(`  tier-B citation discipline: ${report.tier_b.citation_discipline_rate}%  (not gating)`);
   console.log(`  Latency p95:                ${report.latency_p95_ms}ms  (threshold <= 45000ms)`);
+  if (report.rate_limit_retries && report.rate_limit_retries.total_retries > 0) {
+    const rl = report.rate_limit_retries;
+    console.log(`  Rate-limit retries:         ${rl.total_retries} across ${rl.retried_questions} question(s), backoff ${Math.round(rl.total_backoff_ms / 1000)}s (excluded from latency)`);
+  }
   console.log(`  Primary smoke:              ${smoke.every((s) => s.passed) ? "PASS" : "FAIL"}`);
 
   Deno.exit(report.pass ? 0 : 1);
