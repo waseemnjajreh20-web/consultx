@@ -50,7 +50,7 @@ for (const raw of args) {
       .eq('section', section)
       .eq('sbc_documents.code_type', code)
       .limit(3);
-    if (error) { console.error(`QUERY ERROR for ${code} ${section}: ${error.message}`); process.exit(2); }
+    if (error) { console.error(`QUERY ERROR for ${code} ${section}: ${error.message}`); process.exitCode = 2; continue; }
 
     if (!data || data.length === 0) {
       console.log(`NOT FOUND  ${code} Section ${section} — no defining chunk in sbc_section_defs`);
@@ -66,4 +66,7 @@ for (const raw of args) {
     }
   }
 }
-process.exit(missing > 0 ? 1 : 0);
+// Set the exit code and let the process drain naturally: an abrupt
+// process.exit() while undici sockets are still closing crashes Node 24 on
+// Windows (libuv assertion in src\win\async.c).
+if (missing > 0 && !process.exitCode) process.exitCode = 1;
