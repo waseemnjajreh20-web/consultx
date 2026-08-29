@@ -903,8 +903,12 @@ async function main() {
   );
 
   // Subset artifacts get their own directory: a reduced sample must never
-  // overwrite the day's canonical full-run record.
-  const dateDir = `./evals/results/${report.run_date}${EVAL_SUBSET.size > 0 ? "-subset" : ""}`;
+  // overwrite the day's canonical full-run record. Same rule for dry runs
+  // (added 2026-08-29 after a verification dry run clobbered the day's live
+  // full-run artifacts on disk): only a full LIVE run may write the bare
+  // dated directory.
+  const dirSuffix = EVAL_SUBSET.size > 0 ? "-subset" : mode === "dry-run" ? "-dry" : "";
+  const dateDir = `./evals/results/${report.run_date}${dirSuffix}`;
   await Deno.mkdir(dateDir, { recursive: true });
   await Deno.writeTextFile(`${dateDir}/results.json`, JSON.stringify(report, null, 2));
   await Deno.writeTextFile(`${dateDir}/report.md`, renderReport(report));
