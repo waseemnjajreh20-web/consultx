@@ -2264,7 +2264,12 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
 
               {/* Audience preference selector — compact popover, Arabic labels per owner spec.
                   Default "engineer" = today's behavior; changing it only affects the request
-                  body when a non-default value is selected (see streamChat). */}
+                  body when a non-default value is selected (see streamChat).
+                  Hidden behind the VITE build flag until ADVISORY_AUDIENCE_LAYER_ENABLED is
+                  flipped server-side in the same deploy window (runbook Section 2: while the
+                  edge flag is OFF the server hard-forces "engineer", so showing the selector
+                  would be a lie to the user). */}
+              {import.meta.env.VITE_ADVISORY_AUDIENCE_LAYER_ENABLED === "1" && (
               <Popover open={audienceMenuOpen} onOpenChange={setAudienceMenuOpen}>
                 <PopoverTrigger asChild>
                   <button
@@ -2308,6 +2313,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                   })}
                 </PopoverContent>
               </Popover>
+              )}
             </div>
             {dailyLimit < 9999 && (
               <div className={cn("text-xs font-medium", isAtDailyLimit ? "text-destructive" : "text-muted-foreground")}>
