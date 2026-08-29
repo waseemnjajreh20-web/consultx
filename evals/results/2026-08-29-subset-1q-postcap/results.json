@@ -1,0 +1,103 @@
+{
+  "run_date": "2026-08-29",
+  "mode": "live",
+  "subset": [
+    "ADV-002"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 2,
+  "tier_a": {
+    "exact_section_match_rate": 0,
+    "chain_match_rate": 100,
+    "refusal_correctness": 100,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 0,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 33368,
+  "safety_critical_regressions": [],
+  "smoke": [
+    {
+      "id": "ADV-002",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 8456,
+      "answer_length": 862
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-002",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json\",\"pageStart\":196,\"pageEnd\":250,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 4361,
+      "latency_ms": 33368,
+      "answer_preview": "أهلاً بك. بناءً على المعطيات التي قدمتها (غرفة تخزين بمساحة 80 م² داخل مبنى مكاتب من المجموعة B)، فإن المعلومات كافية لتقديم تحليل مباشر وفق كود البناء السعودي.\n\nفيما يلي التحليل التفصيلي بناءً على اس",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-002",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":250,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":166,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":76,\"pageEnd\":200,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 4584,
+      "latency_ms": 32602,
+      "answer_preview": "بصفتي محللاً متخصصاً في منظومة ConsultX، أقدم لكم المراجعة الفنية التالية بناءً على البروتوكول المعتمد.\n\n***\n\n### **I. تصنيف المشروع / Project Classification**\n*   **نوع المسألة:** استفسار تصنيف إشغال",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}
