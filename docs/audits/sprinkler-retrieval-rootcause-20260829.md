@@ -88,3 +88,23 @@ measured live in the baseline. What was deferred is now actionable.
 
 Option A is recommended first: no deploy, instantly reversible by
 renaming back, and testable within minutes.
+
+## Execution record (2026-08-29, same day)
+
+- Billing root cause resolved first: the production Gemini project
+  ("My First Project", project-5ee56bb9-4f97-48e3-a18) was on free tier
+  because its billing account (0103B8-5FE59F-2F6071) was CLOSED - the
+  owner reopened it and paid tier was verified live (16/16 subset answers
+  with zero 503s immediately after the daily free quota was exhausted).
+- Clean pre-quarantine baseline recorded:
+  evals/results/2026-08-29-subset-baseline-prequarantine/ - sections 47%,
+  chains 50%, refusal 75%, hallucination 17%, p95 50s. ADV-031 analysis
+  again retrieved ONLY SBC801_Ch10_v2_chunks.json and again fabricated an
+  NFPA clause - the diagnosed mechanism reproduced exactly on a clean run.
+- Option A EXECUTED by the owner: the 3 legacy files moved to
+  zz_quarantined_20260829/ inside bucket ssss (names stripped of
+  "chunk"/"801" tokens so no fetchSBCContext filter can re-admit them);
+  bucket root verified clean. Rollback = unquarantine-legacy-blobs.mjs.
+- Post-quarantine 8q measurement launched immediately after; cache note:
+  file selection reads a live bucket list per request, so quarantined
+  content is unreachable regardless of the 30-min fileCache TTL.
