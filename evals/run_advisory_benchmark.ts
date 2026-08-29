@@ -546,7 +546,9 @@ async function liveScore(
     headers: call.headers,
     answer_length: call.answer.length,
     latency_ms: call.latency_ms,
-    answer_preview: call.answer.slice(0, 200),
+    // 500 chars (was 200, widened 2026-08-29): refusal-phrasing forensics
+    // needed more than the greeting + first sentence.
+    answer_preview: call.answer.slice(0, 500),
     error: call.error,
     attempts: call.attempts,
     backoff_ms: call.backoff_ms,

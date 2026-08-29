@@ -122,6 +122,16 @@ export const SOURCE_SCOPE_BOUNDARY_MARKERS = [
  */
 export const SOURCE_SCOPE_BOUNDARY_PATTERNS = [
   /غير\s+مت(?:وا|و)فرة?\s+(?:في|ضمن)\s+مصادر\s+النظام/,
+  // Measured 2026-08-29, first post-CITATION_TOKENS live run: standard-mode
+  // NFPA-bait rows refused with "غير متوفرة كنص مباشر في المصادر المعتمدة
+  // لدي (SBC 201 و SBC 801)" — the same instructed rule-4 semantics
+  // (explicit negation of availability, anchored on the system's source set)
+  // with "المصادر المعتمدة" in place of "مصادر النظام". Same safety envelope
+  // as the pattern above: an answer that declines availability and then
+  // supplies NFPA content anyway is still caught by mentions_forbidden_claim
+  // and has_fabricated_clause. Held to the availability-negation +
+  // approved-sources anchor; NOT widened to bare "غير متوفر".
+  /غير\s+مت(?:وا|و)فرة?\s+(?:كنصوص?\s+مباشرة?\s+)?(?:في|ضمن)\s+المصادر\s+المعتمدة/,
 ];
 
 export const REFUSAL_MARKERS = [
