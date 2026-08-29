@@ -42,7 +42,7 @@
  * Output written to: evals/results/{YYYY-MM-DD}/results.json + report.md
  */
 
-import { RETRIEVAL_ENGINE_HEADER } from "../supabase/functions/fire-safety-chat/retrievalPolicy.ts";
+import { RETRIEVAL_ENGINE_HEADER, RETRIEVAL_FALLBACK_HEADER } from "../supabase/functions/fire-safety-chat/retrievalPolicy.ts";
 import { assembleSseText, parseSseAnswer } from "./lib/sse.ts";
 // The pure scoring predicates live in ./lib/scoring.ts so they can be
 // imported and EXECUTED by src/__tests__/evalScoring.test.ts — this file
@@ -103,6 +103,10 @@ interface ResponseHeaders {
   retrieval_engine: string | null;
   sbc_sources: string | null;
   sbc_source_meta: string | null;
+  // X-Retrieval-Fallback (2026-08-29): why the vector path fell back to
+  // keyword, when it did. null = header absent (vector success, flag off,
+  // or a function version predating the header).
+  fallback_reason: string | null;
 }
 
 interface EvalResult {
@@ -167,8 +171,17 @@ interface RunReport {
   results: EvalResult[];
 }
 
-const TIER_B_NOTE =
-  "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)";
+// CONSULTX_EVAL_TIER_B_GATE=1 (2026-08-29, runbook amendment): once
+// ADVISORY_CITATION_TOKENS_ENABLED is live on the deployed function, the
+// tier-B citation-discipline metric becomes a binding gate (>= 80% per
+// docs/advisory-acceptance.md). Off by default so dry runs and pre-flip
+// live runs keep their historical meaning.
+const TIER_B_GATE = Deno.env.get("CONSULTX_EVAL_TIER_B_GATE") === "1";
+const TIER_B_GATE_THRESHOLD = 0.80;
+
+const TIER_B_NOTE = TIER_B_GATE
+  ? "tier-B (GATING — ADVISORY_CITATION_TOKENS_ENABLED live; threshold >= 80%)"
+  : "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)";
 
 // ---------------------------------------------------------------------------
 // Scoring helpers
@@ -264,7 +277,7 @@ function buildDryRunResult(row: BenchmarkRow, mode: EvalMode): EvalResult {
     safety_critical: row.safety_critical === true,
     tier_a,
     tier_b,
-    headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
+    headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null, fallback_reason: null },
     answer_length: answer.length,
     latency_ms: 0,
     answer_preview: answer.slice(0, 200),
@@ -453,7 +466,7 @@ async function callEdgeFunctionOnce(
       return {
         answer: "",
         latency_ms: Date.now() - t0,
-        headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
+        headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null, fallback_reason: null },
         error: `HTTP ${res.status}: ${body.slice(0, 200)}`,
         status: res.status,
         error_code: errorCode,
@@ -466,6 +479,7 @@ async function callEdgeFunctionOnce(
       retrieval_engine: res.headers.get(RETRIEVAL_ENGINE_HEADER),
       sbc_sources: res.headers.get("X-SBC-Sources"),
       sbc_source_meta: res.headers.get("X-SBC-Source-Meta"),
+      fallback_reason: res.headers.get(RETRIEVAL_FALLBACK_HEADER),
     };
 
     const contentType = res.headers.get("Content-Type") ?? "";
@@ -500,7 +514,7 @@ async function callEdgeFunctionOnce(
     return {
       answer: "",
       latency_ms: Date.now() - t0,
-      headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null },
+      headers: { retrieval_engine: null, sbc_sources: null, sbc_source_meta: null, fallback_reason: null },
       error: String(err),
       attempts: 1,
       backoff_ms: 0,
@@ -646,6 +660,7 @@ function computeMetrics(
     sectionMatchRate >= 0.60 &&
     refusalCorrectness >= 1.00 &&
     hallucinationRate <= 0.05 &&
+    (!TIER_B_GATE || citationDiscipline >= TIER_B_GATE_THRESHOLD) &&
     (mode === "dry-run" || latencyP95 <= 45_000);
 
   const pass = metricsPass && smokePass && safetyCriticalRegressions.length === 0;
@@ -738,7 +753,7 @@ function renderReport(report: RunReport): string {
     "",
     "| Metric | Score | Gate |",
     "|---|---|---|",
-    `| Citation discipline rate | ${report.tier_b.citation_discipline_rate}% | not gating — informational only |`,
+    `| Citation discipline rate | ${report.tier_b.citation_discipline_rate}% | ${TIER_B_GATE ? `GATING: >= ${TIER_B_GATE_THRESHOLD * 100}% — ${report.tier_b.citation_discipline_rate >= TIER_B_GATE_THRESHOLD * 100 ? "PASS" : "FAIL"}` : "not gating — informational only"} |`,
     "",
     "## Primary-mode [SWITCH:...] smoke check",
     "",
@@ -907,7 +922,7 @@ async function main() {
   console.log(`  tier-A refusal correctness: ${report.tier_a.refusal_correctness}%  (threshold 100%)`);
   console.log(`  tier-A hallucination rate:  ${report.tier_a.hallucination_rate}%  (threshold <= 5%)`);
   console.log(`  ${report.tier_b.note}`);
-  console.log(`  tier-B citation discipline: ${report.tier_b.citation_discipline_rate}%  (not gating)`);
+  console.log(`  tier-B citation discipline: ${report.tier_b.citation_discipline_rate}%  ${TIER_B_GATE ? `(GATING, threshold >= ${TIER_B_GATE_THRESHOLD * 100}%)` : "(not gating)"}`);
   console.log(`  Latency p95:                ${report.latency_p95_ms}ms  (threshold <= 45000ms)`);
   if (report.rate_limit_retries && report.rate_limit_retries.total_retries > 0) {
     const rl = report.rate_limit_retries;

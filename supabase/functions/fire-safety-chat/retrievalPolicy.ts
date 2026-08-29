@@ -107,6 +107,17 @@ export type RetrievalEngine = "vector" | "keyword";
 
 export const RETRIEVAL_ENGINE_HEADER = "X-Retrieval-Engine";
 
+/**
+ * Emitted ONLY when the vector path was attempted (flag on, eligible mode)
+ * and fell back to keyword — names WHY, so a keyword row in the bench is
+ * attributable ("below_floor" vs "embedding_http_429" vs "no_matches" ...)
+ * instead of a silent fail-open. Absent on vector success, on primary mode,
+ * and with the flag off (header absent = pre-2026-08-29 behaviour).
+ * Added 2026-08-29: the first full live bench showed 6/43 standard rows on
+ * keyword with no recorded reason — an observability gap flagged in review.
+ */
+export const RETRIEVAL_FALLBACK_HEADER = "X-Retrieval-Fallback";
+
 // ===========================================================================
 // 2. SIMILARITY FLOOR  (risk R6)
 // ===========================================================================

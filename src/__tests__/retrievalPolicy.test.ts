@@ -341,7 +341,11 @@ describe("index.ts wiring (source contract — does not execute the Edge Functio
 
   it("an empty post-floor result falls back to the keyword path instead of building a context from noise", () => {
     expect(INDEX_SRC).toContain("if (floored.kept.length === 0)");
-    expect(INDEX_SRC).toMatch(/floored\.kept\.length === 0\)[\s\S]{0,600}?return keywordFallback\(\);/);
+    // keywordFallback carries the fallback reason since 2026-08-29 (the
+    // X-Retrieval-Fallback observability header) — the contract is that the
+    // below-floor branch still returns the keyword fallback, whatever label
+    // it passes.
+    expect(INDEX_SRC).toMatch(/floored\.kept\.length === 0\)[\s\S]{0,600}?return keywordFallback\("below_floor"\);/);
   });
 
   it("the context block is built from the FLOORED matches, not the raw RPC result", () => {

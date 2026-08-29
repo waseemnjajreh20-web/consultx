@@ -59,14 +59,48 @@ Companion documents (binding, not restated in full here):
 
 ## 2. Flag order
 
+> **AMENDMENT 2026-08-29 (owner-approved: "موافق"): the order below is the
+> BINDING order.** The original order had VECTOR_ANALYSIS second; it was
+> swapped with CITATION_TOKENS on measured grounds from the first clean full
+> live run (evals/results/2026-08-29/): (1) fabricated standard clauses are
+> the clearest measured defect (10/86 rows — 7 keyword, 3 vector) and the
+> citation contract is the flag that attacks it, while refusal correctness is
+> also failing and its canonical sentences ride the same contract; (2)
+> VECTOR_ANALYSIS has no defined gate yet (see Section 4 below — a dated gate
+> note is required first), and vector currently trails keyword on section
+> recall (net -4 over 34 comparable pairs), so extending vector to analysis
+> is premature before graph expansion lands. Both sessions' analyses concur.
+> Honest expectation recorded: CITATION_TOKENS should reduce NFPA-clause
+> fabrication but will NOT lift exact-section match toward the 60% threshold
+> by itself — that requires graph expansion + the G2 corpus-granularity
+> fixes (see docs/audits/sprinkler-retrieval-rootcause-20260829.md).
+
 ```
-ADVISORY_VECTOR_RETRIEVAL_ENABLED
-  -> ADVISORY_VECTOR_ANALYSIS_ENABLED
-  -> ADVISORY_CITATION_TOKENS_ENABLED
+ADVISORY_VECTOR_RETRIEVAL_ENABLED        (LIVE since 2026-08-26; verdict 2026-08-29: keep ON)
+  -> ADVISORY_CITATION_TOKENS_ENABLED    (next — amendment above)
   -> ADVISORY_GRAPH_EXPANSION_ENABLED
+  -> ADVISORY_VECTOR_ANALYSIS_ENABLED    (needs its gate note written first)
   -> ADVISORY_QUERY_ANALYSIS_ENABLED
   -> sub-flags
 ```
+
+Flipping `ADVISORY_CITATION_TOKENS_ENABLED` carries two bound requirements
+(same change set, not afterthoughts):
+1. The bench harness's tier-B gate goes binding: every live run after the
+   flip sets `CONSULTX_EVAL_TIER_B_GATE=1` (>= 80% citation discipline joins
+   the pass gate — implemented 2026-08-29 in the harness).
+2. The flag changes prompts, so the first post-flip bench MUST include the
+   primary-mode smoke rows (three-mode rule), and refusal-gate failures are
+   inspected for Arabic-equivalent refusal phrasings before being declared
+   real (measured example: ADV-020 refused validly on 2026-08-29 with a
+   phrasing the scorer missed).
+
+Observability note (2026-08-29): the deployed function now emits
+`X-Retrieval-Fallback` naming WHY a vector-eligible request fell back to
+keyword (missing_env / embedding_http_NNN / embedding_empty / search_error /
+no_matches / below_floor / exception); the harness records it per row as
+`headers.fallback_reason`. Added after 6/43 standard rows fell back silently
+in the first full run.
 
 Status of each name against the current repository (re-checked 2026-08-25
 against the WORKING TREE, which at that moment carried uncommitted work from
@@ -77,7 +111,7 @@ stale as phases ship and it does not describe `HEAD`):
 |---|---|---|
 | `ADVISORY_VECTOR_RETRIEVAL_ENABLED` | **CONFIRMED implemented.** Default OFF, `mode==="standard"` only. | `supabase/functions/fire-safety-chat/retrievalPolicy.ts` (`isAdvisoryVectorEnabled`, `shouldUseVectorForAdvisory`) |
 | `ADVISORY_VECTOR_ANALYSIS_ENABLED` | **CONFIRMED implemented, UNCOMMITTED.** Exists in the working tree only, from the concurrent P2 lane — not in `HEAD` as of 2026-08-25. Sub-flag of the master above under a two-key design: meaningless unless the master is also `1`, and it has a live reader (`index.ts` line ~2905 calls `shouldUseVectorForAdvisory`). Default OFF. | `supabase/functions/fire-safety-chat/retrievalPolicy.ts` (`ADVISORY_VECTOR_ANALYSIS_FLAG_ENV`, `shouldUseVectorForAdvisory`) |
-| `ADVISORY_CITATION_TOKENS_ENABLED` | **NOT VERIFIED.** No matching name found in code — the only occurrences in the repository are this runbook and the tier-B note the bench harness prints. The behavior it would gate (the `[SBC-{201\|801} Section … \| conf:…]` token grammar) is specified but not yet flagged — see `docs/advisory-acceptance.md` Section 2. | — |
+| `ADVISORY_CITATION_TOKENS_ENABLED` | **CONFIRMED implemented** (row updated 2026-08-29; the 2026-08-25 "NOT VERIFIED" predated the wiring wave 52997c5). Default OFF, exact-string "1". Gates the CITATION_TOKEN_CONTRACT prompt block (standard+analysis, never primary) and the P5-R4 external-standard honesty block. | `supabase/functions/fire-safety-chat/index.ts` (~line 3364), `promptContract.ts` (~line 187) |
 | `ADVISORY_GRAPH_EXPANSION_ENABLED` | **CONFIRMED implemented, UNCOMMITTED — but stage G0: ZERO READERS.** The flag and its gate function exist in the working tree from a concurrent lane; `index.ts` does not import the module, so setting the env var changes nothing today. Do not read "the name now exists in code" as "the flag does something." Default OFF. | `supabase/functions/fire-safety-chat/graphExpansion.ts` (`ADVISORY_GRAPH_FLAG_ENV`, `isGraphExpansionEnabled`); design in `docs/audits/graphrag-design-20260823.md` Section (ج) |
 | `ADVISORY_QUERY_ANALYSIS_ENABLED` | **CONFIRMED implemented, UNCOMMITTED — ZERO READERS,** same as the row above: present in the working tree, not imported by `index.ts`. Corresponds to making the Mandatory Diagnostic Protocol (`promptContract.ts` prompt text) deterministic instead of prompt-only — see `graphrag-design-20260823.md` Section (هـ) 5.8, which states plainly the protocol today has "لا كود يحلّل التصنيف/الارتفاع/المساحة، ولا آلة حالة." Default OFF. | `supabase/functions/fire-safety-chat/queryAnalysis.ts` (`ADVISORY_QUERY_ANALYSIS_FLAG_ENV`, `isQueryAnalysisEnabled`) |
 | sub-flags (`…_CROSSCODE`, `…_TABLES`, `…_HOP2`, `…_LISTS`, `…_NEIGHBOR`, `…_NORMATIVE`) | **Proposed, G2 stage only** — each ships and is measured independently, never batched. | `graphrag-design-20260823.md` Section (ج), "G2 — توسيع محكوم" table |

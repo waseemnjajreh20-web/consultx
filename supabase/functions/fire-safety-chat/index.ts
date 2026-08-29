@@ -30,6 +30,7 @@ import { getSecretKey, getSecretKeyOrNull, getPublishableKey } from "../_shared/
 import {
   applySimilarityFloor,
   RETRIEVAL_ENGINE_HEADER,
+  RETRIEVAL_FALLBACK_HEADER,
   resolveFloor,
   shouldUseVectorForAdvisory,
   VECTOR_MIN_SIMILARITY_ABS,
@@ -1766,6 +1767,15 @@ type VectorRetrievalResult = {
    * to emit X-Graph-Expansion at all (header absent = HEAD behaviour).
    */
   graphExpansionCount: number | null;
+  /**
+   * Non-null ONLY on a keyword-fallback branch: names which branch fired
+   * ("missing_env" | "embedding_http_<status>" | "embedding_empty" |
+   * "search_error" | "no_matches" | "below_floor" | "exception"). Surfaced as
+   * the X-Retrieval-Fallback response header so a keyword row in the bench is
+   * attributable from outside the function. Always null on the vector
+   * success path.
+   */
+  fallbackReason: string | null;
 };
 
 /**
@@ -1793,11 +1803,12 @@ async function fetchSBCContextVector(
   extraKeywords?: string[],
   reasoningHints?: VectorReasoningHints
 ): Promise<VectorRetrievalResult> {
-  const keywordFallback = async (): Promise<VectorRetrievalResult> => ({
+  const keywordFallback = async (reason: string): Promise<VectorRetrievalResult> => ({
     ...(await fetchSBCContext(query, extraKeywords)),
     engine: "keyword",
     docIds: [],
     graphExpansionCount: null,
+    fallbackReason: reason,
   });
 
   try {
@@ -1807,7 +1818,7 @@ async function fetchSBCContextVector(
 
     if (!supabaseUrl || !serviceRoleKey || !GEMINI_API_KEY) {
       console.error("[Vector RAG] Missing env vars, falling back to keyword search");
-      return keywordFallback();
+      return keywordFallback("missing_env");
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
@@ -1832,14 +1843,14 @@ async function fetchSBCContextVector(
 
     if (!embResponse.ok) {
       console.error("[Vector RAG] Embedding failed:", embResponse.status);
-      return keywordFallback();
+      return keywordFallback(`embedding_http_${embResponse.status}`);
     }
 
     const embData = await embResponse.json();
     const queryEmbedding = embData.embedding?.values;
     if (!queryEmbedding) {
       console.error("[Vector RAG] No embedding returned, falling back");
-      return keywordFallback();
+      return keywordFallback("embedding_empty");
     }
 
     // 2. Detect code type filter
@@ -1867,7 +1878,7 @@ async function fetchSBCContextVector(
 
     if (error || !matches?.length) {
       console.error("[Vector RAG] Search error:", error?.message || "no matches");
-      return keywordFallback();
+      return keywordFallback(error ? "search_error" : "no_matches");
     }
 
     // 3b. Similarity floor (risk R6). match_sbc_documents applies NO threshold
@@ -1892,7 +1903,7 @@ async function fetchSBCContextVector(
         `[Vector RAG] All ${matches.length} matches below floor ` +
         `(top=${floored.topSimilarity?.toFixed(3)}, cut=${floored.effectiveFloor?.toFixed(3)}) — falling back to keyword`
       );
-      return keywordFallback();
+      return keywordFallback("below_floor");
     }
 
     if (floored.droppedCount > 0) {
@@ -2044,10 +2055,10 @@ async function fetchSBCContextVector(
       }
     }
 
-    return { context, files: usedFiles, sourceMeta, engine: "vector", docIds, graphExpansionCount };
+    return { context, files: usedFiles, sourceMeta, engine: "vector", docIds, graphExpansionCount, fallbackReason: null };
   } catch (err) {
     console.error("[Vector RAG] Fatal error:", err);
-    return keywordFallback();
+    return keywordFallback("exception");
   }
 }
 
@@ -3095,6 +3106,11 @@ serve(async (req) => {
     // so header-absent is the default for every existing behaviour (flag off,
     // keyword engine, primary mode, or a failed expansion attempt).
     let graphExpansionCount: number | null = null;
+    // Why the vector path fell back to keyword, when it did — surfaced as the
+    // X-Retrieval-Fallback header ONLY when non-null (vector attempted AND
+    // fell back). Stays null when vector succeeded, when the flag is off, and
+    // on primary mode, so header-absent is the pre-existing behaviour.
+    let retrievalFallbackReason: string | null = null;
     // User-document text blocks AFTER the P2 combined-context clamp. Set only
     // by the STANDARD/ADVISORY TEXT PIPELINE branch below — the only branch
     // whose structured tables + SBC context can stack past the combined cap.
@@ -3422,6 +3438,7 @@ serve(async (req) => {
         retrievalEngine = vec.engine;
         retrievedDocIds = vec.docIds;
         graphExpansionCount = vec.graphExpansionCount;
+        retrievalFallbackReason = vec.fallbackReason;
       } else {
         const kw = await fetchSBCContext(userQuery);
         sbcContext = kw.context;
@@ -3796,6 +3813,18 @@ serve(async (req) => {
               "Access-Control-Expose-Headers":
                 `${corsHeaders["Access-Control-Expose-Headers"]}, ${GRAPH_EXPANSION_HEADER}`,
               [GRAPH_EXPANSION_HEADER]: `on:${graphExpansionCount}`,
+            }
+          : {}),
+        // X-Retrieval-Fallback (2026-08-29): present ONLY when the vector
+        // path was attempted and fell back to keyword — names the branch that
+        // fired. Mutually exclusive with the graph-expansion block above
+        // (that one requires engine==="vector" success), so the two
+        // Expose-Headers overrides can never collide.
+        ...(retrievalFallbackReason !== null
+          ? {
+              "Access-Control-Expose-Headers":
+                `${corsHeaders["Access-Control-Expose-Headers"]}, ${RETRIEVAL_FALLBACK_HEADER}`,
+              [RETRIEVAL_FALLBACK_HEADER]: retrievalFallbackReason,
             }
           : {}),
       },
