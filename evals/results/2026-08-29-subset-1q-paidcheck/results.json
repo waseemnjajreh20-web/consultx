@@ -1,0 +1,104 @@
+{
+  "run_date": "2026-08-29",
+  "mode": "live",
+  "subset": [
+    "ADV-001"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 2,
+  "tier_a": {
+    "exact_section_match_rate": 25,
+    "chain_match_rate": 100,
+    "refusal_correctness": 100,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 0,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 42896,
+  "safety_critical_regressions": [],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 4244,
+      "answer_length": 611
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 877,
+      "answer_preview": "",
+      "error": "HTTP 502: <html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 6414,
+      "latency_ms": 42896,
+      "answer_preview": "بالتأكيد، سيتم تحليل الاستفسار وفقاً للبروتوكول المعتمد.\n\n***\n\n**تقرير مراجعة أولية — تصنيف الإشغال**\n**المشروع:** مبنى تجاري/إداري (طابق تجزئة و3 طوابق مكاتب)\n**المرجع:** استفسار المستخدم\n**المحلل:**",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}

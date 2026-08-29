@@ -1,0 +1,580 @@
+{
+  "run_date": "2026-08-29",
+  "mode": "live",
+  "subset": [
+    "ADV-001",
+    "ADV-009",
+    "ADV-015",
+    "ADV-018",
+    "ADV-020",
+    "ADV-031",
+    "ADV-032",
+    "ADV-041"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 16,
+  "tier_a": {
+    "exact_section_match_rate": 47,
+    "chain_match_rate": 50,
+    "refusal_correctness": 75,
+    "hallucination_rate": 17
+  },
+  "tier_b": {
+    "citation_discipline_rate": 0,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 50030,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-031",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-031",
+      "mode": "analysis"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 4366,
+      "answer_length": 557
+    },
+    {
+      "id": "ADV-009",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 6374,
+      "answer_length": 831
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json,SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json\",\"pageStart\":196,\"pageEnd\":250,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json\",\"pageStart\":42,\"pageEnd\":218,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 4681,
+      "latency_ms": 28581,
+      "answer_preview": "أهلاً بك. بناءً على المعطيات التي قدمتها، يمكن تحديد تصنيف الإشغال للمبنى على النحو التالي.\n\n### A) النص المرجعي (English Quote)\n\n1.  **Document: SBC 201 | Section: 304.1 Business Group B**\n    > \"Bus",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 6212,
+      "latency_ms": 34218,
+      "answer_preview": "بالتأكيد. بناءً على المعطيات المقدمة، يتم إجراء التحليل وفق البروتوكول المعتمد.\n\n***\n\n### **بروتوكول ما قبل التحليل**\n\n*   **الخطوة 0 — تصنيف المسألة:** استفسار تصنيف إشغال (Occupancy Classification Q",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":37,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":64,\"pageEnd\":155,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json\",\"pageStart\":145,\"pageEnd\":166,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json\",\"pageStart\":23,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json\",\"pageStart\":133,\"pageEnd\":149,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":131,\"pageEnd\":168,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":161,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 6948,
+      "latency_ms": 49968,
+      "answer_preview": "أهلاً بك. بناءً على المعطيات التي قدمتها (مكاتب إدارية، 4 طوابق، مساحة الطابق 2000 م²)، تم استيفاء البيانات الحرجة، ويمكنني تقديم تحليل كامل وفقاً لمتطلبات كود البناء السعودي.\n\nتصنيف الإشغال للمشروع ه",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 5973,
+      "latency_ms": 42962,
+      "answer_preview": "بالتأكيد. سأقوم بتحليل المعطيات وفق بروتوكول ConsultX لمراجعة الامتثال.\n\n**بروتوكول ما قبل التحليل**\n\n*   **الخطوة 0 — تصنيف المسألة:** سؤال تقني عن اشتراط محدد (Specific Code Question).\n*   **الخطوة ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":62,\"pageEnd\":171,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":139,\"pageEnd\":187,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":131,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json\",\"pageStart\":37,\"pageEnd\":39,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json\",\"pageStart\":209,\"pageEnd\":227,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 539,
+      "latency_ms": 12938,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي، أحتاج إلى توضيح بعض النقاط الحرجة حول تصميم البرج:\n\n1.  كم يبلغ ارتفاع أعلى طابق مأهول (occupied floor) بالاستخدام السكني (R-2) عن أدنى مستوى ل",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 7489,
+      "latency_ms": 50030,
+      "answer_preview": "[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]\n\n**بروتوكول ما قبل التحليل**\n\n**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• **نوع المسألة:** سؤال تقني عن اشتراط محدد ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":181,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json\",\"pageStart\":53,\"pageEnd\":481,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":190,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":3,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":23,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":119,\"pageEnd\":124,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 465,
+      "latency_ms": 19839,
+      "answer_preview": "أهلاً بك.\n\nإن كود البناء السعودي (SBC) يحيل إلى معيار NFPA 14 لتصميم أنظمة الصواعد المائية (Standpipe Systems)، كما هو مذكور في تفسيرات القسم 912.1 من SBC 801.\n\nومع ذلك، فإن النص التفصيلي لمتطلبات الض",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":181,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json\",\"pageStart\":53,\"pageEnd\":481,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":190,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":3,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":23,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":119,\"pageEnd\":124,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 3512,
+      "latency_ms": 26795,
+      "answer_preview": "[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]\n\n**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• سؤال تقني عن اشتراط محدد (Specific Code Question)\n\n**الخطوة 1 — جرد الم",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":820,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 655,
+      "latency_ms": 16875,
+      "answer_preview": "أهلاً بك.\n\nوفقاً لبروتوكول التشغيل، تقتصر مصادري المرجعية على كود البناء السعودي (SBC 201 و SBC 801) والتفسيرات المرافقة له. إن تعليمات أو تعاميم الدفاع المدني المحددة التي تشير إليها غير متوفرة ضمن م",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":820,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 5458,
+      "latency_ms": 33465,
+      "answer_preview": "بالتأكيد، سيتم تحليل الاستفسار وفقاً للبروتوكول المعتمد.\n\n***\n\n### **بروتوكول ما قبل التحليل**\n\n**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• **نوع المسألة:** سؤال تقني عن اشتراط محدد (S",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":64,\"pageEnd\":197,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":37,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":131,\"pageEnd\":134,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json\",\"pageStart\":177,\"pageEnd\":182,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 412,
+      "latency_ms": 14294,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة وتحديد معيار التصميم الصحيح لنظام الرشاشات وفقاً للكود السعودي، أحتاج إلى توضيح بعض النقاط الحرجة:\n\n1.  كم عدد طوابق المبنى الفندقي فوق مستوى سطح الأرض (grade plane)؟\n2.",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 5281,
+      "latency_ms": 40760,
+      "answer_preview": "بناءً على المعطيات، يتم تفعيل بروتوكول التحليل الهندسي.\n\n***\n\n**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• **نوع المسألة:** سؤال تقني عن اشتراط محدد (Specific Code Question).\n\n**الخطوة ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json,__sbc_table__::SBC-201::305,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":73,\"pageEnd\":197,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":37,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json\",\"pageStart\":133,\"pageEnd\":142,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json\",\"pageStart\":86,\"pageEnd\":161,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::305\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 6900,
+      "latency_ms": 33225,
+      "answer_preview": "Excellent question. You are correct to seek the specific design standard referenced by the code once a sprinkler system is required. Here is a detailed breakdown based on the Saudi Building Code.\n\n###",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::305,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::305\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 26780,
+      "latency_ms": 34474,
+      "answer_preview": "[CONSULTX — ANALYTICAL MODE | Principal Compliance Analyst]\n\n**Step 0 — Classification First**\n*   **Type of Inquiry:** Specific Code Question\n\n**Step 1 — Input Inventory & Epistemic State**\n*   Proje",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json,__sbc_table__::SBC-201::504.3,__sbc_table__::SBC-201::504.4",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json\",\"pageStart\":133,\"pageEnd\":142,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::504.3\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-201::504.4\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 4235,
+      "latency_ms": 26997,
+      "answer_preview": "أهلاً بك. بناءً على المعطيات المتوفرة (مبنى إشغال B، نوع إنشاء II-B، غير مزود برشاشات)، يمكن تحديد الارتفاع وعدد الطوابق الأقصى المسموح به.\n\nفيما يلي التحليل التفصيلي وفقاً لجداول كود البناء السعودي S",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::504.3,__sbc_table__::SBC-201::504.4",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::504.3\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-201::504.4\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 3559,
+      "latency_ms": 30173,
+      "answer_preview": "بالتأكيد. يتم تحليل الطلب وفقاً لبروتوكول المراجعة المعتمد.\n\n**بروتوكول ما قبل التحليل**\n\n*   **الخطوة 0 — تصنيف المسألة:** سؤال تقني عن اشتراط محدد (Specific Code Question).\n*   **الخطوة 1 — جرد المد",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}
