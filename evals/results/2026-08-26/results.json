@@ -1,0 +1,535 @@
+{
+  "run_date": "2026-08-26",
+  "mode": "live",
+  "total": 16,
+  "tier_a": {
+    "exact_section_match_rate": 10,
+    "chain_match_rate": 0,
+    "refusal_correctness": 0,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 0,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 47039,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-031",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-031",
+      "mode": "analysis"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "analysis"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": false,
+      "leaked_switch_token": false,
+      "detail": "call failed before protocol check could run",
+      "latency_ms": 9196,
+      "answer_length": 0,
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-002",
+      "mode": "primary",
+      "passed": false,
+      "leaked_switch_token": false,
+      "detail": "call failed before protocol check could run",
+      "latency_ms": 9356,
+      "answer_length": 0,
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json,SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json\",\"pageStart\":196,\"pageEnd\":250,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-251-500_extracted_chunks.json\",\"pageStart\":42,\"pageEnd\":218,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 318,
+      "latency_ms": 14338,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة حول تصنيف الإشغال وتقييم ما إذا كان المبنى يُعد شغلاً مختلطاً وفقًا لـ SBC 201، أحتاج إلى توضيح بعض النقاط الهامة:\n\n1.  ما هي المساحة الإجمالية (بالمتر المربع) للطابق ال"
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 4362,
+      "latency_ms": 23838,
+      "answer_preview": "تم تحليل المدخلات المقدمة لتحديد تصنيف الإشغال للمبنى وبيان ما إذا كان يعتبر إشغالاً مختلطاً وفقاً لكود البناء السعودي SBC 201.\n\n**I. تصنيف المشروع / Project Classification**\n*   نوع المسألة: استفسار "
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "vector",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":37,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":64,\"pageEnd\":155,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1601-1800_extracted_chunks.json\",\"pageStart\":145,\"pageEnd\":166,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-801-1000_extracted_chunks.json\",\"pageStart\":23,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json\",\"pageStart\":133,\"pageEnd\":149,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":131,\"pageEnd\":168,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1-200_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":161,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 9989,
+      "latency_ms": 47039,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة حول متطلبات الكود السعودي لنظام الرشاشات التلقائية لمبنى المكاتب الإدارية، تم تحليل المعطيات المتوفرة (تصنيف الإشغال، الارتفاع، المساحة) وفقاً لبروتوكول ConsultX.\n\n**تصن"
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 4151,
+      "latency_ms": 31397,
+      "answer_preview": "أهلاً بك. لتقييم متطلبات نظام الرشاشات التلقائية لمبنى المكاتب الإدارية، يتطلب الأمر الرجوع إلى كود البناء السعودي SBC 801، الفصل 9، القسم 903.2.x. للأسف، نص هذا الفصل غير متوفر ضمن المصادر المتاحة حا"
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 11713,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 11772,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 10501,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 12306,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 13983,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 10958,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 11300,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 12246,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 10246,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"AI provider is temporarily busy. Please try again in a minute.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 18315,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"AI provider is temporarily busy. Please try again in a minute.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 10364,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null
+      },
+      "answer_length": 0,
+      "latency_ms": 11684,
+      "answer_preview": "",
+      "error": "HTTP 503: {\"error\":\"الخدمة مشغولة حاليًا بسبب حد مؤقت من مزود الذكاء الاصطناعي. يرجى المحاولة خلال دقيقة.\",\"error_code\":\"GEMINI_RATE_LIMIT\",\"provider\":\"gemini\"}"
+    }
+  ]
+}

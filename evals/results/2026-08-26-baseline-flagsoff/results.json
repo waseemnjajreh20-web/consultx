@@ -1,0 +1,521 @@
+{
+  "run_date": "2026-08-26",
+  "mode": "live",
+  "total": 16,
+  "tier_a": {
+    "exact_section_match_rate": 23,
+    "chain_match_rate": 25,
+    "refusal_correctness": 25,
+    "hallucination_rate": 8
+  },
+  "tier_b": {
+    "citation_discipline_rate": 0,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 130381,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-031",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-031",
+      "mode": "analysis"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "analysis"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 3751,
+      "answer_length": 647
+    },
+    {
+      "id": "ADV-002",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 11368,
+      "answer_length": 951
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 497,
+      "latency_ms": 20469,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي (SBC 201) حول تصنيف شغل هذا المبنى، أحتاج إلى توضيح بعض النقاط الأساسية:\n\n1.  ما هي المساحة الإجمالية لكل طابق من طوابق المكاتب الإدارية، والمسا"
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 5532,
+      "latency_ms": 130381,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: استفسار تصنيف إشغال (Occupancy Classification Query) وسؤال تقني عن اشتراط محدد (Specific Code Question)\n• الإشغال:\n    *   الطابق الأرضي (ت"
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 616,
+      "latency_ms": 29799,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات نظام الرشاشات التلقائية لمبنى المكاتب الإدارية، أحتاج إلى النص المرجعي من كود البناء السعودي SBC 801 الذي يحدد هذه المتطلبات.\n\nالمعل"
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::304",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::304\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 5416,
+      "latency_ms": 27858,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n*   نوع المسألة: مراجعة تصميم منجز\n*   الإشغال: مكاتب إدارية (Offices) — [مستنتج — INFERRED] يصنف عادة ضمن **Group B** وفقاً لـ SBC 201 Section 304.1.\n*  "
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 395,
+      "latency_ms": 16319,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول متطلبات نظام الرشاشات والأحكام المنظمة للجزء السكني (R-2) في برج متعدد الاستخدامات، أحتاج إلى توضيح بعض النقاط الهامة:\n\n1.  ما هو الارتفاع ا"
+    },
+    {
+      "id": "ADV-015",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 5048,
+      "latency_ms": 26266,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n•   نوع المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n•   الإشغال:\n    *   طوابق أرضية: مختلط (Mixed Occupancy) من تجاري (M) وتجميع (A-2) — ["
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":181,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json\",\"pageStart\":53,\"pageEnd\":481,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":190,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":3,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":23,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":119,\"pageEnd\":124,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 2682,
+      "latency_ms": 18131,
+      "answer_preview": "أهلاً بك.\n\nلقد قمت بمراجعة المصادر المتاحة (SBC 201 و SBC 801) بحثًا عن المتطلبات المحددة للضغط المتبقي عند توصيلات الخراطيم وفقًا لـ NFPA 14.\n\nبينما يشير كود البناء السعودي إلى NFPA 14 كمعيار تصميم ل"
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json,SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json,SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json,SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-401-600_extracted_chunks.json\",\"pageStart\":21,\"pageEnd\":181,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-501-1000_extracted_chunks.json\",\"pageStart\":53,\"pageEnd\":481,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-201-400_extracted_chunks.json\",\"pageStart\":190,\"pageEnd\":198,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-601-800_extracted_chunks.json\",\"pageStart\":3,\"pageEnd\":68,\"precision\":\"page_range\"},{\"file\":\"SBC 201 - The Saudi General Building Code-1001-1250_extracted_chunks.json\",\"pageStart\":1,\"pageEnd\":23,\"precision\":\"page_range\"},{\"file\":\"SBC 801 - The Saudi Fire Protection Code (3)-1201-1400_extracted_chunks.json\",\"pageStart\":119,\"pageEnd\":124,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 2380,
+      "latency_ms": 14577,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد\n• الإشغال: غير محدد — لا ينطبق على السؤال المطروح\n• فئة الخطر: غير محدد — لا ينطبق على السؤال المطروح\n• الارتفاع /"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":820,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 1861,
+      "latency_ms": 17381,
+      "answer_preview": "أهلاً بك.\n\nبصفتي مستشارًا متخصصًا بكود البناء السعودي (SBC 201 و SBC 801) والتفسيرات المرافقة لهما، فإن المصادر المتاحة لدي لا تتضمن \"تعليمات الدفاع المدني\" بشكل مباشر. كود البناء السعودي هو المرجع ال"
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":820,\"precision\":\"page_range\"}]"
+      },
+      "answer_length": 3164,
+      "latency_ms": 19961,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n• الإشغال: غير محدد — يتطلب تأكيداً لتطبيق اشتراطات SBC 801 على المواقف.\n• فئة الخطر: غير"
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 186,
+      "latency_ms": 14495,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي فيما يخص معيار تصميم نظام الرشاشات لمبنى فندقي (Group R-1)، أحتاج إلى توضيح نقطة حاسمة:\n\n1.  **كم عدد الطوابق في المبنى الفندقي؟**"
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 4522,
+      "latency_ms": 25042,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n• الإشغال: Group R-1 (فندقي) — [مؤكد — CONFIRMED]\n• فئة الخطر: غير محدد — [يُحظر الحسم — "
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::305,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::305\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 179,
+      "latency_ms": 11406,
+      "answer_preview": "The required code text for Section 903.3.1.1 of SBC 801, which would specify the referenced standard for water-density design, is not available in the provided files.\n\n[NO SOURCE]"
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::305,__sbc_table__::SBC-801::903.3.2",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::305\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-801::903.3.2\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 2901,
+      "latency_ms": 15431,
+      "answer_preview": "**I. Project Classification**\n• Type of Issue: Specific Code Question\n• Occupancy: Group E (Educational) — [CONFIRMED]\n• Fire Protection System: Automatic Sprinkler System (triggered) — [CONFIRMED]\n• "
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::504.3,__sbc_table__::SBC-201::504.4",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::504.3\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-201::504.4\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 354,
+      "latency_ms": 19170,
+      "answer_preview": "أهلاً بك. لتقديم استشارة دقيقة ومبنية على الكود السعودي حول الحد الأقصى للارتفاع وعدد الطوابق، أحتاج إلى توضيح بعض النقاط الإضافية:\n\n1.  هل هذا المبنى قيد التصميم (مبنى جديد) أم أنه مبنى قائم يتم تقيي"
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": "keyword",
+        "sbc_sources": "SBC801_Ch10_v2_chunks.json,__sbc_table__::SBC-201::504.3,__sbc_table__::SBC-201::504.4",
+        "sbc_source_meta": "[{\"file\":\"SBC801_Ch10_v2_chunks.json\",\"pageStart\":0,\"pageEnd\":685,\"precision\":\"page_range\"},{\"file\":\"__sbc_table__::SBC-201::504.3\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"},{\"file\":\"__sbc_table__::SBC-201::504.4\",\"pageStart\":null,\"pageEnd\":null,\"precision\":\"unavailable\"}]"
+      },
+      "answer_length": 3877,
+      "latency_ms": 20626,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n*   نوع المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n*   الإشغال: مجموعة B (أعمال) — [مؤكد — CONFIRMED]\n*   فئة الخطر: غير محدد، لكن المجموع"
+    }
+  ]
+}
