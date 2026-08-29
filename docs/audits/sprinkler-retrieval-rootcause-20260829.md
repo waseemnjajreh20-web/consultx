@@ -75,8 +75,10 @@ measured live in the baseline. What was deferred is now actionable.
   files by name pattern, so renamed files simply stop being selected.
   Risk: any query whose context currently comes ONLY from these
   files loses that context. Mitigation: the canonical page-range blobs
-  cover chapters 9/10/11 of SBC 801 (verified for ch9 above; ch10/ch11
-  coverage must be probed the same way before executing).
+  cover chapters 9/10/11 of SBC 801 - VERIFIED 2026-08-29 against the
+  local byte-identical copies of the uploaded blobs: ch9 = 150 chunks
+  (401-600), ch10 = 271 chunks (601-800 + 801-1000), ch11 = 34 chunks.
+  Nothing in the three legacy files is exclusive.
 - **Option B (code change):** exclude `Ch\d+_v\d` name patterns in
   `fetchSBCContext`. Same effect, but requires function deploy +
   three-mode validation per the operating contract.
