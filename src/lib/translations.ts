@@ -385,8 +385,8 @@ export const translations = {
     footerHome: "الرئيسية",
     footerHowItWorks: "كيف يعمل",
     footerPricing: "الأسعار",
-    footerSbc201: "SBC 201 — الحماية من الحريق",
-    footerSbc801: "SBC 801 — سلامة الحياة",
+    footerSbc201: "SBC 201 — كود البناء العام",
+    footerSbc801: "SBC 801 — كود الحماية من الحريق",
     footerNfpa: "أنظمة الدفاع المدني",
     footerCivilDefense: "الدفاع المدني",
 
@@ -800,8 +800,8 @@ export const translations = {
     footerHome: "Home",
     footerHowItWorks: "How It Works",
     footerPricing: "Pricing",
-    footerSbc201: "SBC 201 — Fire Protection",
-    footerSbc801: "SBC 801 — Life Safety",
+    footerSbc201: "SBC 201 — General Building Code",
+    footerSbc801: "SBC 801 — Fire Protection Code",
     footerNfpa: "Civil Defense Regulations",
     footerCivilDefense: "Civil Defense",
 

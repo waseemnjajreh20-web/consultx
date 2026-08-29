@@ -606,7 +606,7 @@ const Auth = () => {
 
         {/* Footer */}
         <p className="text-center text-xs mt-6" style={{ color: "rgba(200,220,240,0.2)" }}>
-          {isAr ? "© ConsultX 2026 — مدعوم بمنظومة 12 وكيلاً ذكياً" : "© ConsultX 2026 — Powered by 12 AI Agents"}
+          {isAr ? "© ConsultX 2026 — مستشارك الهندسي للحماية من الحرائق" : "© ConsultX 2026 — Your fire protection engineering consultant"}
         </p>
       </div>
 

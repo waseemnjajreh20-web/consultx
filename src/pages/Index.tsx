@@ -7,7 +7,6 @@ import CoreBenefitsSection from "@/components/CoreBenefitsSection";
 import ProductProofSection from "@/components/ProductProofSection";
 import TrustStripSection from "@/components/TrustStripSection";
 import PricingLanding from "@/components/PricingLanding";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import FAQSection from "@/components/FAQSection";
 import CTASection from "@/components/CTASection";
 import SiteFooter from "@/components/SiteFooter";
@@ -56,10 +55,7 @@ const Index = () => {
         {/* 8. Pricing */}
         <PricingLanding />
 
-        {/* 9. Testimonials */}
-        <TestimonialsSection />
-
-        {/* 10. FAQ */}
+        {/* 9. FAQ */}
         <FAQSection />
 
         {/* 11. Final CTA */}
