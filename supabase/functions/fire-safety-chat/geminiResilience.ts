@@ -32,20 +32,30 @@ export interface QuotaIncrement {
   mode?: string;
 }
 
+// 2026-08-31 key-rotation incident (root cause + web-confirmed):
+// Google's ListModels CATALOG still lists gemini-2.5-*/2.0-* for a key on a
+// NEW project, but generateContent/streamGenerateContent refuse them with 404
+// "no longer available to new users" (2.5 sunsets fully 2026-10-16; per
+// ai.google.dev/gemini-api/docs/changelog the 3.x line is GA for new
+// projects). buildModelChain trusts the catalog, so it built an all-dead chain
+// and every chat 500'd -> UI "Connection error".
+//
+// Fix: lead with the current-GA models so BOTH key types succeed on the first
+// call (no wasted round-trips), old models kept as fallback for keys still
+// grandfathered onto 2.5. buildModelChain only ever adds a model that the
+// key's own catalog lists, so a key without 3.x access simply falls through
+// to whatever it does list. All entries here were verified to stream with
+// fire-safety-chat's exact request shape via ingest-sbc-2024 {action:gentest}
+// on 2026-08-31 (3.6-flash, 3.1-pro-preview: OK; the *-latest aliases track
+// Google's newest and self-heal across future sunsets).
 export const GEMINI_MODEL_CANDIDATES = [
-  "gemini-2.5-pro",
+  "gemini-3.6-flash",        // GA, fast/cheap — default for primary
+  "gemini-3.1-pro-preview",  // pro tier — default for advisory/analytical
+  "gemini-flash-latest",     // self-healing alias (newest flash)
+  "gemini-pro-latest",       // self-healing alias (newest pro)
+  "gemini-2.5-pro",          // fallback: keys grandfathered onto 2.5
   "gemini-2.5-flash",
   "gemini-2.0-flash",
-  // 2026-08-31 key-rotation incident: Google's ListModels CATALOG still names
-  // the 2.5/2.0 models for keys on new projects, but generateContent refuses
-  // them with 404 "no longer available to new users" — so buildModelChain,
-  // which trusts the catalog, produced an all-dead chain and every chat
-  // request 500'd. These two are Google's own designated successors (named in
-  // the 404 bodies themselves). Order preserved: keys grandfathered onto 2.5
-  // never reach them; new-project keys fall through the quick 404s and land
-  // here. Verified live via ingest-sbc-2024 {action:"gentest"}.
-  "gemini-3.1-pro-preview",
-  "gemini-3.6-flash",
 ];
 
 const MODELS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes

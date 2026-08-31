@@ -9,7 +9,11 @@ const corsHeaders = {
 
 const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
 
-const GEMINI_MODEL = "google/gemini-2.5-flash";
+// gemini-3.6-flash: successor to the sunset 2.5-flash (key-rotation incident
+// 2026-08-31). This is an admin-only graph-indexer, off the chat path and not
+// part of the outage — updated for correctness. NOTE: the fetch at ~line 90
+// hardcodes the model in the URL; keep the two in lockstep.
+const GEMINI_MODEL = "google/gemini-3.6-flash";
 const BATCH_SIZE = 1; // 1 chunk per LLM call — prevents JSON truncation
 const MAX_CHUNKS_PER_CALL = 6; // max chunks to process per invocation
 
@@ -87,7 +91,7 @@ async function callGemini(prompt: string, content: string, retries = 3): Promise
 
   for (let attempt = 0; attempt < retries; attempt++) {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

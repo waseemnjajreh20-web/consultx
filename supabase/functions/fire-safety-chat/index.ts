@@ -2193,7 +2193,8 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
   ]);
 
   const available = await fetchAvailableGeminiModels(apiKey);
-  const models = buildModelChain("gemini-2.5-pro", "gemini-2.5-flash", available);
+  // GA-first, same as the streaming path (key-rotation incident 2026-08-31).
+  const models = buildModelChain("gemini-3.1-pro-preview", "gemini-3.6-flash", available);
   console.log(`[Gemini] Non-streaming model chain: ${models.join(" -> ")}`);
 
   let lastErrorText = "";
@@ -3308,7 +3309,12 @@ serve(async (req) => {
             { role: "system", content: analysisPrompt },
             { role: "user", content: userQuery },
           ]);
-          const QUERY_ANALYSIS_MODEL = "gemini-2.5-flash-lite";
+          // gemini-3.1-flash-lite: Google's named successor to the sunset
+          // gemini-2.5-flash-lite (key-rotation incident 2026-08-31). This
+          // path is flag-off in production and fails open to queryFacts=null,
+          // so it was never part of the outage — updated for correctness so it
+          // works if ADVISORY_QUERY_ANALYSIS_ENABLED is ever turned on.
+          const QUERY_ANALYSIS_MODEL = "gemini-3.1-flash-lite";
           const QUERY_ANALYSIS_TIMEOUT_MS = 8000;
 
           const call = (async (): Promise<string | null> => {
@@ -3777,10 +3783,15 @@ serve(async (req) => {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });
     }
 
-    // Model selection: use stable versions (preview models expire!)
-    // Primary → gemini-2.5-flash (fast), Standard/Analysis → gemini-2.5-pro (with flash fallback)
-    const preferredModel = mode === "primary" ? "gemini-2.5-flash" : "gemini-2.5-pro";
-    const fallbackModel = "gemini-2.5-flash";
+    // Model selection (updated 2026-08-31, key-rotation incident):
+    // Primary → gemini-3.6-flash (fast/cheap), Standard/Analysis →
+    // gemini-3.1-pro-preview (reasoning), both falling back to 3.6-flash then
+    // down the candidate chain. buildModelChain only keeps models the key's
+    // own catalog lists, so a key still on 2.5 skips these and lands on the
+    // 2.5 fallbacks below in GEMINI_MODEL_CANDIDATES. Leading with GA models
+    // means the common case succeeds on the FIRST call — no wasted 404s.
+    const preferredModel = mode === "primary" ? "gemini-3.6-flash" : "gemini-3.1-pro-preview";
+    const fallbackModel = "gemini-3.6-flash";
 
     const { systemInstruction, contents } = convertToGeminiFormat([
       ...systemMessages,

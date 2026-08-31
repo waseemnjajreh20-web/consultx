@@ -36,19 +36,30 @@ describe("buildModelChain", () => {
     expect(chain).toEqual(["gemini-2.5-flash", "gemini-2.0-flash"]);
   });
 
-  it("deduplicates models", () => {
-    const chain = buildModelChain("gemini-2.5-flash", "gemini-2.5-flash", GEMINI_MODEL_CANDIDATES);
-    // 2026-08-31: the two gemini-3.x successors joined the candidate list
-    // (key-rotation incident — new-project keys cannot generate on 2.5/2.0
-    // even though the catalog still lists them). Preferred/fallback ordering
-    // ahead of the remaining candidates is unchanged.
+  it("deduplicates models and follows the GA-first candidate order", () => {
+    const chain = buildModelChain("gemini-3.6-flash", "gemini-3.6-flash", GEMINI_MODEL_CANDIDATES);
+    // 2026-08-31 key-rotation incident: candidates reordered GA-first so a
+    // new-project key succeeds on the first call. The preferred/fallback
+    // (both 3.6-flash here) dedupe to a single leading entry, then the rest
+    // of the candidate list follows in order.
     expect(chain).toEqual([
-      "gemini-2.5-flash",
-      "gemini-2.5-pro",
-      "gemini-2.0-flash",
-      "gemini-3.1-pro-preview",
       "gemini-3.6-flash",
+      "gemini-3.1-pro-preview",
+      "gemini-flash-latest",
+      "gemini-pro-latest",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
     ]);
+  });
+
+  it("advisory default leads with the GA pro model, not a sunset one", () => {
+    const chain = buildModelChain("gemini-3.1-pro-preview", "gemini-3.6-flash", GEMINI_MODEL_CANDIDATES);
+    expect(chain[0]).toBe("gemini-3.1-pro-preview");
+    expect(chain[1]).toBe("gemini-3.6-flash");
+    // the sunset models are still reachable as last-resort fallbacks
+    expect(chain).toContain("gemini-2.5-pro");
+    expect(chain.indexOf("gemini-2.5-pro")).toBeGreaterThan(chain.indexOf("gemini-3.1-pro-preview"));
   });
 
   it("uses newest available gemini model when no candidate is available", () => {
