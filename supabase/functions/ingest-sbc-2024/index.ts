@@ -206,7 +206,9 @@ Deno.serve(async (req) => {
     // status + error class per model, never the key.
     if (action === "gentest") {
       if (!gemini) return Response.json({ error: "GOOGLE_GEMINI_API_KEY absent" }, { status: 500 });
-      const models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
+      const models = Array.isArray(body.models) && body.models.length > 0
+        ? body.models.map(String).slice(0, 8)
+        : ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
       const out: Record<string, string> = {};
       for (const model of models) {
         try {
@@ -227,6 +229,38 @@ Deno.serve(async (req) => {
         } catch (e) {
           out[model] = `fetch_error: ${String(e).slice(0, 100)}`;
         }
+        // Streaming probe with fire-safety-chat's EXACT request shape
+        // (systemInstruction + contents + generationConfig.temperature),
+        // because generateContent working does not prove streamGenerateContent
+        // does — the incident retro's exact verification gap.
+        try {
+          const sr = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${gemini}&alt=sse`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: "You answer briefly." }] },
+                contents: [{ role: "user", parts: [{ text: "reply with the word ok" }] }],
+                generationConfig: { temperature: 0.7 },
+              }),
+            },
+          );
+          if (sr.ok) {
+            const reader = sr.body?.getReader();
+            let firstBytes = "";
+            if (reader) {
+              const { value } = await reader.read();
+              firstBytes = new TextDecoder().decode(value ?? new Uint8Array()).slice(0, 160);
+              await reader.cancel();
+            }
+            out[model + ":stream"] = `OK first_bytes=${firstBytes.replace(/\s+/g, " ")}`;
+          } else {
+            out[model + ":stream"] = `${sr.status}: ${(await sr.text()).slice(0, 200).replace(/\s+/g, " ")}`;
+          }
+        } catch (e) {
+          out[model + ":stream"] = `fetch_error: ${String(e).slice(0, 100)}`;
+        }
       }
       // Also report what ListModels claims is available to this key — the
       // resilience layer builds its chain from this list, so a catalog that
@@ -244,6 +278,55 @@ Deno.serve(async (req) => {
         }
       } catch { /* report empty */ }
       return Response.json({ ok: true, generation: out, listed_gemini_models: listed });
+    }
+
+    // Diagnostic: the ADVISORY path differs from PRIMARY in one big way — it
+    // streams a LARGE system prompt (retrieved SBC context, up to ~120k chars).
+    // gentest proved the models stream on a TINY payload; this proves they
+    // stream on an advisory-sized one. Builds a padded systemInstruction of
+    // `kchars`*1000 characters and streams it, reporting first bytes or the
+    // error. This is the last unverified variable in the advisory failure.
+    if (action === "bigstream") {
+      if (!gemini) return Response.json({ error: "GOOGLE_GEMINI_API_KEY absent" }, { status: 500 });
+      const model = String(body.model ?? "gemini-3.1-pro-preview");
+      const kchars = Math.min(Number(body.kchars ?? 120), 200);
+      const filler =
+        "SBC 801 Section 906 fire extinguishers: portable fire extinguishers shall be installed. ";
+      const bigContext = filler.repeat(Math.ceil((kchars * 1000) / filler.length)).slice(0, kchars * 1000);
+      try {
+        const sr = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${gemini}&alt=sse`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: "You are a fire-safety consultant. Context:\n" + bigContext }] },
+              contents: [{ role: "user", parts: [{ text: "ما اشتراطات طفايات الحريق في المكاتب؟" }] }],
+              generationConfig: { temperature: 0.7 },
+            }),
+          },
+        );
+        if (!sr.ok) {
+          return Response.json({ ok: true, model, prompt_chars: bigContext.length,
+            result: `HTTP ${sr.status}: ${(await sr.text()).slice(0, 300).replace(/\s+/g, " ")}` });
+        }
+        const reader = sr.body?.getReader();
+        let firstBytes = "", chunks = 0;
+        if (reader) {
+          for (let i = 0; i < 3; i++) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            chunks++;
+            if (!firstBytes) firstBytes = new TextDecoder().decode(value ?? new Uint8Array()).slice(0, 160);
+          }
+          await reader.cancel();
+        }
+        return Response.json({ ok: true, model, prompt_chars: bigContext.length,
+          result: `OK chunks=${chunks} first_bytes=${firstBytes.replace(/\s+/g, " ")}` });
+      } catch (e) {
+        return Response.json({ ok: true, model, prompt_chars: bigContext.length,
+          result: `fetch_error: ${String(e).slice(0, 160)}` });
+      }
     }
 
     return Response.json({ error: `unknown action` }, { status: 400 });

@@ -2193,8 +2193,9 @@ async function callAINonStreaming(apiKey: string, systemPrompt: string, userCont
   ]);
 
   const available = await fetchAvailableGeminiModels(apiKey);
-  // GA-first, same as the streaming path (key-rotation incident 2026-08-31).
-  const models = buildModelChain("gemini-3.1-pro-preview", "gemini-3.6-flash", available);
+  // GA flash-first, same as the streaming path (key-rotation + slow-preview
+  // incident 2026-08-31). Was gemini-3.1-pro-preview which timed advisory out.
+  const models = buildModelChain("gemini-3.7-flash", "gemini-3.6-flash", available);
   console.log(`[Gemini] Non-streaming model chain: ${models.join(" -> ")}`);
 
   let lastErrorText = "";
@@ -3790,7 +3791,7 @@ serve(async (req) => {
     // own catalog lists, so a key still on 2.5 skips these and lands on the
     // 2.5 fallbacks below in GEMINI_MODEL_CANDIDATES. Leading with GA models
     // means the common case succeeds on the FIRST call — no wasted 404s.
-    const preferredModel = mode === "primary" ? "gemini-3.6-flash" : "gemini-3.1-pro-preview";
+    const preferredModel = mode === "primary" ? "gemini-3.6-flash" : "gemini-3.7-flash";
     const fallbackModel = "gemini-3.6-flash";
 
     const { systemInstruction, contents } = convertToGeminiFormat([

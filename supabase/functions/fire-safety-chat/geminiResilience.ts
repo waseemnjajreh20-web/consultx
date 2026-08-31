@@ -48,11 +48,21 @@ export interface QuotaIncrement {
 // fire-safety-chat's exact request shape via ingest-sbc-2024 {action:gentest}
 // on 2026-08-31 (3.6-flash, 3.1-pro-preview: OK; the *-latest aliases track
 // Google's newest and self-heal across future sunsets).
+// Order = fallback priority. GA flash models lead — measured live 2026-08-31
+// (ingest-sbc-2024 {action:bigstream}) against advisory-sized 120k-char
+// prompts: gemini-3.7-flash first byte in ~3-6s over 5/5 rapid calls;
+// gemini-3.6-flash similar; gemini-3.1-pro-preview took 15-24s AND returned
+// an intermittent 502 — a PREVIEW thinking model too slow/unstable for the
+// advisory path's large context, which is what produced the UI "Connection
+// error" in advisory mode while primary (flash) stayed fine. Preview/pro
+// models are kept only as later fallbacks. `*-latest` aliases self-heal
+// across future sunsets. 2.5/2.0 remain for keys grandfathered onto them.
 export const GEMINI_MODEL_CANDIDATES = [
-  "gemini-3.6-flash",        // GA, fast/cheap — default for primary
-  "gemini-3.1-pro-preview",  // pro tier — default for advisory/analytical
+  "gemini-3.7-flash",        // GA, fastest measured — default for advisory/analytical
+  "gemini-3.6-flash",        // GA, fast — default for primary
   "gemini-flash-latest",     // self-healing alias (newest flash)
   "gemini-pro-latest",       // self-healing alias (newest pro)
+  "gemini-3.1-pro-preview",  // preview pro — slow, last-resort only
   "gemini-2.5-pro",          // fallback: keys grandfathered onto 2.5
   "gemini-2.5-flash",
   "gemini-2.0-flash",

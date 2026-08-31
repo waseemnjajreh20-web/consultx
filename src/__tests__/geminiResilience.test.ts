@@ -36,29 +36,28 @@ describe("buildModelChain", () => {
     expect(chain).toEqual(["gemini-2.5-flash", "gemini-2.0-flash"]);
   });
 
-  it("deduplicates models and follows the GA-first candidate order", () => {
-    const chain = buildModelChain("gemini-3.6-flash", "gemini-3.6-flash", GEMINI_MODEL_CANDIDATES);
-    // 2026-08-31 key-rotation incident: candidates reordered GA-first so a
-    // new-project key succeeds on the first call. The preferred/fallback
-    // (both 3.6-flash here) dedupe to a single leading entry, then the rest
-    // of the candidate list follows in order.
+  it("deduplicates models and follows the GA-flash-first candidate order", () => {
+    const chain = buildModelChain("gemini-3.7-flash", "gemini-3.7-flash", GEMINI_MODEL_CANDIDATES);
+    // 2026-08-31 incident: candidates reordered so fast GA flash models lead
+    // (the slow gemini-3.1-pro-preview timed advisory out with big context).
     expect(chain).toEqual([
+      "gemini-3.7-flash",
       "gemini-3.6-flash",
-      "gemini-3.1-pro-preview",
       "gemini-flash-latest",
       "gemini-pro-latest",
+      "gemini-3.1-pro-preview",
       "gemini-2.5-pro",
       "gemini-2.5-flash",
       "gemini-2.0-flash",
     ]);
   });
 
-  it("advisory default leads with the GA pro model, not a sunset one", () => {
-    const chain = buildModelChain("gemini-3.1-pro-preview", "gemini-3.6-flash", GEMINI_MODEL_CANDIDATES);
-    expect(chain[0]).toBe("gemini-3.1-pro-preview");
+  it("advisory default leads with a fast GA flash model, not the slow preview", () => {
+    const chain = buildModelChain("gemini-3.7-flash", "gemini-3.6-flash", GEMINI_MODEL_CANDIDATES);
+    expect(chain[0]).toBe("gemini-3.7-flash");
     expect(chain[1]).toBe("gemini-3.6-flash");
-    // the sunset models are still reachable as last-resort fallbacks
-    expect(chain).toContain("gemini-2.5-pro");
+    // the slow preview + sunset models are only later fallbacks
+    expect(chain.indexOf("gemini-3.1-pro-preview")).toBeGreaterThan(chain.indexOf("gemini-3.7-flash"));
     expect(chain.indexOf("gemini-2.5-pro")).toBeGreaterThan(chain.indexOf("gemini-3.1-pro-preview"));
   });
 
