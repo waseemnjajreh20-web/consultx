@@ -149,8 +149,18 @@ Deno.serve(async (req) => {
           },
           embedding: vectors[j],
           code_type: codeType,
-          section_number: extractSection(x.chunk.content as string),
-          chapter_number: extractChapter(x.chunk.content as string) || (x.chunk.chapter_id as string),
+          // Prefer the chunk's OWN section_number — extract_sbc.py computes it
+          // with the code-correct grammar (iec_style for 401's "41-1.4" / "712-"
+          // numbering). extractSection() here is a generic-first regex that
+          // mislabels IEC content (a stray "101.1" in the body wins over the
+          // real "712-…"). Fall back to it only when the chunk has none.
+          section_number: ((): string | null => {
+            const s = x.chunk.section_number;
+            return (typeof s === "string" && s.trim()) ? s.trim() : extractSection(x.chunk.content as string);
+          })(),
+          chapter_number: (typeof x.chunk.chapter_number === "string" && (x.chunk.chapter_number as string).trim())
+            ? (x.chunk.chapter_number as string).trim()
+            : (extractChapter(x.chunk.content as string) || (x.chunk.chapter_id as string)),
           page_start: x.chunk.page_start,
           page_end: x.chunk.page_end,
           file_name: file,
