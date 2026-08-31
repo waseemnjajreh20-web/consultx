@@ -1114,8 +1114,18 @@ export function decomposeQuery(raw: string): string[] {
  */
 export function detectFilterCodeFor(text: string, enabled: string[]): string | null {
   if (text.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) return "SBC801";
-  if (text.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) return "SBC201";
-  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) return "SBC401";
+  // Boundary guards, NOT cosmetic — this chain picks the single code the whole
+  // question is filtered by, so a false positive sends the entire retrieval to
+  // the wrong corpus. Measured on the owner's own test question: "وكيف تتقاطع
+  // مع متطلبات مقاومة الحريق" matched "قاطع" (breaker) inside "تتقاطع"
+  // (intersect), routed a commercial-kitchen question to SBC 401 (electrical),
+  // returned nothing usable, fell through to the keyword path, and the answer
+  // came back citing Section 510 (hazardous exhaust) instead of 506/507
+  // (grease duct + Type I hood). Same class of bug: "درج" (stair) inside
+  // "درجة" (degree) — guarded on the trailing side because the real word
+  // carries the definite article ("الدرج").
+  if (text.match(/201|بناء.*عام|general.*build|مخرج|exit|درج(?![ء-ي])|stair/i)) return "SBC201";
+  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|(?<!ت)قاطع|breaker|كابل|cable|wiring|تمديدات/i)) return "SBC401";
   if (enabled.includes("SBC501") && text.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) return "SBC501";
   return null;
 }
@@ -1146,7 +1156,7 @@ export function detectFilterCodesFor(text: string, enabled: string[]): (string |
   //     (?![ء-ي]); a leading guard cannot be used here because the definite
   //     article makes the real word "الدرج".
   if (text.match(/201|بناء.*عام|general.*build|مخ(ر|ا?ر)ج|exit|egress|هروب|درج(?![ء-ي])|stair|منور|shaft|إشغال|occupan/i)) codes.push("SBC201");
-  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|(?<![ء-ي])قاطع|breaker|RCD|كابل|cable|wiring|تمديدات|طاقة.*احتياط|standby.*power|مولد|generator/i)) codes.push("SBC401");
+  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|(?<!ت)قاطع|breaker|RCD|كابل|cable|wiring|تمديدات|طاقة.*احتياط|standby.*power|مولد|generator/i)) codes.push("SBC401");
   if (enabled.includes("SBC501") && text.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney|مطبخ|kitchen|شفّ?اط|hood|شحوم|grease|دخان|smoke/i)) codes.push("SBC501");
   if (codes.length === 0) return [null];
   return codes.slice(0, 2);   // two is enough; keeps the RPC fan-out bounded
