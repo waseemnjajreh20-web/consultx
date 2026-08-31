@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
 import { fetchSignedPdfUrl } from "@/utils/sourcePdfUrl";
+import { supabase } from "@/integrations/supabase/client";
+import { PdfHighlightViewer } from "@/components/PdfHighlightViewer";
 
 // ── Visual constants matching ConsultX dark identity ─────────────────────────
 const PANEL_BG    = "rgba(10, 14, 20, 0.97)";
@@ -367,14 +369,41 @@ function PanelBody({
 // both show the same loading overlay; only a genuine failure (unknown/
 // rejected path, network error, or the iframe itself failing) shows the
 // error overlay.
-function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
-  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+/**
+ * Best-effort: fetch a distinctive snippet of the retrieved chunk's text to
+ * anchor the live highlight. Keys on (file_name, page_start) — both reliable
+ * even where sbc_documents.section_number drifts from the true heading. The
+ * leading slice skips the running-header noise at the top of the chunk body.
+ * Returns null on any miss so the viewer simply shows the page with no box.
+ */
+async function fetchHighlightSnippet(
+  sourceFile: string | null | undefined,
+  pageStart: number | null,
+): Promise<string | null> {
+  if (!sourceFile || pageStart == null) return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase as any)
+      .from("sbc_documents")
+      .select("content")
+      .eq("file_name", sourceFile)
+      .eq("page_start", pageStart)
+      .limit(1);
+    const content: string = data?.[0]?.content ?? "";
+    if (!content) return null;
+    return content.length >= 100 ? content.slice(80, 280) : content;
+  } catch {
+    return null;
+  }
+}
 
-  // Re-fetch whenever the underlying source (identified by pdfPath) changes,
-  // including page jumps within the same source (pageStart changes the anchor
-  // but not pdfPath, so we key on both).
-  const src = signedUrl ? `${signedUrl}#page=${meta.pageStart ?? 1}` : null;
+function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [snippet, setSnippet] = useState<string | null>(null);
+  const [fallback, setFallback] = useState(false);
+
+  // Key on pdfPath + page so a jump within the same PDF re-anchors correctly.
   const requestKey = `${meta.pdfPath ?? ""}#page=${meta.pageStart ?? 1}`;
   const prevKeyRef = useRef<string | null>(null);
 
@@ -385,22 +414,32 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
     let cancelled = false;
     setStatus("loading");
     setSignedUrl(null);
+    setSnippet(null);
+    setFallback(false);
 
-    fetchSignedPdfUrl(meta.pdfPath).then((result) => {
+    (async () => {
+      // Fetch the signed URL and the highlight anchor together so the pdf.js
+      // viewer mounts ONCE with both (avoids a second, expensive page render).
+      const [urlRes, snip] = await Promise.all([
+        fetchSignedPdfUrl(meta.pdfPath),
+        fetchHighlightSnippet(meta.sourceFile, meta.pageStart),
+      ]);
       if (cancelled) return;
-      if (!result) {
-        setStatus("error");
-        return;
-      }
-      setSignedUrl(result.url);
-    });
+      if (!urlRes) { setStatus("error"); return; }
+      setSignedUrl(urlRes.url);
+      setSnippet(snip);
+      setStatus("ready");
+    })();
 
     return () => { cancelled = true; };
-  }, [requestKey, meta.pdfPath]);
+  }, [requestKey, meta.pdfPath, meta.sourceFile, meta.pageStart]);
+
+  const onFallback = useCallback(() => setFallback(true), []);
+  const iframeSrc = signedUrl ? `${signedUrl}#page=${meta.pageStart ?? 1}` : null;
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Loading overlay — fades in after a brief delay so instant renders don't flash */}
+      {/* Loading overlay — while fetching the signed URL */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10 pointer-events-none"
         style={{
@@ -427,8 +466,6 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
           </p>
           <button
             onClick={async () => {
-              // We may already have a signed URL (iframe itself failed to
-              // render it) or may not (the fetch itself failed) — cover both.
               const url = signedUrl ?? (await fetchSignedPdfUrl(meta.pdfPath))?.url;
               if (url) window.open(url, "_blank", "noopener,noreferrer");
             }}
@@ -441,19 +478,25 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
         </div>
       )}
 
-      {src && (
+      {/* Primary: pdf.js viewer with live cited-text highlight. Falls back to
+          the native iframe on ANY pdf.js failure, so we never regress below
+          the previous behaviour. */}
+      {status === "ready" && signedUrl && !fallback && (
+        <PdfHighlightViewer
+          url={signedUrl}
+          pageNumber={meta.pageStart ?? 1}
+          highlightText={snippet}
+          isRtl={isRtl}
+          onFallback={onFallback}
+        />
+      )}
+      {status === "ready" && signedUrl && fallback && iframeSrc && (
         <iframe
-          key={src}
-          src={src}
+          key={iframeSrc}
+          src={iframeSrc}
           className="w-full h-full border-0"
           title={meta.title}
           allow="fullscreen"
-          onLoad={() => setStatus("loaded")}
-          onError={() => setStatus("error")}
-          style={{
-            opacity: status === "loaded" ? 1 : 0.08,
-            transition: "opacity 0.3s ease",
-          }}
         />
       )}
     </div>
