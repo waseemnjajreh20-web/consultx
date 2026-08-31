@@ -188,10 +188,17 @@ Deno.serve(async (req) => {
       if (body.confirm !== "SBC-2024") {
         return Response.json({ error: "confirm phrase required" }, { status: 400 });
       }
+      // Optional selective purge: {codes:["SBC401"]} — only 2024-intake codes
+      // are ever deletable here; 201/801 are structurally out of reach.
+      const requested = Array.isArray(body.codes) ? body.codes.map(String) : ["SBC401", "SBC501"];
+      const codes = requested.filter((c) => c === "SBC401" || c === "SBC501");
+      if (codes.length === 0) {
+        return Response.json({ error: "no valid codes in purge request" }, { status: 400 });
+      }
       const { error: delErr, count } = await db.from("sbc_documents")
-        .delete({ count: "exact" }).in("code_type", ["SBC401", "SBC501"]);
+        .delete({ count: "exact" }).in("code_type", codes);
       if (delErr) return Response.json({ error: delErr.message }, { status: 500 });
-      return Response.json({ ok: true, deleted: count });
+      return Response.json({ ok: true, deleted: count, codes });
     }
 
     return Response.json({ error: `unknown action` }, { status: 400 });

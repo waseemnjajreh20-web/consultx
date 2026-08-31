@@ -1028,14 +1028,23 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
 }
 
 // ── 2024 source-intake codes (SBC 401 electrical / SBC 501 mechanical) ──────
-// Default OFF; exact-string "1", matching every other flag in this file. While
-// OFF, fetchSBCContext and the vector filterCode heuristic behave
-// byte-identically to HEAD: the new-code branches all collapse to empty lists.
-// Turning it ON is gated on (1) the new-code blobs being uploaded to bucket
-// 'ssss' and (2) the per-code benchmark gate passing — see
-// docs/launch/new-source-codes-runbook-20260831.md.
+// Default OFF. Accepted values (gate result 2026-08-31 forced per-code
+// granularity — SBC501 passed its benchmark gate at 94%, SBC401 failed at 56%
+// and must stay dark until its retrieval improves):
+//   unset/""        → no new codes (byte-identical to HEAD)
+//   "1"             → both codes (legacy meaning, kept)
+//   "SBC501"        → only that code; comma list allowed ("SBC401,SBC501")
+// A code may appear here ONLY after ITS OWN gate passes — the prompt contract
+// names exactly the enabled set, never the other code.
+function enabledNewSourceCodes(): string[] {
+  const v = (Deno.env.get("SBC_NEW_SOURCE_CODES_ENABLED") ?? "").trim();
+  if (v === "") return [];
+  if (v === "1") return ["SBC401", "SBC501"];
+  return v.split(",").map((s) => s.trim().toUpperCase())
+    .filter((s) => s === "SBC401" || s === "SBC501");
+}
 function newSourceCodesEnabled(): boolean {
-  return Deno.env.get("SBC_NEW_SOURCE_CODES_ENABLED") === "1";
+  return enabledNewSourceCodes().length > 0;
 }
 
 async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
@@ -1122,11 +1131,12 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     let sbc401Ranges: string[] = [];
     let sbc501Ranges: string[] = [];
     if (newSourceCodesEnabled()) {
+      const enabledCodes = enabledNewSourceCodes();
       const nc = getNewCodeChapters(query.toLowerCase(), buildQueryKeywords(query));
-      if (nc.sbc401Chapters.length > 0) {
+      if (enabledCodes.includes("SBC401") && nc.sbc401Chapters.length > 0) {
         sbc401Ranges = selectTargetPageRanges(nc.sbc401Chapters, SBC401_INDEX);
       }
-      if (nc.sbc501Chapters.length > 0) {
+      if (enabledCodes.includes("SBC501") && nc.sbc501Chapters.length > 0) {
         sbc501Ranges = selectTargetPageRanges(nc.sbc501Chapters, SBC501_INDEX);
       }
       if (sbc401Ranges.length > 0 || sbc501Ranges.length > 0) {
@@ -1169,10 +1179,10 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     // that is the documented "1201 contains 201" leak class). Empty while the
     // flag is off or no such blobs exist in the bucket, in which case nothing
     // downstream changes.
-    const sbc401Files = newSourceCodesEnabled()
+    const sbc401Files = enabledNewSourceCodes().includes("SBC401")
       ? candidateFiles.filter((f: any) => /^sbc[ _-]?401/.test(f.name.toLowerCase()))
       : [];
-    const sbc501Files = newSourceCodesEnabled()
+    const sbc501Files = enabledNewSourceCodes().includes("SBC501")
       ? candidateFiles.filter((f: any) => /^sbc[ _-]?501/.test(f.name.toLowerCase()))
       : [];
     
@@ -1930,7 +1940,7 @@ async function fetchSBCContextVector(
       filterCode = 'SBC801';
     } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
       filterCode = 'SBC201';
-    } else if (newSourceCodesEnabled() && query.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) {
+    } else if (enabledNewSourceCodes().includes("SBC401") && query.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) {
       // 2024-intake codes: heuristics live BELOW the 801/201 branches on
       // purpose — a fire-alarm/egress phrasing keeps its historical routing.
       // Flag off ⇒ these branches are unreachable and filterCode is
@@ -1939,7 +1949,7 @@ async function fetchSBCContextVector(
       // sources: with no rows, the RPC returns nothing and the keyword
       // fallback runs as before.
       filterCode = 'SBC401';
-    } else if (newSourceCodesEnabled() && query.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) {
+    } else if (enabledNewSourceCodes().includes("SBC501") && query.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) {
       filterCode = 'SBC501';
     }
 
@@ -3261,7 +3271,7 @@ serve(async (req) => {
       // dropped the NFPA source claim (primary mode loads NO documents, so it
       // could never have quoted one) and made the [SWITCH:...] markers single-
       // sourced with src/utils/chatRouting.ts.
-      fullSystemPrompt = getPrimaryPrompt({ newSourceCodes: newSourceCodesEnabled() });
+      fullSystemPrompt = getPrimaryPrompt({ newSourceCodes: enabledNewSourceCodes() });
       usedFiles = [];
       console.log("Primary mode: using lightweight prompt with escalation rules, no document loading");
     } else {
@@ -3577,8 +3587,8 @@ serve(async (req) => {
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
-        ? getAnalysisPrompt(language, { newSourceCodes: newSourceCodesEnabled() })
-        : getStandardPrompt(language, { newSourceCodes: newSourceCodesEnabled() });
+        ? getAnalysisPrompt(language, { newSourceCodes: enabledNewSourceCodes() })
+        : getStandardPrompt(language, { newSourceCodes: enabledNewSourceCodes() });
 
       fullSystemPrompt = basePrompt;
 

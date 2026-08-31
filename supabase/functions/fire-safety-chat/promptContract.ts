@@ -97,43 +97,59 @@ export const SOURCE_SCOPE_BRIEF =
   "مصادر النظام هي كود البناء السعودي SBC 201 و SBC 801 وتفسيراتهما فقط. معايير NFPA وSFPE وIBC وIFC ليست ضمن مصادر النظام ولا يمكن استرجاع نصها. إذا استندت إلى أي منها فصرّح أنها معرفة هندسية عامة بلا مصدر، وممنوع تقديمها كاستشهاد أو اختلاق أرقام فقراتها.";
 
 // ==================== 2024 SOURCE-INTAKE SCOPE VARIANTS ====================
-// Used ONLY when index.ts resolves SBC_NEW_SOURCE_CODES_ENABLED === "1" and
-// passes { newSourceCodes: true } into the prompt builders. This module stays
-// Deno-free and pure (B3 design), so the flag is resolved by the caller.
-// The flag-off strings above are byte-identical to HEAD and remain the
-// default for every existing call site and test.
-// GOVERNING RULE (unchanged): a source appears here ONLY after its corpus is
-// ingested and its benchmark gate passed — never announce what cannot be
-// retrieved.
-export const SOURCE_SCOPE_NEW_CODES = SOURCE_SCOPE
-  .replace(
-    `- كود البناء السعودي SBC 201
-- كود البناء السعودي SBC 801
-- التفسيرات (Commentary) الواردة داخل هذين المصدرين`,
-    `- كود البناء السعودي SBC 201
-- كود البناء السعودي SBC 801
-- الكود السعودي الكهربائي SBC 401 (إصدار المتطلبات CR-2024)
-- الكود السعودي الميكانيكي SBC 501 (إصدار الكود والشرح CC-2024)
-- التفسيرات (Commentary) الواردة داخل هذه المصادر`,
-  )
-  .replace(
-    "المصدر المعياري (Normative) الوحيد لهذا النظام هو كود البناء السعودي SBC 201 و SBC 801 فقط",
-    "المصادر المعيارية (Normative) الوحيدة لهذا النظام هي أكواد البناء السعودية المسترجعة فيه (SBC 201 و SBC 801 و SBC 401 و SBC 501) فقط",
-  );
-
-export const SOURCE_SCOPE_BRIEF_NEW_CODES =
-  "مصادر النظام هي أكواد البناء السعودية SBC 201 و SBC 801 و SBC 401 و SBC 501 وتفسيراتها فقط. معايير NFPA وSFPE وIBC وIFC ليست ضمن مصادر النظام ولا يمكن استرجاع نصها. إذا استندت إلى أي منها فصرّح أنها معرفة هندسية عامة بلا مصدر، وممنوع تقديمها كاستشهاد أو اختلاق أرقام فقراتها.";
+// index.ts resolves SBC_NEW_SOURCE_CODES_ENABLED into the list of ENABLED
+// new codes and passes it as { newSourceCodes: [...] }. Per-code granularity
+// is deliberate (gate result 2026-08-31: SBC501 passed at 94%, SBC401 failed
+// at 56%) — the scope text must name EXACTLY the enabled set and never a code
+// whose gate has not passed. This module stays Deno-free and pure (B3
+// design), so the flag is resolved by the caller. An empty/absent list keeps
+// every string byte-identical to HEAD.
+const NEW_CODE_SCOPE_LINES: Record<string, string> = {
+  SBC401: "- الكود السعودي الكهربائي SBC 401 (إصدار المتطلبات CR-2024)",
+  SBC501: "- الكود السعودي الميكانيكي SBC 501 (إصدار الكود والشرح CC-2024)",
+};
+const NEW_CODE_NAMES: Record<string, string> = {
+  SBC401: "SBC 401",
+  SBC501: "SBC 501",
+};
 
 export interface PromptOptions {
-  newSourceCodes?: boolean;
+  newSourceCodes?: string[];
 }
 
-export function getSourceScope(newCodes: boolean): string {
-  return newCodes ? SOURCE_SCOPE_NEW_CODES : SOURCE_SCOPE;
+/** Keep only known, gate-eligible new codes, in stable order. */
+export function normalizeNewCodes(codes?: string[]): string[] {
+  const set = new Set((codes ?? []).map((c) => c.toUpperCase()));
+  return ["SBC401", "SBC501"].filter((c) => set.has(c));
 }
 
-export function getSourceScopeBrief(newCodes: boolean): string {
-  return newCodes ? SOURCE_SCOPE_BRIEF_NEW_CODES : SOURCE_SCOPE_BRIEF;
+function allSourceNamesAr(enabled: string[]): string {
+  return ["SBC 201", "SBC 801", ...enabled.map((c) => NEW_CODE_NAMES[c])].join(" و ");
+}
+
+export function getSourceScope(codes?: string[]): string {
+  const enabled = normalizeNewCodes(codes);
+  if (enabled.length === 0) return SOURCE_SCOPE;
+  return SOURCE_SCOPE
+    .replace(
+      `- كود البناء السعودي SBC 201
+- كود البناء السعودي SBC 801
+- التفسيرات (Commentary) الواردة داخل هذين المصدرين`,
+      `- كود البناء السعودي SBC 201
+- كود البناء السعودي SBC 801
+${enabled.map((c) => NEW_CODE_SCOPE_LINES[c]).join("\n")}
+- التفسيرات (Commentary) الواردة داخل هذه المصادر`,
+    )
+    .replace(
+      "المصدر المعياري (Normative) الوحيد لهذا النظام هو كود البناء السعودي SBC 201 و SBC 801 فقط",
+      `المصادر المعيارية (Normative) الوحيدة لهذا النظام هي أكواد البناء السعودية المسترجعة فيه (${allSourceNamesAr(enabled)}) فقط`,
+    );
+}
+
+export function getSourceScopeBrief(codes?: string[]): string {
+  const enabled = normalizeNewCodes(codes);
+  if (enabled.length === 0) return SOURCE_SCOPE_BRIEF;
+  return `مصادر النظام هي أكواد البناء السعودية ${allSourceNamesAr(enabled)} وتفسيراتها فقط. معايير NFPA وSFPE وIBC وIFC ليست ضمن مصادر النظام ولا يمكن استرجاع نصها. إذا استندت إلى أي منها فصرّح أنها معرفة هندسية عامة بلا مصدر، وممنوع تقديمها كاستشهاد أو اختلاق أرقام فقراتها.`;
 }
 
 // ==================== EVIDENCE LANGUAGE CAP ====================
@@ -325,15 +341,18 @@ If clause not found, respond: "The required code text is not available in the pr
 - If uncertain, say "requires AHJ determination" rather than guessing
 `;
 
-// Flag-aware CORE_RULES. newCodes=false returns the constant above unchanged;
-// newCodes=true widens ONLY the authorized-sources line. The .replace() is
-// exact-match on that line — src/__tests__ asserts the replacement actually
-// fires so a reworded rule 1️⃣ cannot silently strand this variant.
+// Flag-aware CORE_RULES. Empty list returns the constant above unchanged;
+// a non-empty list widens ONLY the authorized-sources line to exactly the
+// enabled codes. The .replace() is exact-match on that line — src/__tests__
+// asserts the replacement actually fires so a reworded rule 1️⃣ cannot
+// silently strand this variant.
 export const CORE_RULES_AUTHORIZED_LINE = "- ONLY use SBC 201 & SBC 801 documents provided in this context";
-export const CORE_RULES_AUTHORIZED_LINE_NEW_CODES = "- ONLY use SBC 201, SBC 801, SBC 401 & SBC 501 documents provided in this context";
-export function getCoreRules(newCodes: boolean): string {
-  if (!newCodes) return CORE_RULES;
-  return CORE_RULES.replace(CORE_RULES_AUTHORIZED_LINE, CORE_RULES_AUTHORIZED_LINE_NEW_CODES);
+export function getCoreRules(codes?: string[]): string {
+  const enabled = normalizeNewCodes(codes);
+  if (enabled.length === 0) return CORE_RULES;
+  const names = ["SBC 201", "SBC 801", ...enabled.map((c) => c.replace("SBC", "SBC "))];
+  const line = `- ONLY use ${names.slice(0, -1).join(", ")} & ${names.at(-1)} documents provided in this context`;
+  return CORE_RULES.replace(CORE_RULES_AUTHORIZED_LINE, line);
 }
 
 // ==================== LANGUAGE-SPECIFIC STYLE ====================
@@ -358,9 +377,9 @@ export const ENGLISH_STYLE = `
 // ==================== STANDARD (ADVISORY) MODE PROMPT ====================
 export function getStandardPrompt(language: string = "ar", opts?: PromptOptions): string {
   const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
-  const newCodes = opts?.newSourceCodes === true;
-  const sessionSourcesAr = newCodes
-    ? "SBC 201, SBC 801, SBC 401, SBC 501، والتفسيرات Commentary الواردة فيها"
+  const newCodes = normalizeNewCodes(opts?.newSourceCodes);
+  const sessionSourcesAr = newCodes.length > 0
+    ? `SBC 201, SBC 801, ${newCodes.map((c) => c.replace("SBC", "SBC ")).join(", ")}، والتفسيرات Commentary الواردة فيها`
     : "SBC 201, SBC 801, والتفسيرات Commentary الواردة فيهما";
 
   return `[CONSULTX — CONSULTANT MODE | مستشار أول حماية من الحرائق وسلامة الحياة]
@@ -556,14 +575,16 @@ RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
 // ==================== ANALYSIS MODE PROMPT ====================
 export function getAnalysisPrompt(language: string = "ar", opts?: PromptOptions): string {
   const styleGuide = language === "en" ? ENGLISH_STYLE : ARABIC_STYLE;
-  const newCodes = opts?.newSourceCodes === true;
-  const codePathExtraLines = newCodes
-    ? `• SBC 401: القسم المنطبق ولماذا (التغذية الكهربائية لأنظمة السلامة، الإنذار، التأريض، الصواعق) — عند وروده في السياق
-• SBC 501: القسم المنطبق ولماذا (التهوية، العادم، مجاري الهواء، هواء الاحتراق) — عند وروده في السياق
-`
+  const newCodes = normalizeNewCodes(opts?.newSourceCodes);
+  const perCodePathLine: Record<string, string> = {
+    SBC401: "• SBC 401: القسم المنطبق ولماذا (التغذية الكهربائية لأنظمة السلامة، الإنذار، التأريض، الصواعق) — عند وروده في السياق",
+    SBC501: "• SBC 501: القسم المنطبق ولماذا (التهوية، العادم، مجاري الهواء، هواء الاحتراق) — عند وروده في السياق",
+  };
+  const codePathExtraLines = newCodes.length > 0
+    ? newCodes.map((c) => perCodePathLine[c]).join("\n") + "\n"
     : "";
-  const thirdLevelLine = newCodes
-    ? "• أولوية التطبيق: SBC 201 للتصنيف والإنشاء → SBC 801 للأنظمة → SBC 401/501 للتفاصيل الكهربائية والميكانيكية المسترجعة. لا تُستَرجع أي مدوّنة أخرى في هذا النظام."
+  const thirdLevelLine = newCodes.length > 0
+    ? `• أولوية التطبيق: SBC 201 للتصنيف والإنشاء → SBC 801 للأنظمة → ${newCodes.map((c) => c.replace("SBC", "SBC ")).join(" و ")} للتفاصيل التخصصية المسترجعة. لا تُستَرجع أي مدوّنة أخرى في هذا النظام.`
     : "• أولوية التطبيق: SBC 201 للتصنيف والإنشاء → SBC 801 للأنظمة. لا يوجد مستوى ثالث — لا تُستَرجع أي مدوّنة أخرى في هذا النظام.";
 
   return `[CONSULTX — ANALYTICAL MODE | محلل امتثال هندسي — درجة مراجع رئيسي]
@@ -773,10 +794,11 @@ RESPOND IN: ${language === "en" ? "ENGLISH" : "ARABIC"}`;
 // Primary's answer to "I am not sure" is to hand the question to a mode that
 // retrieves, which is a stronger control than a vocabulary ban would be.
 export function getPrimaryPrompt(opts?: PromptOptions): string {
-  const newCodes = opts?.newSourceCodes === true;
-  const quickCodesAr = newCodes ? "(SBC 201, SBC 801, SBC 401, SBC 501)" : "(SBC 201, SBC 801)";
-  const soleTruthAr = newCodes
-    ? "أكواد البناء السعودية SBC 201 و SBC 801 و SBC 401 و SBC 501 حصرياً"
+  const newCodes = normalizeNewCodes(opts?.newSourceCodes);
+  const names = ["SBC 201", "SBC 801", ...newCodes.map((c) => c.replace("SBC", "SBC "))];
+  const quickCodesAr = newCodes.length > 0 ? `(${names.join(", ")})` : "(SBC 201, SBC 801)";
+  const soleTruthAr = newCodes.length > 0
+    ? `أكواد البناء السعودية ${names.join(" و ")} حصرياً`
     : "كود البناء السعودي SBC 201 و SBC 801 حصرياً";
   return `أنت ConsultX، مستشار حماية من الحرائق. تتحدث بالعربية بأسلوب مهني ودود. مهمتك: فهم مشكلة المهندس بسرعة، الإجابة على الأسئلة السريعة عن الكود السعودي ${quickCodesAr}، واقتراح الانتقال للوضع الاستشاري أو التحليلي إذا كان السؤال يحتاج تعمق أكثر. اجعل إجاباتك مختصرة ومباشرة. اسأل أسئلة استقصائية لفهم المشكلة.
 

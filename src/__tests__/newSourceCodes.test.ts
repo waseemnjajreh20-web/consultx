@@ -24,17 +24,15 @@ import {
 import {
   CORE_RULES,
   CORE_RULES_AUTHORIZED_LINE,
-  CORE_RULES_AUTHORIZED_LINE_NEW_CODES,
   getAnalysisPrompt,
   getCoreRules,
   getPrimaryPrompt,
   getSourceScope,
   getSourceScopeBrief,
   getStandardPrompt,
+  normalizeNewCodes,
   SOURCE_SCOPE,
   SOURCE_SCOPE_BRIEF,
-  SOURCE_SCOPE_BRIEF_NEW_CODES,
-  SOURCE_SCOPE_NEW_CODES,
 } from "../../supabase/functions/fire-safety-chat/promptContract";
 
 const chaptersOf = (index: { chapters: number[] }[]) =>
@@ -121,14 +119,16 @@ describe("getNewCodeChapters", () => {
   });
 });
 
-describe("prompt contract flag wiring", () => {
-  it("flag-off outputs are byte-identical to the historical no-options calls", () => {
-    expect(getStandardPrompt("ar")).toBe(getStandardPrompt("ar", { newSourceCodes: false }));
-    expect(getAnalysisPrompt("ar")).toBe(getAnalysisPrompt("ar", { newSourceCodes: false }));
-    expect(getPrimaryPrompt()).toBe(getPrimaryPrompt({ newSourceCodes: false }));
-    expect(getSourceScope(false)).toBe(SOURCE_SCOPE);
-    expect(getSourceScopeBrief(false)).toBe(SOURCE_SCOPE_BRIEF);
-    expect(getCoreRules(false)).toBe(CORE_RULES);
+describe("prompt contract flag wiring (per-code granularity)", () => {
+  const BOTH = ["SBC401", "SBC501"];
+
+  it("empty/absent list is byte-identical to the historical no-options calls", () => {
+    expect(getStandardPrompt("ar")).toBe(getStandardPrompt("ar", { newSourceCodes: [] }));
+    expect(getAnalysisPrompt("ar")).toBe(getAnalysisPrompt("ar", { newSourceCodes: [] }));
+    expect(getPrimaryPrompt()).toBe(getPrimaryPrompt({ newSourceCodes: [] }));
+    expect(getSourceScope([])).toBe(SOURCE_SCOPE);
+    expect(getSourceScopeBrief([])).toBe(SOURCE_SCOPE_BRIEF);
+    expect(getCoreRules([])).toBe(CORE_RULES);
   });
 
   it("flag-off prompts never name the new codes", () => {
@@ -138,39 +138,50 @@ describe("prompt contract flag wiring", () => {
     }
   });
 
-  it("the CORE_RULES authorized-sources replacement actually fires", () => {
+  it("normalizeNewCodes keeps only known codes in stable order", () => {
+    expect(normalizeNewCodes(["SBC501", "SBC401"])).toEqual(BOTH);
+    expect(normalizeNewCodes(["sbc501"])).toEqual(["SBC501"]);
+    expect(normalizeNewCodes(["SBC901", "junk"])).toEqual([]);
+    expect(normalizeNewCodes(undefined)).toEqual([]);
+  });
+
+  it("the CORE_RULES authorized-sources replacement actually fires per set", () => {
     expect(CORE_RULES).toContain(CORE_RULES_AUTHORIZED_LINE);
-    const widened = getCoreRules(true);
-    expect(widened).toContain(CORE_RULES_AUTHORIZED_LINE_NEW_CODES);
-    expect(widened).not.toContain(CORE_RULES_AUTHORIZED_LINE);
+    const both = getCoreRules(BOTH);
+    expect(both).toContain("SBC 201, SBC 801, SBC 401 & SBC 501");
+    expect(both).not.toContain(CORE_RULES_AUTHORIZED_LINE);
+    const only501 = getCoreRules(["SBC501"]);
+    expect(only501).toContain("SBC 201, SBC 801 & SBC 501");
+    expect(only501).not.toContain("SBC 401");
   });
 
-  it("the SOURCE_SCOPE new-codes replacements actually fire", () => {
-    expect(SOURCE_SCOPE_NEW_CODES).toContain("SBC 401");
-    expect(SOURCE_SCOPE_NEW_CODES).toContain("SBC 501");
-    expect(SOURCE_SCOPE_NEW_CODES).not.toBe(SOURCE_SCOPE);
-    expect(SOURCE_SCOPE_NEW_CODES).toContain(
-      "المصادر المعيارية (Normative) الوحيدة لهذا النظام",
-    );
-    expect(SOURCE_SCOPE_BRIEF_NEW_CODES).toContain("SBC 401");
+  it("SOLE-CODE ENABLEMENT NEVER NAMES THE OTHER CODE (no false source claims)", () => {
+    const std = getStandardPrompt("ar", { newSourceCodes: ["SBC501"] });
+    const ana = getAnalysisPrompt("ar", { newSourceCodes: ["SBC501"] });
+    const pri = getPrimaryPrompt({ newSourceCodes: ["SBC501"] });
+    for (const p of [std, ana, pri]) {
+      expect(p).toContain("SBC 501");
+      expect(p).not.toContain("SBC 401");
+    }
+    expect(getSourceScope(["SBC501"])).not.toContain("SBC 401");
+    expect(getSourceScopeBrief(["SBC501"])).not.toContain("SBC 401");
   });
 
-  it("flag-on prompts name the new codes in every retrieval-backed mode", () => {
-    const std = getStandardPrompt("ar", { newSourceCodes: true });
-    const ana = getAnalysisPrompt("ar", { newSourceCodes: true });
-    const pri = getPrimaryPrompt({ newSourceCodes: true });
+  it("both-codes prompts name both in every mode; NFPA red line survives verbatim", () => {
+    const std = getStandardPrompt("ar", { newSourceCodes: BOTH });
+    const ana = getAnalysisPrompt("ar", { newSourceCodes: BOTH });
+    const pri = getPrimaryPrompt({ newSourceCodes: BOTH });
     for (const p of [std, ana, pri]) {
       expect(p).toContain("SBC 401");
       expect(p).toContain("SBC 501");
     }
-    // the NFPA red line survives the widening, verbatim
     for (const p of [std, ana]) {
       expect(p).toContain("ممنوع في كل الأحوال اختلاق رقم فقرة أو جدول أو صفحة من NFPA");
     }
   });
 
   it("flag-on keeps the SWITCH markers intact (load-bearing protocol)", () => {
-    const pri = getPrimaryPrompt({ newSourceCodes: true });
+    const pri = getPrimaryPrompt({ newSourceCodes: BOTH });
     expect(pri).toContain("[SWITCH:استشاري]");
     expect(pri).toContain("[SWITCH:تحليلي]");
   });
