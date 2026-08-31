@@ -41,7 +41,10 @@ const GEMINI_API_KEY = process.argv[3];
 const FLAGS = process.argv.slice(4);
 const BACKFILL = FLAGS.includes('--backfill');
 const DRY_RUN = FLAGS.includes('--dry-run');
-const CHUNKS_DIR = 'C:\\Users\\TOSHIBA\\Downloads\\قاعدة بيانات الكود السعودي\\قاعدة بيانات الكود السعودي PDF\\output_processed';
+// Overridable so new-code intakes (e.g. D:\SBC_2024_intake\out) can be
+// ingested without editing this file: set CHUNKS_DIR in the environment.
+const CHUNKS_DIR = process.env.CHUNKS_DIR
+  || 'C:\\Users\\TOSHIBA\\Downloads\\قاعدة بيانات الكود السعودي\\قاعدة بيانات الكود السعودي PDF\\output_processed';
 const MODEL = 'gemini-embedding-001';
 const BATCH_SIZE = 20;
 const DELAY_MS = 1000;
@@ -90,6 +93,18 @@ function extractSection(text) {
 }
 function extractChapter(text) {
   return text.match(/(?:Chapter|الفصل)\s*(\d+)/i)?.[1] || null;
+}
+// code_type from the chunks file: prefer the explicit `code_type` field the
+// 2026-08-31 extractor writes; fall back to an exact "SBC <nnn>" match in the
+// file name for the legacy 201/801 files. Never guess.
+const KNOWN_CODE_TYPES = new Set(['SBC201', 'SBC301', 'SBC401', 'SBC501', 'SBC601', 'SBC701', 'SBC801', 'SBC901']);
+function deriveCodeType(file, raw) {
+  if (raw && typeof raw.code_type === 'string' && KNOWN_CODE_TYPES.has(raw.code_type.toUpperCase())) {
+    return raw.code_type.toUpperCase();
+  }
+  const m = file.match(/SBC[ _-]?(\d{3})\b/);
+  if (m && KNOWN_CODE_TYPES.has(`SBC${m[1]}`)) return `SBC${m[1]}`;
+  throw new Error(`Cannot derive code_type for "${file}" — add an explicit code_type field to the chunks JSON.`);
 }
 
 // === Backfill: fill `embedding` for rows that already exist but have NULL ===
@@ -228,7 +243,12 @@ async function main() {
   for (const file of files) {
     const raw = JSON.parse(fs.readFileSync(path.join(CHUNKS_DIR, file), 'utf-8'));
     const chunks = raw.chunks || [];
-    const codeType = file.includes('201') ? 'SBC201' : 'SBC801';
+    // Explicit code_type mapping. The old `file.includes('201') ? 'SBC201'
+    // : 'SBC801'` silently classified ANY non-201 file as SBC801 — an
+    // "SBC 401 ..." chunks file would have been planted in the corpus under
+    // the fire code's identity (same defect family as the fetchSBCContext
+    // includes("201") leak). Unknown files now fail loudly instead.
+    const codeType = deriveCodeType(file, raw);
     total += chunks.length;
 
     // Resume: get already-uploaded chunk indexes

@@ -11,7 +11,10 @@ import {
   rollbackQuotaIfNeeded,
 } from "./geminiResilience.ts";
 import {
+  getNewCodeChapters,
   SBC201_INDEX,
+  SBC401_INDEX,
+  SBC501_INDEX,
   SBC801_INDEX,
   selectTargetPageRanges,
 } from "./chapterIndex.ts";
@@ -1024,6 +1027,17 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
   };
 }
 
+// ── 2024 source-intake codes (SBC 401 electrical / SBC 501 mechanical) ──────
+// Default OFF; exact-string "1", matching every other flag in this file. While
+// OFF, fetchSBCContext and the vector filterCode heuristic behave
+// byte-identically to HEAD: the new-code branches all collapse to empty lists.
+// Turning it ON is gated on (1) the new-code blobs being uploaded to bucket
+// 'ssss' and (2) the per-code benchmark gate passing — see
+// docs/launch/new-source-codes-runbook-20260831.md.
+function newSourceCodesEnabled(): boolean {
+  return Deno.env.get("SBC_NEW_SOURCE_CODES_ENABLED") === "1";
+}
+
 async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise<{ context: string; files: string[]; sourceMeta: SourcePageMeta[] }> {
   const startTime = Date.now();
   const usedFiles: string[] = [];
@@ -1098,6 +1112,27 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     const sbc201Ranges = selectTargetPageRanges(sbc201Chapters, SBC201_INDEX);
     const sbc801Ranges = selectTargetPageRanges(sbc801Chapters, SBC801_INDEX);
     console.log(`📄 Target ranges - SBC 201: [${sbc201Ranges.join(",")}], SBC 801: [${sbc801Ranges.join(",")}]`);
+
+    // New-code targeting (flag-gated; both lists stay empty while OFF).
+    // Unlike 201/801, the new codes are included ONLY on a positive keyword
+    // hit: selectTargetPageRanges' first-two-volumes fallback would otherwise
+    // spend context budget on electrical/mechanical volumes for every
+    // unrelated query. Empty ranges make scoreFile() return 0 for every
+    // new-code file, so they cannot enter the selection below.
+    let sbc401Ranges: string[] = [];
+    let sbc501Ranges: string[] = [];
+    if (newSourceCodesEnabled()) {
+      const nc = getNewCodeChapters(query.toLowerCase(), buildQueryKeywords(query));
+      if (nc.sbc401Chapters.length > 0) {
+        sbc401Ranges = selectTargetPageRanges(nc.sbc401Chapters, SBC401_INDEX);
+      }
+      if (nc.sbc501Chapters.length > 0) {
+        sbc501Ranges = selectTargetPageRanges(nc.sbc501Chapters, SBC501_INDEX);
+      }
+      if (sbc401Ranges.length > 0 || sbc501Ranges.length > 0) {
+        console.log(`📄 New-code target ranges - SBC 401: [${sbc401Ranges.join(",")}], SBC 501: [${sbc501Ranges.join(",")}]`);
+      }
+    }
     
     // Filter candidate files
     let chunkFiles = files.filter((f: any) => 
@@ -1129,6 +1164,17 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       const nameLower = f.name.toLowerCase();
       return nameLower.includes("801") || nameLower.includes("fire");
     });
+
+    // New-code files, ANCHORED at the name start (never bare includes() —
+    // that is the documented "1201 contains 201" leak class). Empty while the
+    // flag is off or no such blobs exist in the bucket, in which case nothing
+    // downstream changes.
+    const sbc401Files = newSourceCodesEnabled()
+      ? candidateFiles.filter((f: any) => /^sbc[ _-]?401/.test(f.name.toLowerCase()))
+      : [];
+    const sbc501Files = newSourceCodesEnabled()
+      ? candidateFiles.filter((f: any) => /^sbc[ _-]?501/.test(f.name.toLowerCase()))
+      : [];
     
     // Score files by matching page ranges in filenames
     function scoreFile(file: any, targetRanges: string[]): number {
@@ -1171,14 +1217,32 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
       ? Math.min(targeted801.length, 4)
       : Math.min(scored801.length, 3);
 
+    // New-code files enter ONLY with a positive range overlap (score > 0):
+    // no fallback slots, at most 2 volumes per code, appended AFTER the
+    // legacy selection so the 12-file cap always prefers 201/801.
+    const targeted401 = sbc401Files
+      .map((f: any) => ({ file: f, score: scoreFile(f, sbc401Ranges) }))
+      .filter((s: any) => s.score > 0)
+      .sort((a: any, b: any) => b.score - a.score);
+    const targeted501 = sbc501Files
+      .map((f: any) => ({ file: f, score: scoreFile(f, sbc501Ranges) }))
+      .filter((s: any) => s.score > 0)
+      .sort((a: any, b: any) => b.score - a.score);
+
     let selectedFiles = [
       ...scored201.slice(0, max201).map(s => s.file),
       ...scored801.slice(0, max801).map(s => s.file),
+      ...targeted401.slice(0, 2).map((s: any) => s.file),
+      ...targeted501.slice(0, 2).map((s: any) => s.file),
     ];
     
-    // Ensure at least some files
+    // Ensure at least some files. New-code blobs are excluded from this
+    // filler UNCONDITIONALLY (not just while the flag is off): an ungated
+    // code must never be served as generic padding — it enters only through
+    // its own targeted selection above, behind the flag and its gate.
     if (selectedFiles.length < 3) {
-      const remaining = candidateFiles.filter(f => !selectedFiles.includes(f));
+      const remaining = candidateFiles.filter(f =>
+        !selectedFiles.includes(f) && !/^sbc[ _-]?[45]01/.test(f.name.toLowerCase()));
       selectedFiles = [...selectedFiles, ...remaining.slice(0, 5 - selectedFiles.length)];
     }
 
@@ -1866,6 +1930,17 @@ async function fetchSBCContextVector(
       filterCode = 'SBC801';
     } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
       filterCode = 'SBC201';
+    } else if (newSourceCodesEnabled() && query.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) {
+      // 2024-intake codes: heuristics live BELOW the 801/201 branches on
+      // purpose — a fire-alarm/egress phrasing keeps its historical routing.
+      // Flag off ⇒ these branches are unreachable and filterCode is
+      // byte-identical to HEAD. Rows for these code_types only exist after
+      // the owner runs the gated ingestion, so a hit here can never fabricate
+      // sources: with no rows, the RPC returns nothing and the keyword
+      // fallback runs as before.
+      filterCode = 'SBC401';
+    } else if (newSourceCodesEnabled() && query.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) {
+      filterCode = 'SBC501';
     }
 
     // 3. Vector search
@@ -3186,7 +3261,7 @@ serve(async (req) => {
       // dropped the NFPA source claim (primary mode loads NO documents, so it
       // could never have quoted one) and made the [SWITCH:...] markers single-
       // sourced with src/utils/chatRouting.ts.
-      fullSystemPrompt = getPrimaryPrompt();
+      fullSystemPrompt = getPrimaryPrompt({ newSourceCodes: newSourceCodesEnabled() });
       usedFiles = [];
       console.log("Primary mode: using lightweight prompt with escalation rules, no document loading");
     } else {
@@ -3502,8 +3577,8 @@ serve(async (req) => {
 
       // ── 3. Assemble final system prompt ──────────────────────────────────────
       const basePrompt = mode === "analysis"
-        ? getAnalysisPrompt(language)
-        : getStandardPrompt(language);
+        ? getAnalysisPrompt(language, { newSourceCodes: newSourceCodesEnabled() })
+        : getStandardPrompt(language, { newSourceCodes: newSourceCodesEnabled() });
 
       fullSystemPrompt = basePrompt;
 

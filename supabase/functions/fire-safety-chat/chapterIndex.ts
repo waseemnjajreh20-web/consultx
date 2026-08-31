@@ -269,6 +269,207 @@ export const SBC801_INDEX: FilePageRange[] = [
 ];
 
 /**
+ * SBC 401 — The Saudi Electrical Code, CR-2024 edition. 4 storage volumes,
+ * 772 source pages (front matter pp.1-38 excluded from volumes).
+ *
+ * PROVENANCE (2026-08-31): measured from the PDF's own bookmark tree (1,526
+ * bookmarks, PyMuPDF get_toc) by D:\SBC_2024_intake\tools\make_volumes.py —
+ * not transcribed from a printed TOC. SBC 401 follows IEC 60364 numbering:
+ * two-digit chapters grouped in parts (11-12 scope, 21-22 definitions,
+ * 31-32 assessment, 41-44 protection, 51-57 equipment, 61 verification,
+ * 700-series special installations, 81-84 supplementary), NOT a dense 1..n
+ * sequence. Chapter numbers here are exactly the ones measured per volume.
+ * Storage blob names carry the page range as the only hyphenated number pair
+ * so scoreFile()'s /(\d+)-(\d+)/ reads it correctly.
+ */
+export const SBC401_INDEX: FilePageRange[] = [
+  {
+    pageRange: "39-248",
+    chapters: [11, 12, 21, 22, 31, 32, 41, 42, 43, 44, 51, 52],
+    topics: ["scope", "fundamental principles", "definitions", "abbreviations", "supplies", "safety services", "protection against electric shock", "RCD", "residual current", "protection against thermal effects", "arc fault", "protection against overcurrent", "circuit breaker", "voltage disturbances", "surge protection", "common rules", "wiring systems", "cables"],
+    topicsAr: ["نطاق", "مبادئ أساسية", "تعريفات", "اختصارات", "مصادر التغذية", "خدمات السلامة", "الحماية من الصدمة الكهربائية", "قاطع تيار متبقي", "تيار متبقي", "الحماية من الآثار الحرارية", "خطأ القوس", "الحماية من زيادة التيار", "قاطع", "اضطرابات الجهد", "حماية من الصواعق الكهربائية", "قواعد عامة", "أنظمة التمديدات", "كابلات"],
+  },
+  {
+    pageRange: "249-450",
+    chapters: [52, 53, 54, 55, 56, 57, 61],
+    topics: ["wiring systems", "isolation switching and control", "earthing arrangements", "protective conductors", "grounding", "other equipment", "generating sets", "luminaires", "safety services", "fire pump supply", "emergency supply", "secondary batteries", "initial verification"],
+    topicsAr: ["أنظمة التمديدات", "الفصل والتحويل والتحكم", "ترتيبات التأريض", "موصلات الحماية", "تأريض", "معدات أخرى", "مولدات", "وحدات إنارة", "خدمات السلامة", "تغذية مضخة الحريق", "تغذية الطوارئ", "بطاريات ثانوية", "الفحص الابتدائي"],
+  },
+  {
+    pageRange: "451-655",
+    chapters: [61, 70, 71, 72, 701, 702, 703, 704, 705, 706, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718, 720, 721, 722, 729],
+    topics: ["verification", "special installations", "bathrooms", "swimming pools", "saunas", "construction sites", "agricultural", "conducting locations", "caravan parks", "marinas", "medical locations", "exhibitions", "solar photovoltaic", "PV", "furniture", "extra-low voltage lighting", "outdoor lighting", "mobile units", "caravans", "electric vehicle", "EV charging", "operating and maintenance gangways"],
+    topicsAr: ["الفحص", "منشآت خاصة", "حمامات", "مسابح", "ساونا", "مواقع إنشاء", "زراعي", "أماكن موصلة", "مواقف كرفانات", "مراسي", "أماكن طبية", "معارض", "طاقة شمسية كهروضوئية", "خلايا شمسية", "أثاث", "إنارة جهد منخفض", "إنارة خارجية", "وحدات متنقلة", "كرفانات", "مركبة كهربائية", "شحن مركبات", "ممرات تشغيل وصيانة"],
+  },
+  {
+    pageRange: "656-772",
+    chapters: [72, 75, 81, 82, 83, 84, 730, 740, 750, 753],
+    topics: ["rooftop", "onshore units", "amusement", "floor and ceiling heating", "power factor correction", "protection against lightning", "lightning protection system", "fire detection and protection systems electrical", "fire alarm installation", "energy efficiency"],
+    topicsAr: ["أسطح", "وحدات برية", "ملاهي", "تدفئة أرضيات وأسقف", "تصحيح معامل القدرة", "الحماية من الصواعق", "نظام حماية من الصواعق", "أنظمة كشف الحريق والحماية الكهربائية", "تمديدات إنذار الحريق", "كفاءة الطاقة"],
+  },
+];
+
+/**
+ * SBC 501 — The Saudi Mechanical Code, CC-2024 edition. 3 storage volumes,
+ * 695 source pages (front matter pp.1-16 excluded from volumes).
+ *
+ * PROVENANCE (2026-08-31): measured from the PDF bookmark tree (1,440
+ * bookmarks) by D:\SBC_2024_intake\tools\make_volumes.py. IMC-family dense
+ * chapter numbering 1..15; "TABLES AND FIGURES OF CHAPTER n" bookmark units
+ * are merged into their chapter's page span.
+ */
+export const SBC501_INDEX: FilePageRange[] = [
+  {
+    pageRange: "17-304",
+    chapters: [1, 2, 3, 4, 5],
+    topics: ["scope and administration", "definitions", "general regulations", "ventilation", "outdoor air", "ventilation rate", "exhaust systems", "kitchen hood", "commercial kitchen", "grease duct", "hazardous exhaust", "dust stock and refuse", "clothes dryer exhaust", "domestic kitchen exhaust", "smoke control"],
+    topicsAr: ["النطاق والإدارة", "تعريفات", "أحكام عامة", "تهوية", "هواء خارجي", "معدل التهوية", "أنظمة العادم", "شفاط مطبخ", "مطبخ تجاري", "مجرى شحوم", "عادم خطر", "غبار ومخلفات", "عادم مجفف ملابس", "عادم مطبخ منزلي", "التحكم بالدخان"],
+  },
+  {
+    pageRange: "305-509",
+    chapters: [6, 7, 8, 9],
+    topics: ["duct systems", "duct construction", "duct insulation", "fire damper", "smoke damper", "combustion air", "chimneys and vents", "specific appliances", "fireplaces", "solid fuel-burning equipment"],
+    topicsAr: ["أنظمة مجاري الهواء", "إنشاء الدكت", "عزل الدكت", "خامد حريق", "خامد دخان", "هواء الاحتراق", "المداخن والمنافس", "أجهزة محددة", "مواقد", "معدات الوقود الصلب"],
+  },
+  {
+    pageRange: "510-695",
+    chapters: [10, 11, 12, 13, 14, 15],
+    topics: ["boilers", "water heaters", "pressure vessels", "expansion tank", "refrigeration", "machinery room", "refrigerant", "hydronic piping", "fuel oil piping and storage", "solar systems", "solar thermal", "referenced standards"],
+    topicsAr: ["غلايات", "سخانات مياه", "أوعية ضغط", "خزان تمدد", "تبريد", "غرفة آلات", "وسيط تبريد", "أنابيب المياه الحرارية", "أنابيب وتخزين الوقود السائل", "أنظمة شمسية", "شمسي حراري", "المعايير المرجعية"],
+  },
+];
+
+/**
+ * Keyword → chapter map for the two 2024-intake codes. Kept separate from
+ * CHAPTER_KEYWORDS (201/801) so the legacy map stays byte-identical and this
+ * one can be reviewed against the measured indexes above in isolation.
+ * INVARIANT (unit-tested): every chapter number referenced here exists in the
+ * corresponding *_INDEX above — a wrong number EXCLUDES the right volume, it
+ * does not merely down-rank it (same failure mode B4 repaired in 201/801).
+ */
+export const NEW_CODE_CHAPTER_KEYWORDS: Record<string, { sbc401: number[]; sbc501: number[] }> = {
+  // --- SBC 401 (electrical) ---
+  "fire pump": { sbc401: [56], sbc501: [] },
+  "مضخة حريق": { sbc401: [56], sbc501: [] },
+  "مضخة الحريق": { sbc401: [56], sbc501: [] },
+  "safety services": { sbc401: [32, 56], sbc501: [] },
+  "خدمات السلامة": { sbc401: [32, 56], sbc501: [] },
+  "emergency supply": { sbc401: [56], sbc501: [] },
+  "تغذية طوارئ": { sbc401: [56], sbc501: [] },
+  "مصدر طوارئ": { sbc401: [56], sbc501: [] },
+  "fire alarm": { sbc401: [83, 56], sbc501: [] },
+  "إنذار حريق": { sbc401: [83, 56], sbc501: [] },
+  "fire detection": { sbc401: [83], sbc501: [] },
+  "كشف حريق": { sbc401: [83], sbc501: [] },
+  "earthing": { sbc401: [54], sbc501: [] },
+  "grounding": { sbc401: [54], sbc501: [] },
+  "تأريض": { sbc401: [54], sbc501: [] },
+  "lightning": { sbc401: [82, 44], sbc501: [] },
+  "صواعق": { sbc401: [82, 44], sbc501: [] },
+  "surge": { sbc401: [44], sbc501: [] },
+  "overcurrent": { sbc401: [43, 53], sbc501: [] },
+  "زيادة التيار": { sbc401: [43, 53], sbc501: [] },
+  "circuit breaker": { sbc401: [43, 53], sbc501: [] },
+  "قاطع": { sbc401: [43, 53], sbc501: [] },
+  "electric shock": { sbc401: [41], sbc501: [] },
+  "صدمة كهربائية": { sbc401: [41], sbc501: [] },
+  "residual current": { sbc401: [41], sbc501: [] },
+  "تيار متبقي": { sbc401: [41], sbc501: [] },
+  "rcd": { sbc401: [41], sbc501: [] },
+  "wiring": { sbc401: [51, 52], sbc501: [] },
+  "تمديدات": { sbc401: [51, 52], sbc501: [] },
+  "كابل": { sbc401: [52], sbc501: [] },
+  "cable": { sbc401: [52], sbc501: [] },
+  "conduit": { sbc401: [52], sbc501: [] },
+  "socket": { sbc401: [55], sbc501: [] },
+  "مأخذ": { sbc401: [55], sbc501: [] },
+  "generator": { sbc401: [55, 56], sbc501: [] },
+  "مولد": { sbc401: [55, 56], sbc501: [] },
+  "battery": { sbc401: [57], sbc501: [] },
+  "بطاري": { sbc401: [57], sbc501: [] },
+  "photovoltaic": { sbc401: [712], sbc501: [14] },
+  "كهروضوئية": { sbc401: [712], sbc501: [14] },
+  "solar": { sbc401: [712], sbc501: [14] },
+  "شمسي": { sbc401: [712], sbc501: [14] },
+  "طاقة شمسية": { sbc401: [712], sbc501: [14] },
+  "ev charging": { sbc401: [722], sbc501: [] },
+  "شحن مركبات": { sbc401: [722], sbc501: [] },
+  "swimming pool": { sbc401: [702], sbc501: [] },
+  "مسبح": { sbc401: [702], sbc501: [] },
+  "medical location": { sbc401: [710], sbc501: [] },
+  "أماكن طبية": { sbc401: [710], sbc501: [] },
+  "power factor": { sbc401: [81], sbc501: [] },
+  "معامل القدرة": { sbc401: [81], sbc501: [] },
+  // --- SBC 501 (mechanical) ---
+  "ventilation": { sbc401: [], sbc501: [4] },
+  "تهوية": { sbc401: [], sbc501: [4] },
+  "outdoor air": { sbc401: [], sbc501: [4] },
+  "هواء خارجي": { sbc401: [], sbc501: [4] },
+  "exhaust": { sbc401: [], sbc501: [5] },
+  "عادم": { sbc401: [], sbc501: [5] },
+  "شفاط": { sbc401: [], sbc501: [5] },
+  "hood": { sbc401: [], sbc501: [5] },
+  "kitchen": { sbc401: [], sbc501: [5] },
+  "مطبخ": { sbc401: [], sbc501: [5] },
+  "grease duct": { sbc401: [], sbc501: [5] },
+  "مجرى شحوم": { sbc401: [], sbc501: [5] },
+  "duct": { sbc401: [], sbc501: [5, 6] },
+  "دكت": { sbc401: [], sbc501: [5, 6] },
+  "مجاري هواء": { sbc401: [], sbc501: [5, 6] },
+  "fire damper": { sbc401: [], sbc501: [6] },
+  "خامد حريق": { sbc401: [], sbc501: [6] },
+  "smoke damper": { sbc401: [], sbc501: [6] },
+  "خامد دخان": { sbc401: [], sbc501: [6] },
+  "combustion air": { sbc401: [], sbc501: [7] },
+  "هواء احتراق": { sbc401: [], sbc501: [7] },
+  "chimney": { sbc401: [], sbc501: [8] },
+  "مدخنة": { sbc401: [], sbc501: [8] },
+  "boiler": { sbc401: [], sbc501: [10] },
+  "غلاية": { sbc401: [], sbc501: [10] },
+  "water heater": { sbc401: [], sbc501: [10] },
+  "سخان": { sbc401: [], sbc501: [10] },
+  "refrigeration": { sbc401: [], sbc501: [11] },
+  "تبريد": { sbc401: [], sbc501: [11] },
+  "refrigerant": { sbc401: [], sbc501: [11] },
+  "وسيط تبريد": { sbc401: [], sbc501: [11] },
+  "machinery room": { sbc401: [], sbc501: [11] },
+  "غرفة آلات": { sbc401: [], sbc501: [11] },
+  "hydronic": { sbc401: [], sbc501: [12] },
+  "fuel oil": { sbc401: [], sbc501: [13] },
+  "وقود سائل": { sbc401: [], sbc501: [13] },
+  "ديزل": { sbc401: [], sbc501: [13] },
+};
+
+/**
+ * Chapter detection for the 2024-intake codes. Pure; mirrors the two-pass
+ * approach used for 201/801 (raw-query substring pass + translated-keyword
+ * pass) but against NEW_CODE_CHAPTER_KEYWORDS only.
+ */
+export function getNewCodeChapters(
+  queryLower: string,
+  translatedKeywords: string[],
+): { sbc401Chapters: number[]; sbc501Chapters: number[] } {
+  const s401 = new Set<number>();
+  const s501 = new Set<number>();
+  for (const [keyword, chapters] of Object.entries(NEW_CODE_CHAPTER_KEYWORDS)) {
+    if (queryLower.includes(keyword)) {
+      chapters.sbc401.forEach((c) => s401.add(c));
+      chapters.sbc501.forEach((c) => s501.add(c));
+    }
+  }
+  if (s401.size === 0 && s501.size === 0) {
+    for (const kw of translatedKeywords) {
+      const chapters = NEW_CODE_CHAPTER_KEYWORDS[kw];
+      if (chapters) {
+        chapters.sbc401.forEach((c) => s401.add(c));
+        chapters.sbc501.forEach((c) => s501.add(c));
+      }
+    }
+  }
+  return { sbc401Chapters: [...s401], sbc501Chapters: [...s501] };
+}
+
+/**
  * Select the storage page ranges whose volumes actually contain any of the
  * target chapters.
  *
