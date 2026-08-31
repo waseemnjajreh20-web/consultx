@@ -81,7 +81,17 @@ import {
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  // x-consultx-admin-entitlement-override: the admin plan-simulation toggle
+  // (src/lib/adminEntitlementOverride.ts). The frontend attaches this header on
+  // EVERY chat request whenever an admin has an override selected (e.g. "Owner
+  // Mode" to reach advisory/analysis). This function never reads it — admin
+  // entitlement is derived server-side from ADMIN_EMAILS — but it MUST be in the
+  // preflight allow-list or the browser blocks the request before it is sent,
+  // surfacing as the UI "Connection error" in advisory/analysis while primary
+  // (tested with no override) works. Root cause of the 2026-08-31 advisory
+  // outage; proven with a live OPTIONS preflight. Keep lowercase (CORS matches
+  // header names case-insensitively).
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
   // X-Retrieval-Engine restored 2026-08-23 (deleted by 587fd5b): it reports
   // which retrieval engine actually served the request ("vector" | "keyword"),
   // so the bench and the post-deploy smoke can tell the two paths apart from
