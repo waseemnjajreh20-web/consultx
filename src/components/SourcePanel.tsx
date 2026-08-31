@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X, ExternalLink, ArrowLeft, BookOpen, Printer, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { resolveAllSources, formatSourceLabel, SourceMeta } from "@/utils/sourceMetadata";
-import { fetchSignedPdfUrl } from "@/utils/sourcePdfUrl";
+import { fetchSignedPdfUrl, fetchPageSliceUrl } from "@/utils/sourcePdfUrl";
 import { supabase } from "@/integrations/supabase/client";
 import { PdfHighlightViewer } from "@/components/PdfHighlightViewer";
 
@@ -402,6 +402,10 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [snippet, setSnippet] = useState<string | null>(null);
   const [fallback, setFallback] = useState(false);
+  // Page to open INSIDE whatever document we ended up serving: the slice-local
+  // page when a slice was returned, the absolute page when we fell back to the
+  // whole file.
+  const [viewerPage, setViewerPage] = useState<number>(1);
 
   // Key on pdfPath + page so a jump within the same PDF re-anchors correctly.
   const requestKey = `${meta.pdfPath ?? ""}#page=${meta.pageStart ?? 1}`;
@@ -418,15 +422,28 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
     setFallback(false);
 
     (async () => {
-      // Fetch the signed URL and the highlight anchor together so the pdf.js
-      // viewer mounts ONCE with both (avoids a second, expensive page render).
-      const [urlRes, snip] = await Promise.all([
-        fetchSignedPdfUrl(meta.pdfPath),
+      // Page-window slice FIRST: the whole-code PDFs are 31-50 MB and their
+      // first ranged read alone measured ~5.7 s in production, which is what
+      // made the viewer time out and show "تعذّر تحميل PDF". A +/-2-page slice
+      // is ~400 KB. Fall back to the whole file if the slice call fails, so
+      // behaviour never drops below what shipped before.
+      const [sliceRes, snip] = await Promise.all([
+        fetchPageSliceUrl(meta.pdfPath, meta.pageStart),
         fetchHighlightSnippet(meta.sourceFile, meta.pageStart),
       ]);
       if (cancelled) return;
+      if (sliceRes) {
+        setSignedUrl(sliceRes.url);
+        setViewerPage(sliceRes.pageInSlice);   // page number INSIDE the slice
+        setSnippet(snip);
+        setStatus("ready");
+        return;
+      }
+      const urlRes = await fetchSignedPdfUrl(meta.pdfPath);
+      if (cancelled) return;
       if (!urlRes) { setStatus("error"); return; }
       setSignedUrl(urlRes.url);
+      setViewerPage(meta.pageStart ?? 1);
       setSnippet(snip);
       setStatus("ready");
     })();
@@ -435,7 +452,7 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
   }, [requestKey, meta.pdfPath, meta.sourceFile, meta.pageStart]);
 
   const onFallback = useCallback(() => setFallback(true), []);
-  const iframeSrc = signedUrl ? `${signedUrl}#page=${meta.pageStart ?? 1}` : null;
+  const iframeSrc = signedUrl ? `${signedUrl}#page=${viewerPage}` : null;
 
   return (
     <div className="relative w-full h-full overflow-hidden">
@@ -484,7 +501,7 @@ function PdfFrame({ meta, isRtl }: { meta: SourceMeta; isRtl: boolean }) {
       {status === "ready" && signedUrl && !fallback && (
         <PdfHighlightViewer
           url={signedUrl}
-          pageNumber={meta.pageStart ?? 1}
+          pageNumber={viewerPage}
           highlightText={snippet}
           isRtl={isRtl}
           onFallback={onFallback}

@@ -99,6 +99,53 @@ export interface SignedPdfUrlResult {
  * server error) — callers (SourcePanel) are expected to show their existing
  * loading/error UI rather than throw.
  */
+export interface PageSliceResult {
+  /** Signed URL of a SMALL pdf containing just the window around `page`. */
+  url: string;
+  expiresIn: number;
+  /** 1-based page number of the requested page INSIDE the returned slice. */
+  pageInSlice: number;
+  from: number;
+  to: number;
+}
+
+/**
+ * Fetch a small page-window slice of a source PDF (get-source-page-slice).
+ *
+ * Why: the whole-code PDFs are 31-50 MB and their FIRST ranged read alone
+ * measured ~5.7 s in production, so pdf.js could not paint a page before the
+ * viewer gave up (the "تعذّر تحميل PDF" failure). A +/-2-page slice is
+ * 350-580 KB and loads in one shot — measured 1.2-2.6 s warm, and the server
+ * caches each window so repeat opens are just a signed-URL hit.
+ *
+ * Returns null on any failure; callers fall back to `fetchSignedPdfUrl`
+ * (whole file), which is exactly the previous behaviour.
+ */
+export async function fetchPageSliceUrl(
+  pdfPath: string | null | undefined,
+  page: number | null | undefined,
+): Promise<PageSliceResult | null> {
+  if (!isKnownSbcPdfPath(pdfPath)) return null;
+  const p = Math.floor(Number(page));
+  if (!Number.isFinite(p) || p < 1) return null;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data, error } = await supabase.functions.invoke("get-source-page-slice", {
+      body: { path: pdfPath, page: p },
+    });
+    if (error || !data?.url) return null;
+    return {
+      url: data.url as string,
+      expiresIn: (data.expires_in as number) ?? 300,
+      pageInSlice: (data.page_in_slice as number) ?? 1,
+      from: (data.from as number) ?? p,
+      to: (data.to as number) ?? p,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchSignedPdfUrl(pdfPath: string | null | undefined): Promise<SignedPdfUrlResult | null> {
   if (!isKnownSbcPdfPath(pdfPath)) return null;
   try {
