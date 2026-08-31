@@ -61,6 +61,13 @@ export const KNOWN_SBC_PDF_PATHS: ReadonlySet<string> = new Set([
   "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf",
   "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf",
   "sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf",
+  // SBC 501 (Mechanical, 2024) — one uploaded PDF per code; each retrieval
+  // volume gets its own path here (keeps source chips distinct) but the edge
+  // allow-list maps all three to the same private object. Page numbers are
+  // ABSOLUTE 1-based PDF pages, so the viewer's `#page=N` needs no offset.
+  "sbc/sbc-501/SBC501_CC2024_17-304.pdf",
+  "sbc/sbc-501/SBC501_CC2024_305-509.pdf",
+  "sbc/sbc-501/SBC501_CC2024_510-695.pdf",
 ]);
 
 /** Pure, synchronous membership check against the 18-path allow-list. */

@@ -7,6 +7,8 @@
   { "source_id": "NFPA30", "authority_level": "normative", "edition_year": null, "jurisdiction": "US", "ingestion_status": "absent" },
   { "source_id": "NFPA72", "authority_level": "normative", "edition_year": null, "jurisdiction": "US", "ingestion_status": "absent" },
   { "source_id": "SBC201", "authority_level": "normative", "edition_year": 2024, "jurisdiction": "SA", "ingestion_status": "partial" },
+  { "source_id": "SBC401", "authority_level": "normative", "edition_year": 2024, "jurisdiction": "SA", "ingestion_status": "partial" },
+  { "source_id": "SBC501", "authority_level": "normative", "edition_year": 2024, "jurisdiction": "SA", "ingestion_status": "partial" },
   { "source_id": "SBC801", "authority_level": "normative", "edition_year": 2024, "jurisdiction": "SA", "ingestion_status": "partial" },
   { "source_id": "SBC801_COMM", "authority_level": "commentary", "edition_year": 2024, "jurisdiction": "SA", "ingestion_status": "pending" },
   { "source_id": "SFPE", "authority_level": "informative", "edition_year": null, "jurisdiction": "US", "ingestion_status": "absent" }

@@ -58,6 +58,13 @@ const ALLOWED_PDF_PATHS: ReadonlyMap<string, string> = new Map([
   ["sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1401-1600.pdf", "SBC801/pp_1401-1600.pdf"],
   ["sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1601-1800.pdf", "SBC801/pp_1601-1800.pdf"],
   ["sbc/sbc-801/SBC 801 - The Saudi Fire Protection Code (3)-1801-2061.pdf", "SBC801/pp_1801-2061.pdf"],
+  // SBC 501 (Mechanical, 2024). The whole code is ONE private object; all three
+  // retrieval-volume public paths map to it. page_start in sbc_documents /
+  // X-SBC-Source-Meta is an ABSOLUTE 1-based PDF page, so the frontend's
+  // `#page=N` (no offset) lands correctly regardless of which volume was cited.
+  ["sbc/sbc-501/SBC501_CC2024_17-304.pdf", "SBC501/SBC501_CC2024.pdf"],
+  ["sbc/sbc-501/SBC501_CC2024_305-509.pdf", "SBC501/SBC501_CC2024.pdf"],
+  ["sbc/sbc-501/SBC501_CC2024_510-695.pdf", "SBC501/SBC501_CC2024.pdf"],
 ]);
 
 const PRIVATE_BUCKET = "sbc_pdfs_private";

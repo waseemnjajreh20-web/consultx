@@ -20,15 +20,22 @@ import type { SourceMeta } from "./sourceMetadata";
 export type CitationSrcKey =
   | "sbc201"
   | "sbc801"
+  | "sbc501"
+  | "sbc401"
   | "synthesis"
   | "ambiguous"
   | string
   | undefined;
 
+/** Canonical SBC document-code families the citation/preview flow can route. */
+export type SbcFamily = "SBC-201" | "SBC-801" | "SBC-501" | "SBC-401";
+
 /** Map a token's `data-src` key to the canonical SourceMeta documentCode. */
-export function expectedDocCode(srcKey: CitationSrcKey): "SBC-201" | "SBC-801" | null {
+export function expectedDocCode(srcKey: CitationSrcKey): SbcFamily | null {
   if (srcKey === "sbc201") return "SBC-201";
   if (srcKey === "sbc801") return "SBC-801";
+  if (srcKey === "sbc501") return "SBC-501";
+  if (srcKey === "sbc401") return "SBC-401";
   return null;
 }
 
@@ -50,10 +57,11 @@ export function findSameFamilySource(
 }
 
 /** Set of `documentCode` values present in the resolved sources (excluding UNKNOWN). */
-export function availableFamilies(resolved: ReadonlyArray<SourceMeta>): Set<"SBC-201" | "SBC-801"> {
-  const out = new Set<"SBC-201" | "SBC-801">();
+export function availableFamilies(resolved: ReadonlyArray<SourceMeta>): Set<SbcFamily> {
+  const out = new Set<SbcFamily>();
+  const known: ReadonlySet<string> = new Set(["SBC-201", "SBC-801", "SBC-501", "SBC-401"]);
   for (const m of resolved) {
-    if (m.documentCode === "SBC-201" || m.documentCode === "SBC-801") out.add(m.documentCode);
+    if (known.has(m.documentCode)) out.add(m.documentCode as SbcFamily);
   }
   return out;
 }

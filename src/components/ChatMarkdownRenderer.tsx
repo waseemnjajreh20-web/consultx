@@ -6,6 +6,7 @@ import {
 import { cn } from "@/lib/utils";
 import WidgetRenderer, { WidgetLoading } from "@/components/widgets/WidgetRenderer";
 import { parseCitationToken } from "@/utils/inlineCitation";
+import type { SbcFamily } from "@/utils/citationRouting";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -22,7 +23,7 @@ interface ChatMarkdownRendererProps {
    * `data-unsupported="1"`) so the click handler can apply the Step-3.2
    * hard-stop and never open a wrong-family PDF.
    */
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
+  availableFamilies?: ReadonlySet<SbcFamily>;
 }
 
 interface ParsedSection {
@@ -276,7 +277,7 @@ function getSrc(sec: string): "sbc201" | "sbc801" {
  */
 function renderCitationToken(
   match: string,
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+  availableFamilies?: ReadonlySet<SbcFamily>,
 ): string {
   const parsed = parseCitationToken(match);
   if (!parsed) return match;
@@ -297,9 +298,11 @@ function renderCitationToken(
   //   retrieved sources. These tokens must NOT deep-link to a PDF — they are
   //   rendered as warning-styled badges, and the click handler applies a hard
   //   stop on `data-unsupported="1"`.
-  const family =
+  const family: SbcFamily | null =
     parsed.src === "sbc201" ? "SBC-201" :
-    parsed.src === "sbc801" ? "SBC-801" : null;
+    parsed.src === "sbc801" ? "SBC-801" :
+    parsed.src === "sbc501" ? "SBC-501" :
+    parsed.src === "sbc401" ? "SBC-401" : null;
   const isUnsupported = !!(family && availableFamilies && !availableFamilies.has(family));
 
   const sec = parsed.sectionRef ?? parsed.tableRef ?? "";
@@ -377,7 +380,7 @@ function replaceInTextNodes(
 export function applyInlineMarkdown(
   escaped: string,
   mode?: ChatMode,
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+  availableFamilies?: ReadonlySet<SbcFamily>,
 ): string {
   // ── Step 0: Structured Advisory citation tokens (Step 3.1 fix) ───────────
   // Format: [SBC-XXX | ... | Section X.Y.Z | conf:high|medium|low|ambiguous | ...]
@@ -388,7 +391,7 @@ export function applyInlineMarkdown(
   const escapedWithTokens = escaped.replace(
     /\[(?:[^\[\]\n]{0,300})\]/g,
     (m) => {
-      if (/SBC[\s ‑\-]*(201|801)|community_summary|LLM_SYNTHESIS/i.test(m)) {
+      if (/SBC[\s ‑\-]*(201|801|501|401)|community_summary|LLM_SYNTHESIS/i.test(m)) {
         const html = renderCitationToken(m, availableFamilies);
         const idx = tokenPlaceholders.length;
         tokenPlaceholders.push(html);
@@ -409,6 +412,10 @@ export function applyInlineMarkdown(
       '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 201">$&</span>')
     .replace(/\bSBC[\u00A0 \u2011\-]*801\b/g,
       '<span class="cx-src" data-src="sbc801" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 801">$&</span>')
+    .replace(/\bSBC[\s\-]*501\b/g,
+      '<span class="cx-src" data-src="sbc501" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 501">$&</span>')
+    .replace(/\bSBC[\s\-]*401\b/g,
+      '<span class="cx-src" data-src="sbc401" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 401">$&</span>')
     // Arabic: الفقرة (clause / paragraph)
     .replace(/الفقرة\s+(\d{3,4}(?:\.\d{1,3}){0,3})/g,
       (m, sec) => refSpan(getSrc(sec), sec, "clause", m, "انقر لفتح الفقرة "))
@@ -484,7 +491,7 @@ function renderTextLine(
   line: string,
   index: number,
   mode?: ChatMode,
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">,
+  availableFamilies?: ReadonlySet<SbcFamily>,
 ) {
   // Blockquote
   if (line.startsWith("> ")) {
@@ -568,7 +575,7 @@ function TextRenderer({
 }: {
   content: string;
   mode?: ChatMode;
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
+  availableFamilies?: ReadonlySet<SbcFamily>;
 }) {
   const lines = content.split("\n");
   return <>{lines.map((line, i) => renderTextLine(line, i, mode, availableFamilies))}</>;
@@ -655,7 +662,7 @@ function CollapsibleSection({
   content: string;
   sectionKey: string;
   mode?: ChatMode;
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
+  availableFamilies?: ReadonlySet<SbcFamily>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const icon = getSectionIcon(title);
@@ -760,7 +767,7 @@ function HeadingCollapsible({
   title, level, children, mode, availableFamilies,
 }: {
   title: string; level: 3 | 4; children: ParsedSection[]; mode?: ChatMode;
-  availableFamilies?: ReadonlySet<"SBC-201" | "SBC-801">;
+  availableFamilies?: ReadonlySet<SbcFamily>;
 }) {
   const accent =
     mode === "primary"  ? "rgba(0,212,255,0.06)"  :

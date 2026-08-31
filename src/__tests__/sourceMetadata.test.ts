@@ -203,8 +203,8 @@ describe('formatSourceLabel', () => {
 });
 
 describe('isKnownSbcPdfPath — frontend allow-list guard', () => {
-  it('accepts all 18 valid SBC 201 / SBC 801 pdfPath values', () => {
-    expect(KNOWN_SBC_PDF_PATHS.size).toBe(18);
+  it('accepts all 21 valid SBC 201 / 801 / 501 pdfPath values', () => {
+    expect(KNOWN_SBC_PDF_PATHS.size).toBe(21);
     for (const p of KNOWN_SBC_PDF_PATHS) {
       expect(isKnownSbcPdfPath(p)).toBe(true);
     }
@@ -214,11 +214,30 @@ describe('isKnownSbcPdfPath — frontend allow-list guard', () => {
     const files = [
       'SBC 201 - The Saudi General Building Code-1-250_extracted_chunks.json',
       'SBC 801 - The Saudi Fire Protection Code (3)-1801-2061_extracted_chunks.json',
+      // New source code: SBC 501 volume as emitted in X-SBC-Sources.
+      'SBC501_CC2024_305-509_chunks.json',
     ];
     for (const f of files) {
       const meta = resolveSourceMeta(f);
       expect(isKnownSbcPdfPath(meta.pdfPath)).toBe(true);
     }
+  });
+
+  it('maps every SBC 501 retrieval volume to a known, distinct pdfPath', () => {
+    const vols = [
+      'SBC501_CC2024_17-304_chunks.json',
+      'SBC501_CC2024_305-509_chunks.json',
+      'SBC501_CC2024_510-695_chunks.json',
+    ];
+    const paths = new Set<string>();
+    for (const f of vols) {
+      const meta = resolveSourceMeta(f);
+      expect(meta.documentCode).toBe('SBC-501');
+      expect(isKnownSbcPdfPath(meta.pdfPath)).toBe(true);
+      paths.add(meta.pdfPath!);
+    }
+    // Distinct chip paths (so volumes don't dedup into one chip).
+    expect(paths.size).toBe(3);
   });
 
   it('rejects traversal into the private bucket\'s non-PDF prefixes', () => {

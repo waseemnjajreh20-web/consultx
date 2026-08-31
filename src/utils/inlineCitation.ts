@@ -12,7 +12,7 @@
  * 309.1" near SBC-801-only sources opened the wrong PDF.
  */
 
-export type CitationSource = "sbc201" | "sbc801" | "synthesis" | "ambiguous";
+export type CitationSource = "sbc201" | "sbc801" | "sbc501" | "sbc401" | "synthesis" | "ambiguous";
 export type CitationConfidence = "high" | "medium" | "low" | "ambiguous" | null;
 
 export interface ParsedCitation {
@@ -31,7 +31,7 @@ export interface ParsedCitation {
   pageEnd: number | null;
 }
 
-const SBC_CODE_RX = /SBC[\s ‑\-]*(201|801)/i;
+const SBC_CODE_RX = /SBC[\s ‑\-]*(201|801|501|401)/i;
 const SECTION_RX = /Section\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i;
 const TABLE_RX = /Table\s+(\d{3,4}(?:\.\d{1,3}){0,3})/i;
 const CONF_RX = /conf\s*:\s*(high|medium|low|ambiguous)/i;
@@ -65,6 +65,10 @@ export function parseCitationToken(raw: string): ParsedCitation | null {
     src = "sbc201";
   } else if (docMatch?.[1] === "801") {
     src = "sbc801";
+  } else if (docMatch?.[1] === "501") {
+    src = "sbc501";
+  } else if (docMatch?.[1] === "401") {
+    src = "sbc401";
   } else {
     src = "ambiguous";
   }

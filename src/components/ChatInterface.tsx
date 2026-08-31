@@ -1963,7 +1963,10 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                               const driftHonestyEnabled =
                                 import.meta.env.VITE_ADVISORY_CITATION_DRIFT_HONESTY_ENABLED === "1";
                               if (sectionNum) {
-                                const codeType = srcKey === 'sbc201' ? 'SBC201' : 'SBC801';
+                                const codeType =
+                                  srcKey === 'sbc801' ? 'SBC801' :
+                                  srcKey === 'sbc501' ? 'SBC501' :
+                                  srcKey === 'sbc401' ? 'SBC401' : 'SBC201';
                                 const MAX_SPAN = 25; // pages — tighter = more accurate
                                 try {
                                   // Pass 1: exact section, fetch all rows, pick tightest.

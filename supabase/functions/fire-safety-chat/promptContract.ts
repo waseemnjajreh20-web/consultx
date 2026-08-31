@@ -262,6 +262,8 @@ export const CITATION_TOKEN_CONTRACT = `
 1) قسم مسترجع حرفياً في السياق أعلاه:
    [SBC-201 Section 1017.2 | conf:high]
    [SBC-801 Section 903.2.7 | conf:medium]
+   [SBC-501 Section 507.2 | conf:high]
+   [SBC-401 Section 411.3 | conf:high]
 2) صفحة فقط بلا رقم قسم مؤكد (page fallback):
    [SBC-201 pp.411-435 | conf:medium]
 3) صف جدول مسترجع (table form):
@@ -273,9 +275,9 @@ export const CITATION_TOKEN_CONTRACT = `
 - ممنوع منعاً باتاً اختلاق رمز استشهاد لنص غير مسترجع في السياق أعلاه. إن لم يوجد نص مسترجع يدعم الادعاء، فلا يُصدر رمز استشهاد إطلاقاً — تُصدر بدلاً منه جملة الرفض القياسية أدناه.
 
 CITATION TOKEN GRAMMAR (English restatement, binding equally):
-- Exact section retrieved verbatim → [SBC-{201|801} Section {section_ref} | conf:high]
-- Section inferred from an adjacent chunk in the same file, OR only a page range is available → [SBC-{201|801} Section {section_ref} | conf:medium] or [SBC-{201|801} pp.{start}-{end} | conf:medium]
-- Structured table row → [SBC-{201|801} Table {table_id} | conf:high]
+- Exact section retrieved verbatim → [SBC-{201|801|501|401} Section {section_ref} | conf:high]
+- Section inferred from an adjacent chunk in the same file, OR only a page range is available → [SBC-{201|801|501|401} Section {section_ref} | conf:medium] or [SBC-{201|801|501|401} pp.{start}-{end} | conf:medium]
+- Structured table row → [SBC-{201|801|501|401} Table {table_id} | conf:high]
 - No retrieved source supports the claim → do NOT emit a token; emit the refusal sentence below instead.
 - conf:high is reserved for a section number that appears in the literal retrieved text under a matching heading — never assign it to a section number produced by pattern-matching or memory alone.
 - Inventing a citation token for a claim with no retrieved supporting text is forbidden, with no exception.

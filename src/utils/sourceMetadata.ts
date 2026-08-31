@@ -116,7 +116,7 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
   // Format emitted by the edge function: `__sbc_table__::SBC-201::309`
   // Non-clickable, no PDF, but documentCode is set so the Step 3.2 hard-stop
   // (availableFamilies) sees the family as present in the message.
-  const tblSentinel = sourceFile.match(/^__sbc_table__::(SBC-(?:201|801))::(.+)$/);
+  const tblSentinel = sourceFile.match(/^__sbc_table__::(SBC-(?:201|801|501|401))::(.+)$/);
   if (tblSentinel) {
     const documentCode = tblSentinel[1];
     const tableRef = tblSentinel[2];
@@ -146,6 +146,50 @@ export function resolveSourceMeta(sourceFile: string): SourceMeta {
     .replace(/_extracted\.json$/i, "")
     .replace(/\.json$/i, "")
     .trim();
+
+  // ── New source codes: SBC 501 (Mechanical) / SBC 401 (Electrical) ────────
+  // These volumes are named differently from 201/801 —
+  // "SBC501_CC2024_{start}-{end}_chunks" (underscores, edition tag, no spaces).
+  // Their page_start/page_end (sbc_documents + X-SBC-Source-Meta) are ABSOLUTE
+  // 1-based page indices of the single full-code PDF, so every volume of one
+  // code maps to ONE uploaded PDF and the viewer's `#page=N` (which does no
+  // offset math) lands on the right page. Each volume still gets its OWN
+  // pdfPath (…_{start}-{end}.pdf) so the source chips stay distinct and never
+  // dedup into one; get-source-pdf-url maps all of a code's volume paths to the
+  // same private object. `\b` is not used after the digits because the next
+  // char is "_" (a word char), so a negative-lookahead guards a trailing digit.
+  const newCode =
+    /^SBC[\s_-]*501(?!\d)/i.test(base)
+      ? { code: "SBC-501", folder: "sbc/sbc-501", name: "Mechanical" }
+      : /^SBC[\s_-]*401(?!\d)/i.test(base)
+        ? { code: "SBC-401", folder: "sbc/sbc-401", name: "Electrical" }
+        : null;
+  if (newCode) {
+    const registryEntry = registryMap.get(newCode.code.replace("-", ""));
+    const rng = base.match(/(\d+)-(\d+)(?:_chunks)?$/);
+    const nPageStart = rng ? parseInt(rng[1], 10) : null;
+    const nPageEnd = rng ? parseInt(rng[2], 10) : null;
+    // Per-volume PDF path (strip the _chunks suffix); all volumes of a code
+    // resolve to the same private PDF via the get-source-pdf-url allow-list.
+    const pdfBase = base.replace(/_chunks$/i, "");
+    const nPdfPath = `${newCode.folder}/${pdfBase}.pdf`;
+    const nPageLabel =
+      nPageStart !== null && nPageEnd !== null ? ` (Pages ${nPageStart}–${nPageEnd})` : "";
+    return {
+      sourceFile,
+      title: `${newCode.code.replace("-", " ")} — The Saudi ${newCode.name} Code${nPageLabel}`,
+      documentCode: newCode.code,
+      editionYear: registryEntry?.edition_year ?? null,
+      authorityLevel: (registryEntry?.authority_level as AuthorityLevel) ?? "unknown",
+      pageStart: nPageStart,
+      pageEnd: nPageEnd,
+      pdfUrl: nPdfPath,
+      pdfPath: nPdfPath,
+      precision: nPageStart != null ? "chunk_range_only" : "unavailable",
+      sectionRef: null,
+      sectionConfidence: null,
+    };
+  }
 
   // Detect document code
   const is201 = /^SBC\s*201\b/i.test(base);
