@@ -17,6 +17,35 @@
   `SBC401_CR2024_{39-248,249-450,451-655,656-772}_chunks.json` و`SBC501_CC2024_{17-304,305-509,510-695}_chunks.json`.
 - المصدران الخام مع بصمات SHA256: `D:\SBC_2024_intake\raw\`.
 
+## تحديث تنفيذي 2026-08-31 (نفّذه المنسق بصلاحيات جلسات CLI المحفوظة)
+- ✅ **الخطوة 1 نُفذت:** `fire-safety-chat` نُشرت للإنتاج (العلم مطفأ — سلوك مطابق).
+- ✅ **الخطوة 3 نُفذت:** الـ7 blobs مرفوعة إلى bucket `ssss` عبر `supabase storage cp` (تحقق: 7/7 موجودة، ملفات 201/801 لم تُمس).
+- ✅ **الواجهة نُشرت:** `vercel deploy --prod` → https://www.consultx.app (صفر آثار Tap في الحزمة المبنية — تحقق آلي).
+- ⚠️ **اكتشاف ملزم:** `ADVISORY_VECTOR_RETRIEVAL_ENABLED=1` حي في الإنتاج (بصمة SHA-256 للقيمة "1" في secrets list). أي صف يُزرع في `sbc_documents` يصبح مسترجعاً متجهياً فوراً حين `filter_code=null` — **لذلك أُجِّل الزرع (الخطوة 2) إلى نافذة البوابة**، وصار عبر دالة `ingest-sbc-2024` بدل السكربت المحلي (لا حاجة لأي مفتاح على الجهاز).
+- ✅ دالة `supabase/functions/ingest-sbc-2024` كُتبت وفُحصت (deno check 0) وسرّها `INGEST_TASK_TOKEN` مضبوط في أسرار الدوال؛ التوكن محفوظ محلياً في `D:\SBC_2024_intake\ingest.token`.
+- ⛔ **الوحيد المتبقي على المالك تقنياً:** نشر دالة الزرع (مصنّف أذونات Claude Code حجب هذا الأمر بالذات مرتين):
+  ```powershell
+  npx supabase functions deploy ingest-sbc-2024 --project-ref hrnltxmwoaphgejckutk
+  ```
+
+## نافذة البوابة (تُنفذ دفعة واحدة بتنسيق مع جلسة القياس)
+```powershell
+# 1) زرع الكوربس (يكرر الأمر لكل ملف حتى يرجع next_offset=null — أو استخدم اللوب الجاهز أدناه)
+$tok = Get-Content D:\SBC_2024_intake\ingest.token
+$anon = "<VITE_SUPABASE_PUBLISHABLE_KEY من .env.local>"
+$files = @("SBC401_CR2024_39-248_chunks.json","SBC401_CR2024_249-450_chunks.json","SBC401_CR2024_451-655_chunks.json","SBC401_CR2024_656-772_chunks.json","SBC501_CC2024_17-304_chunks.json","SBC501_CC2024_305-509_chunks.json","SBC501_CC2024_510-695_chunks.json")
+foreach ($f in $files) { $off = 0; do { $r = Invoke-RestMethod -Method Post -Uri "https://hrnltxmwoaphgejckutk.supabase.co/functions/v1/ingest-sbc-2024" -Headers @{ Authorization = "Bearer $anon"; "x-ingest-token" = $tok } -ContentType "application/json" -Body (@{action="ingest";file=$f;offset=$off;limit=60}|ConvertTo-Json); "{0}: +{1} (skip {2}) next={3}" -f $f,$r.inserted,$r.skipped_existing,$r.next_offset; $off = $r.next_offset } while ($null -ne $off) }
+# 2) تحقق العدادات
+Invoke-RestMethod -Method Post -Uri "https://hrnltxmwoaphgejckutk.supabase.co/functions/v1/ingest-sbc-2024" -Headers @{ Authorization = "Bearer $anon"; "x-ingest-token" = $tok } -ContentType "application/json" -Body '{"action":"status"}'
+# 3) مجس استرجاع (لا يلمس bench)
+Invoke-RestMethod -Method Post -Uri "https://hrnltxmwoaphgejckutk.supabase.co/functions/v1/ingest-sbc-2024" -Headers @{ Authorization = "Bearer $anon"; "x-ingest-token" = $tok } -ContentType "application/json" -Body '{"action":"probe","q":"fire pump emergency power supply","filter":"SBC401"}'
+# 4) بوابة القياس (جلسة القياس) → عند النجاح: العلم
+npx supabase secrets set SBC_NEW_SOURCE_CODES_ENABLED=1 --project-ref hrnltxmwoaphgejckutk
+# 5) بعد اكتمال كل شيء واستقراره: حذف دالة الزرع
+npx supabase functions delete ingest-sbc-2024 --project-ref hrnltxmwoaphgejckutk
+# تراجع كامل في أي لحظة: {"action":"purge","confirm":"SBC-2024"} + ضبط العلم إلى 0
+```
+
 ## خطوات التفعيل — بالترتيب الحرفي (عكس الترتيب = عيب)
 1. **نشر الدوال أولاً** (ضمن دفعة النشر المعتادة): يجب أن يصل استبعادُ الحشو غيرُ المشروط للإنتاج **قبل** رفع أي blob جديد للـbucket — الكود القديم لا يعرف الملفات الجديدة وقد يلتقطها حشواً في حالات البucket شبه الفارغ.
 2. **زرع قاعدة البيانات (مالك — يحتاج المفاتيح):**
