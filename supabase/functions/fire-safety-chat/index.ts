@@ -1046,6 +1046,140 @@ function getTargetChapters(query: string): { sbc201Chapters: number[]; sbc801Cha
 //   "SBC501"        → only that code; comma list allowed ("SBC401,SBC501")
 // A code may appear here ONLY after ITS OWN gate passes — the prompt contract
 // names exactly the enabled set, never the other code.
+// ── Multi-topic retrieval (2026-08-31) ──────────────────────────────────────
+// A compound question ("grease duct AND hood type AND shaft fire rating", or a
+// numbered 4-part strategy request) produces ONE blended embedding, and the
+// nearest neighbours of that blend serve no single topic well. Measured in
+// production: the kitchen question returned Section 510 (HAZARDOUS exhaust —
+// laboratories) instead of 506/507 (commercial kitchen grease duct + Type I
+// hood) even though 506.1/507.5.2 are in the corpus and a focused gate query
+// finds 506.1 at rank 1; the 4-part strategy question retrieved one generic
+// SBC 801 Chapter-4 narrative chunk and the answer came back littered with
+// [NO SOURCE].
+//
+// Fix: split the question into its topics, retrieve for each in parallel with
+// that topic's own code filter, and merge. Default OFF
+// (ADVISORY_MULTI_QUERY_RETRIEVAL_ENABLED must equal "1"); flag off ⇒ the
+// single-query path below is untouched.
+export const MULTI_QUERY_MAX_SUBQUERIES = 4;
+/** Chunks taken per sub-topic — enough to carry a requirement + its context. */
+const PER_SUBTOPIC_LIMIT = 3;
+/** Primary matches kept ahead of the sub-topic hits in the context ordering. */
+const MULTI_QUERY_PRIMARY_HEAD = 10;
+
+/**
+ * Split a compound question into focused sub-queries. Pure + exported for tests.
+ * Returns [] when the question is short or has no compound structure, which is
+ * the signal to keep the single-query path.
+ */
+export function decomposeQuery(raw: string): string[] {
+  const q = (raw ?? "").replace(/\s+/g, " ").trim();
+  if (q.length < 60) return [];
+
+  // Enumerators the model is actually asked with: "(1)", "1.", "١." ...
+  const enumRx = /\s*[(（]\s*[0-9٠-٩]{1,2}\s*[)）]\s*|\s+[0-9٠-٩]{1,2}\s*[.\-–)]\s+/u;
+  let parts = q.split(enumRx);
+
+  // With a real enumeration, parts[0] is the preamble (the scenario + "give me
+  // the strategy"). Drop it: the PRIMARY query already embeds the whole
+  // question, so spending a sub-query slot on the preamble would push a real
+  // topic past MAX — measured on the 5-storey question, where keeping it cost
+  // the electrical/RCD topic, the very one that had been missing.
+  if (parts.length >= 3) {
+    parts = parts.slice(1);
+  } else {
+    // No enumeration → split on clause joins that separate distinct asks:
+    // Arabic "، وكيف/وما/وأين", a second question mark, or ";".
+    parts = q.split(/؟\s*|\s*[;؛]\s*|،\s*(?=و?كيف|و?ما|وأين|وهل)|\s+(?=وكيف\s|وأين\s)/u);
+  }
+
+  const out: string[] = [];
+  for (const p of parts) {
+    const s = p.replace(/^[\s،:.-]+|[\s،:.-]+$/g, "").trim();
+    // Drop fragments too short to embed meaningfully, and near-duplicates.
+    if (s.length < 15) continue;
+    if (out.some((o) => o === s)) continue;
+    out.push(s);
+    if (out.length >= MULTI_QUERY_MAX_SUBQUERIES) break;
+  }
+  // One part means the split found no real structure — keep the single path.
+  return out.length >= 2 ? out : [];
+}
+
+/**
+ * The code filter for one piece of text. Identical regexes, same order, as the
+ * chain that has always run inline in fetchSBCContextVector — extracted so a
+ * sub-query can be routed to ITS own code instead of inheriting the whole
+ * question's. `enabled` gates the 2024-intake codes exactly as before.
+ */
+export function detectFilterCodeFor(text: string, enabled: string[]): string | null {
+  if (text.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) return "SBC801";
+  if (text.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) return "SBC201";
+  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) return "SBC401";
+  if (enabled.includes("SBC501") && text.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) return "SBC501";
+  return null;
+}
+
+/**
+ * Every code a SUB-TOPIC touches, not just the first — used only by the
+ * multi-topic path. One sub-topic legitimately spans codes: "standby power for
+ * the fire pump and the alarm panel, and RCD selection" is SBC 801 *and* SBC
+ * 401, and the single-winner chain above would silently drop the electrical
+ * half (measured: that is exactly how the RCD topic went missing). The sub-query
+ * is embedded ONCE and the embedding reused per code, so the extra cost is a
+ * cheap RPC, not another embedding call.
+ *
+ * The patterns are the singular chain's, widened for phrasings that were
+ * measured to miss: kitchen-hood/grease wording never hit the SBC 501 set, and
+ * Arabic shadda/plural forms ("الرشّاشات", "المخارج") never hit "رشاش"/"مخرج".
+ * Returns [null] (unfiltered search) when nothing matches — same as before.
+ */
+export function detectFilterCodesFor(text: string, enabled: string[]): (string | null)[] {
+  const codes: string[] = [];
+  if (text.match(/801|حماية.*حري|fire.*protect|رشا?ّ?ش|sprinkler|إنذار|alarm|إطفاء|مضخة.*حريق|fire.*pump/i)) codes.push("SBC801");
+  // Short Arabic tokens need explicit boundaries or they fire inside unrelated
+  // words — both cases below were measured, not hypothesised:
+  //   "قاطع" (breaker) fires inside "تتقاطع" (intersect) → needs a LEADING
+  //     guard (?<![ء-ي]); the plural "قواطع" has no contiguous "قاطع" and is
+  //     caught by "RCD"/"كهرب" instead.
+  //   "درج" (stair) fires inside "درجة" (degree) → needs a TRAILING guard
+  //     (?![ء-ي]); a leading guard cannot be used here because the definite
+  //     article makes the real word "الدرج".
+  if (text.match(/201|بناء.*عام|general.*build|مخ(ر|ا?ر)ج|exit|egress|هروب|درج(?![ء-ي])|stair|منور|shaft|إشغال|occupan/i)) codes.push("SBC201");
+  if (enabled.includes("SBC401") && text.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|(?<![ء-ي])قاطع|breaker|RCD|كابل|cable|wiring|تمديدات|طاقة.*احتياط|standby.*power|مولد|generator/i)) codes.push("SBC401");
+  if (enabled.includes("SBC501") && text.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney|مطبخ|kitchen|شفّ?اط|hood|شحوم|grease|دخان|smoke/i)) codes.push("SBC501");
+  if (codes.length === 0) return [null];
+  return codes.slice(0, 2);   // two is enough; keeps the RPC fan-out bounded
+}
+
+/** Embed one piece of text with the same model/dimensionality the primary
+ *  query uses. Returns null on any failure so a sub-topic can be skipped
+ *  without disturbing the primary result set. */
+async function embedQueryText(text: string, apiKey: string): Promise<number[] | null> {
+  try {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: { role: "user", parts: [{ text: text.substring(0, 8000) }] },
+          outputDimensionality: 768,
+        }),
+      }
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j.embedding?.values ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function multiQueryRetrievalEnabled(): boolean {
+  return (Deno.env.get("ADVISORY_MULTI_QUERY_RETRIEVAL_ENABLED") ?? "").trim() === "1";
+}
+
 function enabledNewSourceCodes(): string[] {
   const v = (Deno.env.get("SBC_NEW_SOURCE_CODES_ENABLED") ?? "").trim();
   if (v === "") return [];
@@ -1943,38 +2077,28 @@ async function fetchSBCContextVector(
     // VectorReasoningHints doc comment above. Absent (flag off, facts did not
     // parse, or the model did not state a code) falls through to the same
     // regex this branch has always run, byte-identical to HEAD.
-    let filterCode: string | null = null;
-    if (reasoningHints?.codeHint) {
-      filterCode = reasoningHints.codeHint;
-    } else if (query.match(/801|حماية.*حري|fire.*protect|رشاش|sprinkler|إنذار|alarm|إطفاء/i)) {
-      filterCode = 'SBC801';
-    } else if (query.match(/201|بناء.*عام|general.*build|مخرج|exit|درج|stair/i)) {
-      filterCode = 'SBC201';
-    } else if (enabledNewSourceCodes().includes("SBC401") && query.match(/401|كهرب|electric|تأريض|earthing|grounding|صواعق|lightning|قاطع|breaker|كابل|cable|wiring|تمديدات/i)) {
-      // 2024-intake codes: heuristics live BELOW the 801/201 branches on
-      // purpose — a fire-alarm/egress phrasing keeps its historical routing.
-      // Flag off ⇒ these branches are unreachable and filterCode is
-      // byte-identical to HEAD. Rows for these code_types only exist after
-      // the owner runs the gated ingestion, so a hit here can never fabricate
-      // sources: with no rows, the RPC returns nothing and the keyword
-      // fallback runs as before.
-      filterCode = 'SBC401';
-    } else if (enabledNewSourceCodes().includes("SBC501") && query.match(/501|ميكانيك|mechanical|تهوية|ventilat|عادم|exhaust|دكت|duct|غلاية|boiler|تبريد|refrigerat|مدخنة|chimney/i)) {
-      filterCode = 'SBC501';
-    }
+    // detectFilterCodeFor() holds the exact regex chain (same patterns, same
+    // order) that used to be inline here; the 2024-intake branches still sit
+    // below 801/201 so a fire-alarm/egress phrasing keeps its historical
+    // routing, and they stay unreachable while the flag is off.
+    const enabledCodes = enabledNewSourceCodes();
+    const filterCode: string | null = reasoningHints?.codeHint
+      ?? detectFilterCodeFor(query, enabledCodes);
 
     // 3. Vector search
     const matchCount = mode === 'primary' ? 10 : 25;
-    const { data: matches, error } = await supabaseAdmin.rpc('match_sbc_documents', {
+    const { data: primaryMatches, error } = await supabaseAdmin.rpc('match_sbc_documents', {
       query_embedding: queryEmbedding,
       match_count: matchCount,
       filter_code: filterCode,
     });
 
-    if (error || !matches?.length) {
+    if (error || !primaryMatches?.length) {
       console.error("[Vector RAG] Search error:", error?.message || "no matches");
       return keywordFallback(error ? "search_error" : "no_matches");
     }
+
+    const matches = primaryMatches as any[];
 
     // 3b. Similarity floor (risk R6). match_sbc_documents applies NO threshold
     // in SQL — it returns the nearest `match_count` rows however far away they
@@ -2010,6 +2134,72 @@ async function fetchSBCContextVector(
 
     const acceptedMatches = floored.kept as any[];
     console.log(`[Vector RAG] Found ${acceptedMatches.length} matches, top similarity: ${floored.topSimilarity?.toFixed(3)}`);
+
+    // 3c. Multi-topic augmentation (flag-gated, advisory/analysis only).
+    // Deliberately AFTER the similarity floor: the floor is RELATIVE to the top
+    // similarity of the set it is given, so merging sub-query hits in before it
+    // could raise the cut line and silently drop primary matches. Running it
+    // here means the primary result set — and every fallback decision above —
+    // is exactly what it was with the flag off; sub-topics can only ADD.
+    // Each sub-query gets its own code filter and its own floor (relative to
+    // its own top), and any failure leaves `acceptedMatches` untouched.
+    if (multiQueryRetrievalEnabled() && mode !== 'primary') {
+      const subQueries = decomposeQuery(query);
+      if (subQueries.length >= 2) {
+        const subCount = Math.max(5, Math.floor(matchCount / 2));
+        const keyOf = (m: any) => `${m.file_name}|${m.page_start}|${String(m.content ?? '').slice(0, 80)}`;
+        const seen = new Set<string>(acceptedMatches.map(keyOf));
+        const added: any[] = [];
+        try {
+          const results = await Promise.all(subQueries.map(async (sq) => {
+            // One embedding per sub-topic, reused across the codes it touches.
+            const emb = await embedQueryText(sq, GEMINI_API_KEY);
+            if (!emb) return [] as any[];
+            const codes = detectFilterCodesFor(sq, enabledCodes);
+            const perCode = await Promise.all(codes.map(async (code) => {
+              const { data } = await supabaseAdmin.rpc('match_sbc_documents', {
+                query_embedding: emb,
+                match_count: subCount,
+                filter_code: code,
+              });
+              const sub = (data ?? []) as any[];
+              if (sub.length === 0) return sub;
+              // Same noise floor, applied within this code's own result set.
+              return applySimilarityFloor(sub as { similarity?: number | null }[], relFloor, absFloor).kept as any[];
+            }));
+            return perCode.flat();
+          }));
+          // Cap each sub-topic's contribution so one topic cannot crowd out the
+          // others, and so the total stays comfortably inside the context budget.
+          for (const list of results) {
+            let takenFromThisTopic = 0;
+            for (const m of list) {
+              if (takenFromThisTopic >= PER_SUBTOPIC_LIMIT) break;
+              const key = keyOf(m);
+              if (seen.has(key)) continue;
+              seen.add(key);
+              added.push(m);
+              takenFromThisTopic++;
+            }
+          }
+        } catch (subErr) {
+          console.warn(`[Vector RAG] multi-topic augmentation failed (primary result kept): ${subErr instanceof Error ? subErr.message : String(subErr)}`);
+        }
+        if (added.length > 0) {
+          // Splice the sub-topic hits in AFTER the strongest primary matches
+          // rather than appending them. The context builder below fills a
+          // 120k-char budget in array order and stops — with 25 primary chunks
+          // at ~3.6k chars each it can exhaust the budget on its own, so
+          // appended sub-topic matches would be silently truncated away, which
+          // is precisely the coverage this whole block exists to add.
+          const head = acceptedMatches.slice(0, MULTI_QUERY_PRIMARY_HEAD);
+          const tail = acceptedMatches.slice(MULTI_QUERY_PRIMARY_HEAD);
+          acceptedMatches.length = 0;
+          acceptedMatches.push(...head, ...added, ...tail);
+          console.log(`[Vector RAG] multi-topic: ${subQueries.length} sub-queries added ${added.length} matches (total ${acceptedMatches.length})`);
+        }
+      }
+    }
 
     // 4. Build context
     const usedFiles = [...new Set(acceptedMatches.map((m: any) => m.file_name))] as string[];
