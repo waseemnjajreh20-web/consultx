@@ -201,6 +201,51 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, deleted: count, codes });
     }
 
+    // Diagnostic: verify the function-env Gemini key can GENERATE (not just
+    // embed) with the models fire-safety-chat actually uses. Returns HTTP
+    // status + error class per model, never the key.
+    if (action === "gentest") {
+      if (!gemini) return Response.json({ error: "GOOGLE_GEMINI_API_KEY absent" }, { status: 500 });
+      const models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
+      const out: Record<string, string> = {};
+      for (const model of models) {
+        try {
+          const r = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ contents: [{ parts: [{ text: "reply with the word ok" }] }] }),
+            },
+          );
+          if (r.ok) {
+            out[model] = "OK";
+          } else {
+            const t = await r.text();
+            out[model] = `${r.status}: ${t.slice(0, 180).replace(/\s+/g, " ")}`;
+          }
+        } catch (e) {
+          out[model] = `fetch_error: ${String(e).slice(0, 100)}`;
+        }
+      }
+      // Also report what ListModels claims is available to this key — the
+      // resilience layer builds its chain from this list, so a catalog that
+      // STILL names blocked 2.5 models explains a dead chain.
+      let listed: string[] = [];
+      try {
+        const lr = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${gemini}&pageSize=1000`,
+        );
+        if (lr.ok) {
+          const ld = await lr.json();
+          listed = (ld.models ?? [])
+            .map((m: { name?: string }) => String(m.name ?? "").replace("models/", ""))
+            .filter((n: string) => n.startsWith("gemini-"));
+        }
+      } catch { /* report empty */ }
+      return Response.json({ ok: true, generation: out, listed_gemini_models: listed });
+    }
+
     return Response.json({ error: `unknown action` }, { status: 400 });
   } catch (e) {
     return Response.json({ error: String((e as Error)?.message ?? e) }, { status: 500 });

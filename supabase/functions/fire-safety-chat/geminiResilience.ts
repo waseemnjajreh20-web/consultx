@@ -36,6 +36,16 @@ export const GEMINI_MODEL_CANDIDATES = [
   "gemini-2.5-pro",
   "gemini-2.5-flash",
   "gemini-2.0-flash",
+  // 2026-08-31 key-rotation incident: Google's ListModels CATALOG still names
+  // the 2.5/2.0 models for keys on new projects, but generateContent refuses
+  // them with 404 "no longer available to new users" — so buildModelChain,
+  // which trusts the catalog, produced an all-dead chain and every chat
+  // request 500'd. These two are Google's own designated successors (named in
+  // the 404 bodies themselves). Order preserved: keys grandfathered onto 2.5
+  // never reach them; new-project keys fall through the quick 404s and land
+  // here. Verified live via ingest-sbc-2024 {action:"gentest"}.
+  "gemini-3.1-pro-preview",
+  "gemini-3.6-flash",
 ];
 
 const MODELS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes

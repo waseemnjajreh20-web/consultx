@@ -38,7 +38,17 @@ describe("buildModelChain", () => {
 
   it("deduplicates models", () => {
     const chain = buildModelChain("gemini-2.5-flash", "gemini-2.5-flash", GEMINI_MODEL_CANDIDATES);
-    expect(chain).toEqual(["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]);
+    // 2026-08-31: the two gemini-3.x successors joined the candidate list
+    // (key-rotation incident — new-project keys cannot generate on 2.5/2.0
+    // even though the catalog still lists them). Preferred/fallback ordering
+    // ahead of the remaining candidates is unchanged.
+    expect(chain).toEqual([
+      "gemini-2.5-flash",
+      "gemini-2.5-pro",
+      "gemini-2.0-flash",
+      "gemini-3.1-pro-preview",
+      "gemini-3.6-flash",
+    ]);
   });
 
   it("uses newest available gemini model when no candidate is available", () => {
