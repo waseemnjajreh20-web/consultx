@@ -68,6 +68,11 @@ export const KNOWN_SBC_PDF_PATHS: ReadonlySet<string> = new Set([
   "sbc/sbc-501/SBC501_CC2024_17-304.pdf",
   "sbc/sbc-501/SBC501_CC2024_305-509.pdf",
   "sbc/sbc-501/SBC501_CC2024_510-695.pdf",
+  // SBC 401 (Electrical, 2024) — same whole-PDF-per-code scheme as 501.
+  "sbc/sbc-401/SBC401_CR2024_39-248.pdf",
+  "sbc/sbc-401/SBC401_CR2024_249-450.pdf",
+  "sbc/sbc-401/SBC401_CR2024_451-655.pdf",
+  "sbc/sbc-401/SBC401_CR2024_656-772.pdf",
 ]);
 
 /** Pure, synchronous membership check against the 18-path allow-list. */

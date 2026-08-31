@@ -203,8 +203,8 @@ describe('formatSourceLabel', () => {
 });
 
 describe('isKnownSbcPdfPath — frontend allow-list guard', () => {
-  it('accepts all 21 valid SBC 201 / 801 / 501 pdfPath values', () => {
-    expect(KNOWN_SBC_PDF_PATHS.size).toBe(21);
+  it('accepts all 25 valid SBC 201 / 801 / 501 / 401 pdfPath values', () => {
+    expect(KNOWN_SBC_PDF_PATHS.size).toBe(25);
     for (const p of KNOWN_SBC_PDF_PATHS) {
       expect(isKnownSbcPdfPath(p)).toBe(true);
     }

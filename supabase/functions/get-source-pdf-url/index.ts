@@ -65,6 +65,11 @@ const ALLOWED_PDF_PATHS: ReadonlyMap<string, string> = new Map([
   ["sbc/sbc-501/SBC501_CC2024_17-304.pdf", "SBC501/SBC501_CC2024.pdf"],
   ["sbc/sbc-501/SBC501_CC2024_305-509.pdf", "SBC501/SBC501_CC2024.pdf"],
   ["sbc/sbc-501/SBC501_CC2024_510-695.pdf", "SBC501/SBC501_CC2024.pdf"],
+  // SBC 401 (Electrical, 2024) — four retrieval volumes -> one private object.
+  ["sbc/sbc-401/SBC401_CR2024_39-248.pdf", "SBC401/SBC401_CR2024.pdf"],
+  ["sbc/sbc-401/SBC401_CR2024_249-450.pdf", "SBC401/SBC401_CR2024.pdf"],
+  ["sbc/sbc-401/SBC401_CR2024_451-655.pdf", "SBC401/SBC401_CR2024.pdf"],
+  ["sbc/sbc-401/SBC401_CR2024_656-772.pdf", "SBC401/SBC401_CR2024.pdf"],
 ]);
 
 const PRIVATE_BUCKET = "sbc_pdfs_private";
