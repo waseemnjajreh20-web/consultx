@@ -1162,6 +1162,61 @@ export function detectFilterCodesFor(text: string, enabled: string[]): (string |
   return codes.slice(0, 2);   // two is enough; keeps the RPC fan-out bounded
 }
 
+// ── Cross-lingual embedding gap (2026-09-01) ────────────────────────────────
+// The corpus is English; most questions are Arabic. Measured against production
+// with the SAME embedding model on both sides:
+//   "ما متطلبات نظام الرشاشات التلقائية…"  -> None(0.52) 5601.3(0.51)  = noise
+//   same + "automatic sprinkler system"     -> 903.3.1(0.68) 402.5(0.67) = right
+//   "مسافة الهروب والمخارج"                 -> 506.2(0.52) 415.11.1     = noise
+//   same + "travel distance exits egress"   -> 1006.3(0.71) 1017.3(0.70) = right
+// English questions were always fine (0.74-0.76), so this is not a broken
+// index — it is a weak cross-lingual signal that gets swamped once the corpus
+// is large. It bites SBC 201/801 (4,630 rows) far harder than SBC 401/501
+// (923 rows), which is why the new codes passed their Arabic gates while the
+// two core codes returned referenced-standards tables for egress questions.
+//
+// Fix: append the English domain terms an Arabic question implies before
+// embedding. The pairs are derived from CHAPTER_KEYWORDS itself — it is
+// authored as an English term immediately followed by its Arabic
+// equivalent(s) for the same chapters — so the glossary cannot drift from the
+// keyword map it came from.
+let arEnTermsCache: Record<string, string> | null = null;
+function arEnTerms(): Record<string, string> {
+  if (arEnTermsCache) return arEnTermsCache;
+  const out: Record<string, string> = {};
+  let lastEn: string | null = null;
+  for (const k of Object.keys(CHAPTER_KEYWORDS)) {
+    if (/[؀-ۿ]/.test(k)) {
+      if (lastEn) out[k] = lastEn;
+    } else {
+      lastEn = k;
+    }
+  }
+  arEnTermsCache = out;
+  return out;
+}
+
+/**
+ * Append the English domain terms an Arabic query implies, for embedding ONLY.
+ * Returns the text unchanged when it has no Arabic or no term matches, so an
+ * English question and an unmatched question both behave exactly as before.
+ * Exported for tests.
+ */
+export function augmentQueryForEmbedding(q: string): string {
+  const text = q ?? "";
+  if (!/[؀-ۿ]/.test(text)) return text;
+  const hits = new Set<string>();
+  for (const [ar, en] of Object.entries(arEnTerms())) {
+    if (text.includes(ar)) hits.add(en);
+  }
+  if (hits.size === 0) return text;
+  return `${text} ${[...hits].join(" ")}`;
+}
+
+function bilingualEmbeddingEnabled(): boolean {
+  return (Deno.env.get("ADVISORY_BILINGUAL_EMBEDDING_ENABLED") ?? "").trim() === "1";
+}
+
 /** Embed one piece of text with the same model/dimensionality the primary
  *  query uses. Returns null on any failure so a sub-topic can be skipped
  *  without disturbing the primary result set. */
@@ -2056,7 +2111,11 @@ async function fetchSBCContextVector(
     // ONLY — see the VectorReasoningHints doc comment above. Falls back to
     // `query` unchanged when the hint is absent (flag off or facts did not
     // parse), so this line is byte-identical to HEAD in that case.
-    const embeddingSourceText = reasoningHints?.embeddingQuery ?? query;
+    // Cross-lingual augmentation applies to the EMBEDDING TEXT only — never to
+    // filterCode detection, keywordFallback(), or anything the user sees.
+    const embeddingSourceText = bilingualEmbeddingEnabled()
+      ? augmentQueryForEmbedding(reasoningHints?.embeddingQuery ?? query)
+      : (reasoningHints?.embeddingQuery ?? query);
     const embResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY}`,
       {
@@ -2163,7 +2222,12 @@ async function fetchSBCContextVector(
         try {
           const results = await Promise.all(subQueries.map(async (sq) => {
             // One embedding per sub-topic, reused across the codes it touches.
-            const emb = await embedQueryText(sq, GEMINI_API_KEY);
+            // Sub-topics are the SHORTEST texts in the pipeline, so the
+            // cross-lingual gap hurts them most — augment before embedding.
+            const emb = await embedQueryText(
+              bilingualEmbeddingEnabled() ? augmentQueryForEmbedding(sq) : sq,
+              GEMINI_API_KEY,
+            );
             if (!emb) return [] as any[];
             const codes = detectFilterCodesFor(sq, enabledCodes);
             const perCode = await Promise.all(codes.map(async (code) => {
