@@ -1229,6 +1229,94 @@ function bilingualEmbeddingEnabled(): boolean {
   return (Deno.env.get("ADVISORY_BILINGUAL_EMBEDDING_ENABLED") ?? "").trim() === "1";
 }
 
+// ── Per-user durable memory (2026-09-01, flag USER_MEMORY_ENABLED) ──────────
+// One compact document per user in public.user_memory (RLS: owner-only), so
+// the assistant recognises the account across conversations — the user's name,
+// role, company, and projects — without ever mixing users: reads/writes are
+// keyed strictly by the authenticated userId, and the table's policies allow
+// no cross-user path. The memory is BACKGROUND PERSONALISATION context, never
+// a code source; the injection block says so explicitly.
+function userMemoryEnabled(): boolean {
+  return (Deno.env.get("USER_MEMORY_ENABLED") ?? "").trim() === "1";
+}
+
+const USER_MEMORY_MAX_CHARS = 1600;
+
+async function fetchUserMemory(adminClient: any, userId: string): Promise<string> {
+  try {
+    const { data } = await adminClient
+      .from("user_memory")
+      .select("content")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const c = typeof data?.content === "string" ? data.content.trim() : "";
+    return c.slice(0, USER_MEMORY_MAX_CHARS);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Post-answer background task: merge durable facts from the user's latest
+ * message into their memory document. Runs AFTER the response is returned
+ * (EdgeRuntime.waitUntil) so it adds zero latency to the chat; every failure
+ * is swallowed — memory is an enhancement, never a dependency.
+ */
+async function updateUserMemoryInBackground(
+  adminClient: any,
+  apiKey: string,
+  userId: string,
+  existingMemory: string,
+  latestUserMessage: string,
+): Promise<void> {
+  try {
+    const msg = (latestUserMessage ?? "").trim();
+    if (msg.length < 12) return; // nothing extractable
+    const prompt =
+      `أنت مُحدِّث ذاكرة حساب في منصة استشارات هندسية. أمامك ذاكرة الحساب الحالية ورسالة جديدة من صاحب الحساب.\n` +
+      `مهمتك: استخراج الحقائق الدائمة فقط — اسم المستخدم، دوره، شركته، مشاريعه (اسم المشروع، نوعه، مدينته، مرحلته)، وتفضيلاته الثابتة — ودمجها مع الذاكرة الحالية في نص عربي موجز.\n` +
+      `قواعد صارمة:\n` +
+      `1) لا تُدخل أسئلة الكود العامة ولا محتوى تقنياً عابراً — الحقائق الدائمة فقط.\n` +
+      `2) حدّث الحقيقة القديمة إذا غيّرها المستخدم، ولا تكرر.\n` +
+      `3) الحد الأقصى 1200 حرف.\n` +
+      `4) إن لم تكن في الرسالة أي حقيقة دائمة جديدة، أجب بكلمة واحدة فقط: NOCHANGE\n` +
+      `5) أجب بنص الذاكرة الكامل المحدث فقط، بلا مقدمات ولا شروح.\n\n` +
+      `الذاكرة الحالية:\n${existingMemory || "(فارغة)"}\n\n` +
+      `رسالة المستخدم الجديدة:\n${msg.slice(0, 2000)}`;
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0 },
+        }),
+      },
+    );
+    if (!resp.ok) return;
+    const j = await resp.json();
+    const out = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
+    if (!out || out === "NOCHANGE" || out.toUpperCase() === "NOCHANGE") return;
+    const content = out.slice(0, USER_MEMORY_MAX_CHARS);
+    await adminClient.from("user_memory").upsert({
+      user_id: userId,
+      content,
+      updated_at: new Date().toISOString(),
+    });
+    console.log(`[Memory] updated for user ${userId} (${content.length} chars)`);
+  } catch (e) {
+    console.log(`[Memory] background update skipped: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
+/** Schedule work to continue after the response is returned. */
+function scheduleBackground(p: Promise<unknown>): void {
+  const g = globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } };
+  if (g.EdgeRuntime?.waitUntil) g.EdgeRuntime.waitUntil(p);
+  else p.catch(() => {});
+}
+
 /** Embed one piece of text with the same model/dimensionality the primary
  *  query uses. Returns null on any failure so a sub-topic can be skipped
  *  without disturbing the primary result set. */
@@ -3094,6 +3182,13 @@ serve(async (req) => {
     const serviceRoleKey = getSecretKey();
     adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
+    // Per-user durable memory (flag-gated). Fetched ONCE here, keyed strictly
+    // by the authenticated userId — used later to personalise the prompt and,
+    // after the answer, updated in the background. Empty when off/absent.
+    const userMemoryContent = userMemoryEnabled()
+      ? await fetchUserMemory(adminClient, userId)
+      : "";
+
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
     {
       const now            = new Date();
@@ -4073,6 +4168,18 @@ serve(async (req) => {
     }
 
     const systemMessages: any[] = [{ role: "system", content: fullSystemPrompt }];
+    if (userMemoryContent) {
+      // Personalisation context only — explicitly NOT a code source, so the
+      // citation contract (retrieved-text-only) is unaffected.
+      systemMessages.push({
+        role: "system",
+        content:
+          `═══ ذاكرة الحساب (حقائق محفوظة من محادثات سابقة لهذا المستخدم) ═══\n` +
+          `${userMemoryContent}\n` +
+          `استخدم هذه المعلومات لتخصيص الإجابة (مخاطبة المستخدم باسمه، وربط الإجابة بمشاريعه عند الصلة). ` +
+          `هذه معلومات خلفية عن المستخدم فقط — ليست مصدراً كودياً ولا تُستشهد بها.`,
+      });
+    }
     if (retry) {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });
     }
@@ -4128,6 +4235,17 @@ serve(async (req) => {
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
     clearQuotaIncrement();
+
+    // Memory update runs AFTER the response is on the wire (zero added
+    // latency); keyed by the authenticated userId only.
+    if (userMemoryEnabled()) {
+      const latestUserMsg = Array.isArray(messages)
+        ? ([...messages].reverse().find((m: any) => m?.role === "user")?.content ?? "")
+        : "";
+      scheduleBackground(
+        updateUserMemoryInBackground(adminClient, GEMINI_API_KEY, userId, userMemoryContent, String(latestUserMsg)),
+      );
+    }
 
     // Transform Gemini SSE → OpenAI SSE format (keeps Frontend unchanged)
     // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
