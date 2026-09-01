@@ -1213,6 +1213,18 @@ export function augmentQueryForEmbedding(q: string): string {
   return `${text} ${[...hits].join(" ")}`;
 }
 
+/** Owning code of a retrieved chunk, derived from its storage filename.
+ *  Both naming schemes are covered: "SBC 201 - The Saudi General Building
+ *  Code-1-250_extracted_chunks.json" and "SBC501_CC2024_305-509_chunks.json". */
+export function codeFromFileName(fileName: string | null | undefined): string {
+  const f = String(fileName ?? "");
+  if (/^SBC[\s_-]*201\b/i.test(f)) return "SBC-201";
+  if (/^SBC[\s_-]*801\b/i.test(f)) return "SBC-801";
+  if (/^SBC[\s_-]*501(?!\d)/i.test(f)) return "SBC-501";
+  if (/^SBC[\s_-]*401(?!\d)/i.test(f)) return "SBC-401";
+  return "UNKNOWN";
+}
+
 function bilingualEmbeddingEnabled(): boolean {
   return (Deno.env.get("ADVISORY_BILINGUAL_EMBEDDING_ENABLED") ?? "").trim() === "1";
 }
@@ -2283,7 +2295,14 @@ async function fetchSBCContextVector(
     // Build per-file page range from vector match page data
     const vectorMetaMap = new Map<string, { minPage: number | null; maxPage: number | null }>();
     for (const match of acceptedMatches) {
-      const entry = `\n=== ${match.file_name} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
+      // Code is stated EXPLICITLY in the header. Once multi-topic retrieval
+      // began mixing four codes into one context, the model started quoting a
+      // real requirement but labelling it with another code's section — e.g.
+      // the 250 mm hazardous-exhaust duct rule (SBC 501 Section 714.4.1) cited
+      // as "SBC-201 Section 903.2.11.4", which in SBC 201 is about openings in
+      // basements. Making the owning code unmissable per block is half the fix;
+      // the citation contract's copy-from-the-header rule is the other half.
+      const entry = `\n=== ${match.file_name} | Code: ${codeFromFileName(match.file_name)} | Section: ${match.section_number || 'N/A'} | Pages: ${match.page_start}-${match.page_end} | Similarity: ${match.similarity?.toFixed(3)} ===\n${match.content}\n`;
       if (context.length + entry.length > contextLimit) break;
       context += entry;
       const m = vectorMetaMap.get(match.file_name) ?? { minPage: null, maxPage: null };
