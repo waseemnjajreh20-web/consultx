@@ -4242,6 +4242,8 @@ serve(async (req) => {
       const latestUserMsg = Array.isArray(messages)
         ? ([...messages].reverse().find((m: any) => m?.role === "user")?.content ?? "")
         : "";
+      const g = globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } };
+      console.log(`[Memory] scheduling update | user=${userId} | msgLen=${String(latestUserMsg).length} | waitUntil=${typeof g.EdgeRuntime?.waitUntil}`);
       scheduleBackground(
         updateUserMemoryInBackground(adminClient, GEMINI_API_KEY, userId, userMemoryContent, String(latestUserMsg)),
       );
