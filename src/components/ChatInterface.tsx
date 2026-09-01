@@ -33,6 +33,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { isAdminEmail } from "@/config/auth";
 import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
+import { SignedChatImage, ConversationFilesModal } from "./SignedChatImage";
 import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
@@ -973,6 +974,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
   const [loadingStage, setLoadingStage] = useState<"connecting" | "thinking" | "writing" | "vision_1" | "vision_2" | "vision_3" | "vision_4" | "vision_5">("connecting");
   const [dynamicThinkingMsg, setDynamicThinkingMsg] = useState<string>("");
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [showConvFiles, setShowConvFiles] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>("primary");
   const [prevMode, setPrevMode] = useState<ChatMode>("primary");
   const [isModeTransition, setIsModeTransition] = useState(false);
@@ -1428,19 +1430,28 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
           const allPages = filesToSend.flatMap(pf =>
-            pf.base64Pages.map((b64, idx) => ({ b64, pfId: pf.id, idx }))
+            pf.base64Pages.map((b64, idx) => ({ b64, name: pf.name, pages: pf.base64Pages.length, idx }))
           );
-          const results = await Promise.all(allPages.map(async ({ b64, pfId, idx }) => {
+          const results = await Promise.all(allPages.map(async ({ b64, name, pages, idx }) => {
             try {
               const ext = b64.startsWith("data:image/png") ? "png" : "jpg";
-              const filePath = `${session.user.id}/${Date.now()}-${pfId}-${idx}.${ext}`;
+              // Professional naming: keep the ORIGINAL file name (sanitised) and
+              // the page number, so the files panel reads like the user's own
+              // documents instead of raw timestamps.
+              const base = (name || "file").replace(/\.[^.]+$/, "").replace(/[^\p{L}\p{N} _.-]/gu, "").slice(0, 60).trim() || "file";
+              const pageTag = pages > 1 ? `-p${idx + 1}` : "";
+              const filePath = `${session.user.id}/${Date.now()}-${base}${pageTag}.${ext}`;
               const base64Data = b64.split(",")[1];
               if (!base64Data) return null;
               const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
               const blob = new Blob([bytes], { type: ext === "png" ? "image/png" : "image/jpeg" });
               const { error: uploadError } = await supabase.storage.from("chat-images").upload(filePath, blob);
               if (uploadError) return null;
-              return supabase.storage.from("chat-images").getPublicUrl(filePath).data.publicUrl;
+              // PRIVACY: store the bare storage PATH, not a public URL — the
+              // bucket is private and display goes through signed urls
+              // (SignedChatImage). Old rows with full public URLs still render:
+              // chatImagePath() extracts their path.
+              return filePath;
             } catch { return null; }
           }));
           uploadedUrls.push(...(results.filter(Boolean) as string[]));
@@ -1517,6 +1528,14 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
+      {/* Conversation files panel (privacy: signed urls, owner-only) */}
+      <ConversationFilesModal
+        open={showConvFiles}
+        onClose={() => setShowConvFiles(false)}
+        storedUrls={messages.flatMap(m => (m.imageUrls?.length ? m.imageUrls : (m.imageUrl ? [m.imageUrl] : [])))}
+        isRtl={dir === "rtl"}
+        onOpenImage={(u) => { setShowConvFiles(false); setExpandedImage(u); }}
+      />
       {/* Image Lightbox */}
       {expandedImage && (
         <div
@@ -1659,6 +1678,11 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
               <UserCircle className="w-4 h-4" />
               <span className="hidden sm:inline ms-1">{displayName}</span>
             </Button>
+            {messages.some(m => m.imageUrl || (m.imageUrls?.length ?? 0) > 0) && (
+              <Button variant="ghost" size="sm" onClick={() => setShowConvFiles(true)} className="text-muted-foreground hover:text-primary" title={dir === "rtl" ? "ملفات المحادثة" : "Conversation files"}>
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            )}
             <Button variant="ghost" onClick={onBack} className="text-muted-foreground hover:text-foreground">
               {dir === "rtl" ? <ArrowRight className="ms-2 w-4 h-4" /> : <ArrowLeft className="me-2 w-4 h-4" />}
               {t("back")}
@@ -1856,10 +1880,10 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                         {(message.imageUrls?.length ?? 0) > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {(message.imageUrls ?? []).map((url, idx) => (
-                              <div key={idx} className="relative inline-block cursor-pointer" onClick={() => setExpandedImage(url)}>
-                                <img src={url} alt={`Attachment ${idx + 1}`} className="max-w-[120px] max-h-28 rounded-lg border border-border/50 object-contain hover:opacity-90 transition-opacity" title={t("enlargeImage")} />
+                              <div key={idx} className="relative inline-block cursor-pointer">
+                                <SignedChatImage stored={url} alt={`Attachment ${idx + 1}`} className="max-w-[120px] max-h-28 rounded-lg border border-border/50 object-contain hover:opacity-90 transition-opacity" title={t("enlargeImage")} onOpen={(u) => setExpandedImage(u)} />
                                 {idx === 0 && (
-                                  <div className="absolute top-1 start-1 bg-primary/90 text-primary-foreground text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                                  <div className="absolute top-1 start-1 bg-primary/90 text-primary-foreground text-xs px-2 py-0.5 rounded-full flex items-center gap-1 pointer-events-none">
                                     <Eye className="w-3 h-3" />{t("visionAnalysis")}
                                   </div>
                                 )}
@@ -1867,9 +1891,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                             ))}
                           </div>
                         ) : message.imageUrl ? (
-                          <div className="relative inline-block cursor-pointer" onClick={() => setExpandedImage(message.imageUrl!)}>
-                            <img src={message.imageUrl} alt="Uploaded drawing" className="max-w-xs max-h-48 rounded-lg border border-border/50 object-contain hover:opacity-90 transition-opacity" title={t("enlargeImage")} />
-                            <div className="absolute top-1 start-1 bg-primary/90 text-primary-foreground text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <div className="relative inline-block cursor-pointer">
+                            <SignedChatImage stored={message.imageUrl} alt="Uploaded drawing" className="max-w-xs max-h-48 rounded-lg border border-border/50 object-contain hover:opacity-90 transition-opacity" title={t("enlargeImage")} onOpen={(u) => setExpandedImage(u)} />
+                            <div className="absolute top-1 start-1 bg-primary/90 text-primary-foreground text-xs px-2 py-0.5 rounded-full flex items-center gap-1 pointer-events-none">
                               <Eye className="w-3 h-3" />{t("visionAnalysis")}
                             </div>
                           </div>
