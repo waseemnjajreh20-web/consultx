@@ -4,7 +4,9 @@ import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  // x-region is consumed by the platform to pin execution near storage/DB
+  // (src/lib/functionRegion.ts) — must be allowed or the preflight fails.
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-region",
 };
 
 function json(data: unknown, status = 200): Response {

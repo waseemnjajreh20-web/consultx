@@ -91,7 +91,13 @@ const corsHeaders = {
   // (tested with no override) works. Root cause of the 2026-08-31 advisory
   // outage; proven with a live OPTIONS preflight. Keep lowercase (CORS matches
   // header names case-insensitively).
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override",
+  // x-region: consumed by the Supabase platform BEFORE the function runs — it
+  // pins execution to the named region. The DB lives in ap-southeast-2 while
+  // unpinned invocations execute near the caller, making every DB round trip
+  // cross half the planet (~400ms each; measured 2026-09-02). The browser still
+  // needs the header allowed here or the preflight rejects it (same failure
+  // class as the 2026-08-31 advisory outage above).
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-consultx-admin-entitlement-override, x-region",
   // X-Retrieval-Engine restored 2026-08-23 (deleted by 587fd5b): it reports
   // which retrieval engine actually served the request ("vector" | "keyword"),
   // so the bench and the post-deploy smoke can tell the two paths apart from
@@ -3139,6 +3145,13 @@ serve(async (req) => {
       );
     }
 
+    // ── Stage timing (observability, 2026-09-02 speed wave) ──────────────────
+    // Collected per request and printed once in the [Timing] summary right
+    // before the stream is returned; measures the full pre-first-byte path.
+    const reqStart = Date.now();
+    const stageLog: string[] = [];
+    const markStage = (name: string) => { stageLog.push(`${name}=+${Date.now() - reqStart}ms`); };
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       getPublishableKey(),
@@ -3156,6 +3169,7 @@ serve(async (req) => {
     userId = user.id;
     userEmail = user.email || "";
     console.log(`✅ Authenticated user: ${userId}`);
+    markStage("auth");
 
     // Parse body first — mode is needed for per-mode trial limit checks
     const body = await req.json();
@@ -3182,12 +3196,15 @@ serve(async (req) => {
     const serviceRoleKey = getSecretKey();
     adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
-    // Per-user durable memory (flag-gated). Fetched ONCE here, keyed strictly
-    // by the authenticated userId — used later to personalise the prompt and,
-    // after the answer, updated in the background. Empty when off/absent.
-    const userMemoryContent = userMemoryEnabled()
-      ? await fetchUserMemory(adminClient, userId)
-      : "";
+    // Per-user durable memory (flag-gated). STARTED here (the call fires
+    // immediately), awaited only after the access gate — the read overlaps the
+    // entitlement round trips instead of adding serial latency. Keyed strictly
+    // by the authenticated userId; empty when off/absent/failed.
+    const userMemoryPromise: Promise<string> = userMemoryEnabled()
+      ? fetchUserMemory(adminClient, userId)
+          .then((v) => { markStage("memory"); return v; })
+          .catch(() => "")
+      : Promise.resolve("");
 
     // ===== ACCESS & LIMIT CHECK (server-side source of truth) =====
     {
@@ -3201,6 +3218,20 @@ serve(async (req) => {
       const ADMIN_EMAILS = ["njajrehwaseem@gmail.com", "waseemnjajreh20@gmail.com"];
       const isAdmin      = userEmail && ADMIN_EMAILS.includes(userEmail);
 
+      // The newest-subscription read below is independent of the profile row,
+      // so both PostgREST calls are fired together (.then() forces the lazy
+      // builder to execute NOW) and each is awaited where needed — saves one
+      // serial round trip. supabase-js resolves errors into {error}, never
+      // rejects, so the un-awaited promise on the admin/unlimited path is safe.
+      const subRowPromise = adminClient
+        .from("user_subscriptions")
+        .select("status, trial_end, current_period_end, past_due_since, moyasar_card_token, subscription_plans(features, slug)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then((r: any) => r);
+
       // Fetch profile (fix: use user_id column, not id)
       const { data: profile } = await adminClient
         .from("profiles")
@@ -3213,14 +3244,8 @@ serve(async (req) => {
       console.log("[Limit] email:", userEmail, "| plan_type:", profile?.plan_type, "| isAdmin:", isAdmin, "| isUnlimited:", isUnlimitedPlan, "| isLimitedPaid:", isLimitedPaidPlan);
 
       if (!isAdmin && !isUnlimitedPlan) {
-        // ── Check active paid subscription ────────────────────────────────────
-        const { data: sub } = await adminClient
-          .from("user_subscriptions")
-          .select("status, trial_end, current_period_end, past_due_since, moyasar_card_token, subscription_plans(features, slug)")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // ── Check active paid subscription (fired in parallel above) ─────────
+        const { data: sub } = await subRowPromise;
 
         let dailyLimit       = 10;  // free/expired default
         let hasPaidAccess    = false;
@@ -3563,6 +3588,11 @@ serve(async (req) => {
         }
       }
     }
+
+    markStage("gate");
+    // Awaited here, started before the gate — the memory read cost overlaps
+    // the entitlement round trips instead of stacking on top of them.
+    const userMemoryContent = await userMemoryPromise;
 
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
@@ -3933,6 +3963,7 @@ serve(async (req) => {
       // this branch is unchanged.
       usedFiles = [...files, ...tableSourceFiles];
       usedSourceMeta = [...keywordMeta, ...tableSourceMeta];
+      markStage(`retrieval(${retrievalEngine})`);
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${retrievalEngine}]`);
 
       // ── P5-R4: External-standard honesty block (flag-gated, fail-open) ──────
@@ -4202,6 +4233,7 @@ serve(async (req) => {
     console.log(`[Gemini] Mode: ${mode} | Messages: ${contents.length} | API Key exists: ${!!GEMINI_API_KEY}`);
 
     const availableModels = await fetchAvailableGeminiModels(GEMINI_API_KEY);
+    markStage("models");
     const modelChain = buildModelChain(preferredModel, fallbackModel, availableModels);
     console.log(`[Gemini] Streaming model chain: ${modelChain.join(" -> ")}`);
 
@@ -4212,7 +4244,13 @@ serve(async (req) => {
 
     for (const model of modelChain) {
       geminiModel = model;
-      const result = await fetchGeminiStreamWithRetry(GEMINI_API_KEY, model, systemInstruction, contents);
+      // Primary is the latency-sensitive general mode (no retrieval context):
+      // minimal thinking cuts many seconds off the first byte. Advisory and
+      // analysis keep the model's default (reasoning-heavy) behaviour.
+      const result = await fetchGeminiStreamWithRetry(
+        GEMINI_API_KEY, model, systemInstruction, contents, 3,
+        mode === "primary" ? "minimal" : "default",
+      );
       if (result.response.ok) {
         response = result.response;
         break;
@@ -4234,6 +4272,8 @@ serve(async (req) => {
     }
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
+    markStage("gemini_connect");
+    console.log(`[Timing] mode=${mode} | ${stageLog.join(" | ")} | first-byte-path total=+${Date.now() - reqStart}ms`);
     clearQuotaIncrement();
 
     // Memory update runs AFTER the response is on the wire (zero added
@@ -4302,6 +4342,9 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
+        // Stage-timing summary of the pre-first-byte path (observability;
+        // values are durations only, no user data).
+        "X-Timing": stageLog.join(",").replace(/[^\x20-\x7E]/g, ""),
         "X-SBC-Sources": usedFiles.join(","),
         "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
         // Reports the engine that ACTUALLY produced the context, including the

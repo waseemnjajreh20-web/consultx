@@ -81,6 +81,7 @@ export async function fetchAvailableGeminiModels(apiKey: string): Promise<string
   if (availableModelsCache && Date.now() - availableModelsCacheTime < MODELS_CACHE_TTL_MS) {
     return availableModelsCache;
   }
+  const tFetch = Date.now();
   try {
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=1000`
@@ -95,7 +96,7 @@ export async function fetchAvailableGeminiModels(apiKey: string): Promise<string
       .filter((n: string) => n.startsWith("gemini-"));
     availableModelsCache = names.length > 0 ? names : GEMINI_MODEL_CANDIDATES;
     availableModelsCacheTime = Date.now();
-    console.log(`[Gemini] available models: ${availableModelsCache.join(", ")}`);
+    console.log(`[Gemini] available models (cache MISS, ${Date.now() - tFetch}ms): ${availableModelsCache.join(", ")}`);
     return availableModelsCache;
   } catch (e) {
     console.log(`[Gemini] list models error: ${e instanceof Error ? e.message : String(e)}`);
@@ -184,17 +185,49 @@ function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500 || status === 408 || status === 0;
 }
 
+// ── Thinking-effort control (2026-09-02 speed wave) ─────────────────────────
+// Gemini 3.x models think by default with no cap, which delays the FIRST
+// streamed byte by many seconds even for trivial prompts. Latency-sensitive
+// callers (primary mode) request minimal thinking. The accepted field shape
+// varies across model generations (2.5: thinkingBudget int; 3.x: thinkingLevel
+// enum), so candidates are tried in order and the first shape the API accepts
+// is remembered PER MODEL for the isolate's lifetime; a 400 naming the
+// thinking field moves to the next candidate without consuming a retry
+// attempt, and if every shape is rejected the model runs with its default
+// thinking — degraded latency, never an outage.
+export type ThinkingEffort = "minimal" | "default";
+const THINKING_CANDIDATES: Array<Record<string, unknown>> = [
+  { thinkingLevel: "minimal" },
+  { thinkingBudget: 0 },
+];
+const acceptedThinkingShape = new Map<string, Record<string, unknown> | null>();
+
+function buildGenerationConfig(thinkingConfig: Record<string, unknown> | null): Record<string, unknown> {
+  // With no thinking override the config stays byte-identical to the
+  // pre-wave shape — standard/analysis requests are unchanged.
+  return thinkingConfig ? { temperature: 0.7, thinkingConfig } : { temperature: 0.7 };
+}
+
 export async function fetchGeminiStreamWithRetry(
   apiKey: string,
   model: string,
   systemInstruction: any,
   contents: any[],
-  maxAttempts = 3
+  maxAttempts = 3,
+  thinkingEffort: ThinkingEffort = "default"
 ): Promise<GeminiAttemptResult> {
   const delays = [1000, 2000, 4000];
   let lastErrorText = "";
+  let shapeIdx = 0;
+  let storedShape = acceptedThinkingShape.get(model);
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const thinkingConfig: Record<string, unknown> | null =
+      thinkingEffort === "default"
+        ? null
+        : storedShape !== undefined
+          ? storedShape
+          : THINKING_CANDIDATES[shapeIdx] ?? null;
     const start = Date.now();
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`,
@@ -204,13 +237,18 @@ export async function fetchGeminiStreamWithRetry(
         body: JSON.stringify({
           systemInstruction,
           contents,
-          generationConfig: { temperature: 0.7 },
+          generationConfig: buildGenerationConfig(thinkingConfig),
         }),
       }
     );
     const latency = Date.now() - start;
 
     if (resp.ok) {
+      if (thinkingEffort === "minimal" && storedShape === undefined) {
+        acceptedThinkingShape.set(model, thinkingConfig);
+        storedShape = thinkingConfig;
+        console.log(`[Gemini] ${model} accepted thinking shape: ${JSON.stringify(thinkingConfig)}`);
+      }
       console.log(
         `[Gemini] ${model} stream OK on attempt ${attempt}/${maxAttempts} (${latency}ms)`
       );
@@ -218,6 +256,29 @@ export async function fetchGeminiStreamWithRetry(
     }
 
     const errorText = await resp.text();
+
+    // Thinking-shape discovery: a 400 that names the thinking field means THIS
+    // shape is unsupported, not that the request is bad — advance to the next
+    // candidate (or give up on thinking control) without consuming an attempt.
+    if (
+      resp.status === 400 &&
+      thinkingEffort === "minimal" &&
+      storedShape === undefined &&
+      thinkingConfig !== null &&
+      /thinking/i.test(errorText)
+    ) {
+      shapeIdx++;
+      if (shapeIdx >= THINKING_CANDIDATES.length) {
+        acceptedThinkingShape.set(model, null);
+        storedShape = null;
+        console.log(`[Gemini] ${model} rejected every thinking shape — running with model-default thinking`);
+      } else {
+        console.log(`[Gemini] ${model} rejected thinking shape ${shapeIdx}/${THINKING_CANDIDATES.length}, trying next`);
+      }
+      attempt--;
+      continue;
+    }
+
     lastErrorText = errorText;
     const retryable = isRetryableStatus(resp.status);
     console.log(

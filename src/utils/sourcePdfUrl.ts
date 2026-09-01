@@ -130,8 +130,12 @@ export async function fetchPageSliceUrl(
   if (!Number.isFinite(p) || p < 1) return null;
   try {
     const { supabase } = await import("@/integrations/supabase/client");
+    const { FN_REGION_HEADER } = await import("@/lib/functionRegion");
     const { data, error } = await supabase.functions.invoke("get-source-page-slice", {
       body: { path: pdfPath, page: p },
+      // Pins execution next to the database/storage region — the slice
+      // function reads multi-MB PDFs from storage, so locality matters twice.
+      headers: FN_REGION_HEADER,
     });
     if (error || !data?.url) return null;
     return {
@@ -152,8 +156,10 @@ export async function fetchSignedPdfUrl(pdfPath: string | null | undefined): Pro
     // Lazy import — see file header note. Constructing the client is what
     // needs a browser; importing this module does not.
     const { supabase } = await import("@/integrations/supabase/client");
+    const { FN_REGION_HEADER } = await import("@/lib/functionRegion");
     const { data, error } = await supabase.functions.invoke("get-source-pdf-url", {
       body: { path: pdfPath },
+      headers: FN_REGION_HEADER,
     });
     if (error || !data?.url) return null;
     return { url: data.url as string, expiresIn: (data.expires_in as number) ?? 300 };

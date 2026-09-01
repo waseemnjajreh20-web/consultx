@@ -34,6 +34,7 @@ import { isAdminEmail } from "@/config/auth";
 import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
 import { SignedChatImage, ConversationFilesModal } from "./SignedChatImage";
+import { FN_REGION_HEADER } from "@/lib/functionRegion";
 import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
@@ -689,6 +690,8 @@ async function streamChat({
   const chatHeaders: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${session.access_token}`,
+    // Pins execution next to the database — see src/lib/functionRegion.ts.
+    ...FN_REGION_HEADER,
   };
   const chatOverride = isAdminEmail(session.user?.email) ? getAdminEntitlementOverride() : null;
   if (chatOverride) chatHeaders[ADMIN_OVERRIDE_HEADER] = chatOverride;
