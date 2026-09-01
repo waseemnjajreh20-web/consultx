@@ -27,7 +27,7 @@ interface ChatMarkdownRendererProps {
 }
 
 interface ParsedSection {
-  type: "text" | "heading" | "accordion" | "table" | "widget" | "widget-loading";
+  type: "text" | "heading" | "accordion" | "table" | "widget" | "widget-loading" | "divider";
   content: string;
   title?: string;
   level?: number;
@@ -118,22 +118,39 @@ function getBoldHtml(text: string, mode?: ChatMode): string {
 // ─────────────────────────────────────────────────────────────────────────────
 // Parsers
 // ─────────────────────────────────────────────────────────────────────────────
+// ── Citation-token pipe safety ───────────────────────────────────────────────
+// Inline citation tokens carry a literal "|" ("[SBC-501 Section 506.3.11 |
+// conf:high]"). Straight `split("|")` therefore SHATTERS any table cell that
+// contains a token (measured on the owner's analysis answers: cells ended mid-
+// token at "conf:high]"), and a prose line holding TWO tokens has 2+ pipes so
+// the table-row heuristic eats it as a table row. Mask pipes inside [...]
+// before any pipe logic runs, unmask when the text is finally rendered/stored.
+// U+E000 is a private-use char that never occurs in real content (the intake
+// pipeline strips PDF PUA glyphs).
+const TOKEN_PIPE = "";
+function maskTokenPipes(s: string): string {
+  return s.replace(/\[[^\[\]\n]{0,300}\]/g, (m) => m.replace(/\|/g, TOKEN_PIPE));
+}
+function unmaskTokenPipes(s: string): string {
+  return s.split(TOKEN_PIPE).join("|");
+}
+
 function parseMarkdownTable(text: string): { headers: string[]; rows: string[][] } | null {
   const lines = text.trim().split("\n");
   if (lines.length < 2) return null;
-  const headerLine = lines[0];
+  const headerLine = maskTokenPipes(lines[0]);
   if (!headerLine.includes("|")) return null;
   const separatorLine = lines[1];
   if (!separatorLine.match(/^\|?[\s-:|]+\|?$/)) return null;
 
   const parseRow = (line: string): string[] =>
-    line.split("|").map(c => c.trim()).filter(c => c !== "");
+    maskTokenPipes(line).split("|").map(c => unmaskTokenPipes(c.trim())).filter(c => c !== "");
 
-  const headers = parseRow(headerLine);
+  const headers = parseRow(lines[0]);
   const rows: string[][] = [];
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line && line.includes("|")) rows.push(parseRow(line));
+    if (line && maskTokenPipes(line).includes("|")) rows.push(parseRow(line));
   }
   return headers.length === 0 ? null : { headers, rows };
 }
@@ -196,11 +213,22 @@ function parseTextContent(text: string): ParsedSection[] {
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
     const h4Match = line.match(/^####\s+(.+)$/);
-    const isTableRow = line.trim().startsWith("|") ||
-      (line.includes("|") && line.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
-    const isTableSep = line.match(/^\|?[\s-:|]+\|?$/) && line.includes("-");
+    // "---" section separators come BEFORE the table heuristics: the
+    // table-separator regex matches a bare dash line, which used to drag every
+    // "---" into a doomed table parse and re-emit it as a LITERAL text
+    // paragraph (the dash clutter all over production answers).
+    const isDivider = /^\s*(-{3,}|[─═_]{3,})\s*$/.test(line);
+    // Pipe heuristics run on the MASKED line so a sentence containing two
+    // citation tokens (= two pipes) is no longer mistaken for a table row.
+    const masked = maskTokenPipes(line);
+    const isTableRow = masked.trim().startsWith("|") ||
+      (masked.includes("|") && masked.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
+    const isTableSep = !isDivider && masked.match(/^\|?[\s-:|]+\|?$/) && masked.includes("-");
 
-    if (h4Match) {
+    if (isDivider) {
+      flushTable(); flushText();
+      sections.push({ type: "divider", content: "" });
+    } else if (h4Match) {
       flushTable(); flushText();
       sections.push({ type: "heading", content: h4Match[1], level: 4 });
     } else if (h3Match) {
@@ -367,6 +395,40 @@ function replaceInTextNodes(
   });
 }
 
+// ── LaTeX-lite ───────────────────────────────────────────────────────────────
+// The model emits inline TeX ("$I_{\Delta n} \le 30\text{ mA}$") which used to
+// reach the user RAW — dollar signs, backslashes and all (measured across the
+// owner's three production answers). Full KaTeX is a dependency we don't need:
+// the actually-observed vocabulary is subscripts, a handful of operators and
+// \text{}. Convert just that, wrap LTR so the formula doesn't get bidi-mangled
+// inside Arabic prose, and strip any leftover TeX commands instead of showing
+// them. Runs on ESCAPED text, and the injected <sub>/<sup> are our own HTML.
+function latexSegment(seg: string): string {
+  let s = seg;
+  s = s.replace(/\\text\s*\{([^{}]*)\}/g, "$1");
+  s = s
+    .replace(/\\times\b/g, "×").replace(/\\cdot\b/g, "·")
+    .replace(/\\leq?\b/g, "≤").replace(/\\geq?\b/g, "≥")
+    .replace(/\\neq?\b/g, "≠").replace(/\\pm\b/g, "±")
+    .replace(/\\approx\b/g, "≈").replace(/\\infty\b/g, "∞")
+    .replace(/\\Delta\b/g, "Δ").replace(/\\Omega\b/g, "Ω")
+    .replace(/\\mu\b/g, "μ").replace(/\\rho\b/g, "ρ")
+    .replace(/\\theta\b/g, "θ").replace(/\\phi\b/g, "φ")
+    .replace(/\\sqrt\s*\{([^{}]*)\}/g, "√($1)")
+    .replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "($1)/($2)");
+  s = s.replace(/_\{([^{}]*)\}/g, "<sub>$1</sub>").replace(/\^\{([^{}]*)\}/g, "<sup>$1</sup>");
+  s = s.replace(/_([A-Za-z0-9Δ]{1,6})/g, "<sub>$1</sub>").replace(/\^([A-Za-z0-9]{1,4})/g, "<sup>$1</sup>");
+  s = s.replace(/[{}]/g, "").replace(/\\[a-zA-Z]+/g, "").replace(/\\/g, "");
+  return `<span dir="ltr" style="unicode-bidi:embed;font-family:inherit">${s.trim()}</span>`;
+}
+function latexLite(text: string): string {
+  // $$...$$ then $...$ — single line only, bounded, so a stray dollar sign in
+  // prose can't swallow half the paragraph.
+  return text
+    .replace(/\$\$([^$\n]{1,240})\$\$/g, (_m, inner) => latexSegment(inner))
+    .replace(/\$([^$\n]{1,240})\$/g, (_m, inner) => latexSegment(inner));
+}
+
 // Apply inline markdown (bold, code, badges) to an already-escaped string.
 //
 // Exported for tests ONLY (see src/__tests__/citationRouting.test.ts). It is a
@@ -402,11 +464,15 @@ export function applyInlineMarkdown(
     },
   );
 
+  // ── Step 0.5: LaTeX-lite — after token buffering (tokens carry no TeX) so
+  // chips are untouched, before Step 1/2 so formulas render inside any line.
+  const withMath = latexLite(escapedWithTokens);
+
   // ── Step 1: All named reference patterns (keyword + number) ──────────────
   // Bare references (outside structured tokens) still use the leading-digit
   // heuristic. The Step-0 spans are protected because their HTML is currently
   // replaced by CXTOK sentinels.
-  let s = escapedWithTokens
+  let s = withMath
     // SBC document-level refs (no section) — clickable, open document view
     .replace(/\bSBC[\u00A0 \u2011\-]*201\b/g,
       '<span class="cx-src" data-src="sbc201" style="color:#0094B3;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600" title="انقر لفتح SBC 201">$&</span>')
@@ -493,6 +559,24 @@ function renderTextLine(
   mode?: ChatMode,
   availableFamilies?: ReadonlySet<SbcFamily>,
 ) {
+  // Lone ">" (the model sometimes emits an empty quote marker between a quote
+  // and its translation) — used to render as a literal stray character.
+  if (line.trim() === ">") return <div key={index} className="h-2" />;
+
+  // Box-drawing ASCII diagrams (strategy trees, floor stacks). Rendered as RTL
+  // proportional <p> lines these shatter visually; force monospace + LTR +
+  // no-wrap per line so columns stay aligned.
+  if (/[┌┐└┘├┤┬┴┼│╔╗╚╝╠╣║]/.test(line)) {
+    return (
+      <div key={index} dir="ltr"
+        style={{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace",
+                 whiteSpace: "pre", overflowX: "auto", lineHeight: 1.4,
+                 fontSize: "0.78rem", color: "hsl(var(--muted-foreground))" }}>
+        {line}
+      </div>
+    );
+  }
+
   // Blockquote
   if (line.startsWith("> ")) {
     const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode, availableFamilies);
@@ -585,7 +669,16 @@ function TextRenderer({
 // Requirement 2 — Table: rounded corners, zebra rows, scrollable, dark header
 // R19: added scroll-shadow affordance for mobile
 // ─────────────────────────────────────────────────────────────────────────────
-function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: string[][] } }) {
+function TableRenderer({ tableData, mode, availableFamilies }: {
+  tableData: { headers: string[]; rows: string[][] };
+  mode?: ChatMode;
+  availableFamilies?: ReadonlySet<SbcFamily>;
+}) {
+  // Cells used to be dropped in as PLAIN TEXT: "**مؤكد**" showed its
+  // asterisks, citation tokens showed raw brackets, TeX showed dollar signs.
+  // Run the same inline pipeline every paragraph gets.
+  const cellHtml = (cell: string) =>
+    applyInlineMarkdown(escapeHtml(cell), mode, availableFamilies);
   return (
     <div
       className="my-4 rounded-lg border border-border/40 shadow-sm relative"
@@ -613,9 +706,8 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
                   borderRight: i > 0 ? "1px solid hsl(var(--border) / 0.3)" : undefined,
                   borderRadius: i === 0 ? "6px 0 0 0" : i === tableData.headers.length - 1 ? "0 6px 0 0" : undefined,
                 }}
-              >
-                {header}
-              </th>
+                dangerouslySetInnerHTML={{ __html: cellHtml(header) }}
+              />
             ))}
           </tr>
         </thead>
@@ -639,9 +731,8 @@ function TableRenderer({ tableData }: { tableData: { headers: string[]; rows: st
                       borderBottom: rowIndex < tableData.rows.length - 1 ? "1px solid hsl(var(--border) / 0.25)" : undefined,
                       borderRight: cellIndex > 0 ? "1px solid hsl(var(--border) / 0.2)" : undefined,
                     }}
-                  >
-                    {cell}
-                  </td>
+                    dangerouslySetInnerHTML={{ __html: cellHtml(cell) }}
+                  />
                 ))}
               </tr>
             );
@@ -722,7 +813,9 @@ function CollapsibleSection({
         <div className={cn("px-5 py-4", isConsultant ? "bg-muted/12" : "bg-muted/8")}>
           {parsedContent.map((section, i) => {
             if (section.type === "table" && section.tableData)
-              return <TableRenderer key={i} tableData={section.tableData} />;
+              return <TableRenderer key={i} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} />;
+            if (section.type === "divider")
+              return <hr key={i} className="my-3 border-border/30" />;
             return <TextRenderer key={i} content={section.content} mode={mode} availableFamilies={availableFamilies} />;
           })}
         </div>
@@ -813,7 +906,9 @@ function HeadingCollapsible({
       <div style={{ padding: "6px 14px 12px", borderTop: `1px solid ${borderColor}` }}>
         {children.map((sec, i) => {
           if (sec.type === "table" && sec.tableData)
-            return <TableRenderer key={i} tableData={sec.tableData} />;
+            return <TableRenderer key={i} tableData={sec.tableData} mode={mode} availableFamilies={availableFamilies} />;
+          if (sec.type === "divider")
+            return <hr key={i} className="my-3 border-border/30" />;
           return <TextRenderer key={i} content={sec.content} mode={mode} availableFamilies={availableFamilies} />;
         })}
       </div>
@@ -828,7 +923,14 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
   const { filteredContent, widgets } = useMemo(() => {
     let text = content;
     const extractedWidgets: ParsedSection[] = [];
-    
+
+    // 0a. U+FFFD replacement chars leak from PDF-quoted text — never show them.
+    text = text.replace(/�/g, "");
+    // 0b. Orphan list numbers: the model sometimes emits "1." on its own line
+    // with the item text on the next line; join them so the numbered-list
+    // renderer sees one line.
+    text = text.replace(/^(\d{1,2})\.\s*\n(?=\S)/gm, "$1. ");
+
     // 1. Find closed widget blocks
     const closedRegex = /```json\s*consultx-widget\s+([\s\S]*?)```/gi;
     text = text.replace(closedRegex, (match, p1) => {
@@ -962,9 +1064,18 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
           );
         }
 
+        // ── Section divider ("---") — a real, styled rule, not literal text ──
+        if (section.type === "divider") {
+          return (
+            <div key={index} aria-hidden className="my-4 flex items-center gap-2">
+              <span style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${headingAccentSoft}, transparent)` }} />
+            </div>
+          );
+        }
+
         // ── Table (Req 2) ─────────────────────────────────────────────────────
         if (section.type === "table" && section.tableData) {
-          return <TableRenderer key={index} tableData={section.tableData} />;
+          return <TableRenderer key={index} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} />;
         }
 
         // ── Regular text ──────────────────────────────────────────────────────

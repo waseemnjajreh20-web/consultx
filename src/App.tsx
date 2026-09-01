@@ -32,6 +32,10 @@ const PlanLab = lazy(() => import("./pages/PlanLab"));
 const CampaignFounding10 = lazy(() => import("./pages/CampaignFounding10"));
 const CampaignEid50 = lazy(() => import("./pages/CampaignEid50"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+// DEV-ONLY visual harness for ChatMarkdownRenderer (see RenderTest.tsx).
+// import.meta.env.DEV is statically false in production builds, so both the
+// route and the chunk are dropped from the shipped bundle.
+const RenderTest = import.meta.env.DEV ? lazy(() => import("./pages/RenderTest")) : null;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +72,7 @@ const AnimatedRoutes = () => {
           <Route path="/plan-lab" element={<PageTransition><PlanLab /></PageTransition>} />
           <Route path="/admin/campaigns/founding10" element={<PageTransition><CampaignFounding10 /></PageTransition>} />
           <Route path="/admin/campaigns/eid50" element={<PageTransition><CampaignEid50 /></PageTransition>} />
+          {RenderTest && <Route path="/rendertest" element={<RenderTest />} />}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
