@@ -758,6 +758,21 @@ async function streamChat({
         const parsed = JSON.parse(jsonStr);
         if (parsed.type === "thinking_status" && typeof parsed.message === "string") {
           onThinkingStatus?.(parsed.message);
+        } else if (parsed.type === "sources") {
+          // Early-stream envelope (2026-09-02): the sources metadata that used
+          // to arrive as X-SBC-* response headers now arrives as a data event
+          // right before the first content delta. The header path above still
+          // runs for the old function shape — whichever arrives, wins.
+          if (Array.isArray(parsed.files) && parsed.files.length > 0) onSources?.(parsed.files as string[]);
+          if (Array.isArray(parsed.sourceMeta) && parsed.sourceMeta.length > 0) onSourceMeta?.(parsed.sourceMeta as ChunkPageMeta[]);
+        } else if (parsed.type === "error") {
+          // Post-headers failure travels in-stream (the HTTP status is already
+          // committed by the early stream). Same contract as an HTTP error:
+          // surface it and stop — no onDone.
+          onError(typeof parsed.error === "string" && parsed.error
+            ? parsed.error
+            : (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
+          return;
         } else {
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) {
@@ -780,6 +795,14 @@ async function streamChat({
         const parsed = JSON.parse(jsonStr);
         if (parsed.type === "thinking_status" && typeof parsed.message === "string") {
           onThinkingStatus?.(parsed.message);
+        } else if (parsed.type === "sources") {
+          if (Array.isArray(parsed.files) && parsed.files.length > 0) onSources?.(parsed.files as string[]);
+          if (Array.isArray(parsed.sourceMeta) && parsed.sourceMeta.length > 0) onSourceMeta?.(parsed.sourceMeta as ChunkPageMeta[]);
+        } else if (parsed.type === "error") {
+          onError(typeof parsed.error === "string" && parsed.error
+            ? parsed.error
+            : (language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة"));
+          return;
         } else {
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) {

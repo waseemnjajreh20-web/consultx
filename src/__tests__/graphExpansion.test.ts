@@ -1333,14 +1333,22 @@ describe("index.ts G1 wiring: flag-OFF must be byte-identical to pre-wiring HEAD
     expect(corsBlock).toMatch(/"Access-Control-Expose-Headers":[^\n]*RETRIEVAL_ENGINE_HEADER/);
   });
 
-  it("both the header and its Expose-Headers entry are emitted only when graphExpansionCount !== null", () => {
-    const guardAt = INDEX_SRC.indexOf("...(graphExpansionCount !== null");
-    expect(guardAt).toBeGreaterThan(-1);
-    const guarded = INDEX_SRC.slice(guardAt, guardAt + 500);
-    expect(guarded).toContain("[GRAPH_EXPANSION_HEADER]: `on:${graphExpansionCount}`");
-    expect(guarded).toContain('"Access-Control-Expose-Headers":');
-    // Exactly one emission site: a second, unguarded one would leak the header.
-    expect(INDEX_SRC.split("[GRAPH_EXPANSION_HEADER]:")).toHaveLength(2);
+  it("the graph-expansion signal is emitted once, null-guarded, inside the sources event", () => {
+    // Envelope change 2026-09-02 (early stream): the signal that used to be
+    // the conditional X-Graph-Expansion header now rides the {type:"sources"}
+    // data event. Same property, new envelope: present as `on:<n>` only when
+    // graphExpansionCount !== null, and emitted from exactly ONE site (a
+    // second site could disagree with the first).
+    const at = INDEX_SRC.indexOf(
+      "graphExpansion: graphExpansionCount !== null ? `on:${graphExpansionCount}` : null,",
+    );
+    expect(at).toBeGreaterThan(-1);
+    expect(INDEX_SRC.split("graphExpansion:")).toHaveLength(2);
+    // And it sits inside the sources event payload.
+    const evAt = INDEX_SRC.indexOf('type: "sources"');
+    expect(evAt).toBeGreaterThan(-1);
+    expect(at).toBeGreaterThan(evAt);
+    expect(at - evAt).toBeLessThan(500);
   });
 
   it("the keyword fallback never reports an expansion", () => {

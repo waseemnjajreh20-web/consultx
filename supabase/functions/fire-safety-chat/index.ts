@@ -3594,6 +3594,42 @@ serve(async (req) => {
     // the entitlement round trips instead of stacking on top of them.
     const userMemoryContent = await userMemoryPromise;
 
+    // ── Early stream (wave B, 2026-09-02) ───────────────────────────────────
+    // The HTTP response is returned right after the access gate (<1s), and the
+    // client watches live thinking_status stage events while retrieval and the
+    // model connection do their measured 8-18s of work. Everything from here to
+    // the end of the pipeline runs inside earlyPipeline(); failures after this
+    // point surface as in-stream {type:"error"} events because the HTTP status
+    // is already committed. Sources/engine metadata that used to travel as
+    // response headers now travel as the first {type:"sources"} data event
+    // (the frontend understands both shapes — it deploys first).
+    const earlyTs = new TransformStream<Uint8Array, Uint8Array>();
+    const earlyWriter = earlyTs.writable.getWriter();
+    const sseEncoder = new TextEncoder();
+    let earlyWriterReleased = false;
+    const emitEvent = async (obj: unknown) => {
+      if (earlyWriterReleased) return;
+      try {
+        await earlyWriter.write(sseEncoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      } catch { /* client disconnected — the pipeline continues harmlessly */ }
+    };
+    const emitStatus = (ar: string, en: string) => {
+      void emitEvent({ type: "thinking_status", message: language === "en" ? en : ar });
+    };
+    // Terminal in-stream error: emit the event, then end the stream.
+    const failStream = async (errBody: Record<string, unknown>) => {
+      await emitEvent({ type: "error", ...errBody });
+      try { if (!earlyWriterReleased) await earlyWriter.close(); } catch { /* already closed */ }
+    };
+
+    const earlyPipeline = (async () => {
+    try {
+    if (mode === "primary") {
+      emitStatus("✍️ جارٍ إعداد الإجابة...", "✍️ Preparing your answer...");
+    } else {
+      emitStatus("🔍 جارٍ البحث في كود البناء السعودي...", "🔍 Searching the Saudi Building Code...");
+    }
+
     let fullSystemPrompt: string;
     let usedFiles: string[] = [];
     let usedSourceMeta: SourcePageMeta[] = [];
@@ -3965,6 +4001,12 @@ serve(async (req) => {
       usedSourceMeta = [...keywordMeta, ...tableSourceMeta];
       markStage(`retrieval(${retrievalEngine})`);
       console.log(`SBC context result: ${sbcContext.length} chars from ${usedFiles.length} files [engine=${retrievalEngine}]`);
+      if (usedFiles.length > 0) {
+        emitStatus(
+          `📚 وجدت ${usedFiles.length} من مصادر الكود — جارٍ إعداد إجابة موثقة...`,
+          `📚 Found ${usedFiles.length} code sources — preparing a documented answer...`,
+        );
+      }
 
       // ── P5-R4: External-standard honesty block (flag-gated, fail-open) ──────
       // The retrieved SBC text routinely cites external standards (NFPA/ASTM/
@@ -4054,14 +4096,12 @@ serve(async (req) => {
         // No SBC content loaded at all (neither structured tables nor storage chunks).
         // Return a clean 503 instead of calling Gemini with no context (which produces
         // misleading "text not available in provided files" responses).
-        console.error("SBC context empty after retrieval — returning 503");
+        console.error("SBC context empty after retrieval — failing the stream (would have been 503)");
         const errMsg = language === "en"
           ? "Reference documents are temporarily unavailable. Please try again in a moment."
           : "المستندات المرجعية غير متوفرة مؤقتاً. يرجى المحاولة مجدداً بعد لحظات.";
-        return new Response(JSON.stringify({ error: errMsg }), {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        await failStream({ error: errMsg, error_code: "SBC_CONTEXT_EMPTY", status: 503 });
+        return;
       }
       // If only structuredTableContext loaded (storage failed), we still proceed.
       // NOT because the stored row is sufficient — it is an unverified
@@ -4236,6 +4276,17 @@ serve(async (req) => {
     markStage("models");
     const modelChain = buildModelChain(preferredModel, fallbackModel, availableModels);
     console.log(`[Gemini] Streaming model chain: ${modelChain.join(" -> ")}`);
+    if (mode === "analysis") {
+      emitStatus(
+        "🧠 جارٍ التحليل المعمق — الأسئلة المركبة قد تستغرق حتى دقيقة...",
+        "🧠 Deep analysis in progress — complex questions can take up to a minute...",
+      );
+    } else if (mode === "standard") {
+      emitStatus(
+        "🧠 جارٍ صياغة الاستشارة الموثقة...",
+        "🧠 Composing the documented advisory answer...",
+      );
+    }
 
     let geminiModel = preferredModel;
     let response: Response | null = null;
@@ -4265,10 +4316,13 @@ serve(async (req) => {
       const classified = classifyGeminiError(lastStatus, lastErrorText);
       console.error(`[Gemini] All models exhausted | ${classified.logSafe}`);
       const userMessage = language === "en" ? classified.userMessage : classified.userMessageAr;
-      return new Response(
-        JSON.stringify({ error: userMessage, error_code: classified.classification, provider: "gemini" }),
-        { status: classified.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      await failStream({
+        error: userMessage,
+        error_code: classified.classification,
+        provider: "gemini",
+        status: classified.status,
+      });
+      return;
     }
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
@@ -4338,48 +4392,72 @@ serve(async (req) => {
       },
     });
 
-    return new Response(response.body!.pipeThrough(transformStream), {
+    // Sources/engine metadata used to travel as response headers
+    // (X-SBC-Sources / X-SBC-Source-Meta / X-Retrieval-Engine /
+    // X-Graph-Expansion / X-Retrieval-Fallback). The stream now starts before
+    // retrieval, so they travel as a data event immediately before the first
+    // content delta instead — same information, new envelope. The frontend
+    // understands both shapes (it deploys first).
+    await emitEvent({
+      type: "sources",
+      files: usedFiles,
+      sourceMeta: usedSourceMeta,
+      engine: retrievalEngine,
+      graphExpansion: graphExpansionCount !== null ? `on:${graphExpansionCount}` : null,
+      retrievalFallback: retrievalFallbackReason,
+      timing: stageLog.join(","),
+    });
+
+    // Hand the writable over to the Gemini pipe: release our writer lock and
+    // let pipeTo close the stream when the model finishes ([DONE] is emitted
+    // by transformStream's flush).
+    earlyWriterReleased = true;
+    earlyWriter.releaseLock();
+    await response.body!.pipeThrough(transformStream).pipeTo(earlyTs.writable);
+    } catch (pipelineError) {
+      // Post-headers failure: the HTTP status is already committed, so roll
+      // back any un-cleared quota charge and surface the error IN-STREAM.
+      // (A client disconnect also lands here — the rollback is a no-op then
+      // because clearQuotaIncrement() already ran before piping.)
+      await rollbackQuotaIfNeeded(adminClient);
+      const msg = pipelineError instanceof Error ? pipelineError.message : String(pipelineError);
+      console.error(`[Pipeline] post-headers failure (mode=${mode}): ${msg.slice(0, 300)}`);
+      let userMessage = language === "en" ? "Service error occurred" : "حدث خطأ في الخدمة";
+      let code = "PIPELINE_ERROR";
+      if (msg.startsWith("AI call failed:")) {
+        code = msg.replace("AI call failed: ", "").trim();
+        if (code === "GEMINI_RATE_LIMIT") {
+          userMessage = language === "en"
+            ? "AI provider is temporarily busy. Please try again in a minute."
+            : "خدمة الذكاء الاصطناعي مشغولة مؤقتاً. يرجى المحاولة بعد دقيقة.";
+        }
+      }
+      try {
+        // Preferred path: a fresh writer (works when our original lock was
+        // already released to pipeTo and the stream is still writable).
+        const w = earlyTs.writable.getWriter();
+        await w.write(sseEncoder.encode(`data: ${JSON.stringify({ type: "error", error: userMessage, error_code: code })}\n\n`));
+        await w.close();
+      } catch {
+        // Original writer may still hold the lock (failure before releaseLock).
+        try { earlyWriterReleased = false; await failStream({ error: userMessage, error_code: code }); } catch { /* stream unusable */ }
+      }
+    }
+    })();
+
+    // The pipeline runs while the client is already reading the stream;
+    // waitUntil (when available) guarantees the runtime keeps it alive.
+    scheduleBackground(earlyPipeline);
+
+    markStage("headers_out");
+    console.log(`[Timing] mode=${mode} headers-out at +${Date.now() - reqStart}ms (early stream)`);
+    return new Response(earlyTs.readable, {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
-        // Stage-timing summary of the pre-first-byte path (observability;
-        // values are durations only, no user data).
+        // Pre-headers stages only — the full breakdown (incl. retrieval and
+        // gemini_connect) now arrives inside the "sources" event's `timing`.
         "X-Timing": stageLog.join(",").replace(/[^\x20-\x7E]/g, ""),
-        "X-SBC-Sources": usedFiles.join(","),
-        "X-SBC-Source-Meta": JSON.stringify(usedSourceMeta),
-        // Reports the engine that ACTUALLY produced the context, including the
-        // case where the vector path was attempted and fell back to keyword.
-        [RETRIEVAL_ENGINE_HEADER]: retrievalEngine,
-        // G1 graph expansion (./graphExpansion.ts, wave 2). Present ONLY when
-        // graphExpansionCount is non-null — flag on AND the expansion attempt
-        // completed without falling back. Absent in every other case: flag
-        // off, keyword engine, primary mode, or a fail-open fallback. Off =
-        // header absent = HEAD behaviour.
-        //
-        // The Expose-Headers override rides in the SAME conditional, on
-        // purpose: it is what lets `corsHeaders` above stay byte-identical to
-        // HEAD on every preflight and every error response while the browser
-        // can still read X-Graph-Expansion on the one response that carries
-        // it. `...corsHeaders` is spread first above, so this key wins.
-        ...(graphExpansionCount !== null
-          ? {
-              "Access-Control-Expose-Headers":
-                `${corsHeaders["Access-Control-Expose-Headers"]}, ${GRAPH_EXPANSION_HEADER}`,
-              [GRAPH_EXPANSION_HEADER]: `on:${graphExpansionCount}`,
-            }
-          : {}),
-        // X-Retrieval-Fallback (2026-08-29): present ONLY when the vector
-        // path was attempted and fell back to keyword — names the branch that
-        // fired. Mutually exclusive with the graph-expansion block above
-        // (that one requires engine==="vector" success), so the two
-        // Expose-Headers overrides can never collide.
-        ...(retrievalFallbackReason !== null
-          ? {
-              "Access-Control-Expose-Headers":
-                `${corsHeaders["Access-Control-Expose-Headers"]}, ${RETRIEVAL_FALLBACK_HEADER}`,
-              [RETRIEVAL_FALLBACK_HEADER]: retrievalFallbackReason,
-            }
-          : {}),
       },
     });
   } catch (error) {

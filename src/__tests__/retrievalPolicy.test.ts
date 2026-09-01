@@ -355,10 +355,17 @@ describe("index.ts wiring (source contract — does not execute the Edge Functio
     expect(INDEX_SRC).not.toMatch(/const vectorMetaMap[\s\S]{0,200}for \(const match of matches\)/);
   });
 
-  it("X-Retrieval-Engine is set on the response and exposed to the browser", () => {
+  it("the retrieval engine is reported to the client inside the sources event", () => {
     expect(RETRIEVAL_ENGINE_HEADER).toBe("X-Retrieval-Engine");
-    expect(INDEX_SRC).toContain("[RETRIEVAL_ENGINE_HEADER]: retrievalEngine,");
-    expect(INDEX_SRC).toMatch(/Access-Control-Expose-Headers[^\n]*RETRIEVAL_ENGINE_HEADER/);
+    // Envelope change 2026-09-02 (early stream): the engine that ACTUALLY
+    // served the request — including vector→keyword fallbacks — now travels
+    // as the `engine` field of the {type:"sources"} data event (the stream
+    // starts before retrieval, so a header can no longer carry it).
+    const evAt = INDEX_SRC.indexOf('type: "sources"');
+    expect(evAt).toBeGreaterThan(-1);
+    const ev = INDEX_SRC.slice(evAt, evAt + 500);
+    expect(ev).toContain("engine: retrievalEngine,");
+    expect(ev).toContain("retrievalFallback: retrievalFallbackReason,");
   });
 
   it("the engine is request-scoped, not module-scoped (one isolate serves concurrent requests)", () => {
