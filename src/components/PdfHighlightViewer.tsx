@@ -57,6 +57,19 @@ export function PdfHighlightViewer({
     setStatus("loading");
     setMatched(false);
 
+    // Browser-compat watchdog (measured in the owner's Firefox-family browser):
+    // pdf.js can HANG silently — the module worker never boots, getDocument's
+    // promise neither resolves nor rejects, so the catch-based onFallback never
+    // fires and the user stares at the spinner forever. If nothing rendered
+    // within the window, hand over to the native <iframe> viewer, which the
+    // slice endpoint keeps small enough for every browser.
+    const watchdog = setTimeout(() => {
+      if (!cancelled) {
+        cancelled = true;
+        onFallback();
+      }
+    }, 12_000);
+
     (async () => {
       try {
         // getDocument with a URL lets pdf.js use HTTP range requests, so a large
@@ -118,15 +131,15 @@ export function PdfHighlightViewer({
           }
         }
 
-        if (!cancelled) setStatus("rendered");
+        if (!cancelled) { clearTimeout(watchdog); setStatus("rendered"); }
       } catch {
-        if (!cancelled) onFallback();
+        if (!cancelled) { clearTimeout(watchdog); onFallback(); }
       } finally {
         if (doc) { try { doc.destroy(); } catch { /* noop */ } }
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(watchdog); };
   }, [url, pageNumber, highlightText, onFallback]);
 
   return (
@@ -145,7 +158,7 @@ export function PdfHighlightViewer({
             <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
           <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
-            {isRtl ? "جاري تحميل الصفحة…" : "Loading page…"}
+            {isRtl ? "جاري تجهيز صفحة المصدر… (الفتح الأول قد يستغرق ثوانٍ)" : "Preparing source page… (first open can take a few seconds)"}
           </span>
         </div>
       )}

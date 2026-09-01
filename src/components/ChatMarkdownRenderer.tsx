@@ -225,21 +225,25 @@ function parseTextContent(text: string): ParsedSection[] {
       (masked.includes("|") && masked.match(/^\|?[\s\S]+\|[\s\S]+\|?$/));
     const isTableSep = !isDivider && masked.match(/^\|?[\s-:|]+\|?$/) && masked.includes("-");
 
+    // Headings are rendered as styled titles — literal markdown bold/colons
+    // inside them ("### **(2) العنوان:**") showed raw asterisks in the UI.
+    const cleanHeading = (s: string) => s.replace(/\*\*/g, "").replace(/[:：]\s*$/, "").trim();
+
     if (isDivider) {
       flushTable(); flushText();
       sections.push({ type: "divider", content: "" });
     } else if (h4Match) {
       flushTable(); flushText();
-      sections.push({ type: "heading", content: h4Match[1], level: 4 });
+      sections.push({ type: "heading", content: cleanHeading(h4Match[1]), level: 4 });
     } else if (h3Match) {
       flushTable(); flushText();
-      sections.push({ type: "heading", content: h3Match[1], level: 3 });
+      sections.push({ type: "heading", content: cleanHeading(h3Match[1]), level: 3 });
     } else if (h2Match) {
       flushTable(); flushText();
-      sections.push({ type: "heading", content: h2Match[1], level: 2 });
+      sections.push({ type: "heading", content: cleanHeading(h2Match[1]), level: 2 });
     } else if (h1Match) {
       flushTable(); flushText();
-      sections.push({ type: "heading", content: h1Match[1], level: 1 });
+      sections.push({ type: "heading", content: cleanHeading(h1Match[1]), level: 1 });
     } else if (isTableRow || isTableSep) {
       flushText();
       inTable = true;
@@ -926,6 +930,10 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
 
     // 0a. U+FFFD replacement chars leak from PDF-quoted text — never show them.
     text = text.replace(/�/g, "");
+    // 0a2. Gemini escapes pipes inside markdown table cells ("\\|"); the raw
+    // backslash reached users and also broke citation-chip matching. A literal
+    // backslash-pipe is never wanted — unescape globally.
+    text = text.replace(/\\\|/g, "|");
     // 0b. Orphan list numbers: the model sometimes emits "1." on its own line
     // with the item text on the next line; join them so the numbered-list
     // renderer sees one line.
