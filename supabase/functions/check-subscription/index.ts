@@ -4,8 +4,10 @@ import { getSecretKey, getPublishableKey } from "../_shared/supabaseKeys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  // x-region pins execution next to the ap-southeast-2 database
+  // (src/lib/functionRegion.ts) — must be allowed or the preflight fails.
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-consultx-admin-entitlement-override",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-consultx-admin-entitlement-override, x-region",
 };
 
 const LAUNCH_DATE  = new Date("2026-03-28T00:00:00.000Z");

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { FN_REGION_HEADER } from "@/lib/functionRegion";
 import { SUBSCRIPTION_CONFIG } from "@/config/subscription";
 
 type CallbackStatus = "loading" | "success_trial" | "success_active" | "failed" | "pending";
@@ -58,7 +59,7 @@ const PaymentCallback = () => {
         await new Promise((r) => setTimeout(r, 2500));
         try {
           const { data, error } = await supabase.functions.invoke("check-subscription", {
-            headers: { Authorization: `Bearer ${activeSession.access_token}` },
+            headers: { Authorization: `Bearer ${activeSession.access_token}`, ...FN_REGION_HEADER },
           });
 
           if (error) continue;

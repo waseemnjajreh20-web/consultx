@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { FN_REGION_HEADER } from "@/lib/functionRegion";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminEmail } from "@/config/auth";
 import {
@@ -111,6 +112,8 @@ export function useSubscription() {
 
       const invokeHeaders: Record<string, string> = {
         Authorization: `Bearer ${session.access_token}`,
+        // Runs on every app load: pin next to the DB (see functionRegion.ts).
+        ...FN_REGION_HEADER,
       };
       const adminOverride = isAdminEmail(user.email) ? getAdminEntitlementOverride() : null;
       if (adminOverride) invokeHeaders[ADMIN_OVERRIDE_HEADER] = adminOverride;

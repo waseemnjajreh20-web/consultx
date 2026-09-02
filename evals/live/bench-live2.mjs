@@ -46,10 +46,19 @@ const serviceKey = readUserEnv('CONSULTX_SERVICE_KEY');
 if (!serviceKey) { console.error('CONSULTX_SERVICE_KEY missing (setx CONSULTX_SERVICE_KEY "..." first)'); process.exit(2); }
 
 const URL_ = 'https://hrnltxmwoaphgejckutk.supabase.co';
-const SMOKE_ID = '86625537-e786-40bb-b923-ab55da5232bb';
-const SMOKE_EMAIL = 'smoke_retrieval_test_042026@mailnull.com';
+// The previously hardcoded smoke user (smoke_retrieval_test_042026, id
+// 86625537-…) was DELETED in the 2026-09-01 test-account cleanup; the sole
+// kept test account is resolved by email at runtime so this never silently
+// targets a dead id again ("User not found" on password rotation).
+const SMOKE_EMAIL = 'smoke_retrieval_042026@mailnull.com';
 
 const admin = createClient(URL_, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+
+const { data: userList, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+if (listErr) { console.error('listUsers failed:', listErr.message); process.exit(1); }
+const smokeUser = userList.users.find((u) => u.email === SMOKE_EMAIL);
+if (!smokeUser) { console.error(`smoke account ${SMOKE_EMAIL} not found — create/restore it before benching`); process.exit(1); }
+const SMOKE_ID = smokeUser.id;
 
 const newPassword = crypto.randomBytes(24).toString('base64url');
 const upd = await admin.auth.admin.updateUserById(SMOKE_ID, { password: newPassword, email_confirm: true });
