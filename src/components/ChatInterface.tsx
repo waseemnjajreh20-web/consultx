@@ -813,6 +813,15 @@ async function streamChat({
       } catch { /* ignore */ }
     }
   }
+  if (!fullContent && !firstChunkFired) {
+    // The stream ended without a single content delta and without an error
+    // event — the request was cut off upstream (wall-clock kill, dropped
+    // connection). Surface it instead of leaving an empty assistant bubble.
+    onError(language === "en"
+      ? "The service was interrupted before answering. Please try again."
+      : "انقطعت الخدمة قبل اكتمال الإجابة. يرجى المحاولة مجدداً.");
+    return;
+  }
   onDone(fullContent);
 }
 

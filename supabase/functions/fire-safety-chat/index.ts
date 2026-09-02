@@ -3617,10 +3617,35 @@ serve(async (req) => {
       void emitEvent({ type: "thinking_status", message: language === "en" ? en : ar });
     };
     // Terminal in-stream error: emit the event, then end the stream.
+    let upstreamWatchdog: ReturnType<typeof setTimeout> | undefined;
     const failStream = async (errBody: Record<string, unknown>) => {
+      if (upstreamWatchdog !== undefined) clearTimeout(upstreamWatchdog);
       await emitEvent({ type: "error", ...errBody });
       try { if (!earlyWriterReleased) await earlyWriter.close(); } catch { /* already closed */ }
     };
+
+    // Upstream watchdog (2026-09-02): the platform kills a request at its
+    // wall-clock limit (~150s) and an open stream then simply ENDS — the
+    // client gets neither content nor an error (observed live: an analysis
+    // request during a provider slowdown died at 154s with 0 chars). If the
+    // model has not connected within UPSTREAM_DEADLINE_MS, refund the quota
+    // and end the stream with an explicit error event instead.
+    const UPSTREAM_DEADLINE_MS = 120_000;
+    let upstreamConnected = false;
+    let watchdogFired = false;
+    upstreamWatchdog = setTimeout(async () => {
+      if (upstreamConnected) return;
+      watchdogFired = true;
+      console.error(`[Pipeline] upstream watchdog fired after ${UPSTREAM_DEADLINE_MS}ms (mode=${mode}) — ending stream with UPSTREAM_TIMEOUT`);
+      await rollbackQuotaIfNeeded(adminClient);
+      await failStream({
+        error: language === "en"
+          ? "The service is responding slowly right now. Please try again in a minute."
+          : "الخدمة بطيئة في هذه اللحظة. يرجى المحاولة مجدداً بعد دقيقة.",
+        error_code: "UPSTREAM_TIMEOUT",
+        status: 504,
+      });
+    }, UPSTREAM_DEADLINE_MS);
 
     const earlyPipeline = (async () => {
     try {
@@ -4326,6 +4351,13 @@ serve(async (req) => {
     }
 
     console.log(`[Gemini] Streaming response started | Model: ${geminiModel}`);
+    upstreamConnected = true;
+    if (upstreamWatchdog !== undefined) clearTimeout(upstreamWatchdog);
+    if (watchdogFired) {
+      // The watchdog already ended the stream — nothing to pipe into.
+      console.error("[Pipeline] model connected after the watchdog ended the stream; discarding");
+      return;
+    }
     markStage("gemini_connect");
     console.log(`[Timing] mode=${mode} | ${stageLog.join(" | ")} | first-byte-path total=+${Date.now() - reqStart}ms`);
     clearQuotaIncrement();
@@ -4419,6 +4451,8 @@ serve(async (req) => {
       // back any un-cleared quota charge and surface the error IN-STREAM.
       // (A client disconnect also lands here — the rollback is a no-op then
       // because clearQuotaIncrement() already ran before piping.)
+      if (upstreamWatchdog !== undefined) clearTimeout(upstreamWatchdog);
+      if (watchdogFired) return; // stream already ended with UPSTREAM_TIMEOUT
       await rollbackQuotaIfNeeded(adminClient);
       const msg = pipelineError instanceof Error ? pipelineError.message : String(pipelineError);
       console.error(`[Pipeline] post-headers failure (mode=${mode}): ${msg.slice(0, 300)}`);
