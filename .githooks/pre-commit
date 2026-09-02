@@ -1,0 +1,5 @@
+#!/bin/sh
+# ConsultX pre-commit guard - blocks customer PII and secret leaks from entering
+# git history. Install with: git config core.hooksPath .githooks
+# Docs: docs/launch/pre-commit-guard.md
+exec node "$(dirname "$0")/pii-guard.mjs"

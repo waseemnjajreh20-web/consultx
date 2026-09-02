@@ -27,6 +27,8 @@ Green build is not a release. Every fix states: what broke, why, why the fix is 
 
 ## Git
 Work on the recovery branch, focused commits, no blind commits to `main`, back up before deleting uncertain files (classify: source / WIP / legacy / generated / secret / scratch / unknown).
+- Pre-commit PII/secrets guard is load-bearing: run `git config core.hooksPath .githooks` once per checkout; never bypass it with `--no-verify` on a commit touching docs or data files without owner sign-off.
+- Customer data lives only in gitignored `docs/campaigns/`. Suppress a guard false positive with a `pii-guard: allow` comment on that line — never by weakening `.githooks/pii-guard.mjs`.
 
 ## Communication
 Arabic by default (English for code, commands, identifiers, errors). Address the owner as "وسيم". Direct, numbered steps. Status format: Current State / Completed / Confirmed Findings / Fixed / Remaining / Blockers / Next Autonomous Actions / User Action Required. Never tell the user to consult another AI.
