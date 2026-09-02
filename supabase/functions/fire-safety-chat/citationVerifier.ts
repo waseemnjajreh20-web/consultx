@@ -417,6 +417,23 @@ function sameSection(a: string | null | undefined, b: string | null | undefined)
   return a.trim().replace(/\.+$/, "") === b.trim().replace(/\.+$/, "");
 }
 
+/** True when `candidate` is a dot-boundary ancestor of `target` (903.2.11 → 903.2.11.3). */
+export function isAncestorSection(candidate: string | null | undefined, target: string): boolean {
+  if (!candidate || !target) return false;
+  const c = candidate.trim().replace(/\.+$/, "");
+  const t = target.trim().replace(/\.+$/, "");
+  return c.length > 0 && t.length > c.length && t.startsWith(c) && t[c.length] === ".";
+}
+
+/** True when the section number is printed inside the chunk text as a whole token. */
+export function mentionsSection(content: string | null | undefined, section: string): boolean {
+  if (!content || !section) return false;
+  const sec = section.trim().replace(/\.+$/, "");
+  if (!sec) return false;
+  const escaped = sec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^0-9.])${escaped}(?![0-9.])`).test(content);
+}
+
 function statusRank(s: CitationStatus): number {
   return s === "verified" ? 2 : s === "paraphrased" ? 1 : 0;
 }
@@ -505,31 +522,46 @@ export function verifyCitations(
       }
     }
 
-    // (b) section existence.
-    let sectionAnchored: false | "evidence" | "index" | null = null;
+    // (b) section anchoring. The ingest chunker stores the PARENT section on a
+    // chunk (a 903.2.11.3 paragraph lives in a chunk labelled 903.2.11 —
+    // measured live 2026-09-03), so an exact section match is the exception,
+    // not the rule. A token is anchored when its section, or an ancestor of it
+    // at a dot boundary, is on a same-code chunk or in the known index — or
+    // when the section number is printed inside a same-code chunk's text,
+    // which is the strongest evidence of all.
+    let sectionAnchored: false | "evidence" | "index" | "content" | null = null;
     if (hit.section) {
-      if (sameCode.some((c) => sameSection(c.section, hit.section))) {
+      const sec = hit.section.trim();
+      const known = options.knownSections?.get(hit.code);
+      if (sameCode.some((c) => sameSection(c.section, sec) || isAncestorSection(c.section, sec))) {
         sectionAnchored = "evidence";
-      } else if (options.knownSections?.get(hit.code)?.has(hit.section.trim())) {
+      } else if (sameCode.some((c) => mentionsSection(c.raw.content, sec))) {
+        sectionAnchored = "content";
+        reasons.push("section_printed_in_evidence");
+      } else if (known && (known.has(sec) || [...known].some((k) => isAncestorSection(k, sec)))) {
         sectionAnchored = "index";
         reasons.push("section_from_known_index");
       } else {
         sectionAnchored = false;
-        reasons.push("section_missing_from_evidence");
+        reasons.push("section_unanchored");
       }
     } else {
       reasons.push("page_only_token");
     }
 
+    // Precedence: a verbatim quote from same-code evidence IS the evidence —
+    // it stays verified even when the section label could not be anchored
+    // (the reason above records that). Only a missing or weak quote lets the
+    // section check decide, and a family mismatch is always unverified.
     let status: CitationStatus;
-    if (familyMismatch || sectionAnchored === false) {
+    if (familyMismatch) {
       status = "unverified";
+    } else if (usableQuote && score >= VERIFIED_THRESHOLD) {
+      status = "verified";
     } else if (!usableQuote) {
       status = sectionAnchored ? "paraphrased" : "unverified";
-    } else if (score >= VERIFIED_THRESHOLD) {
-      status = "verified";
     } else if (score >= PARAPHRASED_THRESHOLD) {
-      status = "paraphrased";
+      status = sectionAnchored === false ? "unverified" : "paraphrased";
     } else {
       status = "unverified";
     }

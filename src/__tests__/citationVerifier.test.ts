@@ -251,10 +251,13 @@ describe("verifyCitations — section existence", () => {
     'ينص: "An automatic sprinkler system shall be installed throughout all buildings." ' +
     "[SBC-801 Section 999.9.9 | conf:high]";
 
-  it("marks a section that is in neither the evidence nor the index unverified", () => {
+  it("keeps a verbatim quote verified when its section is in neither the evidence nor the index, but records it", () => {
+    // Contract since 2026-09-03: the chunker labels chunks with their PARENT
+    // section, so an unanchored label must not demote a verbatim same-code
+    // quote — the quote is the evidence. The reason is still reported.
     const { items } = verifyCitations(answer, [chunk801]);
-    expect(items[0].status).toBe("unverified");
-    expect(items[0].reasons).toContain("section_missing_from_evidence");
+    expect(items[0].status).toBe("verified");
+    expect(items[0].reasons).toContain("section_unanchored");
   });
 
   it("accepts a section supplied by the known-section index", () => {
