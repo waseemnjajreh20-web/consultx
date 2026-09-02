@@ -1,0 +1,474 @@
+<title>الموجة التالية لمنصة ConsultX</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #F5F7F4;
+    --paper-2: #EDF1EC;
+    --ink: #1A2420;
+    --ink-2: #3D4B44;
+    --muted: #5F6F67;
+    --line: #D3DBD5;
+    --line-2: #BFC9C2;
+    --accent: #0E8A5F;
+    --accent-ink: #0B6B4A;
+    --accent-soft: #DDF0E6;
+    --amber: #B8701A;
+    --amber-soft: #F6E7CF;
+    --rose: #A63D3D;
+    --rose-soft: #F3DCDC;
+    --card: #FFFFFF;
+    --grid: rgba(14,138,95,0.08);
+    --shadow: 0 1px 0 rgba(26,36,32,0.06), 0 8px 24px -18px rgba(26,36,32,0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10171A;
+      --paper-2: #151E22;
+      --ink: #E6ECE8;
+      --ink-2: #C3CDC7;
+      --muted: #8FA097;
+      --line: #263238;
+      --line-2: #33424A;
+      --accent: #3FBF8A;
+      --accent-ink: #6BD5A6;
+      --accent-soft: #163327;
+      --amber: #E0A04A;
+      --amber-soft: #3A2A12;
+      --rose: #E07A7A;
+      --rose-soft: #3A1E1E;
+      --card: #172024;
+      --grid: rgba(63,191,138,0.09);
+      --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 10px 28px -18px rgba(0,0,0,0.8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #10171A;
+    --paper-2: #151E22;
+    --ink: #E6ECE8;
+    --ink-2: #C3CDC7;
+    --muted: #8FA097;
+    --line: #263238;
+    --line-2: #33424A;
+    --accent: #3FBF8A;
+    --accent-ink: #6BD5A6;
+    --accent-soft: #163327;
+    --amber: #E0A04A;
+    --amber-soft: #3A2A12;
+    --rose: #E07A7A;
+    --rose-soft: #3A1E1E;
+    --card: #172024;
+    --grid: rgba(63,191,138,0.09);
+    --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 10px 28px -18px rgba(0,0,0,0.8);
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    direction: rtl;
+    font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  h1, h2, h3 { font-family: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif; font-weight: 700; text-wrap: balance; line-height: 1.35; margin: 0; }
+  p { margin: 0; }
+  .num { font-family: "IBM Plex Mono", Consolas, monospace; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--paper-2);
+  }
+  .masthead-inner { max-width: 1040px; margin: 0 auto; padding: 44px 24px 34px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; color: var(--accent-ink); font-weight: 600; text-transform: uppercase; }
+  .masthead h1 { font-size: clamp(30px, 4.6vw, 46px); margin-top: 8px; }
+  .lede { max-width: 68ch; color: var(--ink-2); margin-top: 14px; font-size: 17px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 20px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+
+  .shell { max-width: 1040px; margin: 0 auto; padding: 28px 24px 72px; display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 960px) {
+    .shell { grid-template-columns: 210px minmax(0, 1fr); align-items: start; }
+    .toc { position: sticky; top: 18px; }
+  }
+  .toc { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 14px 16px; font-size: 14px; box-shadow: var(--shadow); }
+  .toc .eyebrow { margin-bottom: 8px; display: block; }
+  .toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .toc a { color: var(--ink-2); text-decoration: none; display: flex; gap: 8px; align-items: baseline; }
+  .toc a:hover { color: var(--accent-ink); }
+  .toc .num { font-size: 12px; color: var(--muted); min-width: 1.6em; }
+
+  .content { display: grid; gap: 40px; min-width: 0; }
+  .intro { max-width: 68ch; color: var(--ink-2); display: grid; gap: 12px; }
+  .intro h2 { font-size: 26px; color: var(--ink); }
+
+  .matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--card); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--paper-2); color: var(--ink-2); font-weight: 600; font-size: 12.5px; letter-spacing: 0.02em; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td .num { color: var(--muted); font-size: 12.5px; }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.7; border: 1px solid transparent; }
+  .chip.hi { background: var(--accent-soft); color: var(--accent-ink); }
+  .chip.mid { background: var(--amber-soft); color: var(--amber); }
+  .chip.big { background: var(--rose-soft); color: var(--rose); }
+  .chip.small { background: var(--paper-2); color: var(--ink-2); border-color: var(--line); }
+
+  .chapter { display: grid; gap: 18px; }
+  .chapter-head { display: grid; gap: 6px; padding-top: 6px; border-top: 3px solid var(--accent); }
+  .chapter-head .num { color: var(--accent-ink); font-size: 13px; font-weight: 500; }
+  .chapter-head h2 { font-size: 30px; }
+  .chapter-head p { max-width: 68ch; color: var(--muted); font-size: 15px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 22px 24px; box-shadow: var(--shadow); display: grid; gap: 14px; }
+  .card-head { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+  .clause { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 13px; color: var(--accent-ink); border: 1px solid var(--line-2); border-radius: 4px; padding: 3px 8px; margin-top: 4px; white-space: nowrap; }
+  .card h3 { font-size: 22px; }
+  .thesis { color: var(--ink-2); font-size: 15.5px; max-width: 68ch; }
+  .blocks { display: grid; gap: 12px; }
+  @media (min-width: 720px) { .blocks { grid-template-columns: 1fr 1fr; } .blocks .wide { grid-column: 1 / -1; } }
+  .block { border-right: 2px solid var(--line-2); padding-right: 12px; display: grid; gap: 4px; }
+  .block.build { border-right-color: var(--accent); }
+  .block .label { font-size: 12px; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+  .block p, .block li { font-size: 14.5px; color: var(--ink-2); }
+  .block ul { margin: 0; padding-right: 18px; display: grid; gap: 3px; }
+  .card-foot { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 12px; }
+  .card-foot .k { font-weight: 600; color: var(--ink-2); }
+
+  .order { display: grid; gap: 12px; }
+  .order ol { margin: 0; padding-right: 22px; display: grid; gap: 8px; color: var(--ink-2); max-width: 68ch; }
+  .order li::marker { font-family: "IBM Plex Mono", monospace; color: var(--accent-ink); }
+
+  .sources { font-size: 13.5px; color: var(--ink-2); display: grid; gap: 8px; }
+  .sources ul { margin: 0; padding-right: 18px; display: grid; gap: 5px; }
+  .sources li { overflow-wrap: anywhere; }
+  .foot { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; max-width: 68ch; }
+  @media (prefers-reduced-motion: no-preference) { .card { transition: box-shadow .2s ease; } }
+</style>
+
+<div dir="rtl">
+  <header class="masthead">
+    <div class="masthead-inner">
+      <span class="eyebrow">وثيقة قرار · 3 سبتمبر 2026</span>
+      <h1>الموجة التالية لمنصة ConsultX</h1>
+      <p class="lede">اثنا عشر اقتراحاً — ثلاثة لكل محور — مبنية على ما قسناه فعلاً في المنصة هذه الجلسة، ومثبّتة على أدبيات 2025-2026 في فحص الامتثال الآلي لأكواد البناء، وصدق الاستشهاد في الاسترجاع المعزَّز، والاسترجاع الهجين، وهندسة موثوقية تطبيقات النماذج اللغوية. كل بند يذكر الدليل من منصتنا، الأساس العلمي، ما سنبنيه بالضبط، والأثر مقابل الجهد.</p>
+      <div class="meta">
+        <span><b>الحالة المرجعية:</b> حواجز الإطلاق 7/7، أول حرف 3s رئيسي / مراحل حية خلال 0.7s</span>
+        <span><b>الأكواد الحية:</b> SBC 201 · 801 · 501 · 401</span>
+        <span><b>المقياس:</b> الجهد بالجلسات، الأثر على مستخدم مهندس يقدّم لدفاع مدني</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="toc" aria-label="فهرس">
+      <span class="eyebrow">الفصول</span>
+      <ol>
+        <li><a href="#summary"><span class="num">00</span>المصفوفة</a></li>
+        <li><a href="#stability"><span class="num">01</span>الاستقرار والإطلاق</a></li>
+        <li><a href="#intelligence"><span class="num">02</span>الذكاء والمحتوى</a></li>
+        <li><a href="#ux"><span class="num">03</span>التجربة والواجهة</a></li>
+        <li><a href="#speed"><span class="num">04</span>السرعة</a></li>
+        <li><a href="#order"><span class="num">05</span>الترتيب المقترح</a></li>
+        <li><a href="#sources"><span class="num">06</span>المراجع</a></li>
+      </ol>
+    </nav>
+
+    <main class="content">
+      <section class="intro" id="summary">
+        <h2>كيف تقرأ هذه الوثيقة</h2>
+        <p>الاقتراحات ليست قائمة أمنيات: كل واحد منها يعالج شيئاً <b>رأيناه يحدث</b> في الإنتاج — عطل الكرون الصامت لأسابيع، سقوط طلب تحليلي عند حدّ الزمن بلا خطأ، استشهاد من كود خاطئ أُصلح بالتلقين لا بالبنية، انهيار المسار المتجهي على سؤال المرشات، تسرّب إيميلات إلى git. الأثر مقدَّر على مهندس يستعمل المنصة لتقديم مشروع لدفاع مدني، والجهد بجلسات عمل كهذه.</p>
+        <div class="matrix-wrap">
+          <table>
+            <thead>
+              <tr><th>البند</th><th>الاقتراح</th><th>الأثر</th><th>الجهد</th><th>يعتمد على</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="num">A1</span></td><td>أهداف مستوى خدمة + مراقبة اصطناعية + إنذار</td><td><span class="chip hi">عالٍ</span></td><td><span class="chip small">جلسة</span></td><td>—</td></tr>
+              <tr><td><span class="num">A2</span></td><td>قاطع دائرة + مسار قدرة بديل + تدهور رشيق</td><td><span class="chip hi">عالٍ</span></td><td><span class="chip mid">جلستان</span></td><td>A1</td></tr>
+              <tr><td><span class="num">A3</span></td><td>بيئة تجريبية + بوابة CI + فحص أسرار/PII قبل الكوميت</td><td><span class="chip mid">متوسط</span></td><td><span class="chip mid">جلستان</span></td><td>—</td></tr>
+              <tr><td><span class="num">B1</span></td><td>مُحقّق استشهاد وقت التشغيل + استرجاع هجين بإعادة ترتيب</td><td><span class="chip hi">عالٍ جداً</span></td><td><span class="chip mid">جلستان</span></td><td>—</td></tr>
+              <tr><td><span class="num">B2</span></td><td>محرك قواعد تنفيذي عصبي-رمزي للاشتراطات الرقمية</td><td><span class="chip hi">عالٍ جداً</span></td><td><span class="chip big">أسابيع</span></td><td>B1, C1</td></tr>
+              <tr><td><span class="num">B3</span></td><td>مجموعة ذهبية بتحقق مهندسين + تغذية راجعة + إصدارات الكود</td><td><span class="chip hi">عالٍ</span></td><td><span class="chip mid">جلستان + مهندس</span></td><td>—</td></tr>
+              <tr><td><span class="num">C1</span></td><td>مساحة عمل المشروع: ملف المبنى + مخرجات رسمية</td><td><span class="chip hi">عالٍ جداً</span></td><td><span class="chip big">3 جلسات</span></td><td>—</td></tr>
+              <tr><td><span class="num">C2</span></td><td>واجهة الأدلة أولاً وإشارات الثقة</td><td><span class="chip mid">متوسط</span></td><td><span class="chip small">جلسة</span></td><td>B1</td></tr>
+              <tr><td><span class="num">C3</span></td><td>ذكاء المخططات: من الرسم إلى فحص المخارج</td><td><span class="chip hi">تحويلي</span></td><td><span class="chip big">أسابيع</span></td><td>B2</td></tr>
+              <tr><td><span class="num">D1</span></td><td>كاش دلالي + استرجاع متوازٍ ومسبق</td><td><span class="chip hi">عالٍ</span></td><td><span class="chip small">جلسة</span></td><td>—</td></tr>
+              <tr><td><span class="num">D2</span></td><td>كاش السياق + ميزانيات تفكير مقاسة + تخطيط متوازٍ</td><td><span class="chip hi">عالٍ</span></td><td><span class="chip mid">جلستان</span></td><td>B3</td></tr>
+              <tr><td><span class="num">D3</span></td><td>الاسترجاع داخل القاعدة + قياس المستخدم الحقيقي</td><td><span class="chip mid">متوسط</span></td><td><span class="chip mid">جلستان</span></td><td>A1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ───────────── 01 ───────────── -->
+      <section class="chapter" id="stability">
+        <div class="chapter-head">
+          <span class="num">01 / 04</span>
+          <h2>الاستقرار والإطلاق</h2>
+          <p>الخيط الجامع: كل عطل جدّي هذه الجلسة اكتُشف يدوياً ومتأخراً. الاستقرار ليس غياب الأعطال بل سرعة اكتشافها واحتواؤها — وهذا ما تقيسه هندسة الموثوقية (SRE) لا الحظ.</p>
+        </div>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">A1</span><h3>أهداف مستوى خدمة، مراقبة اصطناعية، وإنذار خلال دقائق</h3></div>
+          <p class="thesis">نحوّل المسبار الذي بنيناه هذه الجلسة إلى حارس دائم: يسأل المنصة كل ربع ساعة بالأنماط الثلاثة من منطقتين، ويقيس ما يراه المستخدم فعلاً، ويُنذرك عندما يُخرق هدف مكتوب.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>كرون الفوترة كان يرجع 401 كل ساعة لأسابيع ولم يلاحظه أحد؛ الطلب التحليلي الذي مات عند 154s اكتُشف لأني صادف أن أجريت مسباراً. لا يوجد اليوم أي قياس تلقائي لما يختبره المستخدم.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>منهج SRE (أهداف مستوى الخدمة، ميزانيات الخطأ) كما كُيِّف لتطبيقات النماذج اللغوية في 2025: مؤشرات محددة لمسارات الذكاء الاصطناعي — زمن الاستجابة p95، معدل الخطأ، معدل التراجع، وحدّ الهلوسة — مع عدّادات الطلبات والمحاولات وحالة قاطع الدائرة كمقاييس أولية.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>أهداف مكتوبة: أول إشارة حية ≤ 2s، أول حرف رئيسي ≤ 5s (p95)، اكتمال الإجابة ≥ 99%، صفر دفق فارغ، كرون 200 كل ساعة، بوابة الاستشهاد ≥ 90%.</li>
+              <li>مسبار مجدوَل (الرياض + سيدني) يسجّل الأزمنة في جدول <span class="num">perf_events</span> ويرسل إنذاراً بالبريد/واتساب عند خرق الهدف مرتين متتاليتين.</li>
+              <li>صفحة حالة داخلية بسيطة: آخر 24 ساعة لكل نمط، مع ما يعنيه كل رقم للمستخدم.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> الأعطال تُكتشف خلال دقائق لا أسابيع</span><span><span class="k">الجهد:</span> جلسة واحدة (المسبار موجود)</span><span><span class="k">الخطر:</span> شبه معدوم — قراءة فقط</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">A2</span><h3>قاطع دائرة، مسار قدرة بديل، وتدهور رشيق بدل السقوط</h3></div>
+          <p class="thesis">عندما يبطئ المزوّد أو يرفض، تتراجع المنصة خطوة واحدة مفهومة (نموذج أخف، إجابة محفوظة، مسار كلمات فقط) بدل أن تسقط على الجميع كما حدث في انقطاع 26 أغسطس.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>انقطاع Gemini لساعتين ونصف أوقف كل المستخدمين؛ الليلة تباطأ المزوّد فمات طلب تحليلي صامتاً (سددناه بحارس زمني — لكن الحارس يعلن الفشل ولا يمنعه). سلسلة النماذج الحالية تعيد المحاولة لكنها لا «تتعلم» أن النموذج معطّل.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>أنماط الموثوقية الكلاسيكية مطبَّقة على حركة LLM: إعادة المحاولة للوهلات القصيرة، التراجع كخطة بديلة، وقاطع الدائرة (مغلق/مفتوح/نصف مفتوح) كي لا يتحوّل مزوّد معطّل إلى طوابير في نظامك. الدراسات تقدّر توفير 500-1000 ثانية انتظار ضائع لكل انقطاع إقليمي 5 دقائق.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>قاطع لكل نموذج: يفتح بعد N أخطاء 5xx/مهلات خلال نافذة، يجرّب نصف-مفتوح كل دقيقة، ويُبلَّغ عبر A1.</li>
+              <li>مسار قدرة ثانٍ لنفس نماذج Gemini (مشروع/حصة منفصلة عبر Vertex AI) — إضافة لا استبدال، فلا يُمسّ قرار البقاء على Gemini.</li>
+              <li>أوضاع تدهور معلنة للمستخدم: «إجابة بمسار الكلمات فقط»، «إجابة محفوظة مُتحقق من مصادرها»، «نموذج أسرع مؤقتاً» — مع لافتة صادقة لا صمت.</li>
+              <li>قرار مالك مستقل: مزوّد مختلف كملاذ أخير للانقطاع الكامل (يتطلب تحقق ثلاثي الأنماط كاملاً).</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> انقطاع المزوّد يصير تدهوراً لا توقفاً</span><span><span class="k">الجهد:</span> جلستان</span><span><span class="k">يعتمد على:</span> A1 للقياس</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">A3</span><h3>هندسة الإصدار: بيئة تجريبية، بوابة تكامل آلية، وفحص أسرار وبيانات قبل كل كوميت</h3></div>
+          <p class="thesis">اليوم كل نشر يذهب إلى الإنتاج مباشرة، والفرع بقي عشرة أيام بلا نسخة بعيدة، وتسربت إيميلات عملاء إلى git. الحل بنية لا انتباه: بيئة تجريبية، بوابة آلية، وحارس يمنع ما لا يجوز دخوله.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>116 كوميتاً غير مدفوع اكتُشفت مصادفة؛ ملف تدقيق بإيميلات 22 عميلاً دخل التاريخ وطهّرناه بإعادة كتابة قبل أول دفع؛ انحراف الهجرات الذي منع <span class="num">db push</span> منذ شهور.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>التسليم التدريجي (canary/staging) وبوابات CI من ممارسات SRE؛ فحص الأسرار في المستودع (gitleaks) ممارسة قياسية؛ ومبدأ «النسخة الاحتياطية التي لم تُسترجع قط ليست نسخة» — تمارين الاستعادة الدورية.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>مشروع Supabase تجريبي + نشر معاينة Vercel؛ GitHub Actions يشغّل tsc/vitest/deno/build ثم المسبار ثلاثي الأنماط وبوابة استشهاد مصغّرة على التجريبي قبل أي نشر إنتاجي.</li>
+              <li>حارس ما قبل الكوميت (على نفس إطار hooks القائم): gitleaks + تعبير نمطي لإيميلات غير المالك/الفحص + منع CSV/JSON بيانات — يرفض الكوميت لا يحذّر فقط.</li>
+              <li>دفع تلقائي ليلي للفرع، والتحقق من PITR بتمرين استعادة فصلي موثّق.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> لا «انشر وادعُ» بعد اليوم</span><span><span class="k">الجهد:</span> جلستان</span><span><span class="k">الخطر:</span> منخفض؛ يحتاج مشروع Supabase ثانياً (تكلفة صغيرة)</span></div>
+        </article>
+      </section>
+
+      <!-- ───────────── 02 ───────────── -->
+      <section class="chapter" id="intelligence">
+        <div class="chapter-head">
+          <span class="num">02 / 04</span>
+          <h2>الذكاء والمحتوى</h2>
+          <p>الخيط الجامع: جودتنا اليوم تعتمد على انضباط التلقين وحسن سلوك النموذج. الأدبيات الحديثة تُجمع على الاتجاه المعاكس: تحقق بنيوي بعد التوليد، وقواعد تنفيذية للأرقام، وتقييم مستمر بمقاييس بشرية.</p>
+        </div>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">B1</span><h3>مُحقّق استشهاد وقت التشغيل + استرجاع هجين بإعادة ترتيب</h3></div>
+          <p class="thesis">كل استشهاد يمرّ بفحص آلي قبل أن يراه المستخدم: النص المقتبس موجود حرفياً في المقطع المسترجَع، رقم القسم موجود في سجل الكود، والعائلة تطابق الترويسة. وفي الجهة الأخرى، نوسّع ما نسترجعه أصلاً بدمج البحث اللفظي مع المتجهي.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>جولات الاختبار الست أصلحت استشهادات من كود خاطئ وإعادة استعمال أرقام أقسام بالتلقين — وهو حاجز يتآكل مع كل نموذج جديد. والليلة رأينا المسار المتجهي يسقط بسبب <span class="num">below_floor</span> على سؤال مرشات بينما مسار الكلمات وجد 6 مصادر.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>FaithJudge/FaithBench (EMNLP 2025 Industry) يظهران أن النماذج تُدخل معلومات غير مدعومة حتى مع سياق صحيح، والحل تحقق بعد التوليد؛ CiteGuard يتحقق من الاستشهاد بإعادة الاسترجاع؛ دراسات 2026 تقيس «مُستشهَد به لكن غير مُتحقق منه». وفي الاسترجاع: BM25 يلتقط المصطلحات والأرقام الدقيقة التي تفوّتها المتجهات، ودمج الرتب المتبادل (RRF) لا يحتاج معايرة درجات، ثم مُعيد ترتيب متقاطع على مجموعة صغيرة.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>تمريرة تحقق داخل الدفق: مطابقة ضبابية (≥ 0.9) بين الاقتباس والمقطع، وجود القسم في سجل الأقسام (لدينا سجل 10,986 قسماً)، تطابق العائلة — فتُوسم الاستشهادات: <b>مُتحقق</b> / <b>معاد صياغته</b> / <b>غير مُتحقق</b> (يُحذف أو يُعلَّم).</li>
+              <li>قناة بحث لفظي داخل Postgres (tsvector عربي/إنجليزي + trigram) مدمجة مع pgvector بـRRF، ثم إعادة ترتيب أفضل 20 — تزيل «هاوية العتبة» وتنزيلات الملفات الضخمة.</li>
+              <li>مقياس جديد في البوابة: نسبة الاستشهادات المُتحقق منها لكل إجابة، بهدف ≥ 95%.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> الاستشهاد المفبرك يقترب من الصفر بنيوياً؛ الاستدعاء يرتفع على الأسئلة التقنية</span><span><span class="k">الجهد:</span> جلستان</span><span><span class="k">الخطر:</span> منخفض — يعمل خلف علم ويُقاس بالبوابة</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">B2</span><h3>محرك قواعد تنفيذي عصبي-رمزي للاشتراطات الرقمية</h3></div>
+          <p class="thesis">الأرقام لا تُترك للنموذج: مسافات الانتقال، أحمال الإشغال، عتبات المرشات، تصنيفات المقاومة تُصاغ كقواعد تنفيذية مربوطة بنص البند. النموذج يستخرج معطيات المبنى من الحوار، والمحرك يحسب، والإجابة تعرض الحساب مع الاستشهاد.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>حجرنا 77 جدولاً بسبب أخطاء نسخ؛ أخطر أخطاء أي مساعد كودي رقمية لا لغوية؛ ومحور «أوفر المسارات المحققة للكود» في خطة التطور مستحيل بلا قواعد حتمية.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>حقل فحص الامتثال الآلي (ACC) نضج: أُطر مرتكزة على LLM تحقق 97% F1 في تفسير القواعد و98% في تنفيذها (2025)؛ مراجعة منهجية 2026 لطرائق تفسير أكواد البناء؛ تعلّم معزَّز لتحسين أنظمة الامتثال المعتمدة على LLM (2026)؛ وإطار «امتثال آلي يرفع الشفافية والثقة والتحقق». منهج RASE (اشتراط/انطباق/اختيار/استثناء) يبقى العمود الفقري لصياغة القاعدة.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>المرحلة 1: أكثر 30 اشتراطاً تكراراً في أسئلة المستخدمين (فصول 9 و10 و6/7 من 801/201) كقواعد معلَّمة بمنشأ البند، مع تحقق مهندس لكل قاعدة.</li>
+              <li>طبقة استخراج معطيات: الإشغال، الطوابع، المساحة، المرشات، نوع الإنشاء — من الحوار أو من «ملف المبنى» (C1).</li>
+              <li>الإجابة تعرض: القاعدة المطبَّقة، المعطيات، الحساب، الاستثناءات، والاستشهاد — ويُعاد استعمال المحرك في الحاسبات وفي فحص المخططات (C3).</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> صفر هلوسة في الأرقام؛ أساس البيم والمسار الأوفر</span><span><span class="k">الجهد:</span> أسابيع (مرحلياً)</span><span><span class="k">يعتمد على:</span> B1، C1، ومهندس مراجع</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">B3</span><h3>دورة حياة المعرفة والتقييم: مجموعة ذهبية، تغذية راجعة، وإصدارات الكود</h3></div>
+          <p class="thesis">الجودة تصير رقماً يُقاس عند كل تغيير ولا ينخفض: مجموعة أسئلة ذهبية بتحقق مهندسين، تنمو من تصحيحات المستخدمين، وتعرف أي إصدار من الكود وأي تعميم ينطبق.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>بوابة 401 صعدت من 56% إلى 88% بعمل يدوي على الكلمات المفتاحية؛ القياس اليوم يدوي وعند الطلب؛ لا زر «هذا الاستشهاد خاطئ»؛ ولا تغطية لتعاميم البلديات والدفاع المدني ولا لفروق إصدار 2018/2024.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>مجمَّعات أمثلة بشرية التعليق تحسّن حكم النموذج-كقاضٍ جوهرياً (FaithJudge)؛ أطر تقييم صدق قابلة للتكرار في تطبيقات الحوكمة الإلكترونية (2025)؛ ومبدأ التعلّم النشط: أسوأ الحالات في الإنتاج هي أفضل أمثلة التدريب والاختبار.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>مجموعة ذهبية من 200 سؤال بإجابات مُتحقق منها من مهندسين مع اتفاق بين مقيّمَين، تُشغَّل آلياً في CI (A3) على كل تغيير في التلقين أو الاسترجاع، ببطاقة نتائج لكل فئة.</li>
+              <li>في المنتج: إعجاب/عدم إعجاب + «الاستشهاد خاطئ» ← طابور مراجعة ← إضافة للمجموعة الذهبية.</li>
+              <li>إصدارات المتن: وسم الإصدار، التعاميم والتعديلات بمصدرها القانوني وتاريخ سريانها، والإجابة تذكر الإصدار المنطبق.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> جودة قابلة للقياس وغير قابلة للتراجع الصامت</span><span><span class="k">الجهد:</span> جلستان + وقت مهندس مراجع</span><span><span class="k">الخطر:</span> منخفض</span></div>
+        </article>
+      </section>
+
+      <!-- ───────────── 03 ───────────── -->
+      <section class="chapter" id="ux">
+        <div class="chapter-head">
+          <span class="num">03 / 04</span>
+          <h2>التجربة والواجهة</h2>
+          <p>الخيط الجامع: المهندس لا يريد محادثة، يريد مشروعاً مُعتمَداً. كل اقتراح هنا ينقل المنصة من «سؤال وجواب» إلى أداة عمل يومية تنتج ما يُقدَّم للجهات.</p>
+        </div>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">C1</span><h3>مساحة عمل المشروع: ملف المبنى ومخرجات رسمية</h3></div>
+          <p class="thesis">بدل أن يشرح المستخدم مبناه في كل سؤال، يملأ «ملف المبنى» مرة واحدة (الإشغال، الطوابق، المساحة، المرشات، الإنشاء) ويُرفق بالمشروع؛ كل إجابة تُحسب في ضوئه، وبضغطة واحدة يخرج تقرير امتثال بصيغة تُقدَّم للدفاع المدني.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>قاعدة «≤ 3 أسئلة توضيحية» في البروتوكول تصارع حاجة النموذج للمعطيات؛ الذاكرة تحفظ حقائق المشاريع فعلاً؛ وكتب اعتماد الإنذار والإضاءة في ملفاتك المحلية هي القالب الذي يحتاجه كل مستخدم.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>إرشادات التفاعل بين الإنسان والذكاء الاصطناعي (Amershi وآخرون، 2019): وضّح ما يستطيعه النظام ومدى إتقانه، واجعل تفسير قراراته ظاهراً. الإدخال المهيكل يقلّص الغموض الذي يولّد الأسئلة التوضيحية أصلاً.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>بطاقة «ملف المبنى» مهيكلة (يمكن للنموذج اقتراح تعبئتها من المخطط أو من الحوار) مربوطة بالمشروع والذاكرة.</li>
+              <li>تقرير امتثال PDF/Word بالهوية: الاستشهادات، الافتراضات، البنود المفتوحة، وقوائم فحص حسب مرحلة الاعتماد — على غرار قوالبك المرجعية.</li>
+              <li>لوحة مشروع: الأسئلة والإجابات والمرفقات والتقارير في مكان واحد.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> أداة يومية للمهندس؛ حجة الاشتراك المؤسسي</span><span><span class="k">الجهد:</span> 3 جلسات</span><span><span class="k">الخطر:</span> منخفض؛ يوسّع البنية القائمة</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">C2</span><h3>واجهة الأدلة أولاً وإشارات ثقة مُعايَرة</h3></div>
+          <p class="thesis">النص العربي الطليق يوحي بالثقة أكثر مما يستحق أحياناً. نُظهر لكل استشهاد شارة تحقق، ولكل إجابة كتلة «افتراضات وحدود»، ونجعل لوحة المصدر جنباً إلى جنب افتراضياً في النمطين الثقيلين.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>رقائق الاستشهاد موجودة لكن الثقة والتحقق تُذكر نثراً فقط؛ لوحة المصدر تُفتح عند الطلب؛ ولا تمييز بصرياً بين اقتباس حرفي وإعادة صياغة.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>أدبيات معايرة الثقة: إظهار المنشأ وحدود النظام يقلّص الثقة المفرطة في المخرجات الطليقة (Amershi G11: «وضّح لماذا فعل النظام ما فعل»). البيانات تأتي جاهزة من المُحقّق B1.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>شارات لكل استشهاد: مُتحقق / معاد صياغته / غير مُتحقق، مع كتلة افتراضات مستخرجة آلياً.</li>
+              <li>لوحة المصدر جنباً إلى جنب افتراضياً على سطح المكتب للاستشاري والتحليلي؛ تنبيهات «ما تغيّر في إصدار 2024».</li>
+              <li>طباعة وقراءة: خطوط عربية تقنية للطباعة، تحسين الجوال/RTL، وتطبيق ويب تقدّمي يقرأ الإجابات المحفوظة بلا اتصال في زيارات الموقع.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> إجابات قابلة للدفاع أمام الجهات</span><span><span class="k">الجهد:</span> جلسة</span><span><span class="k">يعتمد على:</span> B1</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">C3</span><h3>ذكاء المخططات: من الرسم إلى فحص المخارج على المخطط نفسه</h3></div>
+          <p class="thesis">يرفع المهندس مخطط الطابق (PDF/DWG/IFC) فتستخرج المنصة الغرف والأبواب والمخارج والأبعاد بتأكيده، وتحسب مسافات الانتقال والمسار المشترك وعروض الأبواب مقابل حمل الإشغال، وتعرض النتائج ملوّنة فوق المخطط.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>مسار الرؤية يقرأ الصور اليوم لكنه يصف ولا يقيس؛ مخططاتك الحقيقية (مدارس، مشاريع NHC) متاحة محلياً كحقيقة أرضية؛ ومحور F5 في خطة التطور يحتاج هندسة قابلة للفحص لا وصفاً.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>أُطر فحص الامتثال المكثّف هندسياً في BIM باستدلال دلالي على الرسوم البيانية (2026)؛ تحويل IFC إلى RDF للفحص الآلي؛ توظيف BIM كأداة محاكاة لمسارات الإخلاء المثلى (CIB WBC 2025)؛ ونظام فحص امتثال لأنظمة الحريق الماليزية واجهته صديقة للمستخدم (MDPI 2023).</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>المرحلة 1: استخراج العناصر من PDF/DXF (محوّل ODA) وIFC (IfcOpenShell) مع تأكيد بشري في المتصفح.</li>
+              <li>المرحلة 2: رسم بياني للمخارج — أقصر مسار، المسافة، المسار المشترك، عرض الأبواب — يُحكم عبر محرك القواعد B2 ويُعرض كخريطة حرارية على المخطط.</li>
+              <li>المرحلة 3: ربط بمحاكاة الإخلاء والتقرير الرسمي (C1).</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> أول أداة عربية تفحص المخارج على المخطط — تمايز حاسم</span><span><span class="k">الجهد:</span> أسابيع (مرحلياً)</span><span><span class="k">يعتمد على:</span> B2</span></div>
+        </article>
+      </section>
+
+      <!-- ───────────── 04 ───────────── -->
+      <section class="chapter" id="speed">
+        <div class="chapter-head">
+          <span class="num">04 / 04</span>
+          <h2>السرعة</h2>
+          <p>الخيط الجامع: بعد أن كسرنا الصمت وثبّتنا التنفيذ بجانب القاعدة، الثواني المتبقية موزّعة على ثلاثة أماكن قابلة للقياس: العمل المكرر، حجم السياق وتفكير النموذج، ومكان الاسترجاع.</p>
+        </div>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">D1</span><h3>كاش دلالي واسترجاع متوازٍ ومسبق</h3></div>
+          <p class="thesis">الأسئلة المتشابهة كثيرة والتضمين يُعاد حسابه كل مرة والاسترجاع ينتظر بوابة الاستحقاق. نُخزّن على ثلاث طبقات، ونبدأ الاسترجاع بالتوازي مع البوابة، ونضمّن مسودة السؤال أثناء الكتابة.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>الاسترجاع 0.9-3.5s في النمطين الثقيلين على كل طلب؛ كاش الملفات موجود لكن لا كاش للتضمين ولا للنتائج ولا للإجابات؛ البوابة والاسترجاع متسلسلان مع أن الاسترجاع قراءة مجانية.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>الكاش الدلالي (مفاتيح دقيقة ودلالية بعتبة تشابه وTTL) نمط قياسي في أنظمة RAG الإنتاجية؛ والتحميل المسبق التخميني يخفي زمن الشبكة خلف زمن تفكير المستخدم.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>كاش تضمين (بصمة السؤال المطبَّع)، كاش نتائج استرجاع مفتاحه (جار التضمين، مجموعة الأكواد، إصدار الأعلام)، وكاش إجابات للأسئلة شبه المكررة (تشابه ≥ 0.97) يُعاد التحقق من استشهاداتها مقابل المتن الحالي ويُعلَن أنها محفوظة.</li>
+              <li>بدء الاسترجاع بالتوازي مع بوابة الاستحقاق (وإلغاؤه إن رُفضت)، وتضمين المسودة عند توقف الكتابة.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> أول حرف في النمط الثقيل ~10s ← ~5-6s؛ شبه فوري عند التكرار</span><span><span class="k">الجهد:</span> جلسة</span><span><span class="k">الخطر:</span> منخفض — إبطال الكاش مربوط بإصدار المتن</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">D2</span><h3>كاش السياق، ميزانيات تفكير مقاسة، وتخطيط متوازٍ</h3></div>
+          <p class="thesis">نُرسل عقد التلقين الضخم نفسه في كل نداء ونترك النموذج يفكّر بلا ميزانية في النمطين الثقيلين. كاش السياق يخفض زمن أول توكن والتكلفة معاً، والبوابة تقرر مستوى التفكير الكافي لكل نمط بدل التخمين.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>التفكير الأدنى خفض اتصال النمط الرئيسي من 8.5s إلى 1.2s؛ التحليلي تأرجح بين 8 و47 ثانية؛ تخطيط التحليلي ثم الاسترجاع ثم النداء الرئيسي متسلسلة مع أن الأولَين يحتاجان السؤال فقط.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>كاش السياق في Gemini يُسعّر قراءات الكاش بـ10% من سعر الإدخال ويقلّص التكلفة حتى 90% للبادئات الطويلة المتكررة ويخفض زمن الاستجابة؛ توكنات التفكير تُحاسب كإخراج ويمكن ضبط مستواها في نماذج Flash — والمقياس الوحيد الصحيح لاختيار المستوى هو بوابة الجودة.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>كاش سياق لعقد كل نمط (TTL بالساعات، يُجدَّد عند تغيير التلقين).</li>
+              <li>تشغيل البوابة عند مستويات تفكير مختلفة لكل نمط واعتماد الأقل تكلفة الذي لا يُظهر انخفاضاً مقاساً.</li>
+              <li>تخطيط التحليلي بالتوازي مع الاسترجاع، وتضمين المتجهات بالتوازي مع البوابة؛ ميزانية سياق بدرجة المُعيد المرتِّب بدل حدّ ثابت.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> الاستشاري ~10s ← ~4-5s؛ تكلفة الإجابة الثقيلة −40 إلى −60%</span><span><span class="k">الجهد:</span> جلستان</span><span><span class="k">يعتمد على:</span> B3 لقياس الجودة</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><span class="clause">D3</span><h3>الاسترجاع داخل القاعدة وقياس المستخدم الحقيقي</h3></div>
+          <p class="thesis">مسار الكلمات ينزّل ملفات JSON بأحجام ميغابايتات من التخزين على كل عزل بارد. ننقل البحث اللفظي إلى Postgres، نضبط فهرس المتجهات، ونقيس ما يعيشه كل مستخدم من متصفحه لا من خادمنا فقط.</p>
+          <div class="blocks">
+            <div class="block"><span class="label">الدليل من منصتنا</span><p>الاسترجاع اللفظي = قائمة ملفات + تنزيلات ضخمة ثم تسجيل نقاط في الذاكرة؛ أثر تثبيت المنطقة (المصادقة من 1000ms إلى 55ms) يثبت أن الموضع يساوي ثواني؛ X-Timing يقيس الخادم لكن لا أحد يقيس المتصفح.</p></div>
+            <div class="block"><span class="label">الأساس العلمي</span><p>موازنة معاملات فهرس HNSW (الاستدعاء مقابل الزمن)، البحث النصي الكامل بإعدادات لغوية داخل القاعدة، ومراقبة المستخدم الحقيقي (RUM) كمصدر الحقيقة لمؤشرات الأداء.</p></div>
+            <div class="block build wide"><span class="label">ما سنبنيه</span><ul>
+              <li>جدول مقاطع مفهرس لفظياً (GIN) يعوّض تنزيل الملفات نهائياً؛ ضبط <span class="num">ef_search</span> على المتن الحالي.</li>
+              <li>كرون الإبقاء الدافئ (جاهز) + إعادة استعمال العزل.</li>
+              <li>الواجهة ترسل أزمنتها (الترويسات، أول إشارة، أول حرف، الاكتمال + X-Timing) إلى <span class="num">perf_events</span> ← لوحة p50/p95 لكل نمط وجهاز ومنطقة، مربوطة بإنذارات A1.</li>
+            </ul></div>
+          </div>
+          <div class="card-foot"><span><span class="k">الأثر:</span> استرجاع النمط الثقيل 3.5s ← أقل من 0.5s؛ كل تجربة مستخدم مقاسة</span><span><span class="k">الجهد:</span> جلستان</span><span><span class="k">يعتمد على:</span> A1</span></div>
+        </article>
+      </section>
+
+      <!-- ───────────── 05 ───────────── -->
+      <section class="chapter order" id="order">
+        <div class="chapter-head">
+          <span class="num">05</span>
+          <h2>الترتيب الذي أنصح به</h2>
+          <p>مبدأ الترتيب: ابدأ بما يحمي ما بنيناه ويجعل كل ما بعده قابلاً للقياس، ثم ما يرفع الثقة بنيوياً، ثم ما يغيّر طبيعة المنتج.</p>
+        </div>
+        <ol>
+          <li><b>A1 ثم B1</b> — جلستان تعطيانك عيوناً دائمة على الإنتاج ومُحقّقاً يمنع الاستشهاد المفبرك بنيوياً. أعلى رافعة بأقل جهد.</li>
+          <li><b>D1 و D2</b> — نصف الزمن المتبقي في النمطين الثقيلين، ونصف التكلفة، بلا مساس بالجودة لأن البوابة تحكم.</li>
+          <li><b>C1 مع B3</b> — المنصة تصير أداة مشروع تنتج تقارير، والجودة تصير رقماً لا ينخفض.</li>
+          <li><b>A2 و A3 و D3</b> — تحصين البنية قبل نمو المستخدمين.</li>
+          <li><b>B2 ثم C3</b> — الرهانان الاستراتيجيان: الأرقام الحتمية ثم فحص المخططات. تبدآن حين يكون ما قبلهما راسخاً.</li>
+        </ol>
+      </section>
+
+      <!-- ───────────── 06 ───────────── -->
+      <section class="chapter sources" id="sources">
+        <div class="chapter-head">
+          <span class="num">06</span>
+          <h2>المراجع التي بُنيت عليها الاقتراحات</h2>
+        </div>
+        <ul>
+          <li>Leveraging large language models for BIM-based automated compliance checking — Automation in Construction, 2025: <a href="https://www.sciencedirect.com/science/article/pii/S0926580525007472">sciencedirect.com</a></li>
+          <li>A systematic review of methods for interpreting building code regulations in automated compliance systems — Building Research &amp; Information, 2026: <a href="https://www.tandfonline.com/doi/full/10.1080/09613218.2026.2637965">tandfonline.com</a></li>
+          <li>Reinforcement learning to improve LLM-based automated code compliance systems — arXiv, 2026: <a href="https://arxiv.org/pdf/2606.22402">arxiv.org</a></li>
+          <li>Framework for automated building code compliance checking to improve transparency, trust, validation, and design interpretation — Automation in Construction, 2025: <a href="https://www.sciencedirect.com/science/article/pii/S0926580525006387">sciencedirect.com</a></li>
+          <li>LLM-Driven Code Compliance Checking in BIM — Electronics, 2025: <a href="https://doi.org/10.3390/electronics14112146">doi.org</a></li>
+          <li>Benchmarking LLM Faithfulness in RAG with Evolving Leaderboards (FaithJudge) — EMNLP 2025 Industry: <a href="https://aclanthology.org/2025.emnlp-industry.54/">aclanthology.org</a></li>
+          <li>Cited but Not Verified: Parsing and Evaluating Source Attribution in LLM Deep Research Agents — arXiv, 2026: <a href="https://arxiv.org/pdf/2605.06635">arxiv.org</a></li>
+          <li>Do You Need a Frontier Model as a Citation Verifier? — arXiv, 2026: <a href="https://arxiv.org/pdf/2607.08700">arxiv.org</a></li>
+          <li>Evaluating Faithfulness in Agentic RAG Systems for e-Governance — Big Data and Cognitive Computing, 2025: <a href="https://www.mdpi.com/2504-2289/9/12/309">mdpi.com</a></li>
+          <li>Why Vector Search Alone Isn't Enough: Hybrid Retrieval for RAG — InfoQ: <a href="https://www.infoq.com/articles/vector-search-hybrid-retrieval-rag/">infoq.com</a></li>
+          <li>Advanced RAG — Understanding Reciprocal Rank Fusion in Hybrid Search — Laforge, 2026: <a href="https://glaforge.dev/posts/2026/02/10/advanced-rag-understanding-reciprocal-rank-fusion-in-hybrid-search/">glaforge.dev</a></li>
+          <li>Automating Geometry-Intensive Compliance Checking in BIM: Graph-Based Semantic Reasoning — arXiv, 2026: <a href="https://arxiv.org/pdf/2606.12065">arxiv.org</a></li>
+          <li>Automated code compliance checking research based on BIM and knowledge graph — PMC: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10151318/">pmc.ncbi.nlm.nih.gov</a></li>
+          <li>BIM-Based Automated Code Compliance Checking System in Malaysian Fire Safety Regulations — Buildings, 2023: <a href="https://www.mdpi.com/2075-5309/13/6/1404">mdpi.com</a></li>
+          <li>A BIM-Enhanced Approach to Evacuation Planning — CIB World Building Congress 2025: <a href="https://docs.lib.purdue.edu/cgi/viewcontent.cgi?article=1684&context=cib-conferences">purdue.edu</a></li>
+          <li>Building Bulletproof LLM Applications: Applying SRE Best Practices — Google Cloud Community: <a href="https://medium.com/google-cloud/building-bulletproof-llm-applications-a-guide-to-applying-sre-best-practices-1564b72fd22e">medium.com</a></li>
+          <li>Retries, Fallbacks, and Circuit Breakers in LLM Apps: A Production Guide — Maxim: <a href="https://www.getmaxim.ai/articles/retries-fallbacks-and-circuit-breakers-in-llm-apps-a-production-guide/">getmaxim.ai</a></li>
+          <li>LLM Failover &amp; Load Balancing for Provider Outages — TrueFoundry: <a href="https://www.truefoundry.com/blog/llm-failover-load-balancing-provider-outages">truefoundry.com</a></li>
+          <li>Gemini context caching cost optimization (2026): <a href="https://techjacksolutions.com/ai-tools/google-gemini/gemini-context-caching-cost-optimization/">techjacksolutions.com</a> · Gemini pricing and thinking tokens (2026): <a href="https://www.cloudzero.com/blog/gemini-pricing/">cloudzero.com</a></li>
+          <li>Amershi et al., Guidelines for Human-AI Interaction, CHI 2019 (المرجع الكلاسيكي لـC1/C2).</li>
+        </ul>
+        <p class="foot">الأرقام الواردة عن منصتنا مقاسة حياً في الإنتاج بتاريخ 2-3 سبتمبر 2026؛ التقديرات المستقبلية (الأثر والجهد) تقديرات هندسية تُراجَع عند بدء كل بند. كل بند يُنفَّذ خلف علم ويُقاس بالبوابة قبل أن يُعلَن.</p>
+      </section>
+    </main>
+  </div>
+</div>
