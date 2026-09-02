@@ -19,6 +19,7 @@ const Subscribe = lazy(() => import("./pages/Subscribe"));
 const Account = lazy(() => import("./pages/Account"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminHealth = lazy(() => import("./pages/AdminHealth"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -60,6 +61,7 @@ const AnimatedRoutes = () => {
           <Route path="/account" element={<PageTransition><Account /></PageTransition>} />
           <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
           <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+          <Route path="/admin/health" element={<PageTransition><AdminHealth /></PageTransition>} />
           <Route path="/payment-callback" element={<PageTransition><PaymentCallback /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />

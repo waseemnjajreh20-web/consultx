@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.send-contact-message]
 verify_jwt = false
+
+# synthetic-probe is called by pg_cron with its own constant-time x-probe-token
+# gate (same shape as process-subscription-renewal's cron secret), so the
+# platform JWT gate is off and the cron statement needs no anon key.
+[functions.synthetic-probe]
+verify_jwt = false
