@@ -1,0 +1,389 @@
+<title>خطة تنفيذ الموجة التالية</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #F5F7F4; --paper-2: #EDF1EC; --ink: #1A2420; --ink-2: #3D4B44; --muted: #5F6F67;
+    --line: #D3DBD5; --line-2: #BFC9C2; --accent: #0E8A5F; --accent-ink: #0B6B4A; --accent-soft: #DDF0E6;
+    --amber: #B8701A; --amber-soft: #F6E7CF; --rose: #A63D3D; --rose-soft: #F3DCDC; --card: #FFFFFF;
+    --grid: rgba(14,138,95,0.08);
+    --shadow: 0 1px 0 rgba(26,36,32,0.06), 0 8px 24px -18px rgba(26,36,32,0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10171A; --paper-2: #151E22; --ink: #E6ECE8; --ink-2: #C3CDC7; --muted: #8FA097;
+      --line: #263238; --line-2: #33424A; --accent: #3FBF8A; --accent-ink: #6BD5A6; --accent-soft: #163327;
+      --amber: #E0A04A; --amber-soft: #3A2A12; --rose: #E07A7A; --rose-soft: #3A1E1E; --card: #172024;
+      --grid: rgba(63,191,138,0.09);
+      --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 10px 28px -18px rgba(0,0,0,0.8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #10171A; --paper-2: #151E22; --ink: #E6ECE8; --ink-2: #C3CDC7; --muted: #8FA097;
+    --line: #263238; --line-2: #33424A; --accent: #3FBF8A; --accent-ink: #6BD5A6; --accent-soft: #163327;
+    --amber: #E0A04A; --amber-soft: #3A2A12; --rose: #E07A7A; --rose-soft: #3A1E1E; --card: #172024;
+    --grid: rgba(63,191,138,0.09);
+    --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 10px 28px -18px rgba(0,0,0,0.8);
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); direction: rtl; font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif; font-size: 16px; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  h1, h2, h3, h4 { font-family: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif; font-weight: 700; text-wrap: balance; line-height: 1.35; margin: 0; }
+  p { margin: 0; }
+  .num { font-family: "IBM Plex Mono", Consolas, monospace; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .masthead { border-bottom: 1px solid var(--line); background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 28px 28px, var(--paper-2); }
+  .masthead-inner { max-width: 1040px; margin: 0 auto; padding: 44px 24px 34px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; color: var(--accent-ink); font-weight: 600; text-transform: uppercase; }
+  .masthead h1 { font-size: clamp(30px, 4.6vw, 46px); margin-top: 8px; }
+  .lede { max-width: 68ch; color: var(--ink-2); margin-top: 14px; font-size: 17px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 20px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+  .shell { max-width: 1040px; margin: 0 auto; padding: 28px 24px 72px; display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 960px) { .shell { grid-template-columns: 210px minmax(0, 1fr); align-items: start; } .toc { position: sticky; top: 18px; } }
+  .toc { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 14px 16px; font-size: 14px; box-shadow: var(--shadow); }
+  .toc .eyebrow { margin-bottom: 8px; display: block; }
+  .toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .toc a { color: var(--ink-2); text-decoration: none; display: flex; gap: 8px; align-items: baseline; }
+  .toc a:hover { color: var(--accent-ink); }
+  .toc .num { font-size: 12px; color: var(--muted); min-width: 1.6em; }
+  .content { display: grid; gap: 40px; min-width: 0; }
+  .section { display: grid; gap: 16px; }
+  .section-head { display: grid; gap: 6px; padding-top: 6px; border-top: 3px solid var(--accent); }
+  .section-head .num { color: var(--accent-ink); font-size: 13px; font-weight: 500; }
+  .section-head h2 { font-size: 30px; }
+  .section-head p { max-width: 68ch; color: var(--muted); font-size: 15px; }
+  .prose { max-width: 68ch; color: var(--ink-2); display: grid; gap: 10px; }
+  .prose ul, .prose ol { margin: 0; padding-right: 20px; display: grid; gap: 6px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--card); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--paper-2); color: var(--ink-2); font-weight: 600; font-size: 12.5px; letter-spacing: 0.02em; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.7; border: 1px solid transparent; white-space: nowrap; }
+  .chip.hi { background: var(--accent-soft); color: var(--accent-ink); }
+  .chip.mid { background: var(--amber-soft); color: var(--amber); }
+  .chip.big { background: var(--rose-soft); color: var(--rose); }
+  .chip.small { background: var(--paper-2); color: var(--ink-2); border-color: var(--line); }
+  .gantt td.bar { padding: 6px 4px; }
+  .bar-cell { height: 14px; border-radius: 3px; }
+  .bar-cell.on { background: var(--accent); opacity: .85; }
+  .bar-cell.bet { background: var(--amber); opacity: .8; }
+  .phase { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 22px 24px; box-shadow: var(--shadow); display: grid; gap: 14px; }
+  .phase-head { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+  .clause { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 13px; color: var(--accent-ink); border: 1px solid var(--line-2); border-radius: 4px; padding: 3px 8px; margin-top: 4px; white-space: nowrap; }
+  .phase h3 { font-size: 22px; }
+  .phase .goal { color: var(--ink-2); font-size: 15.5px; max-width: 68ch; }
+  .item { border-right: 2px solid var(--accent); padding-right: 14px; display: grid; gap: 6px; }
+  .item h4 { font-size: 17px; font-family: "IBM Plex Sans Arabic", sans-serif; font-weight: 600; }
+  .item .label { font-size: 12px; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+  .item ul { margin: 0; padding-right: 18px; display: grid; gap: 4px; font-size: 14.5px; color: var(--ink-2); }
+  .item .accept { background: var(--accent-soft); border-radius: 4px; padding: 8px 12px; font-size: 14px; color: var(--accent-ink); }
+  .item .owner { background: var(--amber-soft); border-radius: 4px; padding: 8px 12px; font-size: 14px; color: var(--amber); }
+  .items { display: grid; gap: 18px; }
+  .foot { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; max-width: 68ch; }
+  code { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.9em; direction: ltr; unicode-bidi: isolate; background: var(--paper-2); padding: 0 5px; border-radius: 3px; }
+</style>
+
+<div dir="rtl">
+  <header class="masthead">
+    <div class="masthead-inner">
+      <span class="eyebrow">خطة تنفيذ · 3 سبتمبر 2026 · تتبع وثيقة «الموجة التالية»</span>
+      <h1>خطة تنفيذ الموجة التالية</h1>
+      <p class="lede">اثنا عشر بنداً في ست مراحل على نحو ثلاثين جلسة عمل. كل بند مفكَّك إلى مهام في مواضعها الفعلية في المنصة، خلف علم افتراضي مطفأ، بمعيار قبول مقاس، وبما تحتاجه يداك أنت وموعده. الترتيب يتبع الاعتماديات: ما يحمي ويقيس أولاً، ثم ما يرفع الثقة، ثم ما يغيّر المنتج.</p>
+      <div class="meta">
+        <span><b>وحدة التخطيط:</b> جلسة = يوم عمل كامل كهذه</span>
+        <span><b>الإيقاع:</b> 4-5 جلسات أسبوعياً ⇒ 6-8 أسابيع</span>
+        <span><b>تعريف الاكتمال:</b> مدمج + منشور + مُتحقق بالأنماط الثلاثة + مقاس + موثّق + مدفوع</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="toc" aria-label="فهرس">
+      <span class="eyebrow">الأقسام</span>
+      <ol>
+        <li><a href="#rules"><span class="num">00</span>قواعد التنفيذ</a></li>
+        <li><a href="#timeline"><span class="num">01</span>الجدول الزمني</a></li>
+        <li><a href="#p0"><span class="num">P0</span>التمهيد</a></li>
+        <li><a href="#p1"><span class="num">P1</span>عيون وثقة</a></li>
+        <li><a href="#p2"><span class="num">P2</span>سرعة وتكلفة</a></li>
+        <li><a href="#p3"><span class="num">P3</span>أداة المشروع والجودة</a></li>
+        <li><a href="#p4"><span class="num">P4</span>التحصين</a></li>
+        <li><a href="#p5"><span class="num">P5</span>الرهانان</a></li>
+        <li><a href="#owner"><span class="num">02</span>تقويم يدك</a></li>
+        <li><a href="#risks"><span class="num">03</span>المخاطر</a></li>
+        <li><a href="#fit"><span class="num">04</span>الالتحام بخطة التطور</a></li>
+      </ol>
+    </nav>
+
+    <main class="content">
+      <section class="section" id="rules">
+        <div class="section-head"><span class="num">00</span><h2>قواعد التنفيذ الملزمة</h2><p>ثابتة لكل بند، مستخلصة من دروس هذه الجلسة وعقد التشغيل.</p></div>
+        <div class="prose">
+          <ol>
+            <li><b>علم لكل ميزة، مطفأ افتراضياً</b> — التراجع دائماً = إطفاء العلم لا إعادة نشر. سجل الأعلام يُحدَّث في <code>docs/advisory-brain-runbook.md</code>.</li>
+            <li><b>بوابة التحقق الدنيا قبل أي نشر</b>: <code>tsc</code> · <code>vitest</code> · <code>deno check</code> · <code>build</code> · المسبار ثلاثي الأنماط على الإنتاج · بوابة الاستشهاد المصغّرة عند مسّ التلقين أو الاسترجاع.</li>
+            <li><b>قياس قبل/بعد</b> لكل بند سرعة أو جودة بنفس الأداة (المسبار، البنشمارك 43 سؤالاً، بوابة 36 سؤالاً) — لا ادعاء بلا رقم.</li>
+            <li><b>ترتيب النشر</b>: عند تغيّر مغلّف الرد يُنشر العميل قبل الدالة؛ الدالة تفهم الشكلين مرحلياً.</li>
+            <li><b>قاعدة البيانات</b>: لا <code>db push</code>. كل تغيير = SQL idempotent في <code>docs/db/</code> ← تطبيق بيدك في لوحة SQL ← تحقق حي ← توثيق. سياسات RLS مالكية على كل جدول جديد + اختبار أمني.</li>
+            <li><b>الخصوصية</b>: لا بيانات عملاء في git (حارس ما قبل الكوميت من P0)، والكاش لا يعبر بين المستخدمين.</li>
+            <li><b>تقرير أسبوعي</b> بصيغة الحالة/المُنجز/المتبقي/الحواجز، ومذكرة قرار لكل قرار مالك.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" id="timeline">
+        <div class="section-head"><span class="num">01</span><h2>الجدول الزمني بالجلسات</h2><p>الأعمدة جلسات عمل؛ الأخضر تنفيذ، الكهرماني الرهانات الاستراتيجية الممتدة. الجلسات 1-16 مضبوطة؛ ما بعدها تقديري ويُعاد ضبطه عند نهاية P4.</p></div>
+        <div class="table-wrap">
+          <table class="gantt">
+            <thead><tr><th>المرحلة</th><th>البنود</th><th>الجلسات</th><th colspan="8">الأسابيع 1-8</th></tr></thead>
+            <tbody>
+              <tr><td><span class="num">P0</span> التمهيد</td><td>بقايا الجلسة، حارس PII، سجل الأعلام</td><td><span class="num">0.5</span></td><td class="bar"><div class="bar-cell on"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td><span class="num">P1</span> عيون وثقة</td><td>A1 · B1</td><td><span class="num">1-3</span></td><td class="bar"><div class="bar-cell on"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td><span class="num">P2</span> سرعة وتكلفة</td><td>D1 · D2</td><td><span class="num">4-6</span></td><td></td><td class="bar"><div class="bar-cell on"></div></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td><span class="num">P3</span> أداة المشروع والجودة</td><td>C1 · B3 · C2</td><td><span class="num">7-11</span></td><td></td><td></td><td class="bar"><div class="bar-cell on"></div></td><td class="bar"><div class="bar-cell on"></div></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td><span class="num">P4</span> التحصين</td><td>A3 · A2 · D3</td><td><span class="num">12-16</span></td><td></td><td></td><td></td><td></td><td class="bar"><div class="bar-cell on"></div></td><td class="bar"><div class="bar-cell on"></div></td><td></td><td></td></tr>
+              <tr><td><span class="num">P5</span> الرهانان</td><td>B2 ← C3</td><td><span class="num">17-30+</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="bar"><div class="bar-cell bet"></div></td><td class="bar"><div class="bar-cell bet"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="prose"><p>مسار المحتوى (رفع SBC 401 للبوابة، إدخال «دليل مدن») يجري بالتوازي في P2-P4 بمهارة الإدخال الجاهزة، ولا يزاحم المسار الهندسي لأنه يستهلك وقت قياس لا وقت بناء.</p></div>
+      </section>
+
+      <!-- P0 -->
+      <section class="section" id="p0">
+        <div class="section-head"><span class="num">P0 · نصف جلسة</span><h2>التمهيد: إغلاق البقايا وتجهيز الأرض</h2></div>
+        <article class="phase">
+          <div class="items">
+            <div class="item"><h4>بقايا الجلسة الحالية</h4><ul>
+              <li>كرون الإبقاء الدافئ (أمر اللصق الجاهز) والتحقق من جدولته.</li>
+              <li>لقطة الشاشة للمراحل الحية (Chrome موصول أو فحصك أنت).</li>
+              <li>قراراتك: حملة الاسترجاع (نص جاهز)، تنظيف 12 صفاً مكرراً، المفاتيح القديمة المكشوفة، زر الباكت اليتيم.</li></ul></div>
+            <div class="item"><h4>حارس ما قبل الكوميت (A3-lite)</h4><ul>
+              <li><code>.githooks/pre-commit</code> يفحص الفرق المرحلي: إيميلات غير المالك/الفحص، مفاتيح بأنماطها، ملفات CSV/JSON بيانات — يرفض الكوميت.</li>
+              <li><code>git config core.hooksPath .githooks</code> موثّق في CLAUDE.md.</li></ul>
+              <p class="accept">القبول: كوميت تجريبي يحوي إيميل عميل يُرفض؛ الكوميت النظيف يمرّ.</p></div>
+            <div class="item"><h4>سجل الأعلام وجدول القياس</h4><ul>
+              <li>جدول الأعلام الجديدة في الـrunbook: <code>CITATION_VERIFIER_ENABLED</code>، <code>ADVISORY_HYBRID_RETRIEVAL_ENABLED</code>، <code>RETRIEVAL_CACHE_ENABLED</code>، <code>GEMINI_CONTEXT_CACHE_ENABLED</code>، <code>BUILDING_PROFILE_ENABLED</code>، <code>COMPLIANCE_REPORT_ENABLED</code>، <code>PROVIDER_BREAKER_ENABLED</code>، <code>RULE_ENGINE_ENABLED</code>.</li>
+              <li>مسودة SQL لجدول <code>perf_events</code> (أزمنة المراحل، النمط، المنطقة، الجهاز، الإصدار) بسياسات: إدراج خدمة فقط، قراءة أدمن.</li></ul>
+              <p class="owner">يدك: تطبيق SQL في لوحة Supabase (أمر واحد جاهز).</p></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- P1 -->
+      <section class="section" id="p1">
+        <div class="section-head"><span class="num">P1 · الجلسات 1-3</span><h2>عيون وثقة</h2><p>الهدف: لا عطل يمرّ بلا إنذار، ولا استشهاد يصل المستخدم بلا تحقق.</p></div>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">A1</span><div><h3>أهداف مستوى خدمة ومراقبة اصطناعية — جلسة</h3><p class="goal">دالة <code>synthetic-probe</code> جديدة يستدعيها pg_cron كل 15 دقيقة: تصكّ جلسة حساب الفحص، تسأل الأنماط الثلاثة، تسجّل الأزمنة والمراحل وسلامة المحتوى في <code>perf_events</code>، تقيّم الأهداف، وتُنذر بالبريد عبر Resend عند خرقين متتاليين.</p></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li>نقل منطق <code>ttfb_probe.mjs</code> إلى دالة Deno محمية بتوكن (نمط <code>ingest-sbc-2024</code>)، تستدعي fire-safety-chat بترويسة <code>x-region</code> وتسجّل: الترويسات، أول إشارة، أول حرف، الاكتمال، عدد المصادر، شارة المحرك، سبب التراجع.</li>
+              <li>جدول <code>slo_targets</code> بالقيم: أول إشارة ≤ 2s، أول حرف رئيسي ≤ 5s (p95 يومي)، اكتمال ≥ 99%، صفر دفق فارغ، كرون 200، استشهاد مُتحقق ≥ 90% (يُفعَّل بعد B1).</li>
+              <li>إنذار بريدي (قالب عربي واضح: ما انكسر، منذ متى، ما يعنيه للمستخدم) + صفحة <code>/admin/health</code> تقرأ آخر 24 ساعة.</li></ul>
+              <p class="accept">القبول: 24 ساعة بيانات متصلة؛ خرق مُفتعل (تعطيل نموذج مؤقتاً على التجريبي) يصل إنذاره خلال 30 دقيقة.</p>
+              <p class="owner">يدك: تطبيق SQL الجدولين، لصق أمر جدولة الكرون، تأكيد بريد الإنذار.</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">B1</span><div><h3>مُحقّق الاستشهاد + الاسترجاع الهجين — جلستان</h3><p class="goal">الجلسة الأولى: المُحقّق بعد التوليد بلا كسر البث. الثانية: قناة بحث لفظي داخل Postgres مدمجة مع المتجهات بدمج الرتب المتبادل.</p></div></div>
+          <div class="items">
+            <div class="item"><h4>الجلسة 2 — المُحقّق</h4><ul>
+              <li>في <code>fire-safety-chat</code>: بعد <code>[DONE]</code> يمرّ النص الكامل على المقاطع المسترجَعة (في الذاكرة): مطابقة ضبابية ≥ 0.9 للاقتباس، وجود القسم في جدول <code>sbc_sections_registry</code> (يُستورد من سجل 10,986 قسماً)، تطابق العائلة مع ترويسة المقطع ← حدث <code>{type:"citations"}</code> بحالة كل استشهاد.</li>
+              <li>العميل: يستقبل الحدث ويعلّم الرقائق (مُتحقق/معاد صياغته/غير مُتحقق) — الواجهة الكاملة في C2.</li>
+              <li>تسجيل نسبة التحقق لكل إجابة في <code>perf_events</code> (تغذية A1).</li></ul>
+              <p class="accept">القبول: على البنشمارك، الاستشهادات المفبركة المعروفة تُوسم غير مُتحقق 100%؛ الصحيحة مُتحقق ≥ 95%؛ لا زيادة في زمن الاكتمال تتجاوز 0.5s.</p></div>
+            <div class="item"><h4>الجلسة 3 — الهجين</h4><ul>
+              <li>SQL: عمود <code>tsv</code> مولَّد على <code>sbc_documents</code> بدالة تطبيع عربي (حذف التشكيل، توحيد الألف/الياء/التاء المربوطة) + فهرس GIN + <code>pg_trgm</code>؛ دالة <code>match_sbc_hybrid</code> تدمج رتب FTS والمتجهات بـRRF.</li>
+              <li>الدالة: خلف <code>ADVISORY_HYBRID_RETRIEVAL_ENABLED</code> تستبدل مسار الكلمات الحالي (تنزيل الملفات) للاستشاري والتحليلي؛ إعادة ترتيب أفضل 20 اختيارية بمرحلة لاحقة.</li>
+              <li>رفع 401: مصطلحات أسئلة البوابة الراسبة تُغطّى تلقائياً بالقناة اللفظية — تُعاد بوابة 401 بعد التفعيل.</li></ul>
+              <p class="accept">القبول: بنشمارك 43 + بوابة 36 قبل/بعد — الأقسام ≥ الأساس، معدل <code>below_floor</code> ينخفض للنصف، بوابة 401 ≥ 90%.</p>
+              <p class="owner">يدك: تطبيق SQL (عمود + فهارس + دالة)، وتفعيل العلم بعد البوابة.</p></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- P2 -->
+      <section class="section" id="p2">
+        <div class="section-head"><span class="num">P2 · الجلسات 4-6</span><h2>سرعة وتكلفة</h2><p>الهدف: أول حرف في النمطين الثقيلين إلى النصف، وتكلفة الإجابة الثقيلة إلى النصف، والجودة ثابتة بالقياس.</p></div>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">D1</span><div><h3>كاش دلالي واسترجاع متوازٍ — جلسة</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li>كاش التضمين (بصمة السؤال المطبَّع ← المتجه) وكاش نتائج الاسترجاع (مفتاح: بصمة المتجه + مجموعة الأكواد + إصدار الأعلام + <code>corpus_version</code>) بجدول خفيف وTTL 24h.</li>
+              <li>في الدالة: إطلاق الاسترجاع فور قراءة الجسم بالتوازي مع بوابة الاستحقاق (يُلغى عند الرفض)؛ في العميل: تضمين المسودة عند توقف الكتابة 800ms (استدعاء خفيف <code>prefetch-retrieval</code>).</li>
+              <li>كاش الإجابات الكاملة يُؤجَّل للمرحلة التالية بقرار خصوصية: لا يُخزَّن إلا ما وُلّد بلا ذاكرة مستخدم.</li></ul>
+              <p class="accept">القبول: المسبار — زمن الاسترجاع ≤ 300ms عند الإصابة؛ اختبار يثبت تطابق النتائج مع اللا-كاش؛ لا تسرّب عبر المستخدمين (اختبار).</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">D2</span><div><h3>كاش السياق وميزانيات التفكير والتخطيط المتوازي — جلستان</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>الجلسة 5 — كاش السياق + التوازي</h4><ul>
+              <li>إنشاء <code>cachedContent</code> لعقد كل نمط (بصمة التلقين ← اسم الكاش، TTL ساعات، تجديد عند التغيير)، تمريره في النداء خلف <code>GEMINI_CONTEXT_CACHE_ENABLED</code>، تراجع صامت للا-كاش عند أي خطأ.</li>
+              <li>التحليلي: نداء التخطيط بالتوازي مع الاسترجاع؛ التضمين بالتوازي مع البوابة (يكمل D1).</li></ul></div>
+            <div class="item"><h4>الجلسة 6 — ميزانيات التفكير</h4><ul>
+              <li>تشغيل البنشمارك عند مستويات التفكير لكل نمط (الاستشاري: أدنى/منخفض/متوسط؛ التحليلي: منخفض/متوسط/عالٍ) وتسجيل الجودة والزمن والتوكنات.</li>
+              <li>اعتماد أقل مستوى لا يُظهر انخفاضاً (فرق الأقسام ≤ 2 نقاط، الهلوسة لا ترتفع) كقيمة بيئية لكل نمط.</li></ul>
+              <p class="accept">القبول: الاستشاري أول حرف ≤ 5s (p50)؛ تكلفة الإجابة الثقيلة −40% على الأقل من تقرير التوكنات؛ البنشمارك ثابت.</p>
+              <p class="owner">يدك: مراجعة جدول الجودة/الزمن واعتماد المستويات (قرار جودة).</p></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- P3 -->
+      <section class="section" id="p3">
+        <div class="section-head"><span class="num">P3 · الجلسات 7-11</span><h2>أداة المشروع والجودة</h2><p>الهدف: المنصة تنتج ما يُقدَّم للجهات، والجودة رقم لا ينخفض.</p></div>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">C1</span><div><h3>ملف المبنى ومساحة المشروع والتقرير الرسمي — 3 جلسات</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>الجلسة 7 — البيانات والبطاقة</h4><ul>
+              <li>SQL: <code>building_profiles</code> (المستخدم، المحادثة/المشروع، الإشغال، الطوابق، الارتفاع، المساحة، المرشات، نوع الإنشاء، الخطورة، ملاحظات) بسياسات مالكية + اختبار أمني.</li>
+              <li>بطاقة قابلة للتحرير في ترويسة المحادثة؛ اقتراح تعبئة من الحوار (استخراج مهيكل) بتأكيد المستخدم.</li></ul></div>
+            <div class="item"><h4>الجلسة 8 — الحقن والذاكرة</h4><ul>
+              <li>الدالة: كتلة «معطيات المبنى» كسياق نظام (ليست مصدراً كودياً) خلف <code>BUILDING_PROFILE_ENABLED</code>؛ ربطها بذاكرة الحساب؛ خفض الأسئلة التوضيحية عند اكتمال الملف.</li></ul></div>
+            <div class="item"><h4>الجلسة 9 — التقرير</h4><ul>
+              <li>مولّد «تقرير امتثال» فوق مسار الطباعة A4 القائم: الترويسة، ملف المبنى، خلاصة الأسئلة بالاستشهادات المُتحقق منها، الافتراضات، البنود المفتوحة، قوائم الفحص حسب مرحلة الاعتماد — على قالب كتب الاعتماد المرجعية لديك؛ تصدير Word اختياري.</li></ul>
+              <p class="accept">القبول: مستخدم بملف مبنى كامل يحصل على إجابة بلا أسئلة توضيحية في 3 أسئلة نموذجية؛ التقرير يُصدَّر خلال 3 ثوانٍ ويطابق القالب.</p>
+              <p class="owner">يدك: تطبيق SQL؛ مراجعة قالب التقرير مرة واحدة.</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">B3</span><div><h3>المجموعة الذهبية والتغذية الراجعة وإصدارات الكود — جلستان + وقت مهندس</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>الجلسة 10</h4><ul>
+              <li>توليد 200 سؤال مرشح من سجل الأسئلة وفئات البنشمارك؛ واجهة مراجعة بسيطة للمهندس (إجابة صحيحة، الأقسام الواجب ذكرها، درجة الصعوبة) على دفعات 25.</li>
+              <li>في المنتج: إعجاب/عدم إعجاب + «الاستشهاد خاطئ» ← جدول <code>answer_feedback</code> (RLS) ← طابور مراجعة في الأدمن ← تصدير للمجموعة.</li></ul></div>
+            <div class="item"><h4>الجلسة 11</h4><ul>
+              <li>إصدارات المتن: <code>code_editions</code> ووسم كل وثيقة بالإصدار وتاريخ السريان؛ مسار إدخال «تعميم» بمهارة الإدخال؛ الإجابة تذكر الإصدار المنطبق.</li>
+              <li>أمر <code>npm run bench:gate</code> يُشغّل المجموعة الذهبية المصغّرة قبل كل نشر (يدوياً حتى A3).</li></ul>
+              <p class="accept">القبول: 200 سؤال بتحقق مهندس واتفاق ≥ 90% بين مقيّمَين على عينة 40؛ التغذية الراجعة تصل الطابور خلال ثوانٍ.</p>
+              <p class="owner">يدك: 4-6 ساعات تحقق مهندس موزعة على أسبوعين؛ تزويد التعاميم المتاحة رسمياً.</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">C2</span><div><h3>واجهة الأدلة أولاً — تُنفَّذ داخل الجلسة 11</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li>شارات التحقق على الرقائق (من حدث B1)، كتلة «افتراضات وحدود» (يطلبها التلقين كقسم ختامي مهيكل)، لوحة المصدر جنباً إلى جنب افتراضياً على سطح المكتب للنمطين الثقيلين، تنبيه «ما تغيّر في 2024» من B3.</li>
+              <li>تطبيق ويب تقدّمي للقراءة بلا اتصال للإجابات المحفوظة.</li></ul>
+              <p class="accept">القبول: لقطات شاشة للأنماط الثلاثة على سطح المكتب والجوال؛ فحص تباين وإمكانية وصول.</p></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- P4 -->
+      <section class="section" id="p4">
+        <div class="section-head"><span class="num">P4 · الجلسات 12-16</span><h2>التحصين قبل النمو</h2></div>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">A3</span><div><h3>بيئة تجريبية وبوابة CI — جلستان</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li>مشروع Supabase تجريبي (نسخة مخطط عبر SQL الموثق، متن مصغّر)، ونشر معاينة Vercel للفروع مربوط به.</li>
+              <li>GitHub Actions: tsc/vitest/deno/build على كل دفع؛ على الفرع الرئيسي للإصدار: المسبار ثلاثي الأنماط + بوابة الاستشهاد المصغّرة على التجريبي، ثم نشر إنتاجي يدوي بموافقة.</li>
+              <li>دفع تلقائي ليلي؛ تمرين استعادة PITR موثّق (فصلي).</li></ul>
+              <p class="accept">القبول: تغيير يكسر اختباراً يُمنع من النشر آلياً؛ استعادة نقطة زمنية على التجريبي تنجح وتُوثَّق.</p>
+              <p class="owner">يدك: إنشاء مشروع Supabase التجريبي (تكلفة صغيرة) وأسرار GitHub Actions.</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">A2</span><div><h3>قاطع الدائرة والتدهور الرشيق — جلستان</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li><code>geminiResilience.ts</code>: حالة قاطع لكل نموذج (يفتح بعد 3 إخفاقات/60s، نصف مفتوح كل دقيقة) خلف <code>PROVIDER_BREAKER_ENABLED</code>، وحالته في <code>perf_events</code>.</li>
+              <li>أوضاع تدهور معلنة: مسار لفظي فقط، نموذج أسرع، إجابة محفوظة مُتحقق منها — كل واحد بلافتة صادقة في الواجهة.</li>
+              <li>مسار قدرة ثانٍ لنفس نماذج Gemini عبر Vertex AI (مشروع وحصة منفصلان) — يبدأ بعد إعدادك.</li></ul>
+              <p class="accept">القبول: محاكاة انقطاع نموذج على التجريبي — المستخدم يحصل على إجابة متدهورة معلنة خلال ≤ 8s بدل خطأ؛ لا إجابة فارغة.</p>
+              <p class="owner">يدك: تفعيل Vertex AI وحساب خدمة (خطوات جاهزة)؛ قرار مزوّد الملاذ الأخير.</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">D3</span><div><h3>الاسترجاع داخل القاعدة وقياس المستخدم الحقيقي — جلستان</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المهام</h4><ul>
+              <li>إحالة مسار الكلمات كلياً إلى قناة FTS من B1 وحذف تنزيل الملفات من التخزين؛ ضبط <code>ef_search</code> لفهرس HNSW بقياس استدعاء/زمن على المتن الحالي.</li>
+              <li>العميل يرسل أزمنته (الترويسات، أول إشارة، أول حرف، الاكتمال + X-Timing) إلى <code>perf_events</code> عبر دالة خفيفة؛ لوحة p50/p95 لكل نمط/جهاز/منطقة في <code>/admin/health</code>.</li></ul>
+              <p class="accept">القبول: استرجاع النمط الثقيل ≤ 500ms (p95)؛ لوحة المستخدم الحقيقي تعرض بيانات أسبوع.</p>
+              <p class="owner">يدك: تطبيق SQL الفهارس.</p></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- P5 -->
+      <section class="section" id="p5">
+        <div class="section-head"><span class="num">P5 · الجلسات 17-30+</span><h2>الرهانان الاستراتيجيان</h2><p>يبدآن حين يكون ما قبلهما راسخاً؛ كل واحد مرحلي ببوابة بين مراحله وقرار استمرار منك.</p></div>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">B2</span><div><h3>محرك القواعد التنفيذي — 4-6 جلسات على مراحل</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المراحل</h4><ul>
+              <li><b>ب2-1 (جلسة):</b> مخطط القاعدة (RASE: اشتراط/انطباق/اختيار/استثناء + وحدات + منشأ الصفحة) واختيار أكثر 30 اشتراطاً تكراراً من سجل الأسئلة.</li>
+              <li><b>ب2-2 (جلستان + تحقق مهندس):</b> صياغة القواعد الثلاثين من فصول 9 و10 و6/7 مع اختبار وحدة لكل قاعدة بأمثلة من جداول الكود نفسها.</li>
+              <li><b>ب2-3 (جلسة):</b> استخراج المعطيات المهيكل من الحوار وملف المبنى؛ محرك تقييم حتمي في وحدة TypeScript مشتركة.</li>
+              <li><b>ب2-4 (جلسة):</b> دمج في الإجابة خلف <code>RULE_ENGINE_ENABLED</code>: القاعدة، المعطيات، الحساب، الاستثناءات، الاستشهاد؛ ثم الحاسبات.</li></ul>
+              <p class="accept">القبول: 30 قاعدة تجتاز اختباراتها 100%؛ على أسئلة رقمية في البنشمارك، صفر خطأ رقمي؛ مهندس يعتمد كل قاعدة بتوقيعه.</p>
+              <p class="owner">يدك: اعتماد القواعد (ساعتان لكل عشر قواعد).</p></div>
+          </div>
+        </article>
+        <article class="phase">
+          <div class="phase-head"><span class="clause">C3</span><div><h3>ذكاء المخططات — 6-10 جلسات على مراحل</h3></div></div>
+          <div class="items">
+            <div class="item"><h4>المراحل</h4><ul>
+              <li><b>ج3-1 (جلستان):</b> قرار البنية: خدمة معالجة صغيرة (Python: ezdxf لـDXF، IfcOpenShell لـIFC، استخراج PDF) خارج دوال Edge — إضافة لا استبدال؛ تجربة على مخططاتك المحلية فقط (لا رفع).</li>
+              <li><b>ج3-2 (جلستان):</b> استخراج الغرف/الأبواب/المخارج/الأبعاد بواجهة تأكيد بشري في المتصفح.</li>
+              <li><b>ج3-3 (جلستان):</b> رسم بياني للمخارج: أقصر مسار، مسافة الانتقال، المسار المشترك، عرض الأبواب مقابل حمل الإشغال — يُحكم بمحرك B2 ويُعرض كخريطة حرارية فوق المخطط.</li>
+              <li><b>ج3-4 (جلستان):</b> الربط بتقرير C1 وتجربة مع مستخدمين مختارين.</li></ul>
+              <p class="accept">القبول: على 3 مخططات حقيقية لديك، المسافات المحسوبة ضمن ±5% من القياس اليدوي؛ زمن المعالجة ≤ 60s للمخطط.</p>
+              <p class="owner">يدك: استضافة الخدمة (خيار جاهز بتكلفة)، اختيار المخططات التجريبية، قرار البدء بعد B2.</p></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="section" id="owner">
+        <div class="section-head"><span class="num">02</span><h2>تقويم يدك: ما تحتاجه المنصة منك ومتى</h2><p>كل ما عدا هذا أنفذه بنفسي عبر جلساتك المحفوظة.</p></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>متى</th><th>ماذا</th><th>الشكل</th><th>الوقت</th></tr></thead>
+            <tbody>
+              <tr><td>P0</td><td>كرون الإبقاء الدافئ، قرارات الحملة/الدمج/المفاتيح، تطبيق SQL <code>perf_events</code></td><td>لصق أوامر + كلمات قرار</td><td>15 دقيقة</td></tr>
+              <tr><td>P1</td><td>SQL جداول A1، جدولة كرون المسبار، بريد الإنذار، SQL الفهارس والدالة الهجينة، تفعيل علمين بعد البوابة</td><td>لصق أوامر</td><td>20 دقيقة</td></tr>
+              <tr><td>P2</td><td>اعتماد مستويات التفكير من جدول الجودة/الزمن</td><td>قرار</td><td>15 دقيقة</td></tr>
+              <tr><td>P3</td><td>SQL ملف المبنى والتغذية الراجعة؛ مراجعة قالب التقرير؛ تحقق مهندس لـ200 سؤال؛ التعاميم المتاحة</td><td>لصق + عمل هندسي</td><td>4-6 ساعات على أسبوعين</td></tr>
+              <tr><td>P4</td><td>مشروع Supabase تجريبي، أسرار GitHub Actions، تفعيل Vertex AI، قرار مزوّد الملاذ الأخير</td><td>إعداد حسابات + قرار</td><td>ساعة</td></tr>
+              <tr><td>P5</td><td>اعتماد القواعد الثلاثين؛ استضافة خدمة المخططات؛ اختيار المخططات التجريبية</td><td>عمل هندسي + قرار</td><td>6-8 ساعات</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="risks">
+        <div class="section-head"><span class="num">03</span><h2>المخاطر وكيف نحتويها</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الخطر</th><th>الاحتمال</th><th>الاحتواء</th></tr></thead>
+            <tbody>
+              <tr><td>جودة البحث اللفظي العربي (لا مُجذّر عربي في Postgres)</td><td><span class="chip mid">متوسط</span></td><td>تطبيع مخصص + trigram + قياس بالبوابة قبل التفعيل؛ المتجهات تبقى القناة الأساسية.</td></tr>
+              <tr><td>تغيّر واجهة كاش السياق أو حدود التوكنات بين النماذج</td><td><span class="chip mid">متوسط</span></td><td>تراجع صامت للا-كاش؛ اكتشاف الشكل المقبول لكل نموذج كما فعلنا بالتفكير.</td></tr>
+              <tr><td>وقت المهندس للمجموعة الذهبية والقواعد</td><td><span class="chip big">عالٍ</span></td><td>دفعات صغيرة (25 سؤالاً/10 قواعد)، واجهة مراجعة تختصر الوقت، وأولوية للفئات الأكثر استخداماً.</td></tr>
+              <tr><td>حدود CPU/الزمن في دوال Edge للمُحقّق</td><td><span class="chip small">منخفض</span></td><td>مطابقة ضبابية خفيفة بلا نموذج؛ قياس الزمن المضاف في X-Timing.</td></tr>
+              <tr><td>خصوصية الكاش بين المستخدمين</td><td><span class="chip mid">متوسط</span></td><td>مفاتيح لا تحوي معطيات شخصية؛ كاش الإجابات مؤجَّل ومقيَّد بما وُلّد بلا ذاكرة؛ اختبار عبور.</td></tr>
+              <tr><td>تكلفة البيئة التجريبية والخدمة الخارجية</td><td><span class="chip small">منخفض</span></td><td>مشروع تجريبي بأصغر خطة؛ خدمة المخططات لا تبدأ قبل قرار B2 ونتائجه.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="fit">
+        <div class="section-head"><span class="num">04</span><h2>الالتحام بخطة التطور المعتمدة (P1-P5 والمحور F)</h2></div>
+        <div class="prose">
+          <ul>
+            <li><b>رفع SBC 401 للبوابة</b> يركب على القناة اللفظية في B1 (ترقيم IEC الهجين يُلتقط لفظياً) — لا عمل يدوي إضافي على الكلمات المفتاحية.</li>
+            <li><b>إدخال «دليل واشتراطات البناء — مدن»</b> يجري بمهارة الإدخال بالتوازي في P2-P4 كمسار محتوى، ويستفيد فوراً من المُحقّق والهجين.</li>
+            <li><b>المحور F (المستشار المخضرم):</b> F1 (الاستثناءات والتعاميم) = إصدارات المتن في B3؛ F2 (أمثلة محلولة مجهّلة) تُغذّي المجموعة الذهبية وتقارير C1؛ F5 («أوفر المسارات المحققة للكود») يقوم على محرك B2 حصراً.</li>
+            <li><b>خط النفقات:</b> D2 يخفض تكلفة الإجابة الثقيلة إلى النصف قبل أن يرفعها المُحقّق والتقارير — الصافي انخفاض.</li>
+          </ul>
+        </div>
+        <p class="foot">هذه الخطة حية: تُراجَع عند نهاية كل مرحلة بأرقام البوابة، ويُعاد ضبط ما بعد P4 وفق ما قِيس. تعريف الاكتمال لا يتغير: مدمج، منشور، مُتحقق بالأنماط الثلاثة، مقاس، موثّق، مدفوع.</p>
+      </section>
+    </main>
+  </div>
+</div>
