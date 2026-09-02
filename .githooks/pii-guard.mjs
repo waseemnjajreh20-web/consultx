@@ -70,6 +70,8 @@ export function isAllowlistedEmail(rawEmail) {
 
   if (ALLOWLIST_ADDRESSES.includes(email)) return true;
   if (ALLOWLIST_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`))) return true;
+  // RFC 2606 / RFC 6761 reserved TLDs can never belong to a real person.
+  if (/\.(invalid|test|example|localhost)$/.test(domain)) return true;
   if (OWNER_PREFIXES.some((p) => email.startsWith(p))) return true;
   if (CONSULTX_SYSTEM_LOCALPARTS.includes(local) && CONSULTX_DOMAINS.includes(domain)) return true;
   return false;
