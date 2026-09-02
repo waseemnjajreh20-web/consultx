@@ -102,9 +102,10 @@ async function getProbeState(db: Db, key: string): Promise<unknown | null> {
   return (data as { value: unknown }).value;
 }
 
-async function setProbeState(db: Db, key: string, value: unknown): Promise<void> {
+async function setProbeState(db: Db, key: string, value: unknown): Promise<string | null> {
   const { error } = await db.from("probe_state").upsert({ key, value, updated_at: new Date().toISOString() });
   if (error) console.error(`[synthetic-probe] probe_state upsert failed for ${key}:`, error.message);
+  return error ? error.message : null;
 }
 
 async function sendResendEmail(apiKey: string, from: string, to: string, subject: string, html: string): Promise<void> {
@@ -303,6 +304,16 @@ Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = getSecretKey();
   const db = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  // Diagnostic (never the key itself): which key shape resolved, and — for a
+  // legacy JWT — the role claim it carries. Answers "why did RLS apply?".
+  const keyKind = serviceKey.startsWith("sb_secret_") ? "new_secret_key"
+    : serviceKey.startsWith("sb_publishable_") ? "new_publishable_key"
+    : serviceKey.split(".").length === 3 ? "legacy_jwt" : "unknown";
+  let keyRole: string | null = null;
+  if (keyKind === "legacy_jwt") {
+    try { keyRole = String(JSON.parse(atob(serviceKey.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? null); } catch { keyRole = "unparsable"; }
+  }
+  const keyDiag = { key_kind: keyKind, key_role: keyRole, has_secret_keys_env: !!Deno.env.get("SUPABASE_SECRET_KEYS"), has_legacy_env: !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") };
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
@@ -360,7 +371,11 @@ Deno.serve(async (req) => {
       ? (rotationState as { index: number }).index
       : null;
   const questionIndex = nextQuestionIndex(previousIndex);
-  await setProbeState(db, "rotation:question_index", { index: questionIndex });
+  // Write failures are surfaced in the response body as well as the logs —
+  // the response is what the cron's net._http_response log keeps.
+  const writeErrors: string[] = [];
+  const rotErr = await setProbeState(db, "rotation:question_index", { index: questionIndex });
+  if (rotErr) writeErrors.push(`probe_state: ${rotErr}`);
   const question = PROBE_QUESTIONS[questionIndex];
 
   // ── 3. run all 3 modes (best-effort per mode — one failing mode must not
@@ -381,7 +396,10 @@ Deno.serve(async (req) => {
         fetchErrorMessage: outcome.fetchErrorMessage,
       });
       const { error: insErr } = await db.from("perf_events").insert(row);
-      if (insErr) console.error(`[synthetic-probe] perf_events insert failed for ${mode}:`, insErr.message);
+      if (insErr) {
+        console.error(`[synthetic-probe] perf_events insert failed for ${mode}:`, insErr.message);
+        writeErrors.push(`perf_events(${mode}): ${insErr.message}`);
+      }
       results.push({ mode, ok: row.ok });
     } catch (e) {
       console.error(`[synthetic-probe] probe run threw for ${mode}:`, e instanceof Error ? e.message : String(e));
@@ -415,5 +433,12 @@ Deno.serve(async (req) => {
     alert,
   );
 
-  return json({ ok: true, question_index: questionIndex, results, cron_status: cronStatus });
+  return json({
+    ok: true,
+    question_index: questionIndex,
+    results,
+    cron_status: cronStatus,
+    write_errors: writeErrors.map((e) => e.slice(0, 200)),
+    key_diag: keyDiag,
+  });
 });

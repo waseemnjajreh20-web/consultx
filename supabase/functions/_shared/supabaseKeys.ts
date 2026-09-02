@@ -31,15 +31,18 @@
 // The owner's flip of the dashboard switch becomes a non-event rather than a
 // deploy that must land in lockstep with it.
 //
-// Resolution order for the secret key (the publishable key is symmetrical,
-// reading SUPABASE_PUBLISHABLE_KEYS / SUPABASE_ANON_KEY instead):
-//   1. SUPABASE_SECRET_KEYS, if present and non-empty, is JSON.parse'd. The
-//      "default" property is used if present; else, if the object has
-//      EXACTLY ONE property, that one is used; else this throws, naming the
-//      available key names so the operator can see what to configure.
-//   2. Otherwise the legacy plain SUPABASE_SERVICE_ROLE_KEY is used.
+// Resolution order for the SECRET key (changed 2026-09-03 — see the measured
+// RLS finding inside resolveSecretKey):
+//   1. The legacy plain SUPABASE_SERVICE_ROLE_KEY, while it is present — it is
+//      the key proven to carry service-role privileges (RLS bypass) today.
+//   2. Otherwise SUPABASE_SECRET_KEYS is JSON.parse'd. The "default" property
+//      is used if present; else, if the object has EXACTLY ONE property, that
+//      one is used; else this throws, naming the available key names.
 //   3. If neither yields a non-empty string: getSecretKey() throws,
 //      getSecretKeyOrNull() returns null.
+// The PUBLISHABLE key keeps the original order (SUPABASE_PUBLISHABLE_KEYS
+// first, then SUPABASE_ANON_KEY): both resolve to the anon role, so the RLS
+// finding does not apply to it.
 //
 // MALFORMED JSON in SUPABASE_SECRET_KEYS / SUPABASE_PUBLISHABLE_KEYS (or a
 // selected value that is not a non-empty string) ALWAYS THROWS — including
@@ -113,12 +116,23 @@ function selectFromKeyedJson(raw: string, varName: string): string {
  * JSON, which throws unconditionally (see file header).
  */
 function resolveSecretKey(): string | null {
+  // MEASURED 2026-09-03: the platform started injecting SUPABASE_SECRET_KEYS on
+  // 2026-09-01 11:03Z, and its "default" sb_secret_ key does NOT bypass RLS —
+  // every direct table write through the admin client (user_memory upserts,
+  // perf_events inserts) failed with "new row violates row-level security
+  // policy" from that minute on, silently, while SECURITY DEFINER RPCs kept
+  // working. So while the legacy service-role JWT is still enabled it is the
+  // key that actually carries service-role privileges, and it wins. The JSON
+  // form is used only when the legacy variable is absent (i.e. after the owner
+  // disables legacy keys) — and that cutover must first prove, with a direct
+  // insert into an RLS-enabled table, that the new key bypasses RLS.
+  const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (legacy && legacy.length > 0) return legacy;
   const keyed = Deno.env.get("SUPABASE_SECRET_KEYS");
   if (keyed !== undefined && keyed !== "") {
     return selectFromKeyedJson(keyed, "SUPABASE_SECRET_KEYS");
   }
-  const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  return legacy && legacy.length > 0 ? legacy : null;
+  return null;
 }
 
 /**
