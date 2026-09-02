@@ -78,6 +78,11 @@ import {
   sanitizeManifestEntries,
   type PageManifestEntry,
 } from "./visionManifest.ts";
+import {
+  loadKnownSections,
+  parseRetrievedChunks,
+  verifyCitations,
+} from "./citationVerifier.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1233,6 +1238,17 @@ export function codeFromFileName(fileName: string | null | undefined): string {
 
 function bilingualEmbeddingEnabled(): boolean {
   return (Deno.env.get("ADVISORY_BILINGUAL_EMBEDDING_ENABLED") ?? "").trim() === "1";
+}
+
+// ── Runtime citation verifier (B1a, ./citationVerifier.ts) ──────────────────
+// OFF by default. With the flag off the wire output is byte-identical to what
+// it was before this feature existed: transformStream still emits [DONE] on
+// finishReason STOP and in flush, and pipeTo still closes the stream. With it
+// on, transformStream stops emitting [DONE] and the stream tail moves to the
+// post-pipe block, which emits ONE {type:"citations"} event and then the single
+// [DONE]. Ordering is load-bearing — the client stops reading at [DONE].
+function citationVerifierEnabled(): boolean {
+  return (Deno.env.get("CITATION_VERIFIER_ENABLED") ?? "").trim() === "1";
 }
 
 // ── Per-user durable memory (2026-09-01, flag USER_MEMORY_ENABLED) ──────────
@@ -3685,6 +3701,12 @@ serve(async (req) => {
     // as it always did. There is deliberately still only ONE place that emits
     // the document block, so its wrapper text cannot drift between branches.
     let clampedDocBlocks: string[] | null = null;
+    // B1a: the retrieved SBC text this request actually put in front of the
+    // model, kept at pipeline scope so the post-stream citation verifier can
+    // re-derive the per-chunk evidence from it. Only populated when the
+    // verifier flag is on; primary mode retrieves nothing and leaves it "".
+    const citationVerifierOn = citationVerifierEnabled();
+    let retrievedContextForVerifier = "";
 
     if (resolvedImages.length > 0) {
       // ===== VISION PIPELINE =====
@@ -3730,6 +3752,7 @@ serve(async (req) => {
       );
 
       fullSystemPrompt = systemPrompt + extraContext;
+      if (citationVerifierOn) retrievedContextForVerifier = extraContext;
       usedFiles = visionFiles;
       usedSourceMeta = visionMeta;
       retrievalEngine = visionEngine;
@@ -4176,6 +4199,10 @@ serve(async (req) => {
         );
       }
       clampedDocBlocks = clamped.docBlocks;
+      // B1a: verify against the CLAMPED text — the evidence the model actually
+      // saw. Anything the budget dropped was never in front of it, so a token
+      // resting on dropped text is correctly reported as unverified.
+      if (citationVerifierOn) retrievedContextForVerifier = clamped.sbcContext || "";
 
       // Structured table context is injected FIRST for visibility. It is NOT the
       // higher-trust source: its own block instructs the model that retrieved SBC
@@ -4379,6 +4406,11 @@ serve(async (req) => {
     // lineBuffer carries incomplete SSE lines across Deno chunk boundaries so that
     // a data: {...} line split across two chunks is fully assembled before JSON.parse.
     let lineBuffer = "";
+    // B1a: with the verifier on, the answer text is accumulated here so it can
+    // be checked against the retrieved evidence once the model has finished,
+    // and [DONE] is NOT emitted from either site below — the post-pipe block
+    // owns the tail so the citations event lands before it.
+    let answerTextForVerifier = "";
     const transformStream = new TransformStream({
       transform(chunk, controller) {
         lineBuffer += new TextDecoder().decode(chunk);
@@ -4393,11 +4425,12 @@ serve(async (req) => {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
             if (content) {
+              if (citationVerifierOn) answerTextForVerifier += content;
               const openAIChunk = JSON.stringify({ choices: [{ delta: { content } }] });
               controller.enqueue(new TextEncoder().encode(`data: ${openAIChunk}\n\n`));
             }
             const finishReason = parsed.candidates?.[0]?.finishReason;
-            if (finishReason === "STOP") {
+            if (finishReason === "STOP" && !citationVerifierOn) {
               controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
             }
           } catch { /* ignore parse errors */ }
@@ -4413,6 +4446,7 @@ serve(async (req) => {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
               if (content) {
+                if (citationVerifierOn) answerTextForVerifier += content;
                 controller.enqueue(new TextEncoder().encode(
                   `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`
                 ));
@@ -4420,7 +4454,9 @@ serve(async (req) => {
             } catch { /* ignore */ }
           }
         }
-        controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        if (!citationVerifierOn) {
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        }
       },
     });
 
@@ -4443,9 +4479,63 @@ serve(async (req) => {
     // Hand the writable over to the Gemini pipe: release our writer lock and
     // let pipeTo close the stream when the model finishes ([DONE] is emitted
     // by transformStream's flush).
+    //
+    // With CITATION_VERIFIER_ENABLED on, the tail moves below: pipeTo keeps the
+    // writable open, the verdicts go out as one event, and only then [DONE].
+    // Known trade-off of the flag being ON: the client's end-of-answer signal
+    // now waits for the upstream stream to END rather than for its STOP
+    // finishReason. The flush path already depended on the stream ending, so a
+    // provider that sent STOP and then held the connection open would stall the
+    // tail — one more reason this stays default-OFF until measured live.
     earlyWriterReleased = true;
     earlyWriter.releaseLock();
-    await response.body!.pipeThrough(transformStream).pipeTo(earlyTs.writable);
+
+    if (!citationVerifierOn) {
+      await response.body!.pipeThrough(transformStream).pipeTo(earlyTs.writable);
+    } else {
+      // ── B1a: verified stream tail ────────────────────────────────────────
+      // The evidence chunks and the section index are prepared WHILE the model
+      // streams, so the only work left after the last delta is the comparison
+      // itself. Both are fail-open: an empty chunk list or an empty index makes
+      // the verifier stricter, never looser, and never blocks the stream.
+      const verifierChunks = (() => {
+        try { return parseRetrievedChunks(retrievedContextForVerifier); } catch { return []; }
+      })();
+      const knownSectionsPromise = verifierChunks.length > 0
+        ? loadKnownSections(adminClient, verifierChunks.map((c) => c.code)).catch(
+            () => new Map<string, Set<string>>(),
+          )
+        : Promise.resolve(new Map<string, Set<string>>());
+
+      // preventClose keeps the writable open after Gemini finishes so the
+      // citations event can still be written; without it the stream would
+      // already be closed and the event silently dropped.
+      await response.body!.pipeThrough(transformStream).pipeTo(earlyTs.writable, { preventClose: true });
+
+      let tailWriter: WritableStreamDefaultWriter<Uint8Array> | null = null;
+      try { tailWriter = earlyTs.writable.getWriter(); } catch { /* stream already unusable */ }
+      if (tailWriter) {
+        try {
+          const knownSections = await knownSectionsPromise;
+          const verdict = verifyCitations(answerTextForVerifier, verifierChunks, { knownSections });
+          console.log(
+            `[Citations] mode=${mode} verified=${verdict.summary.verified} ` +
+            `paraphrased=${verdict.summary.paraphrased} unverified=${verdict.summary.unverified}`,
+          );
+          await tailWriter.write(sseEncoder.encode(
+            `data: ${JSON.stringify({ type: "citations", items: verdict.items, summary: verdict.summary })}\n\n`,
+          ));
+        } catch (verifyErr) {
+          // Verification is advisory. It must never cost the user an answer:
+          // skip the event and fall through to [DONE] exactly as if the flag
+          // were off.
+          const vmsg = verifyErr instanceof Error ? verifyErr.message : String(verifyErr);
+          console.warn(`[Citations] verification skipped (${vmsg.slice(0, 200)})`);
+        }
+        try { await tailWriter.write(sseEncoder.encode("data: [DONE]\n\n")); } catch { /* client gone */ }
+        try { await tailWriter.close(); } catch { /* already closed */ }
+      }
+    }
     } catch (pipelineError) {
       // Post-headers failure: the HTTP status is already committed, so roll
       // back any un-cleared quota charge and surface the error IN-STREAM.

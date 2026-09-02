@@ -13,6 +13,60 @@ import type { SbcFamily } from "@/utils/citationRouting";
 // ─────────────────────────────────────────────────────────────────────────────
 type ChatMode = "primary" | "standard" | "analysis";
 
+// ── Runtime citation verification (B1a) ──────────────────────────────────────
+// The edge function checks every citation token against the evidence it
+// actually retrieved and streams the verdicts as a {type:"citations"} event.
+// The shape below mirrors CitationVerdict in
+// supabase/functions/fire-safety-chat/citationVerifier.ts; it is declared here
+// rather than imported because the Vite tree does not compile the Deno tree.
+// Messages that carry no verdicts (all history, and every answer produced with
+// CITATION_VERIFIER_ENABLED off) render exactly as they did before.
+export type CitationVerificationStatus = "verified" | "paraphrased" | "unverified";
+
+export interface CitationStatusItem {
+  token: string;
+  code: string;
+  section: string | null;
+  page?: number | null;
+  status: CitationVerificationStatus;
+  score?: number;
+  reasons?: string[];
+}
+
+/** Verdicts keyed by both the raw token text and a code+section fallback key. */
+export type CitationStatusIndex = ReadonlyMap<string, CitationStatusItem>;
+
+function citationTokenKey(raw: string): string {
+  return raw.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+/**
+ * Fallback key so a verdict still finds its chip when the rendered token text
+ * differs from the streamed one by spacing or dash style.
+ */
+function citationStructuralKey(code: string, section: string | null, page?: number | null): string | null {
+  const c = String(code ?? "").toUpperCase().replace(/\s|_/g, "-");
+  if (!c) return null;
+  if (section) return `${c}::${section.trim()}`.toLowerCase();
+  if (page != null) return `${c}::pp.${page}`.toLowerCase();
+  return null;
+}
+
+/** Build the lookup a message's chips are badged from. Undefined when empty. */
+export function buildCitationStatusIndex(
+  items?: readonly CitationStatusItem[] | null,
+): CitationStatusIndex | undefined {
+  if (!items || items.length === 0) return undefined;
+  const map = new Map<string, CitationStatusItem>();
+  for (const it of items) {
+    if (!it || typeof it.token !== "string" || !it.status) continue;
+    map.set(citationTokenKey(it.token), it);
+    const structural = citationStructuralKey(it.code, it.section ?? null, it.page);
+    if (structural && !map.has(structural)) map.set(structural, it);
+  }
+  return map.size > 0 ? map : undefined;
+}
+
 interface ChatMarkdownRendererProps {
   content: string;
   mode?: ChatMode;
@@ -24,6 +78,8 @@ interface ChatMarkdownRendererProps {
    * hard-stop and never open a wrong-family PDF.
    */
   availableFamilies?: ReadonlySet<SbcFamily>;
+  /** Verification verdicts for this message's citation tokens, if any. */
+  citationStatuses?: readonly CitationStatusItem[];
 }
 
 interface ParsedSection {
@@ -297,6 +353,72 @@ function getSrc(sec: string): "sbc201" | "sbc801" {
   return (n >= 900 && n < 1000) ? "sbc801" : "sbc201";
 }
 
+// ── Citation verification badge (B1a) ────────────────────────────────────────
+// Subtle, sits inside the chip so it travels with it, and uses logical
+// (margin-inline-start) spacing so it lands on the correct side in RTL.
+const CITATION_BADGE_META: Record<
+  CitationVerificationStatus,
+  { glyph: string; label: string; color: string; bg: string; border: string }
+> = {
+  verified:    { glyph: "✓", label: "مُتحقق",      color: "#10B981", bg: "rgba(16,185,129,0.12)", border: "rgba(16,185,129,0.30)" },
+  paraphrased: { glyph: "≈", label: "معاد صياغته", color: "#F59E0B", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.30)" },
+  unverified:  { glyph: "!", label: "غير مُتحقق",  color: "#EF4444", bg: "rgba(239,68,68,0.12)",  border: "rgba(239,68,68,0.30)" },
+};
+
+const CITATION_REASON_AR: Record<string, string> = {
+  quote_verbatim: "الاقتباس مطابق للنص المسترجع",
+  quote_paraphrased: "الاقتباس قريب من النص المسترجع وليس مطابقاً له",
+  quote_not_in_evidence: "الاقتباس غير موجود في النص المسترجع",
+  quote_too_short: "الاقتباس أقصر من أن يُقارن",
+  no_quote_found: "لا يوجد اقتباس حرفي مرفق بهذا الاستشهاد",
+  no_evidence_for_code: "لم يُسترجع أي مقطع من هذا الكود",
+  section_missing_from_evidence: "رقم القسم غير موجود في المصادر المسترجعة",
+  section_from_known_index: "رقم القسم مؤكد من فهرس أقسام الكود",
+  page_only_token: "استشهاد بنطاق صفحات بلا رقم قسم",
+};
+
+function citationReasonAr(reason: string): string {
+  const known = CITATION_REASON_AR[reason];
+  if (known) return known;
+  if (reason.startsWith("code_family_mismatch:")) {
+    return `النص المقتبس يعود إلى ${reason.slice("code_family_mismatch:".length)} لا إلى الكود المذكور`;
+  }
+  return reason;
+}
+
+function citationBadgeHtml(item: CitationStatusItem): string {
+  const meta = CITATION_BADGE_META[item.status];
+  if (!meta) return "";
+  const reasons = (item.reasons ?? []).map(citationReasonAr).filter(Boolean);
+  const title = escapeHtml([meta.label, ...reasons].join(" — "));
+  return (
+    `<span class="cx-cite-badge" data-cite-status="${item.status}"` +
+    ` aria-label="${escapeHtml(meta.label)}" title="${title}"` +
+    ` style="display:inline-block;margin-inline-start:4px;padding:0 4px;border-radius:3px;` +
+    `font-size:0.85em;font-weight:700;line-height:1.4;color:${meta.color};` +
+    `background:${meta.bg};border:1px solid ${meta.border}">${meta.glyph}</span>`
+  );
+}
+
+/** Verdict for a token, matched by raw text first and code+section second. */
+function lookupCitationStatus(
+  raw: string,
+  parsed: ReturnType<typeof parseCitationToken>,
+  statuses?: CitationStatusIndex,
+): CitationStatusItem | undefined {
+  if (!statuses || !parsed) return undefined;
+  const direct = statuses.get(citationTokenKey(raw));
+  if (direct) return direct;
+  const family =
+    parsed.src === "sbc201" ? "SBC-201" :
+    parsed.src === "sbc801" ? "SBC-801" :
+    parsed.src === "sbc501" ? "SBC-501" :
+    parsed.src === "sbc401" ? "SBC-401" : null;
+  if (!family) return undefined;
+  const key = citationStructuralKey(family, parsed.sectionRef ?? parsed.tableRef, parsed.pageStart);
+  return key ? statuses.get(key) : undefined;
+}
+
 /**
  * Render a structured Advisory citation token like:
  *   [SBC 201 | Chapter 3 | Section 309.1 | conf:high]
@@ -310,6 +432,7 @@ function getSrc(sec: string): "sbc201" | "sbc801" {
 function renderCitationToken(
   match: string,
   availableFamilies?: ReadonlySet<SbcFamily>,
+  citationStatuses?: CitationStatusIndex,
 ): string {
   const parsed = parseCitationToken(match);
   if (!parsed) return match;
@@ -337,17 +460,24 @@ function renderCitationToken(
     parsed.src === "sbc401" ? "SBC-401" : null;
   const isUnsupported = !!(family && availableFamilies && !availableFamilies.has(family));
 
+  // B1a: the runtime verdict for this exact token, when the answer carried one.
+  const verdict = lookupCitationStatus(match, parsed, citationStatuses);
+  const badge = verdict ? citationBadgeHtml(verdict) : "";
+
   const sec = parsed.sectionRef ?? parsed.tableRef ?? "";
   const reftype = parsed.tableRef ? "table" : "section";
   const warn = parsed.isAmbiguous || isUnsupported;
   const color = warn ? "#FFC107" : "#0094B3";
   const bg = warn ? "rgba(255,193,7,0.10)" : "rgba(0,148,179,0.08)";
   const border = warn ? "rgba(255,193,7,0.25)" : "rgba(0,148,179,0.20)";
-  const titleAr = isUnsupported
+  const baseTitleAr = isUnsupported
     ? "المرجع مذكور في الإجابة لكنه غير موجود ضمن المصادر المسترجعة — Citation mentioned in answer but not present in retrieved sources"
     : (parsed.isAmbiguous
         ? "يحتاج تحقق من المصدر — انقر لفتح لوحة المصادر"
         : (sec ? `انقر لفتح ${reftype === "table" ? "الجدول" : "القسم"} ${sec}` : "انقر لفتح المصدر"));
+  const titleAr = verdict
+    ? `${escapeHtml(CITATION_BADGE_META[verdict.status]?.label ?? "")} — ${baseTitleAr}`
+    : baseTitleAr;
 
   return (
     `<span class="cx-src cx-src-token${isUnsupported ? " cx-src-unsupported" : ""}"` +
@@ -356,10 +486,11 @@ function renderCitationToken(
     ` data-reftype="${reftype}"` +
     (parsed.isAmbiguous ? ` data-ambiguous="1"` : "") +
     (isUnsupported ? ` data-unsupported="1"` : "") +
+    (verdict ? ` data-cite-status="${verdict.status}"` : "") +
     ` style="color:${color};background:${bg};border:1px solid ${border};` +
     `padding:1px 6px;border-radius:4px;font-size:0.92em;font-weight:500;cursor:pointer;` +
     `text-decoration:none"` +
-    ` title="${titleAr}">${match}</span>`
+    ` title="${titleAr}">${match}${badge}</span>`
   );
 }
 
@@ -447,6 +578,7 @@ export function applyInlineMarkdown(
   escaped: string,
   mode?: ChatMode,
   availableFamilies?: ReadonlySet<SbcFamily>,
+  citationStatuses?: CitationStatusIndex,
 ): string {
   // ── Step 0: Structured Advisory citation tokens (Step 3.1 fix) ───────────
   // Format: [SBC-XXX | ... | Section X.Y.Z | conf:high|medium|low|ambiguous | ...]
@@ -458,7 +590,7 @@ export function applyInlineMarkdown(
     /\[(?:[^\[\]\n]{0,300})\]/g,
     (m) => {
       if (/SBC[\s ‑\-]*(201|801|501|401)|community_summary|LLM_SYNTHESIS/i.test(m)) {
-        const html = renderCitationToken(m, availableFamilies);
+        const html = renderCitationToken(m, availableFamilies, citationStatuses);
         const idx = tokenPlaceholders.length;
         tokenPlaceholders.push(html);
         // Sentinel placeholder. Step 1 / Step 2 regexes don't match it.
@@ -562,6 +694,7 @@ function renderTextLine(
   index: number,
   mode?: ChatMode,
   availableFamilies?: ReadonlySet<SbcFamily>,
+  citationStatuses?: CitationStatusIndex,
 ) {
   // Lone ">" (the model sometimes emits an empty quote marker between a quote
   // and its translation) — used to render as a literal stray character.
@@ -583,7 +716,7 @@ function renderTextLine(
 
   // Blockquote
   if (line.startsWith("> ")) {
-    const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode, availableFamilies);
+    const inner = applyInlineMarkdown(escapeHtml(line.replace(/^>\s*/, "")), mode, availableFamilies, citationStatuses);
     if (mode === "analysis") {
       return (
         <blockquote key={index} className="sbc-legal-citation leading-[1.8] my-2"
@@ -609,7 +742,7 @@ function renderTextLine(
     const isChecklist = line.match(/^-\s*\[(.)]\s/);
     const checked = isChecklist?.[1] === "x" || isChecklist?.[1] === "X";
     const rawContent = line.replace(/^[-•]\s*(\[.\]\s)?/, "");
-    const inner = applyInlineMarkdown(escapeHtml(rawContent), mode, availableFamilies);
+    const inner = applyInlineMarkdown(escapeHtml(rawContent), mode, availableFamilies, citationStatuses);
 
     return (
       <li key={index} className="flex items-start gap-2.5 text-foreground leading-[1.8] mb-[10px] list-none">
@@ -629,7 +762,7 @@ function renderTextLine(
   if (line.match(/^\d+\.\s/)) {
     const numMatch = line.match(/^(\d+)\.\s(.*)$/);
     const num = numMatch?.[1] ?? "";
-    const rest = applyInlineMarkdown(escapeHtml(numMatch?.[2] ?? ""), mode, availableFamilies);
+    const rest = applyInlineMarkdown(escapeHtml(numMatch?.[2] ?? ""), mode, availableFamilies, citationStatuses);
     const numColor = getNumberColor(mode);
 
     return (
@@ -646,7 +779,7 @@ function renderTextLine(
   if (!line.trim()) return <div key={index} className="h-4" />;
 
   // Regular paragraph
-  const processed = applyInlineMarkdown(escapeHtml(line), mode, availableFamilies);
+  const processed = applyInlineMarkdown(escapeHtml(line), mode, availableFamilies, citationStatuses);
   return (
     <p key={index} className="text-foreground leading-[1.8] my-2"
       dangerouslySetInnerHTML={{ __html: processed }} />
@@ -660,29 +793,32 @@ function TextRenderer({
   content,
   mode,
   availableFamilies,
+  citationStatuses,
 }: {
   content: string;
   mode?: ChatMode;
   availableFamilies?: ReadonlySet<SbcFamily>;
+  citationStatuses?: CitationStatusIndex;
 }) {
   const lines = content.split("\n");
-  return <>{lines.map((line, i) => renderTextLine(line, i, mode, availableFamilies))}</>;
+  return <>{lines.map((line, i) => renderTextLine(line, i, mode, availableFamilies, citationStatuses))}</>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirement 2 — Table: rounded corners, zebra rows, scrollable, dark header
 // R19: added scroll-shadow affordance for mobile
 // ─────────────────────────────────────────────────────────────────────────────
-function TableRenderer({ tableData, mode, availableFamilies }: {
+function TableRenderer({ tableData, mode, availableFamilies, citationStatuses }: {
   tableData: { headers: string[]; rows: string[][] };
   mode?: ChatMode;
   availableFamilies?: ReadonlySet<SbcFamily>;
+  citationStatuses?: CitationStatusIndex;
 }) {
   // Cells used to be dropped in as PLAIN TEXT: "**مؤكد**" showed its
   // asterisks, citation tokens showed raw brackets, TeX showed dollar signs.
   // Run the same inline pipeline every paragraph gets.
   const cellHtml = (cell: string) =>
-    applyInlineMarkdown(escapeHtml(cell), mode, availableFamilies);
+    applyInlineMarkdown(escapeHtml(cell), mode, availableFamilies, citationStatuses);
   return (
     <div
       className="my-4 rounded-lg border border-border/40 shadow-sm relative"
@@ -751,13 +887,14 @@ function TableRenderer({ tableData, mode, availableFamilies }: {
 // Requirement 3 (Consultant) — Accordion Cards: professional deep-analysis UI
 // ─────────────────────────────────────────────────────────────────────────────
 function CollapsibleSection({
-  title, content, sectionKey, mode, availableFamilies,
+  title, content, sectionKey, mode, availableFamilies, citationStatuses,
 }: {
   title: string;
   content: string;
   sectionKey: string;
   mode?: ChatMode;
   availableFamilies?: ReadonlySet<SbcFamily>;
+  citationStatuses?: CitationStatusIndex;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const icon = getSectionIcon(title);
@@ -817,10 +954,10 @@ function CollapsibleSection({
         <div className={cn("px-5 py-4", isConsultant ? "bg-muted/12" : "bg-muted/8")}>
           {parsedContent.map((section, i) => {
             if (section.type === "table" && section.tableData)
-              return <TableRenderer key={i} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} />;
+              return <TableRenderer key={i} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />;
             if (section.type === "divider")
               return <hr key={i} className="my-3 border-border/30" />;
-            return <TextRenderer key={i} content={section.content} mode={mode} availableFamilies={availableFamilies} />;
+            return <TextRenderer key={i} content={section.content} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />;
           })}
         </div>
       </div>
@@ -861,10 +998,11 @@ function groupCollapsibleHeadings(sections: ParsedSection[]): GroupedSection[] {
 }
 
 function HeadingCollapsible({
-  title, level, children, mode, availableFamilies,
+  title, level, children, mode, availableFamilies, citationStatuses,
 }: {
   title: string; level: 3 | 4; children: ParsedSection[]; mode?: ChatMode;
   availableFamilies?: ReadonlySet<SbcFamily>;
+  citationStatuses?: CitationStatusIndex;
 }) {
   const accent =
     mode === "primary"  ? "rgba(0,212,255,0.06)"  :
@@ -910,10 +1048,10 @@ function HeadingCollapsible({
       <div style={{ padding: "6px 14px 12px", borderTop: `1px solid ${borderColor}` }}>
         {children.map((sec, i) => {
           if (sec.type === "table" && sec.tableData)
-            return <TableRenderer key={i} tableData={sec.tableData} mode={mode} availableFamilies={availableFamilies} />;
+            return <TableRenderer key={i} tableData={sec.tableData} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />;
           if (sec.type === "divider")
             return <hr key={i} className="my-3 border-border/30" />;
-          return <TextRenderer key={i} content={sec.content} mode={mode} availableFamilies={availableFamilies} />;
+          return <TextRenderer key={i} content={sec.content} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />;
         })}
       </div>
     </details>
@@ -923,7 +1061,14 @@ function HeadingCollapsible({
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirement 1 — Main Component: Typography, RTL, line-height 1.8
 // ─────────────────────────────────────────────────────────────────────────────
-const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdownRendererProps) => {
+const ChatMarkdownRenderer = ({
+  content, mode, availableFamilies, citationStatuses: citationStatusItems,
+}: ChatMarkdownRendererProps) => {
+  // Verdict lookup is derived once per message, not per token.
+  const citationStatuses = useMemo(
+    () => buildCitationStatusIndex(citationStatusItems),
+    [citationStatusItems],
+  );
   const { filteredContent, widgets } = useMemo(() => {
     let text = content;
     const extractedWidgets: ParsedSection[] = [];
@@ -1007,7 +1152,7 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
               level={s.level}
               children={s.children}
               mode={mode}
-              availableFamilies={availableFamilies}
+              availableFamilies={availableFamilies} citationStatuses={citationStatuses}
             />
           );
         }
@@ -1067,7 +1212,7 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
               content={section.content || ""}
               sectionKey={section.sectionKey}
               mode={mode}
-              availableFamilies={availableFamilies}
+              availableFamilies={availableFamilies} citationStatuses={citationStatuses}
             />
           );
         }
@@ -1083,13 +1228,13 @@ const ChatMarkdownRenderer = ({ content, mode, availableFamilies }: ChatMarkdown
 
         // ── Table (Req 2) ─────────────────────────────────────────────────────
         if (section.type === "table" && section.tableData) {
-          return <TableRenderer key={index} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} />;
+          return <TableRenderer key={index} tableData={section.tableData} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />;
         }
 
         // ── Regular text ──────────────────────────────────────────────────────
         return (
           <div key={index} className="my-2">
-            <TextRenderer content={section.content} mode={mode} availableFamilies={availableFamilies} />
+            <TextRenderer content={section.content} mode={mode} availableFamilies={availableFamilies} citationStatuses={citationStatuses} />
           </div>
         );
       })}

@@ -32,7 +32,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { isAdminEmail } from "@/config/auth";
 import consultxIcon from "@/assets/consultx-platform-logo.png";
-import ChatMarkdownRenderer from "./ChatMarkdownRenderer";
+import ChatMarkdownRenderer, { type CitationStatusItem } from "./ChatMarkdownRenderer";
 import { SignedChatImage, ConversationFilesModal } from "./SignedChatImage";
 import { FN_REGION_HEADER } from "@/lib/functionRegion";
 import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
@@ -60,6 +60,8 @@ interface Message {
   isValid?: boolean;
   sources?: string[];
   sourceMeta?: ChunkPageMeta[];
+  /** B1a runtime citation verdicts, when the edge function streamed any. */
+  citationStatuses?: CitationStatusItem[];
   dbId?: string;
   imageUrl?: string;
   imageUrls?: string[];
@@ -665,7 +667,7 @@ async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
   documentTexts, pageManifests,
   output_format, preferred_standards, audience,
-  onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, onThinkingStatus, signal
+  onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, onThinkingStatus, onCitations, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
   documentTexts?: { name: string; content: string }[];
@@ -680,6 +682,12 @@ async function streamChat({
   onSources?: (sources: string[]) => void;
   onSourceMeta?: (meta: ChunkPageMeta[]) => void;
   onThinkingStatus?: (msg: string) => void;
+  /**
+   * B1a: citation verdicts, streamed as a {type:"citations"} event AFTER the
+   * last content delta and immediately BEFORE [DONE]. Absent whenever
+   * CITATION_VERIFIER_ENABLED is off on the function.
+   */
+  onCitations?: (items: CitationStatusItem[]) => void;
   signal?: AbortSignal;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -765,6 +773,8 @@ async function streamChat({
           // runs for the old function shape — whichever arrives, wins.
           if (Array.isArray(parsed.files) && parsed.files.length > 0) onSources?.(parsed.files as string[]);
           if (Array.isArray(parsed.sourceMeta) && parsed.sourceMeta.length > 0) onSourceMeta?.(parsed.sourceMeta as ChunkPageMeta[]);
+        } else if (parsed.type === "citations") {
+          if (Array.isArray(parsed.items)) onCitations?.(parsed.items as CitationStatusItem[]);
         } else if (parsed.type === "error") {
           // Post-headers failure travels in-stream (the HTTP status is already
           // committed by the early stream). Same contract as an HTTP error:
@@ -798,6 +808,8 @@ async function streamChat({
         } else if (parsed.type === "sources") {
           if (Array.isArray(parsed.files) && parsed.files.length > 0) onSources?.(parsed.files as string[]);
           if (Array.isArray(parsed.sourceMeta) && parsed.sourceMeta.length > 0) onSourceMeta?.(parsed.sourceMeta as ChunkPageMeta[]);
+        } else if (parsed.type === "citations") {
+          if (Array.isArray(parsed.items)) onCitations?.(parsed.items as CitationStatusItem[]);
         } else if (parsed.type === "error") {
           onError(typeof parsed.error === "string" && parsed.error
             ? parsed.error
@@ -1304,6 +1316,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         },
         onSourceMeta: meta => {
           setChatItems(prev => prev.map(item => ("type" in item) ? item : (item.id === assistantId ? { ...item, sourceMeta: meta } : item)));
+        },
+        onCitations: items => {
+          setChatItems(prev => prev.map(item => ("type" in item) ? item : (item.id === assistantId ? { ...item, citationStatuses: items } : item)));
         },
         onDone: async fullContent => {
           waitingTimersRef.current.forEach(clearTimeout);
@@ -2140,6 +2155,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                             <ChatMarkdownRenderer
                               content={displayContent}
                               mode={msgMode}
+                              citationStatuses={message.citationStatuses}
                               availableFamilies={(() => {
                                 const srcs = message.sources?.length ? message.sources : sourcePanel.sources;
                                 if (!srcs?.length) return undefined;
