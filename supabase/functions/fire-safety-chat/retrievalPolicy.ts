@@ -102,8 +102,18 @@ export function shouldUseVectorForAdvisory(mode: string, env: EnvReader): boolea
   return false;
 }
 
-/** Which engine actually produced the context that was sent to the model. */
-export type RetrievalEngine = "vector" | "keyword";
+/**
+ * Which engine actually produced the context that was sent to the model.
+ *
+ * "hybrid" (added 2026-09-03, wave-2 wiring) means match_sbc_hybrid served the
+ * request: FTS + pgvector fused by RRF inside one RPC — see
+ * ./hybridRetrieval.ts. It is reported exactly like the other two (the
+ * `engine` field of the {type:"sources"} event and the X-Retrieval-Engine
+ * header), and it is only ever reachable while ADVISORY_HYBRID_RETRIEVAL_ENABLED
+ * is exactly "1"; with the flag off no code path can produce it, so widening
+ * the union here changes nothing observable on its own.
+ */
+export type RetrievalEngine = "vector" | "keyword" | "hybrid";
 
 export const RETRIEVAL_ENGINE_HEADER = "X-Retrieval-Engine";
 

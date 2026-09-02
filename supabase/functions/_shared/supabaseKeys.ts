@@ -115,7 +115,23 @@ function selectFromKeyedJson(raw: string, varName: string): string {
  * BOTH the new and legacy env vars are absent/empty — never on malformed
  * JSON, which throws unconditionally (see file header).
  */
+/** Bundled-helper marker: lets a deployed function report which precedence it carries. */
+export const SECRET_KEY_RESOLUTION = "explicit-jwt-first-2026-09-03";
+
+/** A legacy service-role key is a three-part JWT; the new keys are sb_secret_ strings. */
+function looksLikeLegacyJwt(value: string | undefined): boolean {
+  return !!value && value.startsWith("eyJ") && value.split(".").length === 3;
+}
+
 function resolveSecretKey(): string | null {
+  // MEASURED 2026-09-03 (second finding): the platform also rewrote the legacy
+  // SUPABASE_SERVICE_ROLE_KEY variable to carry the new sb_secret_ value, so
+  // "prefer legacy" alone changed nothing. The only key proven to bypass RLS
+  // is the legacy service-role JWT itself, which the owner now provides as the
+  // custom secret CONSULTX_SERVICE_ROLE_JWT (SUPABASE_-prefixed names are
+  // reserved by the platform). It wins whenever it is present and JWT-shaped.
+  const explicit = Deno.env.get("CONSULTX_SERVICE_ROLE_JWT");
+  if (explicit && looksLikeLegacyJwt(explicit)) return explicit;
   // MEASURED 2026-09-03: the platform started injecting SUPABASE_SECRET_KEYS on
   // 2026-09-01 11:03Z, and its "default" sb_secret_ key does NOT bypass RLS —
   // every direct table write through the admin client (user_memory upserts,
@@ -127,12 +143,12 @@ function resolveSecretKey(): string | null {
   // disables legacy keys) — and that cutover must first prove, with a direct
   // insert into an RLS-enabled table, that the new key bypasses RLS.
   const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (legacy && legacy.length > 0) return legacy;
+  if (legacy && looksLikeLegacyJwt(legacy)) return legacy;
   const keyed = Deno.env.get("SUPABASE_SECRET_KEYS");
   if (keyed !== undefined && keyed !== "") {
     return selectFromKeyedJson(keyed, "SUPABASE_SECRET_KEYS");
   }
-  return null;
+  return legacy && legacy.length > 0 ? legacy : null;
 }
 
 /**

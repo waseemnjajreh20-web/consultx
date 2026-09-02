@@ -35,7 +35,7 @@
  * NOT alerted on the first occurrence (see breach:smoke_auth below).
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getSecretKey } from "../_shared/supabaseKeys.ts";
+import { getPublishableKey, getSecretKey, SECRET_KEY_RESOLUTION } from "../_shared/supabaseKeys.ts";
 import {
   aggregateStats,
   buildCronBreachEmail,
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
   if (keyKind === "legacy_jwt") {
     try { keyRole = String(JSON.parse(atob(serviceKey.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? null); } catch { keyRole = "unparsable"; }
   }
-  const keyDiag = { key_kind: keyKind, key_role: keyRole, has_secret_keys_env: !!Deno.env.get("SUPABASE_SECRET_KEYS"), has_legacy_env: !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") };
+  const keyDiag = { key_kind: keyKind, key_role: keyRole, has_secret_keys_env: !!Deno.env.get("SUPABASE_SECRET_KEYS"), has_legacy_env: !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), helper: SECRET_KEY_RESOLUTION };
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const fromEmail = Deno.env.get("FROM_EMAIL") ?? "ConsultX <noreply@consultx.app>";
@@ -340,7 +340,13 @@ Deno.serve(async (req) => {
     const upd = await db.auth.admin.updateUserById(smokeUser.id, { password: newPassword, email_confirm: true });
     if (upd.error) throw new Error(`password rotate: ${upd.error.message}`);
 
-    const signin = await db.auth.signInWithPassword({ email: SMOKE_EMAIL, password: newPassword });
+    // ROOT CAUSE of the silent write failures (2026-09-03): signing in on `db`
+    // itself made supabase-js adopt the smoke user's session, so every later
+    // PostgREST call ran as `authenticated` — RLS rejected the inserts and the
+    // admin-only SELECTs came back empty. The sign-in now uses a throwaway
+    // publishable-key client; `db` keeps the service role.
+    const authClient = createClient(url, getPublishableKey(), { auth: { autoRefreshToken: false, persistSession: false } });
+    const signin = await authClient.auth.signInWithPassword({ email: SMOKE_EMAIL, password: newPassword });
     if (signin.error || !signin.data.session) throw new Error(`signin: ${signin.error?.message ?? "no session returned"}`);
     jwt = signin.data.session.access_token;
   } catch (e) {

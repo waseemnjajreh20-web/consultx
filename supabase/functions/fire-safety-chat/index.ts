@@ -45,6 +45,7 @@ import {
 import { clampAssembledContext, TOTAL_CONTEXT_CAP } from "./contextBudget.ts";
 import { buildTableSourceSignals, formatExternalRefsBlock, type ExternalRefRow } from "./sourceSignals.ts";
 import {
+  ADVISORY_GRAPH_FLAG_ENV,
   buildExpansionQuerySpec,
   composeContext,
   GRAPH_EXPANSION_HEADER,
@@ -83,6 +84,21 @@ import {
   parseRetrievedChunks,
   verifyCitations,
 } from "./citationVerifier.ts";
+import {
+  fetchSBCContextHybrid,
+  HYBRID_RETRIEVAL_FLAG_ENV,
+  isHybridRetrievalEnabled,
+} from "./hybridRetrieval.ts";
+import {
+  cacheKey,
+  getCorpusVersion,
+  getEmbeddingCached,
+  getRetrievalCached,
+  normalizeForKey,
+  retrievalCacheEnabled,
+  RUNTIME_SETTINGS_TABLE,
+  type RetrievalCacheClient,
+} from "./retrievalCache.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1339,6 +1355,97 @@ function scheduleBackground(p: Promise<unknown>): void {
   else p.catch(() => {});
 }
 
+// ── D1 retrieval/embedding cache wiring (./retrievalCache.ts) ───────────────
+// Everything below is inert unless RETRIEVAL_CACHE_ENABLED is exactly "1":
+// retrievalCacheEnabled() is a single synchronous env read, and every call
+// site below keeps the pre-existing expression as the else-branch, so with
+// the flag off this file performs exactly the same awaits, the same network
+// calls and the same logs as it did before the wiring.
+
+/** The embedding model every query embedding in this file uses. Also the cache
+ *  key component that keeps one model's vectors from being served for another
+ *  (getEmbeddingCached folds it into the hash — see retrievalCache.ts). */
+const QUERY_EMBEDDING_MODEL_ID = "gemini-embedding-001";
+
+/** 24h, per docs/launch/retrieval-cache-notes.md. Governs both cache layers. */
+const RETRIEVAL_CACHE_TTL_SECONDS = 60 * 60 * 24;
+
+/**
+ * Raised by an embedding compute() closure instead of resolving with a
+ * sentinel. getEmbeddingCached stores only what compute() RESOLVES with, so
+ * rejecting is what keeps a transient embedding failure (429, 5xx, an empty
+ * body) out of BOTH cache layers — a cached failure would otherwise pin this
+ * query to the keyword path for the whole 30-day embedding TTL. `reason`
+ * carries the exact fallbackReason string the caller must report, so the
+ * X-Retrieval-Fallback taxonomy ("embedding_http_<status>" /
+ * "embedding_empty") is unchanged by the wrapping.
+ */
+class EmbeddingFailure extends Error {
+  reason: string;
+  constructor(reason: string) {
+    super(reason);
+    this.name = "EmbeddingFailure";
+    this.reason = reason;
+  }
+}
+
+/**
+ * Fingerprint of the env flags that change what retrieval RETURNS for a fixed
+ * query + corpus. Folded into the retrieval cache key's flags component
+ * alongside runtime_settings.retrieval_flags_version.
+ *
+ * WHY BOTH: retrieval_flags_version is an owner-bumped number and is the
+ * documented lever for "the pipeline's CODE changed" (retrieval-cache-notes.md).
+ * It does NOT move on its own when وسيم flips an env flag on the deployed
+ * function — and flipping ADVISORY_HYBRID_RETRIEVAL_ENABLED is exactly the
+ * kind of change that must not serve rows computed under the old flag state.
+ * Reading the flags directly closes that gap without requiring a manual step
+ * to be remembered at the moment it matters most.
+ */
+function retrievalFlagFingerprint(): string {
+  return [
+    HYBRID_RETRIEVAL_FLAG_ENV,
+    ADVISORY_GRAPH_FLAG_ENV,
+    "ADVISORY_MULTI_QUERY_RETRIEVAL_ENABLED",
+    "ADVISORY_BILINGUAL_EMBEDDING_ENABLED",
+    "SBC_NEW_SOURCE_CODES_ENABLED",
+    VECTOR_MIN_SIMILARITY_REL_ENV,
+    VECTOR_MIN_SIMILARITY_ABS_ENV,
+  ]
+    .map((k) => `${k}=${Deno.env.get(k) ?? ""}`)
+    .join("|");
+}
+
+let retrievalFlagsVersionMemo: { value: string; expiresAt: number } | null = null;
+
+/**
+ * runtime_settings.retrieval_flags_version, memoized for 5 minutes — the exact
+ * shape getCorpusVersion uses in ./retrievalCache.ts, kept here rather than
+ * added there because that module is owned by another item this wave. Fails
+ * open to "1" on any error (table absent before the SQL is applied, network,
+ * malformed row): a settings read must never be the reason retrieval fails,
+ * and a wrong value can only cost a cache miss, never a wrong answer.
+ */
+async function getRetrievalFlagsVersion(client: RetrievalCacheClient): Promise<string> {
+  const now = Date.now();
+  if (retrievalFlagsVersionMemo && retrievalFlagsVersionMemo.expiresAt > now) {
+    return retrievalFlagsVersionMemo.value;
+  }
+  try {
+    const { data, error } = await client
+      .from(RUNTIME_SETTINGS_TABLE)
+      .select("value")
+      .eq("key", "retrieval_flags_version")
+      .maybeSingle();
+    if (error) throw error;
+    const value = String(data?.value ?? "1");
+    retrievalFlagsVersionMemo = { value, expiresAt: now + 5 * 60 * 1000 };
+    return value;
+  } catch {
+    return "1";
+  }
+}
+
 /** Embed one piece of text with the same model/dimensionality the primary
  *  query uses. Returns null on any failure so a sub-topic can be skipped
  *  without disturbing the primary result set. */
@@ -2227,6 +2334,13 @@ async function fetchSBCContextVector(
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    // Structural view of the SAME client for ./retrievalCache.ts. supabase-js
+    // 2.90's fully-parameterised client type is too deep for TS to match
+    // against RetrievalCacheClient structurally (TS2589 "type instantiation is
+    // excessively deep") — the same self-referential generic problem
+    // synthetic-probe/index.ts sidesteps with `type Db = any`. Compile-time
+    // only: no second client is created, and nothing runs on the flag-off path.
+    const cacheClient = supabaseAdmin as unknown as RetrievalCacheClient;
 
     // 1. Generate query embedding
     // P6: reasoningHints.embeddingQuery, when present, replaces `query` here
@@ -2238,28 +2352,55 @@ async function fetchSBCContextVector(
     const embeddingSourceText = bilingualEmbeddingEnabled()
       ? augmentQueryForEmbedding(reasoningHints?.embeddingQuery ?? query)
       : (reasoningHints?.embeddingQuery ?? query);
-    const embResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: { role: "user", parts: [{ text: embeddingSourceText.substring(0, 8000) }] },
-          outputDimensionality: 768,
-        }),
+    // The uncached computation, moved verbatim into a closure so the D1 cache
+    // can wrap it without changing it: same URL, same body, same two console
+    // .error lines, same two fallback reasons. The only difference is that a
+    // failure now leaves through a throw instead of an early `return` — caught
+    // immediately below and turned back into the identical keywordFallback().
+    const computeQueryEmbedding = async (): Promise<number[]> => {
+      const embResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${QUERY_EMBEDDING_MODEL_ID}:embedContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: { role: "user", parts: [{ text: embeddingSourceText.substring(0, 8000) }] },
+            outputDimensionality: 768,
+          }),
+        }
+      );
+
+      if (!embResponse.ok) {
+        console.error("[Vector RAG] Embedding failed:", embResponse.status);
+        throw new EmbeddingFailure(`embedding_http_${embResponse.status}`);
       }
-    );
 
-    if (!embResponse.ok) {
-      console.error("[Vector RAG] Embedding failed:", embResponse.status);
-      return keywordFallback(`embedding_http_${embResponse.status}`);
-    }
+      const embData = await embResponse.json();
+      const values = embData.embedding?.values;
+      if (!values) {
+        console.error("[Vector RAG] No embedding returned, falling back");
+        throw new EmbeddingFailure("embedding_empty");
+      }
+      return values as number[];
+    };
 
-    const embData = await embResponse.json();
-    const queryEmbedding = embData.embedding?.values;
-    if (!queryEmbedding) {
-      console.error("[Vector RAG] No embedding returned, falling back");
-      return keywordFallback("embedding_empty");
+    let queryEmbedding: number[];
+    try {
+      // Flag OFF: exactly the call the inline code made before this wiring.
+      queryEmbedding = retrievalCacheEnabled()
+        ? await getEmbeddingCached(
+            cacheClient,
+            embeddingSourceText,
+            QUERY_EMBEDDING_MODEL_ID,
+            computeQueryEmbedding,
+          )
+        : await computeQueryEmbedding();
+    } catch (embErr) {
+      if (embErr instanceof EmbeddingFailure) return keywordFallback(embErr.reason);
+      // Anything else (a network throw from fetch, a JSON parse error) reaches
+      // the outer catch and becomes fallbackReason "exception" — the same
+      // taxonomy it had before, since those throws were never caught here.
+      throw embErr;
     }
 
     // 2. Detect code type filter
@@ -2278,6 +2419,50 @@ async function fetchSBCContextVector(
 
     // 3. Vector search
     const matchCount = mode === 'primary' ? 10 : 25;
+
+    // ── B1b hybrid retrieval (./hybridRetrieval.ts) ─────────────────────────
+    // Default OFF; exact-string "1" via ADVISORY_HYBRID_RETRIEVAL_ENABLED.
+    // With the flag unset isHybridRetrievalEnabled is a single synchronous env
+    // read that returns false and this block is skipped entirely — no RPC, no
+    // await, no log — so the vector path below is byte-identical to HEAD.
+    //
+    // ON, and match_sbc_hybrid returned rows: that ONE RPC already carries the
+    // pgvector signal fused with FTS, so the plain match_sbc_documents call
+    // below is skipped rather than run twice. The similarity floor is skipped
+    // with it, deliberately: the floor exists because match_sbc_documents
+    // applies no threshold and its tail is measurably indistinguishable from
+    // random chunks, whereas RRF ranks by agreement between two independent
+    // channels and a lexically-exact chunk that sits below the vector floor is
+    // precisely the recall this feature is for. That trade is what
+    // docs/launch/hybrid-retrieval-notes.md Section 4 gates on live numbers.
+    //
+    // fetchSBCContextHybrid is fail-open by contract: null means "keep the
+    // path you were already going to use" (RPC not provisioned, RPC error, or
+    // zero rows), and we fall straight through to the unchanged code below.
+    // graphExpansionCount/fallbackReason stay null — graph expansion is not
+    // composed on this path, and nothing fell back.
+    if (isHybridRetrievalEnabled(Deno.env.get)) {
+      const hybrid = await fetchSBCContextHybrid(
+        query,
+        queryEmbedding,
+        filterCode ? [filterCode] : null,
+        matchCount,
+        supabaseAdmin,
+      );
+      if (hybrid) {
+        console.log(`[Hybrid RAG] ${hybrid.docIds.length} fused chunks from ${hybrid.files.length} files`);
+        return {
+          context: hybrid.context,
+          files: hybrid.files,
+          sourceMeta: hybrid.sourceMeta,
+          engine: "hybrid",
+          docIds: hybrid.docIds,
+          graphExpansionCount: null,
+          fallbackReason: null,
+        };
+      }
+    }
+
     const { data: primaryMatches, error } = await supabaseAdmin.rpc('match_sbc_documents', {
       query_embedding: queryEmbedding,
       match_count: matchCount,
@@ -2346,10 +2531,19 @@ async function fetchSBCContextVector(
             // One embedding per sub-topic, reused across the codes it touches.
             // Sub-topics are the SHORTEST texts in the pipeline, so the
             // cross-lingual gap hurts them most — augment before embedding.
-            const emb = await embedQueryText(
-              bilingualEmbeddingEnabled() ? augmentQueryForEmbedding(sq) : sq,
-              GEMINI_API_KEY,
-            );
+            const subText = bilingualEmbeddingEnabled() ? augmentQueryForEmbedding(sq) : sq;
+            // D1: same two-layer embedding cache as the primary query, same
+            // model id, so a sub-topic shared by two questions is embedded
+            // once. embedQueryText's own null-on-failure contract is preserved
+            // on both sides — the throw/.catch pair exists only so a failure is
+            // never written to either cache layer.
+            const emb = retrievalCacheEnabled()
+              ? await getEmbeddingCached(cacheClient, subText, QUERY_EMBEDDING_MODEL_ID, async () => {
+                  const v = await embedQueryText(subText, GEMINI_API_KEY);
+                  if (!v) throw new EmbeddingFailure("subquery_embedding_empty");
+                  return v;
+                }).catch(() => null)
+              : await embedQueryText(subText, GEMINI_API_KEY);
             if (!emb) return [] as any[];
             const codes = detectFilterCodesFor(sq, enabledCodes);
             const perCode = await Promise.all(codes.map(async (code) => {
@@ -2548,6 +2742,80 @@ async function fetchSBCContextVector(
     console.error("[Vector RAG] Fatal error:", err);
     return keywordFallback("exception");
   }
+}
+
+// ===========================================================================
+// D1 RETRIEVAL-RESULT CACHE — key recipe + the "never cache a fallback" guard
+// ===========================================================================
+//
+// Wrapped at the ADVISORY TEXT call site only (see the handler below), which
+// is what keeps two things true without a second flag: the VISION path calls
+// fetchSBCContextVector directly and is never cached (its retrieval is one
+// leg of an image-dependent pipeline), and the multi-topic sub-query RPCs are
+// never cached individually — they are part of the ONE cached primary result.
+
+/**
+ * Carries a keyword-fallback result out of the cached compute() closure by
+ * throwing, so getRetrievalCached never stores it. Caching a fallback would
+ * pin a query to the keyword path for the full 24h TTL on the strength of one
+ * transient failure (a 429 on the embedding call, a momentary RPC error) —
+ * the opposite of the fail-open behaviour every layer here is built around.
+ * The result is not lost: the call site catches this and uses `.result`
+ * exactly as if the cache were not in the picture.
+ */
+class UncachedRetrievalFallback extends Error {
+  result: VectorRetrievalResult;
+  constructor(result: VectorRetrievalResult) {
+    super(`retrieval fallback (${result.fallbackReason ?? "unknown"}) — not cached`);
+    this.name = "UncachedRetrievalFallback";
+    this.result = result;
+  }
+}
+
+/**
+ * The retrieval cache key parts, in the order docs/launch/retrieval-cache-notes.md
+ * fixes: [embedding key, sorted codes, mode, flags version, corpus_version].
+ * getRetrievalCached only joins-then-hashes them, so getting this list right
+ * is the caller's job — this is the single place that builds it.
+ *
+ * - embedding key reproduces getEmbeddingCached's own recipe verbatim
+ *   (cacheKey(["embedding", modelId, normalizeForKey(text)])), per that
+ *   module's "KEY RECIPES" note. It is built from the PRE-augmentation
+ *   embedding text: augmentQueryForEmbedding is a deterministic function of
+ *   that text plus one env flag, so two different augmented texts always come
+ *   from two different pre-augmentation texts — the key stays collision-free,
+ *   and the flag itself is covered by the fingerprint below.
+ * - codes is the same filter fetchSBCContextVector will compute internally
+ *   (codeHint first, else the regex chain), sorted so ordering can never
+ *   split one logical key in two. [] renders as "" — "no code filter".
+ * - mode selects match_count (10 vs 25), so it changes the result set.
+ * - flags version = runtime_settings.retrieval_flags_version + the live env
+ *   flag fingerprint; see retrievalFlagFingerprint above for why both.
+ * - corpus_version is the global epoch: bumping it invalidates every row.
+ *
+ * Nothing user-scoped is in this list, by design — user_memory, conversation
+ * history and attachments never reach retrieval, and a shared corpus cache
+ * only pays off when hits cross sessions (retrievalCache.ts, "PRIVACY
+ * ARGUMENT").
+ */
+async function buildRetrievalCacheKeyParts(
+  client: RetrievalCacheClient,
+  embeddingText: string,
+  codes: string[],
+  mode: string,
+): Promise<string[]> {
+  const [embeddingKey, flagsVersion, corpusVersion] = await Promise.all([
+    cacheKey(["embedding", QUERY_EMBEDDING_MODEL_ID, normalizeForKey(embeddingText)]),
+    getRetrievalFlagsVersion(client),
+    getCorpusVersion(client),
+  ]);
+  return [
+    embeddingKey,
+    [...codes].sort().join(","),
+    mode,
+    `${flagsVersion}|${retrievalFlagFingerprint()}`,
+    String(corpusVersion),
+  ];
 }
 
 // ==================== GEMINI FORMAT CONVERTER ====================
@@ -4022,10 +4290,43 @@ serve(async (req) => {
         // code_hint filter_code preference computed above. Both default back
         // to fetchSBCContextVector's own regex/`query` behaviour when absent
         // (flag off or facts did not parse) — see VectorReasoningHints.
-        const vec = await fetchSBCContextVector(userQuery, mode, undefined, {
+        //
+        // D1: the ONE retrieval this request performs, optionally served from
+        // the two-layer cache (./retrievalCache.ts) behind RETRIEVAL_CACHE_ENABLED.
+        // With the flag off, retrievalCacheEnabled() is one synchronous env
+        // read and the else-branch below awaits exactly the call that stood
+        // here before — same arguments, same closure, no extra round trip.
+        const runVectorRetrieval = () => fetchSBCContextVector(userQuery, mode, undefined, {
           embeddingQuery: embeddingQueryText,
           codeHint: queryFacts?.code_hint,
         });
+        let vec: VectorRetrievalResult;
+        if (retrievalCacheEnabled()) {
+          const cacheCodes = queryFacts?.code_hint
+            ? [queryFacts.code_hint]
+            : [detectFilterCodeFor(userQuery, enabledNewSourceCodes())].filter(
+                (c): c is string => c !== null,
+              );
+          try {
+            vec = await getRetrievalCached(
+              adminClient,
+              await buildRetrievalCacheKeyParts(adminClient, embeddingQueryText, cacheCodes, mode),
+              RETRIEVAL_CACHE_TTL_SECONDS,
+              async () => {
+                const fresh = await runVectorRetrieval();
+                // Only a real retrieval result is cacheable; every fallback
+                // leaves through the throw so nothing is written.
+                if (fresh.engine === "keyword") throw new UncachedRetrievalFallback(fresh);
+                return fresh;
+              },
+            );
+          } catch (cacheErr) {
+            if (cacheErr instanceof UncachedRetrievalFallback) vec = cacheErr.result;
+            else throw cacheErr;
+          }
+        } else {
+          vec = await runVectorRetrieval();
+        }
         sbcContext = vec.context;
         files = vec.files;
         keywordMeta = vec.sourceMeta;

@@ -104,3 +104,10 @@ verify_jwt = false
 # platform JWT gate is off and the cron statement needs no anon key.
 [functions.synthetic-probe]
 verify_jwt = false
+
+# gemini-diag is an owner/orchestrator-invoked diagnostic (Gemini model list +
+# the live cachedContents API-shape probe). Same constant-time x-probe-token
+# gate as synthetic-probe, which is the whole gate here — it is called by hand
+# from a shell, not by pg_cron, so it carries no user session to verify.
+[functions.gemini-diag]
+verify_jwt = false
