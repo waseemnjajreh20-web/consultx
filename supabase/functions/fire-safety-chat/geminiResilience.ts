@@ -1,8 +1,9 @@
 /**
  * Gemini resilience helpers for fire-safety-chat.
  *
- * Pure logic (no Deno-specific APIs) so it can be unit-tested and imported
- * safely by the Edge Function.
+ * Pure logic (Deno.env is read defensively behind `typeof Deno !==
+ * "undefined"`, never required at import time) so it can be unit-tested and
+ * imported safely by the Edge Function.
  */
 
 export type AIErrorClass =
@@ -208,6 +209,131 @@ function buildGenerationConfig(thinkingConfig: Record<string, unknown> | null): 
   return thinkingConfig ? { temperature: 0.7, thinkingConfig } : { temperature: 0.7 };
 }
 
+// ── Per-model circuit breaker (A2, 2026-09-03) ──────────────────────────────
+// Protects a dead/hammered model from being retried forever across requests
+// sharing this isolate: 3 retryable failures (429/5xx/408/0, or a fetch
+// exception) within a rolling 60s window trip the breaker for that model.
+// While open, fetchGeminiStreamWithRetry / fetchGeminiNonStreamingWithRetry
+// return a synthetic 503 immediately without calling fetch, so the caller's
+// buildModelChain loop advances to the next model with no network round-trip
+// and no retry/backoff delay. After a 60s cooldown exactly one probe request
+// is let through (half-open); it closes the breaker on success or re-opens it
+// (fresh cooldown) on a retryable failure. Non-retryable failures (400
+// thinking-shape discovery, 404 model missing, etc.) never count.
+//
+// Flag-gated by PROVIDER_BREAKER_ENABLED (exact "1"). Off (default): no
+// breaker state is read or written anywhere in this file — behavior is
+// byte-identical to before this change.
+//
+// Module-level, isolate-lifetime state — same lifetime/shape as
+// acceptedThinkingShape above, no per-request state.
+export type CircuitBreakerState = "closed" | "open" | "half_open";
+
+interface ModelBreaker {
+  failures: number[]; // ms timestamps of retryable failures, pruned to the window
+  state: CircuitBreakerState;
+  openedAt: number | null;
+}
+
+const BREAKER_FAILURE_THRESHOLD = 3;
+const BREAKER_WINDOW_MS = 60_000;
+const BREAKER_COOLDOWN_MS = 60_000;
+
+const breakers = new Map<string, ModelBreaker>();
+
+function isProviderBreakerEnabled(): boolean {
+  if (typeof Deno !== "undefined") {
+    return Deno.env.get("PROVIDER_BREAKER_ENABLED") === "1";
+  }
+  // Non-Deno import (vitest/Node): read via globalThis so this module stays
+  // importable with no Deno global at all, per this file's header contract.
+  const proc = (globalThis as any).process;
+  return !!proc?.env && proc.env.PROVIDER_BREAKER_ENABLED === "1";
+}
+
+/** Test-only: clear all breaker state between tests. */
+export function resetBreakers(): void {
+  breakers.clear();
+}
+
+/** Current state of every model that has ever recorded activity — for logging. */
+export function breakerSnapshot(): Record<string, CircuitBreakerState> {
+  const snap: Record<string, CircuitBreakerState> = {};
+  for (const [model, b] of breakers.entries()) snap[model] = b.state;
+  return snap;
+}
+
+function getBreaker(model: string): ModelBreaker {
+  let b = breakers.get(model);
+  if (!b) {
+    b = { failures: [], state: "closed", openedAt: null };
+    breakers.set(model, b);
+  }
+  return b;
+}
+
+function logBreakerTransition(
+  model: string,
+  from: CircuitBreakerState,
+  to: CircuitBreakerState,
+  failureCount: number
+): void {
+  console.log(`[Breaker] model=${model} ${from}→${to} (${failureCount} failures/60s)`);
+}
+
+/** Null = allowed through. Non-null = short-circuit with this synthetic result. */
+function breakerGate(model: string): GeminiAttemptResult | null {
+  const b = breakers.get(model);
+  if (!b || b.state === "closed") return null;
+
+  if (b.state === "open") {
+    if (b.openedAt !== null && Date.now() - b.openedAt >= BREAKER_COOLDOWN_MS) {
+      logBreakerTransition(model, "open", "half_open", b.failures.length);
+      b.state = "half_open";
+      return null; // this call is the one allowed probe
+    }
+    return { response: new Response(null, { status: 503 }), errorText: `breaker_open:${model}` };
+  }
+
+  // half_open: a probe is already in flight — block concurrent callers so
+  // only one probe reaches the provider at a time.
+  return { response: new Response(null, { status: 503 }), errorText: `breaker_open:${model}` };
+}
+
+function recordBreakerFailure(model: string): void {
+  const b = getBreaker(model);
+  const now = Date.now();
+  b.failures.push(now);
+  b.failures = b.failures.filter((t) => now - t < BREAKER_WINDOW_MS);
+
+  if (b.state === "half_open") {
+    // The one allowed probe failed — re-open for another cooldown.
+    logBreakerTransition(model, "half_open", "open", b.failures.length);
+    b.state = "open";
+    b.openedAt = now;
+    return;
+  }
+
+  if (b.state === "closed" && b.failures.length >= BREAKER_FAILURE_THRESHOLD) {
+    logBreakerTransition(model, "closed", "open", b.failures.length);
+    b.state = "open";
+    b.openedAt = now;
+  }
+}
+
+function recordBreakerSuccess(model: string): void {
+  const b = breakers.get(model);
+  // Only a half-open probe's success closes the breaker. A closed-state
+  // success intentionally leaves the sliding failure window alone — "3
+  // failures within 60s" must still trip the breaker even if a success lands
+  // in between failures.
+  if (!b || b.state !== "half_open") return;
+  logBreakerTransition(model, "half_open", "closed", b.failures.length);
+  b.state = "closed";
+  b.failures = [];
+  b.openedAt = null;
+}
+
 export async function fetchGeminiStreamWithRetry(
   apiKey: string,
   model: string,
@@ -216,6 +342,11 @@ export async function fetchGeminiStreamWithRetry(
   maxAttempts = 3,
   thinkingEffort: ThinkingEffort = "default"
 ): Promise<GeminiAttemptResult> {
+  if (isProviderBreakerEnabled()) {
+    const blocked = breakerGate(model);
+    if (blocked) return blocked;
+  }
+
   const delays = [1000, 2000, 4000];
   let lastErrorText = "";
   let shapeIdx = 0;
@@ -229,21 +360,28 @@ export async function fetchGeminiStreamWithRetry(
           ? storedShape
           : THINKING_CANDIDATES[shapeIdx] ?? null;
     const start = Date.now();
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: buildGenerationConfig(thinkingConfig),
-        }),
-      }
-    );
+    let resp: Response;
+    try {
+      resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction,
+            contents,
+            generationConfig: buildGenerationConfig(thinkingConfig),
+          }),
+        }
+      );
+    } catch (fetchErr) {
+      if (isProviderBreakerEnabled()) recordBreakerFailure(model);
+      throw fetchErr;
+    }
     const latency = Date.now() - start;
 
     if (resp.ok) {
+      if (isProviderBreakerEnabled()) recordBreakerSuccess(model);
       if (thinkingEffort === "minimal" && storedShape === undefined) {
         acceptedThinkingShape.set(model, thinkingConfig);
         storedShape = thinkingConfig;
@@ -284,6 +422,7 @@ export async function fetchGeminiStreamWithRetry(
     console.log(
       `[Gemini] ${model} attempt ${attempt}/${maxAttempts} status=${resp.status} latency=${latency}ms retryable=${retryable}`
     );
+    if (isProviderBreakerEnabled() && retryable) recordBreakerFailure(model);
 
     if (!retryable || attempt === maxAttempts) {
       return { response: resp, errorText };
@@ -308,26 +447,38 @@ export async function fetchGeminiNonStreamingWithRetry(
   contents: any[],
   maxAttempts = 3
 ): Promise<GeminiAttemptResult> {
+  if (isProviderBreakerEnabled()) {
+    const blocked = breakerGate(model);
+    if (blocked) return blocked;
+  }
+
   const delays = [1000, 2000, 4000];
   let lastErrorText = "";
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const start = Date.now();
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: { temperature: 0.7 },
-        }),
-      }
-    );
+    let resp: Response;
+    try {
+      resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction,
+            contents,
+            generationConfig: { temperature: 0.7 },
+          }),
+        }
+      );
+    } catch (fetchErr) {
+      if (isProviderBreakerEnabled()) recordBreakerFailure(model);
+      throw fetchErr;
+    }
     const latency = Date.now() - start;
 
     if (resp.ok) {
+      if (isProviderBreakerEnabled()) recordBreakerSuccess(model);
       console.log(
         `[Gemini] ${model} non-stream OK on attempt ${attempt}/${maxAttempts} (${latency}ms)`
       );
@@ -340,6 +491,7 @@ export async function fetchGeminiNonStreamingWithRetry(
     console.log(
       `[Gemini] ${model} non-stream attempt ${attempt}/${maxAttempts} status=${resp.status} latency=${latency}ms retryable=${retryable}`
     );
+    if (isProviderBreakerEnabled() && retryable) recordBreakerFailure(model);
 
     if (!retryable || attempt === maxAttempts) {
       return { response: resp, errorText };

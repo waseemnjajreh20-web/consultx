@@ -5,7 +5,7 @@
  * classification, and quota rollback behavior without calling the real
  * Gemini API.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
@@ -21,6 +21,8 @@ import {
   clearQuotaIncrement,
   rollbackQuotaIfNeeded,
   resetGeminiResilienceCache,
+  resetBreakers,
+  breakerSnapshot,
 } from "../../supabase/functions/fire-safety-chat/geminiResilience.ts";
 
 describe("buildModelChain", () => {
@@ -206,6 +208,179 @@ describe("fetchGeminiNonStreamingWithRetry", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.response.status).toBe(200);
+  });
+});
+
+/**
+ * A2 (2026-09-03) — per-model circuit breaker.
+ *
+ * Each test uses maxAttempts=1 so a single mocked fetch response maps to
+ * exactly one recorded breaker attempt, and no internal retry/backoff sleep
+ * is ever scheduled (fake timers are only needed for the cooldown jump via
+ * vi.setSystemTime). Every test uses its own model name on top of the
+ * resetBreakers() in beforeEach, so tests can never interfere with each
+ * other's breaker state.
+ */
+describe("provider circuit breaker (PROVIDER_BREAKER_ENABLED)", () => {
+  beforeEach(() => {
+    resetBreakers();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    delete process.env.PROVIDER_BREAKER_ENABLED;
+  });
+
+  it("flag off: fetch is called on every attempt and no breaker state is ever written", async () => {
+    delete process.env.PROVIDER_BREAKER_ENABLED;
+    const model = "gemini-breaker-flag-off";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 4; i++) {
+      const result = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+      expect(result.response.status).toBe(503);
+    }
+
+    // 4 real failures would trip a 3-failure breaker if it were enabled —
+    // with the flag off every one of them still had to reach fetch.
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(breakerSnapshot()).toEqual({});
+  });
+
+  it("opens after 3 retryable failures within the 60s window", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-opens";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 3; i++) {
+      await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(3); // all 3 real failures hit the network
+    expect(breakerSnapshot()[model]).toBe("open");
+  });
+
+  it("while open, returns a synthetic 503 immediately without calling fetch", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-short-circuit";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 3; i++) {
+      await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    }
+    expect(breakerSnapshot()[model]).toBe("open");
+
+    fetchMock.mockClear();
+    const result = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.response.status).toBe(503);
+    expect(result.errorText).toBe(`breaker_open:${model}`);
+  });
+
+  it("is shared per model across the streaming and non-streaming paths", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-shared";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 3; i++) {
+      await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    }
+    fetchMock.mockClear();
+
+    const result = await fetchGeminiStreamWithRetry("key", model, {}, [], 1);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.response.status).toBe(503);
+    expect(result.errorText).toBe(`breaker_open:${model}`);
+  });
+
+  it("after the cooldown, lets exactly one half-open probe through and closes on success", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-half-open-success";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 3; i++) {
+      await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    }
+    expect(breakerSnapshot()[model]).toBe("open");
+
+    vi.setSystemTime(Date.now() + 60_000); // cooldown elapsed
+
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "ok" }] } }] }), { status: 200 })
+    );
+
+    const probe = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1); // the probe reached the network
+    expect(probe.response.status).toBe(200);
+    expect(breakerSnapshot()[model]).toBe("closed");
+  });
+
+  it("a failed half-open probe re-opens the breaker for a fresh cooldown", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-half-open-failure";
+    // mockImplementation (not mockResolvedValue) so every call gets a FRESH
+    // Response instance — each attempt reads .text() on it, and a Response
+    // body can only be read once.
+    const fetchMock = vi.fn().mockImplementation(() => new Response("server error", { status: 503 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 3; i++) {
+      await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    }
+    vi.setSystemTime(Date.now() + 60_000); // cooldown elapsed
+
+    fetchMock.mockClear();
+    const probe = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1); // the probe reached the network and failed
+    expect(probe.response.status).toBe(503);
+    expect(breakerSnapshot()[model]).toBe("open");
+
+    // The re-open starts a fresh cooldown — the very next call is blocked again.
+    fetchMock.mockClear();
+    const blocked = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(blocked.errorText).toBe(`breaker_open:${model}`);
+  });
+
+  it("does not count non-retryable failures (e.g. 400) toward the threshold", async () => {
+    process.env.PROVIDER_BREAKER_ENABLED = "1";
+    const model = "gemini-breaker-non-retryable";
+    const fetchMock = vi.fn().mockImplementation(() => new Response("bad request", { status: 400 }));
+    global.fetch = fetchMock;
+
+    for (let i = 0; i < 5; i++) {
+      const result = await fetchGeminiNonStreamingWithRetry("key", model, {}, [], 1);
+      expect(result.response.status).toBe(400);
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(5); // never short-circuited
+    expect(breakerSnapshot()[model]).toBeUndefined(); // never recorded as a failure
   });
 });
 
