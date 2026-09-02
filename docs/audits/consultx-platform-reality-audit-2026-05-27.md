@@ -31,7 +31,7 @@ ConsultX is a Saudi engineering compliance SaaS for fire and life safety, built 
 This session had two distinct phases:
 
 **Phase 1 — EID50 Campaign Work (not part of the audit):**
-- `send-eid50-campaign/index.ts` was modified to BCC `admin-monitoring@almnatiq.com` and `consultx.sa@gmail.com` alongside the existing admin emails.
+- `send-eid50-campaign/index.ts` was modified to BCC `[organization admin mailbox - redacted]` and `consultx.sa@gmail.com` alongside the existing admin emails.
 - The function was deployed via `npx supabase functions deploy send-eid50-campaign` and Supabase dashboard confirmed version 13.
 - A second batch feature was added: `src/lib/campaigns/eid50Second50Leads.ts` was created with 50 KFUPM/HCIS leads, `send-eid50-campaign/index.ts` was modified to load the second batch, and a "Load Second 50 Leads" button was added to the Admin Campaigns page.
 - The owner manually executed the send from the browser — result was 52/52 (50 external + 2 admin monitoring).
@@ -649,7 +649,7 @@ Total directories: 25. Deployed (from `npx supabase functions list`): 20. Local-
 
 4. **Resend dashboard / Gmail inspection:**
    - Log in to Resend Dashboard → check delivery logs for EID50 campaign
-   - Verify admin monitoring emails (`admin-monitoring@almnatiq.com`, `consultx.sa@gmail.com`) received the BCC copies
+   - Verify admin monitoring emails (`[organization admin mailbox - redacted]`, `consultx.sa@gmail.com`) received the BCC copies
    - Check spam/promotions folders in admin Gmail accounts
 
 5. **Enterprise workflow smoke test:**

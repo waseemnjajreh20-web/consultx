@@ -14,6 +14,10 @@
  *   node .githooks/pii-guard.mjs                    scan staged changes (default)
  *   node .githooks/pii-guard.mjs --staged           same, explicit
  *   node .githooks/pii-guard.mjs --check-file <path> scan one file on disk (dry runs, tests)
+ *   node .githooks/pii-guard.mjs --check-diff-base <ref>
+ *                                                   scan everything added since the merge-base
+ *                                                   with <ref> (CI: origin/main); bulk-eligible
+ *                                                   files are read from HEAD
  *
  * Exit code: 0 = clean, 1 = findings (block the commit), 2 = guard itself errored
  * (fails closed — an error scanning is treated as a reason to block, not to allow).
@@ -30,7 +34,8 @@ import { fileURLToPath } from 'node:url';
 // customer address and blocks the commit.
 
 export const ALLOWLIST_DOMAINS = ['consultx.app', 'consultx.ai', 'mailnull.com', 'example.com'];
-export const ALLOWLIST_ADDRESSES = ['a@b.com', 'c@d.com', 'your@email.com', 'ksasmoke@ksa.com'];
+// consultx.sa@gmail.com is the platform's own historical mailbox, not a customer.
+export const ALLOWLIST_ADDRESSES = ['a@b.com', 'c@d.com', 'your@email.com', 'ksasmoke@ksa.com', 'consultx.sa@gmail.com'];
 // Owner + his known aliases — matched as a prefix of the full address.
 export const OWNER_PREFIXES = ['njajrehwaseem', 'waseemnjajreh20'];
 // ConsultX system mailbox local-parts (already covered by the domain rule above,
@@ -308,15 +313,23 @@ export function extractXlsxText(buffer) {
 
 // ───────────────────────── git plumbing + CLI ─────────────────────────
 
+// Scan source: the index (pre-commit) or the range <base>...HEAD (CI). The
+// blob revision follows: ':' reads the index, 'HEAD:' reads the committed tree.
+let scanSource = { diffArgs: ['diff', '--cached'], blobPrefix: ':' };
+
+function useDiffBase(baseRef) {
+  scanSource = { diffArgs: ['diff', `${baseRef}...HEAD`], blobPrefix: 'HEAD:' };
+}
+
 function getStagedDiff() {
-  return execFileSync('git', ['diff', '--cached', '--unified=0', '--no-color'], {
+  return execFileSync('git', [...scanSource.diffArgs, '--unified=0', '--no-color'], {
     encoding: 'utf8',
     maxBuffer: 50 * 1024 * 1024,
   });
 }
 
 function getStagedFileList() {
-  const out = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR'], {
+  const out = execFileSync('git', [...scanSource.diffArgs, '--name-only', '--diff-filter=ACMR'], {
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
   });
@@ -327,7 +340,7 @@ function getStagedFileList() {
 }
 
 function getStagedFileBuffer(file) {
-  return execFileSync('git', ['show', `:${file}`], { maxBuffer: 50 * 1024 * 1024 });
+  return execFileSync('git', ['show', `${scanSource.blobPrefix}${file}`], { maxBuffer: 50 * 1024 * 1024 });
 }
 
 function scanBulkEligibleStagedFiles(stagedFiles) {
@@ -379,6 +392,16 @@ function readFileForCheck(filePath) {
 function main() {
   const args = process.argv.slice(2);
   const checkFileIdx = args.indexOf('--check-file');
+  const diffBaseIdx = args.indexOf('--check-diff-base');
+  if (diffBaseIdx !== -1) {
+    const baseRef = args[diffBaseIdx + 1];
+    if (!baseRef) {
+      console.error('pii-guard: --check-diff-base requires a git ref argument');
+      process.exit(2);
+      return;
+    }
+    useDiffBase(baseRef);
+  }
 
   let findings;
   if (checkFileIdx !== -1) {

@@ -1,10 +1,23 @@
+# ConsultX continuous verification gate (A3-CI).
+#
+# Enforces the CLAUDE.md "Verification minimum" on every push and pull
+# request:
+#   npx tsc --noEmit -p tsconfig.app.json
+#   npm test
+#   npm run build
+#   npx deno check <changed functions>
+#
+# This workflow only reads the checked-out working tree. It never deploys,
+# never writes to Supabase (no migrations are applied here), and never
+# touches production. See docs/launch/ci-notes.md for how to read a failure
+# and what is deliberately not covered yet (a staging smoke job).
+
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,8 +25,20 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint, typecheck and test
+    name: Typecheck, test, build, deno check
     runs-on: ubuntu-latest
+
+    # VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY are public/publishable
+    # values (see .env.example) — never secrets. src/integrations/supabase/
+    # client.ts calls createClient() with them at module scope, and that
+    # throws on an empty/invalid URL, so both `npm test` (vitest imports real
+    # modules) and `npm run build` need a value. Set the real project ref/key
+    # as repository Variables (Settings > Secrets and variables > Actions >
+    # Variables tab) once known; until then these safe placeholders keep the
+    # gate usable.
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://example.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'ci-placeholder-key' }}
 
     steps:
       - name: Checkout
@@ -28,21 +53,83 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+      # CLAUDE.md verification minimum.
+      - name: Typecheck (app)
+        run: npx tsc --noEmit -p tsconfig.app.json
 
+      # Predates this workflow revision — covers vite.config.ts /
+      # tailwind.config.ts / other tooling config. Kept so this rewrite
+      # doesn't quietly drop coverage that was already gated.
+      - name: Typecheck (build config)
+        run: npx tsc --noEmit -p tsconfig.node.json
+
+      # CLAUDE.md verification minimum. --pool=threads is required: the
+      # default forks pool has a known teardown hang in this repo.
+      # --reporter=dot keeps CI logs short.
       - name: Test
-        run: npm test
+        run: npm test -- --pool=threads --reporter=dot
 
-      # Lint runs last and does not fail the build yet: the pre-existing
-      # codebase still reports errors that are out of scope for this pipeline.
-      # Remove continue-on-error once that backlog is cleared.
+      # Pre-existing lint debt is out of scope for this gate. Drop
+      # continue-on-error once that backlog is cleared.
       - name: Lint
         run: npm run lint
         continue-on-error: true
 
+      # CLAUDE.md verification minimum.
       - name: Build
         run: npm run build
-        env:
-          VITE_SUPABASE_URL: https://example.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-key
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.x"
+
+      # CLAUDE.md verification minimum: `npx deno check <changed functions>`,
+      # applied to every edge function's index.ts plus every _shared module.
+      - name: Deno check (edge functions)
+        shell: bash
+        run: |
+          # Pre-existing type-error debt, recorded 2026-08-24 and reverified
+          # still failing on 2026-09-03 (error counts in docs/launch/ci-notes.md).
+          # Quarantined here so legacy debt doesn't block unrelated work.
+          # NEVER add fire-safety-chat, a billing function (moyasar-*,
+          # check-subscription, cancel-subscription,
+          # process-subscription-renewal), or an auth function to this list.
+          KNOWN_FAILING="admin-manage-user admin-stats get-public-case-tracking sbc-graph-indexer"
+
+          FAIL=0
+          for f in supabase/functions/*/index.ts supabase/functions/_shared/*.ts; do
+            fn=$(basename "$(dirname "$f")")
+            if [[ " $KNOWN_FAILING " == *" $fn "* ]]; then
+              deno check "$f" || echo "::warning file=$f::pre-existing type errors in $fn — not blocking, see docs/launch/ci-notes.md"
+            else
+              deno check "$f" || FAIL=1
+            fi
+          done
+          exit $FAIL
+
+  pii-guard:
+    name: PII guard (diff scan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so origin/main resolves as a diff base below.
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # .githooks/pii-guard.mjs is being introduced in a separate, parallel
+      # change. Skip cleanly until it lands instead of failing this gate on
+      # a missing file.
+      - name: Run PII guard
+        run: |
+          if [ -f .githooks/pii-guard.mjs ]; then
+            node .githooks/pii-guard.mjs --check-diff-base origin/main
+          else
+            echo "::notice::.githooks/pii-guard.mjs not found yet — skipping PII guard for this run."
+          fi
