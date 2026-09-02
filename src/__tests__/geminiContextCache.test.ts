@@ -277,7 +277,7 @@ describe("buildRequestWithCache", () => {
     const result = buildRequestWithCache(baseBody, cacheRef);
 
     expect(result.cachedContent).toBe("cachedContents/abc");
-    expect((result as Record<string, unknown>).systemInstruction).toBeUndefined();
+    expect((result as unknown as Record<string, unknown>).systemInstruction).toBeUndefined();
     expect(result.generationConfig).toEqual({ temperature: 0.7 });
     expect(result.contents).toHaveLength(3);
     expect(result.contents[0].role).toBe("user");

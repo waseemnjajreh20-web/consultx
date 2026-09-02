@@ -242,8 +242,11 @@ const BREAKER_COOLDOWN_MS = 60_000;
 const breakers = new Map<string, ModelBreaker>();
 
 function isProviderBreakerEnabled(): boolean {
-  if (typeof Deno !== "undefined") {
-    return Deno.env.get("PROVIDER_BREAKER_ENABLED") === "1";
+  // Reached through globalThis so the app tsconfig (which type-checks this
+  // module via the vitest imports) never sees a bare `Deno` identifier.
+  const deno = (globalThis as any).Deno;
+  if (deno?.env?.get) {
+    return deno.env.get("PROVIDER_BREAKER_ENABLED") === "1";
   }
   // Non-Deno import (vitest/Node): read via globalThis so this module stays
   // importable with no Deno global at all, per this file's header contract.
