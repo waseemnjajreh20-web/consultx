@@ -167,7 +167,65 @@ describe("fabricated-clause detection — catches invented absent-standard claus
     ["راجع البند 7.2.3 من SFPE للتفاصيل", "Arabic clause word البند, standard carries no edition number"],
     ["NFPA Section 8.3.1 sets the criterion", "no edition number after the standard name"],
     ["IFC 903.2 Section 5.1 applies here", "a different absent standard"],
+    // Reversed order WITH an attribution connector — the shapes the 2026-09-03
+    // connector guard must keep catching.
+    ["Section 17.6.3 of NFPA 72 governs the spacing", "reversed, EN 'of'"],
+    ["the density comes from Table 11.2.3.1.1 in NFPA 13", "reversed, EN 'in'"],
+    ["see Section 8.3.1 (NFPA 13) for the criterion", "reversed, parenthetical attribution"],
+    ["الجدول 11.2.3.1.1 بحسب معيار NFPA 13 يحدد الكثافة", "reversed, AR 'بحسب معيار'"],
+    ["البند 7.2 وفقاً لـ NFPA 13 يشترط ذلك", "reversed, AR 'وفقاً لـ'"],
+    ["الفقرة 4.3 ضمن NFPA 101 تنظم ذلك", "reversed, AR 'ضمن'"],
+    ["القسم 8.3.1 وفي NFPA 13 أيضاً", "reversed, AR connector with a leading و"],
   ])("flags %j (%s)", (text) => {
+    expect(hasFabricatedStandardClause(text)).toBe(true);
+  });
+});
+
+describe("fabricated-clause detection — SBC 903.3.1.1 naming NFPA 13 is not a fabrication (2026-09-03)", () => {
+  // Measured false positives: the exact spans the detector flagged on all four
+  // advisory answers to ADV-031/ADV-032 in the 2026-09-03 subset run. The
+  // question asks which standard SBC 801 Section 903.3.1.1 names; every
+  // correct answer juxtaposes the SBC number and "NFPA 13" with NO claim that
+  // the number belongs to NFPA. See ATTRIBUTION_BEFORE_STANDARD in
+  // evals/lib/scoring.ts.
+  it.each([
+    ["SBC 801 القسم 903.3.1.1 | NFPA 13 | مؤكد |", "AR table cell, SBC before the clause word"],
+    ["المعيار الذي يحدده القسم 903.3.1.1 لحسابات الكثافة ومساحة التصميم هو **NFPA 13**", "AR 'is NFPA 13'"],
+    ["إحالة القسم 903.3.1.1 الصريحة إلى معيار NFPA 13", "AR 'refers to the NFPA standard' (إلى is not attribution of the number)"],
+    ["SBC 201 Section 903.3.1.1 | NFPA 13 | Confirmed", "EN table cell"],
+    ["Section 903.3.1.1 explicitly references **NFPA 13** as the design standard", "EN 'references NFPA 13'"],
+    ["SBC 801 Section 903.3.1.1 designating NFPA 13 for density and design area", "EN 'designating NFPA 13'"],
+    ["يشترط القسم 903.3.1.1 الأمن NFPA 13", "AR: 'من' inside a longer word is not a connector"],
+    // A connector IS present, but the number is attributed to SBC by the
+    // answer's own citation token — the SBC section delegating to NFPA.
+    ["Section 903.3.1.1 requires sprinklers installed per NFPA 13. [SBC-801 Section 903.3.1.1 | conf:high]", "EN 'per NFPA 13', number carries an SBC token"],
+    ["القسم 903.3.1.1 يشترط التركيب وفق NFPA 13 [SBC-801 Section 903.3.1.1 | conf:high]", "AR 'وفق NFPA 13', number carries an SBC token"],
+    ["يحدد SBC 801 في القسم 903.3.1.1 التصميم وفقاً لـ NFPA 13", "AR: SBC attribution precedes the clause word"],
+    ["Document: SBC 801 | Section: 903.3.1.1 > Section 903.3.1.1 requires installation per NFPA 13", "reference-text header attributes the number"],
+  ])("does not flag %j (%s)", (text) => {
+    expect(hasFabricatedStandardClause(text)).toBe(false);
+  });
+
+  // Forward order, measured 2026-09-03: "NFPA 13 per/via SBC section 903.3.x"
+  // with no SBC token for that exact number anywhere — exonerated by shape
+  // (a 3+-digit leading component is never an NFPA clause).
+  it.each([
+    ["يُطبَّق NFPA 13 عبر القسم 903.3.1.1 على المبنى", "AR 'NFPA 13 via Section 903.3.1.1'"],
+    ["يُسمح بنظام NFPA 13R وفق القسم 903.3.1.2 فقط إذا كان المبنى سكنياً", "AR 'NFPA 13R per Section 903.3.1.2' (edition suffix R)"],
+    ["المعيار الإلزامي هو NFPA 13 حصراً وفق القسم 903.3.1.1", "AR 'NFPA 13 exclusively per Section 903.3.1.1'"],
+    ["Section 903.3.1.1 requires sprinklers installed per NFPA 13.", "EN, no SBC token, code-style number"],
+    ["NFPA 72 as referenced in Section 907.2.1 governs the alarm", "EN forward, code-style number"],
+  ])("does not flag %j (%s)", (text) => {
+    expect(hasFabricatedStandardClause(text)).toBe(false);
+  });
+
+  it.each([
+    ["Section 8.3.1 of NFPA 13 applies. [SBC-801 Section 903.3.1.1 | conf:high]", "a DIFFERENT number's SBC token does not vouch for 8.3.1"],
+    ["القسم 3.3.1 وفق NFPA 13 [SBC-801 Section 3.3.1.1 | conf:high]", "token for 3.3.1.1 does not vouch for the prefix 3.3.1"],
+    ["IFC Section 903.2.1 applies here", "IFC shares SBC numbering — shape cannot exonerate it"],
+    ["IBC Table 1004.5 gives the factor", "IBC shares SBC numbering — shape cannot exonerate it"],
+    ["NFPA 13 Section 19.3.3.1.1 gives the density", "two-digit NFPA chapter stays caught"],
+  ])("still flags %j (%s)", (text) => {
     expect(hasFabricatedStandardClause(text)).toBe(true);
   });
 });

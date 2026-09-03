@@ -1,0 +1,198 @@
+{
+  "run_date": "2026-09-03",
+  "mode": "live",
+  "subset": [
+    "ADV-031",
+    "ADV-032"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 4,
+  "tier_a": {
+    "exact_section_match_rate": 75,
+    "chain_match_rate": 50,
+    "refusal_correctness": 100,
+    "hallucination_rate": 100
+  },
+  "tier_b": {
+    "citation_discipline_rate": 100,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 17303,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-031",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-031",
+      "mode": "analysis"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "analysis"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-031",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 18355,
+      "answer_length": 654
+    },
+    {
+      "id": "ADV-032",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 10738,
+      "answer_length": 616
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 3384,
+      "latency_ms": 16761,
+      "answer_preview": "### النص المرجعي\n\nDocument: SBC 801 | Section: 903.2.8\n> \"903.2.8 Group R. An automatic sprinkler system installed in accordance with Section 903.3 shall be provided throughout all buildings with a Group R fire area.\" [SBC-801 Section 903.2.7 | conf:high]\n\nDocument: SBC 801 | Section: 903.3.1\n> \"The extent of coverage and distribution of sprinklers is based on the NFPA 13 standard. Numerous conditions exist in the standard where sprinklers are specifically required and also where they may or may",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4015,
+      "latency_ms": 17303,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• **نوع المسألة**: سؤال تقني عن اشتراط محدد (Specific Code Question).\n• **الإشغال**: مجموعة سكنية تجارية / فندقية (Group R-1) — [مؤكد — CONFIRMED].\n• **فئة الخطر**: خطورة خفيفة للمساحات السكنية / فندقية (Light Hazard) — [مستنتج — INFERRED].\n• **الارتفاع / الطوابق**: غير محدد — [يتطلب تأكيداً — REQUIRES CONFIRMATION].\n• **المساحة**: 4500 م² — [مؤكد — CONFIRMED].\n• **الرشاشات**: مطلوبة وفق اشتراطات الكود — [مؤكد — CONFIRMED].\n\n---\n\n**II. المدخلات المست",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4089,
+      "latency_ms": 15847,
+      "answer_preview": "### Reference Text\n\n**Document:** SBC 801 | **Section:** 903.3.8.5\n> \"Hydraulic calculations in accordance with NFPA 13 shall be provided to demonstrate that the available water flow and pressure are adequate to supply all sprinklers installed in any single fire area with discharge densities corresponding to the hazard classification.\" [SBC-801 Section 903.3.8.5 | conf:high]\n\n**Document:** SBC 801 | **Section:** 903.3.5 (Commentary)\n> \"To be effective, all sprinkler systems must have an adequate",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": true,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 3479,
+      "latency_ms": 13509,
+      "answer_preview": "**I. Project Classification**\n• Issue Type: Specific Code Question (سؤال تقني عن اشتراط محدد)\n• Occupancy: Group E (Educational) — [CONFIRMED]\n• Hazard Classification: Light Hazard (Educational/School) per general commentary context — [INFERRED]\n• Height / Stories: Not specified (not required for standard identification query) — [REQUIRES CONFIRMATION]\n• Area: Not specified (trigger assumed confirmed per prompt) — [REQUIRES CONFIRMATION]\n• Sprinkler Status: Required / Triggered — [CONFIRMED]\n\n--",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}

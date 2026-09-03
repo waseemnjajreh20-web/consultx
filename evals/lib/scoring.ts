@@ -248,17 +248,96 @@ const NO_SBC_GAP = String.raw`(?:(?!SBC|كود البناء)[^\n]){0,40}?`;
  */
 const OPTIONAL_EDITION_NUMBER = `(?:${CLAUSE_NUMBER})?`;
 
+/**
+ * Second guard on the REVERSED order (2026-09-03): the clause number counts
+ * as attributed to the absent standard only when an attribution connector
+ * sits right before the standard name — "من NFPA 13", "of NFPA 72",
+ * "in NFPA 13", "بحسب معيار NFPA 13", "وفقاً لـ NFPA 13", "(NFPA 13)".
+ *
+ * Why: SBC 801 Section 903.3.1.1 is literally the section that names NFPA 13,
+ * and benchmark rows ADV-031/ADV-032 ASK which standard it names. Every
+ * correct answer therefore juxtaposes the SBC number and the NFPA name —
+ *   "SBC 801 القسم 903.3.1.1 | NFPA 13 | مؤكد"
+ *   "Section 903.3.1.1 explicitly references NFPA 13"
+ *   "القسم 903.3.1.1 ... هو NFPA 13"
+ * — with the SBC attribution BEFORE the clause word, where the tempered gap
+ * above cannot see it. Measured on 2026-09-03 (subset run, scrubber live):
+ * all four advisory answers were flagged on exactly these spans and none
+ * attributed a number to NFPA. Without a connector there is no claim that
+ * the number belongs to the external standard, so nothing is fabricated.
+ *
+ * Arabic connectors are anchored on a preceding space/punctuation (JS `\b`
+ * is ASCII-only, so "ضمن"/"الأمن" must not match "من" by substring); an
+ * optional leading "و" covers "ومن"/"وفي". A bare comma is deliberately NOT
+ * a connector ("Section 903.3.1.1, NFPA 13 sprinkler systems" is an SBC
+ * heading paraphrase); the runtime scrubber still strips comma-joined
+ * external clause numbers before they reach the user.
+ */
+const ATTRIBUTION_BEFORE_STANDARD =
+  String.raw`(?:(?:^|[\s(،,:\-])و?(?:من|ضمن|في|وفق|حسب|بحسب|بموجب|طبقا|طبقاً|وفقا|وفقاً)|\b(?:of|in|per|under|from|at)|\()\s*(?:لـ?\s*)?(?:معيار|مواصفة|the|standard)?\s*`;
+
+/**
+ * Third guard (2026-09-03): a clause number that the answer ITSELF attributes
+ * to SBC anywhere — "[SBC-801 Section 903.3.1.1 | conf:high]", "SBC 801
+ * القسم 903.3.1.1", "903.3.1.1 من SBC 201" — is an SBC number, so a sentence
+ * such as "Section 903.3.1.1 requires sprinklers installed per NFPA 13" is
+ * the SBC section delegating to NFPA, not an invented NFPA clause. The
+ * number must match exactly (a token for 903.3.1 does not vouch for
+ * 903.3.1.1, and vice versa). An invented NFPA number never carries an SBC
+ * attribution, so recall is unchanged.
+ */
+function numberAttributedToSBC(text: string, clauseNumber: string): boolean {
+  const n = escapeRegExp(clauseNumber);
+  // The attribution must be DIRECT: between "SBC"(+edition) and the number
+  // only a clause word and short punctuation/connector filler may appear, and
+  // never another digit — so "SBC 801 ... NFPA 13 القسم 8.3.1" cannot borrow
+  // the SBC name for 8.3.1, and a token that merely follows "8.3.1 of NFPA
+  // 13 applies. [SBC-801 ...]" does not vouch for it either.
+  const afterSBC = new RegExp(
+    String.raw`(?:SBC|كود البناء)[\s-]*(?:\d{3})?[^\d\n]{0,12}?(?:${CLAUSE_WORD}|pp\.)?[^\d\n]{0,3}(?<![\d.])${n}(?![\d.])`,
+    "i",
+  );
+  const beforeSBC = new RegExp(String.raw`(?<![\d.])${n}(?![\d.])[^\d\n]{0,12}?(?:SBC|كود البناء)`, "i");
+  return afterSBC.test(text) || beforeSBC.test(text);
+}
+
+/**
+ * Fourth guard (2026-09-03) — number SHAPE. NFPA, SFPE and the other absent
+ * standards number their clauses chapter-first with one- or two-digit
+ * chapters ("8.3.1", "17.6.3", "11.2.3.1.1", "7.2"); SBC (like the IBC/IFC
+ * family it derives from) numbers sections "903.3.1.1", "1006.2.1", "504.3".
+ * A number with a 3+-digit leading component is therefore never an NFPA/SFPE
+ * clause — it is the SBC section that DELEGATES to the standard, as in the
+ * measured false positives "NFPA 13 عبر القسم 903.3.1.1" and
+ * "NFPA 13R وفق القسم 903.3.1.2" (forward order, no SBC attribution of that
+ * exact number anywhere else in the answer). IBC and IFC share SBC's
+ * numbering, so shape cannot exonerate a clause attributed to THEM — they
+ * are excluded from this guard and stay caught as before.
+ */
+const SHARES_SBC_NUMBERING = new Set(["IBC", "IFC"]);
+function isCodeStyleSectionNumber(clauseNumber: string): boolean {
+  return /^\d{3,}/.test(clauseNumber);
+}
+
 export function hasFabricatedStandardClause(text: string): boolean {
   const standardsAlt = ABSENT_STANDARDS.join("|");
   const forward = new RegExp(
-    `\\b(?:${standardsAlt})\\s*${OPTIONAL_EDITION_NUMBER}${NO_SBC_GAP}(?:${CLAUSE_WORD})\\s+${CLAUSE_NUMBER}`,
-    "i",
+    `\\b(${standardsAlt})\\s*${OPTIONAL_EDITION_NUMBER}${NO_SBC_GAP}(?:${CLAUSE_WORD})\\s+(${CLAUSE_NUMBER})`,
+    "gi",
   );
   const reversed = new RegExp(
-    `(?:${CLAUSE_WORD})\\s+${CLAUSE_NUMBER}${NO_SBC_GAP}\\b(?:${standardsAlt})\\s*${OPTIONAL_EDITION_NUMBER}`,
-    "i",
+    `(?:${CLAUSE_WORD})\\s+(${CLAUSE_NUMBER})${NO_SBC_GAP}${ATTRIBUTION_BEFORE_STANDARD}\\b(${standardsAlt})\\s*${OPTIONAL_EDITION_NUMBER}`,
+    "gi",
   );
-  return forward.test(text) || reversed.test(text);
+  const candidates: Array<{ standard: string; clauseNumber: string }> = [];
+  for (const m of text.matchAll(forward)) candidates.push({ standard: m[1], clauseNumber: m[2] });
+  for (const m of text.matchAll(reversed)) candidates.push({ standard: m[2], clauseNumber: m[1] });
+  for (const { standard, clauseNumber } of candidates) {
+    if (numberAttributedToSBC(text, clauseNumber)) continue;
+    if (!SHARES_SBC_NUMBERING.has(standard.toUpperCase()) && isCodeStyleSectionNumber(clauseNumber)) continue;
+    return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------

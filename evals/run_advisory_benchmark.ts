@@ -358,6 +358,12 @@ const EVAL_SUBSET = new Set(
   (Deno.env.get("CONSULTX_EVAL_SUBSET") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 );
 
+// Full answers of every live advisory call, written to <dateDir>/answers.jsonl
+// (added 2026-09-03: the 500-char answer_preview was too short to diagnose a
+// fabricated-clause flag — the triggering span sat 1-4k chars into the answer,
+// and re-asking the model yields different phrasing every time).
+const FULL_ANSWERS: Array<{ id: string; mode: EvalMode; answer: string }> = [];
+
 const TOKEN_FILE = Deno.env.get("CONSULTX_TOKEN_FILE") ?? "";
 // A fallback to the service key changes the auth principal (different quota
 // and RLS path), so it must never happen silently — warn once per cause.
@@ -532,6 +538,7 @@ async function liveScore(
   const language = rowLanguage(row);
   const questionText = language === "en" ? row.question_en : row.question_ar;
   const call = await callEdgeFunction(questionText, mode, language, edgeUrl, serviceKey, userId);
+  FULL_ANSWERS.push({ id: row.id, mode, answer: call.answer });
 
   const { tier_a, tier_b } = scoreAnswer(row, call.answer);
   return {
@@ -914,6 +921,9 @@ async function main() {
   await Deno.mkdir(dateDir, { recursive: true });
   await Deno.writeTextFile(`${dateDir}/results.json`, JSON.stringify(report, null, 2));
   await Deno.writeTextFile(`${dateDir}/report.md`, renderReport(report));
+  if (FULL_ANSWERS.length > 0) {
+    await Deno.writeTextFile(`${dateDir}/answers.jsonl`, FULL_ANSWERS.map((a) => JSON.stringify(a)).join(String.fromCharCode(10)) + String.fromCharCode(10));
+  }
 
   console.log(`\nResults written to ${dateDir}/`);
   if (report.safety_critical_regressions.length > 0) {

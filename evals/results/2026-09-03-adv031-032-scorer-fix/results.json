@@ -1,0 +1,186 @@
+{
+  "run_date": "2026-09-03",
+  "mode": "live",
+  "subset": [
+    "ADV-031",
+    "ADV-032"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 4,
+  "tier_a": {
+    "exact_section_match_rate": 88,
+    "chain_match_rate": 75,
+    "refusal_correctness": 100,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 100,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 22683,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-031",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 22975,
+      "answer_length": 798
+    },
+    {
+      "id": "ADV-032",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 18723,
+      "answer_length": 691
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4787,
+      "latency_ms": 18626,
+      "answer_preview": "### النص المرجعي\n\nDocument: SBC 801 | Section: 903.2.8\n> \"An automatic sprinkler system installed in accordance with Section 903.3 shall be provided throughout all buildings with a Group R fire area.\"\n\nDocument: SBC 801 | Section: 903.3.1\n> \"The extent of coverage and distribution of sprinklers is based on the NFPA 13 standard. Once it is determined that the sprinkler system is to be in accordance with NFPA 13, that standard must be reviewed for installation details.\"\n\nDocument: SBC 801 | Sectio",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 5197,
+      "latency_ms": 22683,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• فئة المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question).\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية**\n• نوع الإشغال: فندقي R-1 [مؤكد — CONFIRMED].\n• المساحة الإجمالية: 4500 م² [مؤكد — CONFIRMED].\n• البند المستفسر عنه: القسم 903.3.1.1 [مؤكد — CONFIRMED].\n• عدد الطوابق وارتفاع المبنى: غير مذكور بالاستفسار [يتطلب تأكيداً — REQUIRES CONFIRMATION].\n\n**الخطوة 2 — فحص المتغيرات الحرجة (Critical-Variable Check)**\n1. تصنيف الإشغال: R-1 (",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 2473,
+      "latency_ms": 9551,
+      "answer_preview": "### Code Reference and Applicable Standard\n\n**Document:** SBC-801 (Saudi Fire Code) | **Section:** 903.3.8.5 & 903.3.3\n\nVerbatim extracts from the retrieved text:\n\n> \"Hydraulic calculations in accordance with NFPA 13 shall be provided to demonstrate that the available water flow and pressure are adequate to supply all sprinklers installed in any single fire area with discharge densities corresponding to the hazard classification.\" [SBC-801 Section 903.3.8.5 | conf:high]\n\n> \"Condition 5 recognize",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 5428,
+      "latency_ms": 16612,
+      "answer_preview": "### Pre-Analysis Protocol\n\n* **Step 0 — Classification:** Specific Code Question (سؤال تقني عن اشتراط محدد).\n* **Step 1 — Inputs & Epistemic Status:**\n  * **Occupancy Classification:** Group E Educational — **[CONFIRMED]**\n  * **Sprinkler Mandate Trigger:** SBC 801 Section 903.2.3 — **[CONFIRMED]**\n  * **Target Inquiry:** Referenced design standard under Section 903.3.1.1 for water-density design — **[CONFIRMED]**\n* **Step 2 — Critical-Variable Check:**\n  * Occupancy: Group E (Identified)\n  * He",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}
