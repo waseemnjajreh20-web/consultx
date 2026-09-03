@@ -346,10 +346,19 @@ describe("flag-OFF path: every new await is behind a flag guard", () => {
 // ===========================================================================
 describe("gemini-diag diagnostics function", () => {
   it("is gated on a constant-time x-probe-token compare and fails closed", () => {
-    expect(DIAG_SRC).toContain('const expected = Deno.env.get("PROBE_TASK_TOKEN");');
     expect(DIAG_SRC).toContain('const got = req.headers.get("x-probe-token") ?? "";');
-    expect(DIAG_SRC).toContain("if (!expected || !timingSafeEqual(got, expected)) {");
+    // Two secrets open this function since 2026-09-03 — the shared probe token
+    // and gemini-diag's own, so the diagnostics are drivable from a shell
+    // without rotating the token embedded in the synthetic-probe cron.
+    expect(DIAG_SRC).toContain('const accepted = ["PROBE_TASK_TOKEN", "GEMINI_DIAG_TOKEN"]');
+    // Fails closed when NEITHER secret is set, and only an actual match passes.
+    expect(DIAG_SRC).toContain("if (accepted.length === 0 || !authorized) {");
     expect(DIAG_SRC).toContain('return json({ error: "forbidden" }, 401);');
+    // Every candidate is compared — `timingSafeEqual(...) || ok` inside a
+    // reduce, never `.some()`, which would stop at the first match and let
+    // response time say WHICH secret matched.
+    expect(DIAG_SRC).toContain("(ok, expected) => timingSafeEqual(got, expected) || ok");
+    expect(DIAG_SRC).not.toMatch(/accepted\.some\(/);
     // Constant-time: length check first, then a full XOR sweep with no early exit.
     const cmpAt = DIAG_SRC.indexOf("function timingSafeEqual(");
     const cmp = DIAG_SRC.slice(cmpAt, DIAG_SRC.indexOf("\n}", cmpAt));
