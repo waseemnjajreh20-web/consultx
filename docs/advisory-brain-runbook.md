@@ -325,3 +325,40 @@ the flag went out with no live bench run."
   Arabic glossary-gap rows because the topic list requested them, but none
   maps to an existing sampler file. Recorded here so the gap is a decision
   for a future sampler, not something rediscovered from scratch.
+
+---
+
+## 6. Flag registry — production state (2026-09-03)
+
+Every environment flag this stack reads, its live value on the production
+`fire-safety-chat`, and the evidence behind that value. A flag whose gate FAILED
+is kept in the code deliberately: the wiring is correct and one measurement away
+from being useful, and re-asking the question costs minutes now that the
+instruments exist.
+
+| flag | prod | what it does | evidence |
+|---|---|---|---|
+| `ADVISORY_VECTOR_RETRIEVAL_ENABLED` | `1` | vector retrieval for the heavy modes | shipped 2026-08 |
+| `ADVISORY_HYBRID_RETRIEVAL_ENABLED` | `0` | fuse Postgres FTS with pgvector (RRF) | **gate: no benefit.** Model-free retrieval gate, 40 questions: vector 64/87 sections, hybrid 64/87 — identical. `hybrid-retrieval-notes.md` |
+| `SBC_HYBRID_FTS_WEIGHT` / `SBC_HYBRID_VECTOR_QUOTA_RATIO` | unset (0.5 / 0.6) | hybrid tuning knobs | only read when hybrid is on |
+| `SBC_VECTOR_MIN_SIMILARITY_REL` / `_ABS` | unset (0.85 / 0.70) | similarity floor cut | derived 2026-08 from the unrelated-pair distribution |
+| `SBC_VECTOR_FLOOR_MODE` | unset (`drop`) | `gate` keeps the fallback decision but stops discarding rows | retrieval gate: dropping costs 2 of 87 sections. Default unchanged pending an answer-quality run |
+| `RETRIEVAL_CACHE_ENABLED` | `1` | embedding + retrieval-result cache | live since 2026-09-03 |
+| `GEMINI_CONTEXT_CACHE_ENABLED` | `0` | Gemini `cachedContents` for the static prompt | **gate: cannot pay off as built.** primary is under the 1,024-token minimum (819); the registry is per-isolate and isolates are not sticky. `context-cache-notes.md` |
+| `THINKING_EFFORT_PRIMARY` | unset (`minimal`) | thinking level, primary | 12.2s → 2.2s first byte, 2026-09-02 |
+| `THINKING_EFFORT_STANDARD` / `_ANALYSIS` | unset (`default`) | thinking level, heavy modes | **gate: `low` rejected.** 3x faster, but sections 52% → 30% and citation discipline 90% → 65% |
+| `CITATION_VERIFIER_ENABLED` | `1` | verify every citation against the retrieved text | live; verdicts render as chips |
+| `EXTERNAL_CLAUSE_SCRUB_ENABLED` | `1` | strip invented NFPA/SFPE clause numbers mid-stream | live |
+| `PROVIDER_BREAKER_ENABLED` | `1` | per-model circuit breaker | live |
+| `USER_MEMORY_ENABLED` | `1` | per-account durable memory | live |
+| `BUILDING_PROFILE_ENABLED` | `1` | inject the conversation's building profile as its own system block | live; inert until `VITE_BUILDING_PROFILE_UI` is on, because only then does the client send `conversation_id` |
+| `ADVISORY_CITATION_TOKENS_ENABLED` | `1` | `[SBC-xxx Section n]` tokens in answers | live |
+| `ADVISORY_DYNAMIC_THINKING_ENABLED` | `1` | live "thinking" status messages | live |
+| `ADVISORY_MULTI_QUERY_RETRIEVAL_ENABLED` | `0` | multi-topic sub-queries | not gated yet |
+| `SBC_NEW_SOURCE_CODES_ENABLED` | `1` | admit SBC 401/501 to retrieval | live |
+| `RULE_ENGINE_ENABLED` | — | **does not exist yet.** The rule engine is data + a tested evaluator; wiring it into answers (B2-4) waits on engineer validation of the 34 draft rules | `rule-engine-notes.md` |
+| `VITE_BUILDING_PROFILE_UI` / `VITE_COMPLIANCE_REPORT_UI` / `VITE_ANSWER_FEEDBACK_UI` | off | the three C1b/B3 surfaces | built, awaiting the owner's decision |
+
+**Reading this table is part of any change to this stack.** A flag at `0` with
+"gate failed" next to it is a settled question — re-open it only with a new
+measurement, not a new intuition.

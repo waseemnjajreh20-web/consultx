@@ -44,6 +44,7 @@ import {
   RETRIEVAL_ENGINE_HEADER,
   RETRIEVAL_FALLBACK_HEADER,
   resolveFloor,
+  resolveFloorMode,
   shouldUseVectorForAdvisory,
   VECTOR_MIN_SIMILARITY_ABS,
   VECTOR_MIN_SIMILARITY_ABS_ENV,
@@ -95,6 +96,7 @@ import {
 } from "./citationVerifier.ts";
 import { createStreamScrubber } from "./externalClauseScrubber.ts";
 import { buildingProfileEnabled, fetchBuildingProfileBlock, isConversationId } from "./buildingProfileBlock.ts";
+import { fetchSBCContextKeywordFts, isKeywordFtsEnabled } from "./keywordRetrieval.ts";
 import {
   fetchSBCContextHybrid,
   HYBRID_FTS_WEIGHT_DEFAULT,
@@ -1739,6 +1741,42 @@ async function fetchSBCContext(query: string, extraKeywords?: string[]): Promise
     // Build structured query metadata for precision scoring
     const queryMeta = buildQueryMeta(query);
 
+    // ── D3: in-database keyword retrieval (SBC_KEYWORD_FTS_ENABLED) ─────────
+    // Everything below this block — bucket listing, file scoring, up to 12
+    // downloads, in-isolate parsing and scoring — computes what one indexed
+    // query over sbc_documents.tsv already answers (measured 33ms against the
+    // live corpus, versus 0.6-3.8s for the storage path). Flag OFF is the
+    // storage path, byte-identical: isKeywordFtsEnabled is a single
+    // synchronous env read and this block is skipped entirely.
+    //
+    // The RPC gets the SAME terms the TypeScript scorer would have used
+    // (keywords plus the structured metadata's section numbers, table refs
+    // and exact phrases), because the corpus is English and the raw Arabic
+    // question matches nothing lexically. Fail-open: null means "keep going
+    // down the storage path", so a missing RPC or a bad query costs latency,
+    // never the answer.
+    if (isKeywordFtsEnabled(Deno.env.get)) {
+      const ftsTerms = [
+        ...keywords,
+        ...queryMeta.sectionNumbers,
+        ...queryMeta.tableRefs,
+        ...queryMeta.exactPhrases,
+      ];
+      const ftsStart = Date.now();
+      const fts = await fetchSBCContextKeywordFts(ftsTerms, null, 40, supabaseAdmin, MAX_TOTAL_CONTEXT);
+      if (fts) {
+        console.log(
+          `[Keyword FTS] ${fts.docIds.length} chunks from ${fts.files.length} files in ${Date.now() - ftsStart}ms ` +
+          `(${fts.context.length} chars, ${ftsTerms.length} terms) — storage path skipped`,
+        );
+        const result = { context: fts.context, files: fts.files, sourceMeta: fts.sourceMeta };
+        queryCache.set(cacheKey, { result, timestamp: Date.now() });
+        cleanupQueryCache();
+        return result;
+      }
+      console.log("[Keyword FTS] no usable result — falling through to the storage path");
+    }
+
     // Download files in parallel
     const downloadPromises = selectedFiles.map(async (file: any) => {
       try {
@@ -2556,7 +2594,13 @@ async function fetchSBCContextVector(
     // distribution and the derivation of both floors: ./retrievalPolicy.ts.
     const relFloor = resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_REL_ENV, VECTOR_MIN_SIMILARITY_REL);
     const absFloor = resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_ABS_ENV, VECTOR_MIN_SIMILARITY_ABS);
-    const floored = applySimilarityFloor(matches as { similarity?: number | null }[], relFloor, absFloor);
+    // SBC_VECTOR_FLOOR_MODE (2026-09-03): "drop" (default) is the behaviour
+    // measured below; "gate" keeps the fallback decision but stops discarding
+    // individual rows, which the model-free retrieval gate showed is worth 2
+    // of 87 expected sections. Default unchanged until an answer-quality run
+    // says the extra marginal chunks do not hurt.
+    const floorMode = resolveFloorMode(Deno.env.get);
+    const floored = applySimilarityFloor(matches as { similarity?: number | null }[], relFloor, absFloor, floorMode);
 
     if (floored.kept.length === 0) {
       // Everything was below the floor. Fall back rather than hand the model a
@@ -2573,7 +2617,7 @@ async function fetchSBCContextVector(
     if (floored.droppedCount > 0) {
       console.log(
         `[Vector RAG] Similarity floor dropped ${floored.droppedCount}/${matches.length} matches ` +
-        `(cut=${floored.effectiveFloor?.toFixed(3)}, rel=${relFloor}, abs=${absFloor})`
+        `(cut=${floored.effectiveFloor?.toFixed(3)}, rel=${relFloor}, abs=${absFloor}, mode=${floorMode})`
       );
     }
 

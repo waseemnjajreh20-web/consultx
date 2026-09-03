@@ -234,6 +234,33 @@ export const VECTOR_MIN_SIMILARITY_REL_ENV = "SBC_VECTOR_MIN_SIMILARITY_REL";
 export const VECTOR_MIN_SIMILARITY_ABS_ENV = "SBC_VECTOR_MIN_SIMILARITY_ABS";
 
 /**
+ * What the floor is allowed to DO (2026-09-03).
+ *
+ * The floor has always had two jobs bundled together: decide whether the whole
+ * result set is noise (all rows below the cut -> keyword fallback), and drop
+ * the individual rows below the cut. The first job is what bounds the blast
+ * radius of a bad query. The second was never measured until the model-free
+ * retrieval gate existed — and it costs recall: over 40 benchmark questions it
+ * drops about 5 of every 25 rows and, with them, 2 of 87 expected sections and
+ * 2 of 40 complete section sets (73.6% -> 71.3%).
+ *
+ *   "drop" (default) — today's behaviour, both jobs.
+ *   "gate"           — the fallback decision only; rows are passed through
+ *                      whenever at least one of them clears the cut.
+ *
+ * Default stays "drop" until an answer-quality run says otherwise: the gate
+ * measures which sections REACH the model, not what the model does with five
+ * extra marginal chunks.
+ */
+export const VECTOR_FLOOR_MODE_ENV = "SBC_VECTOR_FLOOR_MODE";
+export type VectorFloorMode = "drop" | "gate";
+
+export function resolveFloorMode(env: EnvReader, fallback: VectorFloorMode = "drop"): VectorFloorMode {
+  const raw = (env(VECTOR_FLOOR_MODE_ENV) ?? "").trim().toLowerCase();
+  return raw === "gate" || raw === "drop" ? raw : fallback;
+}
+
+/**
  * Read an override from the environment. Only a finite number in [0, 1] is
  * accepted; anything else falls back to the measured default rather than
  * silently disabling the floor.
@@ -277,6 +304,7 @@ export function applySimilarityFloor<T extends SimilarityScored>(
   matches: T[],
   relFloor: number = VECTOR_MIN_SIMILARITY_REL,
   absFloor: number = VECTOR_MIN_SIMILARITY_ABS,
+  mode: VectorFloorMode = "drop",
 ): SimilarityFloorResult<T> {
   if (!Array.isArray(matches) || matches.length === 0) {
     return { kept: [], droppedCount: 0, effectiveFloor: null, topSimilarity: null };
@@ -296,15 +324,22 @@ export function applySimilarityFloor<T extends SimilarityScored>(
   }
 
   const cut = Math.max(absFloor, relFloor * top);
-  const kept = matches.filter((m) => {
+  const above = matches.filter((m) => {
     const s = m?.similarity;
     if (typeof s !== "number" || !Number.isFinite(s)) return true;
     return s >= cut;
   });
 
+  // "gate": the cut still decides whether this result set is noise — an empty
+  // `above` means every row failed it, and the caller falls back exactly as
+  // before — but as long as ONE row clears it, the whole set is passed on.
+  // `droppedCount` stays honest (it reports what "drop" would have removed),
+  // so the caller's log line still says how much the floor disagreed with.
+  const kept = mode === "gate" && above.length > 0 ? [...matches] : above;
+
   return {
     kept,
-    droppedCount: matches.length - kept.length,
+    droppedCount: matches.length - above.length,
     effectiveFloor: cut,
     topSimilarity: top,
   };
