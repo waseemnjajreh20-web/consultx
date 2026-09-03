@@ -303,7 +303,10 @@ describe("geminiResilience.ts context-cache branches", () => {
   });
 
   it("sits AFTER the thinking-shape discovery branch, which is untouched", () => {
-    const thinkingAt = RESILIENCE_SRC.indexOf("thinkingEffort === \"minimal\" &&");
+    // The discovery branch's own condition widened from minimal-only to
+    // every non-default level when the thinking ladder landed (2026-09-03);
+    // its POSITION relative to the cache branch is what this test is about.
+    const thinkingAt = RESILIENCE_SRC.indexOf("thinkingEffort !== \"default\" &&");
     const cacheAt = RESILIENCE_SRC.indexOf("if (activeCache && shouldRetryWithoutCache(");
     const genericAt = RESILIENCE_SRC.indexOf("const retryable = isRetryableStatus(resp.status);");
     expect(thinkingAt).toBeGreaterThan(-1);

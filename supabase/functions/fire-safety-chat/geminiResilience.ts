@@ -203,12 +203,46 @@ function isRetryableStatus(status: number): boolean {
 // thinking field moves to the next candidate without consuming a retry
 // attempt, and if every shape is rejected the model runs with its default
 // thinking — degraded latency, never an outage.
-export type ThinkingEffort = "minimal" | "default";
-const THINKING_CANDIDATES: Array<Record<string, unknown>> = [
-  { thinkingLevel: "minimal" },
-  { thinkingBudget: 0 },
-];
+//
+// 2026-09-03: widened from minimal/default to the full ladder, so the heavy
+// modes can be measured at intermediate levels instead of only "capped" vs
+// "uncapped" (the D2 session-6 item of the wave plan). "default" still means
+// "send no thinkingConfig at all", which keeps the request byte-identical to
+// what a mode sent before any of this existed.
+export type ThinkingEffort = "minimal" | "low" | "medium" | "high" | "default";
+
+// Per level, the shapes to try in order. Two generations of the API disagree:
+// 3.x takes a thinkingLevel enum, 2.5 takes an integer thinkingBudget. The
+// budgets are the documented-order-of-magnitude equivalents of the enum, not
+// tuned values — whichever shape the model accepts first is the one used.
+const THINKING_CANDIDATES: Record<Exclude<ThinkingEffort, "default">, Array<Record<string, unknown>>> = {
+  minimal: [{ thinkingLevel: "minimal" }, { thinkingBudget: 0 }],
+  low: [{ thinkingLevel: "low" }, { thinkingBudget: 512 }],
+  medium: [{ thinkingLevel: "medium" }, { thinkingBudget: 2048 }],
+  high: [{ thinkingLevel: "high" }, { thinkingBudget: 8192 }],
+};
+
+/** Keyed by model AND effort: a model that accepts thinkingLevel:"minimal" tells us nothing about whether it accepts "medium". */
 const acceptedThinkingShape = new Map<string, Record<string, unknown> | null>();
+const shapeKey = (model: string, effort: ThinkingEffort) => `${model}::${effort}`;
+
+/**
+ * Reads a per-mode thinking level from the environment, e.g.
+ * THINKING_EFFORT_STANDARD=low. Anything unrecognised — a typo, an empty
+ * string, a level this build does not know — falls back to `fallback` rather
+ * than silently selecting a different level, the same discipline every
+ * ADVISORY_* flag in this codebase follows.
+ */
+export function resolveThinkingEffort(
+  env: (key: string) => string | undefined,
+  key: string,
+  fallback: ThinkingEffort,
+): ThinkingEffort {
+  const raw = (env(key) ?? "").trim().toLowerCase();
+  return raw === "minimal" || raw === "low" || raw === "medium" || raw === "high" || raw === "default"
+    ? (raw as ThinkingEffort)
+    : fallback;
+}
 
 function buildGenerationConfig(thinkingConfig: Record<string, unknown> | null): Record<string, unknown> {
   // With no thinking override the config stays byte-identical to the
@@ -376,7 +410,7 @@ export async function fetchGeminiStreamWithRetry(
   const delays = [1000, 2000, 4000];
   let lastErrorText = "";
   let shapeIdx = 0;
-  let storedShape = acceptedThinkingShape.get(model);
+  let storedShape = acceptedThinkingShape.get(shapeKey(model, thinkingEffort));
   // Dropped to null (once) the first time a cachedContent-bearing attempt
   // fails in a cache-shaped way — see the fallback branch below.
   let activeCache: GeminiCacheBinding | null = cacheRef;
@@ -387,7 +421,7 @@ export async function fetchGeminiStreamWithRetry(
         ? null
         : storedShape !== undefined
           ? storedShape
-          : THINKING_CANDIDATES[shapeIdx] ?? null;
+          : THINKING_CANDIDATES[thinkingEffort][shapeIdx] ?? null;
     const start = Date.now();
     // Built exactly as it was before context caching existed — same three
     // properties, same insertion order — so with activeCache null the
@@ -418,10 +452,10 @@ export async function fetchGeminiStreamWithRetry(
 
     if (resp.ok) {
       if (isProviderBreakerEnabled()) recordBreakerSuccess(model);
-      if (thinkingEffort === "minimal" && storedShape === undefined) {
-        acceptedThinkingShape.set(model, thinkingConfig);
+      if (thinkingEffort !== "default" && storedShape === undefined) {
+        acceptedThinkingShape.set(shapeKey(model, thinkingEffort), thinkingConfig);
         storedShape = thinkingConfig;
-        console.log(`[Gemini] ${model} accepted thinking shape: ${JSON.stringify(thinkingConfig)}`);
+        console.log(`[Gemini] ${model} accepted thinking shape for ${thinkingEffort}: ${JSON.stringify(thinkingConfig)}`);
       }
       console.log(
         `[Gemini] ${model} stream OK on attempt ${attempt}/${maxAttempts} (${latency}ms)`
@@ -436,18 +470,18 @@ export async function fetchGeminiStreamWithRetry(
     // candidate (or give up on thinking control) without consuming an attempt.
     if (
       resp.status === 400 &&
-      thinkingEffort === "minimal" &&
+      thinkingEffort !== "default" &&
       storedShape === undefined &&
       thinkingConfig !== null &&
       /thinking/i.test(errorText)
     ) {
       shapeIdx++;
-      if (shapeIdx >= THINKING_CANDIDATES.length) {
-        acceptedThinkingShape.set(model, null);
+      if (shapeIdx >= THINKING_CANDIDATES[thinkingEffort].length) {
+        acceptedThinkingShape.set(shapeKey(model, thinkingEffort), null);
         storedShape = null;
-        console.log(`[Gemini] ${model} rejected every thinking shape — running with model-default thinking`);
+        console.log(`[Gemini] ${model} rejected every ${thinkingEffort} thinking shape — running with model-default thinking`);
       } else {
-        console.log(`[Gemini] ${model} rejected thinking shape ${shapeIdx}/${THINKING_CANDIDATES.length}, trying next`);
+        console.log(`[Gemini] ${model} rejected ${thinkingEffort} thinking shape ${shapeIdx}/${THINKING_CANDIDATES[thinkingEffort].length}, trying next`);
       }
       attempt--;
       continue;

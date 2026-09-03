@@ -195,3 +195,67 @@ harness can reproduce the runtime's exact query embedding. It accepts either
 `PROBE_TASK_TOKEN` (shared with the synthetic-probe cron) or its own
 `GEMINI_DIAG_TOKEN`, which is rotatable with one CLI command without touching
 that cron schedule.
+
+## D2 session 6 — per-mode thinking levels (2026-09-03)
+
+The last open item of P2. Primary has run at `minimal` since the speed wave;
+standard and analysis had never run at anything but the model's uncapped
+default, because the code only had those two settings. `ThinkingEffort` is now
+a ladder (`minimal | low | medium | high | default`), each level carrying both
+API generations' field shapes (3.x `thinkingLevel` enum, 2.5 `thinkingBudget`
+integer) with the same discovery-and-remember mechanism that shipped for
+`minimal` — now keyed per model AND level, since a model accepting
+`thinkingLevel:"minimal"` says nothing about `"medium"`. Selection is per mode
+via `THINKING_EFFORT_PRIMARY` / `_STANDARD` / `_ANALYSIS`; an unset or
+mistyped value falls back to today's behaviour, so the request stays
+byte-identical unless a level is deliberately set.
+
+**Measured on production** (`ttfb_probe.mjs`, 2 rounds per mode, region-pinned;
+the figure is `gemini_connect` — time from request to the model's first byte,
+which is what dominates these modes):
+
+| level | standard | analysis |
+|---|---|---|
+| default (uncapped, today) | 17.6s / 9.6s | 10.1s / 10.0s |
+| **low** | **5.5s / 3.6s** | **3.9s / 3.1s** |
+| medium | 11.3s / 23.5s | 14.0s / 9.1s |
+
+`low` is roughly a **3x** improvement in time-to-first-text for both heavy
+modes. `medium` is indistinguishable from uncapped — the useful part of the
+ladder is its bottom, which matches what `minimal` did for primary.
+
+Quality gate before adopting: the 13-question subset at `low`, compared against
+the flag-off baseline in `evals/results/2026-09-02-subset` (sections 52%,
+chains 75%). Latency is not the only thing less thinking can change — one
+probe answer came back at 1,464 characters against a 4,068-character baseline,
+which is exactly the risk the gate is for.
+
+**Quality gate result: `low` is REJECTED — reverted to `default` for both heavy
+modes.** 13 questions x 2 modes, against the `evals/results/2026-09-02-subset`
+baseline:
+
+| metric | baseline (uncapped) | low |
+|---|---|---|
+| exact-section match | 52% | **30%** |
+| sections found | 24/46 | **14/46** |
+| chain-pair match | 75% | 50% |
+| refusal correctness | 50% | 33% |
+| citation discipline | ~90% | **65%** |
+| latency p95 | 27s | 21.9s (median 12s) |
+
+The speed was real — median answer 12s against 20s — and it cost nearly half
+the correct section citations. One analysis answer came back at 405 characters.
+That is the trade this gate exists to refuse: on a life-safety code assistant,
+a faster answer that cites the wrong section is worse than a slower one that
+cites the right one.
+
+The ladder stays in the code (it is how the question was answered, and how a
+future model's ladder will be re-asked in twenty minutes), with all three
+variables back to their defaults — primary `minimal`, standard and analysis
+model-default. Artifacts: `evals/results/2026-09-03-thinking-low-13q/`.
+
+**What this closes:** P2 is now fully settled, all three items by measurement —
+D1 caches live, D2 context caching rejected (needs a database-backed registry),
+D2 thinking budgets rejected at every level that is faster than default. The
+remaining latency in the heavy modes is the model's own reasoning time, and
+this repo has no lever left for it that does not cost citation accuracy.

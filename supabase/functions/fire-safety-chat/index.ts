@@ -7,6 +7,7 @@ import {
   fetchAvailableGeminiModels,
   fetchGeminiNonStreamingWithRetry,
   fetchGeminiStreamWithRetry,
+  resolveThinkingEffort,
   recordQuotaIncrement,
   rollbackQuotaIfNeeded,
 } from "./geminiResilience.ts";
@@ -4838,7 +4839,21 @@ serve(async (req) => {
       // analysis keep the model's default (reasoning-heavy) behaviour.
       const result = await fetchGeminiStreamWithRetry(
         GEMINI_API_KEY, model, systemInstruction, contents, 3,
-        mode === "primary" ? "minimal" : "default",
+        // D2 session 6 (2026-09-03): the thinking level is now per mode and
+        // env-tunable, so the heavy modes can be measured at intermediate
+        // levels instead of only "capped" (primary) vs "uncapped" (the rest).
+        // Defaults reproduce today's behaviour exactly — primary minimal,
+        // standard/analysis model-default — so an unset or mistyped variable
+        // changes nothing. Measurement: gemini_connect in X-Timing per mode.
+        resolveThinkingEffort(
+          Deno.env.get,
+          mode === "primary"
+            ? "THINKING_EFFORT_PRIMARY"
+            : mode === "analysis"
+              ? "THINKING_EFFORT_ANALYSIS"
+              : "THINKING_EFFORT_STANDARD",
+          mode === "primary" ? "minimal" : "default",
+        ),
         cacheRef ? { ref: cacheRef, mode } : null,
       );
       if (result.response.ok) {
