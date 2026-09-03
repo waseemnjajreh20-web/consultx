@@ -1,0 +1,4047 @@
+{
+  "schema_version": "consultx-rule-engine-v0",
+  "code_family": "SBC fire/life-safety v0 (SBC 201 Ch.5/6/7/10 egress+construction, SBC 801 Ch.9 sprinkler mandates)",
+  "generated_at": "2026-09-03",
+  "rules": [
+    {
+      "id": "SBC201-504.3-height-nonsprinklered-IIB-IIIB",
+      "code": "SBC201",
+      "section": "504.3",
+      "title_ar": "الحد الأقصى للارتفاع بدون رشاشات — إنشاء النوع II-B أو III-B",
+      "title_en": "Maximum unsprinklered building height — Type II-B / III-B construction",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "in",
+            "value": [
+              "A-1",
+              "A-2",
+              "A-3",
+              "A-4",
+              "B",
+              "E",
+              "F-1",
+              "F-2",
+              "M",
+              "S-1",
+              "S-2",
+              "U"
+            ]
+          },
+          {
+            "parameter": "construction_type",
+            "operator": "in",
+            "value": [
+              "II-B",
+              "III-B"
+            ]
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "eq",
+            "value": false
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "height_m",
+        "comparator": "lte",
+        "value": 16.5,
+        "unit": "m"
+      },
+      "outputs": {
+        "explanation_ar": "وفق الجدول 504.3 (SBC 201)، الإشغالات A/B/E/F/M/S/U بإنشاء من النوع II-B أو III-B وبلا نظام رشاشات تلقائي محدودة بارتفاع {computed_value} م فوق مستوى التصريف. الارتفاع المُدخل {height_m} م. لتجاوز هذا الحد: إمّا تخفيض الارتفاع أو تركيب نظام رشاشات مطابق للقسم 903.3.1.1، الذي يرفع الحد إلى 23 م لنفس نوعَي الإنشاء (انظر SBC201-504.3-table)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "504.3",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "A, B, E, F, M, S, U | NSb | UL | 48 | 19.5 | 16.5 | 19.5 | 16.5 | 19.5 | 19.5 | 19.5 | 19.5 | 15 | 12"
+      },
+      "notes": "الاشتراط الأدق الذي يستهدفه هذا الطلب ('محفّز 16.5 م') هو هذا الرقم بعينه من الجدول 504.3 — قيمة الارتفاع المسموح بلا رشاشات لإنشاء II-B/III-B. هذه القاعدة مبسّطة لعائلة إشغال واحدة شائعة؛ SBC201-504.3-table يعمّم على عائلات إشغال إضافية (H وR) بما فيها فروق نوع نظام الرشاش لمجموعة R (NFPA 13 مقابل 13R/13D) التي لم تُدرَج بعد كمعامل مستقل — انظر ملاحظات هذه القاعدة الشقيقة."
+    },
+    {
+      "id": "SBC201-504.3-table",
+      "code": "SBC201",
+      "section": "504.3",
+      "title_ar": "الارتفاع الأقصى المسموح فوق مستوى التصريف (جدول 504.3)",
+      "title_en": "Allowable building height above grade plane (Table 504.3)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "construction_type",
+            "operator": "in",
+            "value": [
+              "II-B",
+              "III-B"
+            ]
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "construction_type",
+          "sprinklered"
+        ],
+        "compare": {
+          "parameter": "height_m",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "abefmsu-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "B",
+                  "E",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "S-1",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 16.5,
+            "unit": "m"
+          },
+          {
+            "id": "abefmsu-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "B",
+                  "E",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "S-1",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "h-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-5"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 16.5,
+            "unit": "m",
+            "notes": "H occupancies: NS column is printed 'only for use in evaluation of existing building height' (footnote d) - new Group H requires sprinklers per Section 903.2.5 regardless (see SBC801-903.2.5-group-h-sprinkler-mandate)."
+          },
+          {
+            "id": "h-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-5"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 16.5,
+            "unit": "m",
+            "notes": "As printed, the sprinklered value for this H-group row is unchanged from NS (16.5 m) for Type II-B/III-B - transcribed verbatim, not corrected."
+          },
+          {
+            "id": "r-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 16.5,
+            "unit": "m"
+          },
+          {
+            "id": "r-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 23,
+            "unit": "m",
+            "notes": "Printed value for the full NFPA 13 'S' sprinkler condition. The intermediate NFPA 13R/13D rows (18 m) are NOT yet encoded as a separate parameter in this draft - see rule notes."
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "الحد الأقصى للارتفاع فوق مستوى التصريف لهذا الإشغال ونوع الإنشاء {construction_type} هو {computed_value} م (جدول 504.3، SBC 201). الارتفاع المُدخل {height_m} م."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "504.3",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "Note: UL = Unlimited; NS = not sprinklered throughout; S = sprinklered per Section 903.3.1.1; S13R/S13D = per 903.3.1.2/903.3.1.3."
+      },
+      "notes": "تغطية جزئية متعمدة (6 صفوف من أصل 17 صفاً مطبوعاً) تركّز على عائلات الإشغال الأكثر شيوعاً وعلى نوعَي الإنشاء II-B/III-B (اللذين يحملان القيمة نفسها عبر كل صفوف هذا الجدول تحديداً - تم التحقق يدوياً). لم تُدرَج مستويات NFPA 13R/13D الوسيطة لمجموعة R (18 م) لأن المحرك لا يحمل بعد معامل 'نوع نظام الرشاش'؛ يُضاف عند التوسّع. الصفوف المتبقية (A-5, I, S منفردة، أنواع الإنشاء الأخرى) في docs/audits/code-tables-rebuild-20260823.sql للمهندس المُراجِع."
+    },
+    {
+      "id": "SBC201-504.4-table",
+      "code": "SBC201",
+      "section": "504.4",
+      "title_ar": "عدد الطوابق الأقصى المسموح فوق مستوى التصريف (جدول 504.4)",
+      "title_en": "Allowable number of stories above grade plane (Table 504.4)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "construction_type",
+            "operator": "in",
+            "value": [
+              "II-B",
+              "III-B"
+            ]
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "construction_type",
+          "sprinklered"
+        ],
+        "compare": {
+          "parameter": "stories",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "a1-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "A-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 2,
+            "unit": "count"
+          },
+          {
+            "id": "a1-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "A-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 3,
+            "unit": "count"
+          },
+          {
+            "id": "b-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 3,
+            "unit": "count"
+          },
+          {
+            "id": "b-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 4,
+            "unit": "count"
+          },
+          {
+            "id": "r2-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 4,
+            "unit": "count",
+            "notes": "Footnote d: NS column is for existing-building evaluation only - new Group R requires sprinklers per Section 903.2.8."
+          },
+          {
+            "id": "r2-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 5,
+            "unit": "count"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "عدد الطوابق الأقصى فوق مستوى التصريف لهذا الإشغال ونوع الإنشاء {construction_type} هو {computed_value} (جدول 504.4، SBC 201). عدد الطوابق المُدخل {stories}."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "504.4",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 465,
+        "quote": "A-1 | NS | UL | 5 | 3 | 2 | 3 | 2 | ...  ;  B | NS | UL | 11 | 5 | 3 | 5 | 3 | ...  (Type II-B/III-B columns transcribed)"
+      },
+      "notes": "تغطية جزئية (6 صفوف من 34 مطبوعة): A-1 وB وR-2 فقط، إنشاء II-B/III-B (قيمتان متطابقتان تم التحقق منهما يدوياً لهذه الصفوف الثلاثة). الجدول الكامل في code-tables-rebuild-20260823.sql."
+    },
+    {
+      "id": "SBC201-506.2-table",
+      "code": "SBC201",
+      "section": "506.2",
+      "title_ar": "عامل المساحة المسموحة (جدول 506.2) — إنشاء النوع II-B",
+      "title_en": "Allowable area factor (Table 506.2) — Type II-B construction",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "in",
+            "value": [
+              "B",
+              "R-1",
+              "R-2",
+              "R-3",
+              "R-4"
+            ]
+          },
+          {
+            "parameter": "construction_type",
+            "operator": "eq",
+            "value": "II-B"
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "sprinklered",
+          "stories"
+        ],
+        "compare": {
+          "parameter": "gross_area_m2",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "b-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 2140,
+            "unit": "m2"
+          },
+          {
+            "id": "b-s1",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              },
+              {
+                "parameter": "stories",
+                "operator": "lte",
+                "value": 1
+              }
+            ],
+            "value": 8550,
+            "unit": "m2",
+            "notes": "S1 = sprinklered, max one story above grade plane. Multi-story sprinklered (SM) rows are not in this draft subset."
+          },
+          {
+            "id": "r2-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 1490,
+            "unit": "m2",
+            "notes": "Footnote h: new Group R requires sprinklers per Section 903.2.8 - NS is for existing-building evaluation."
+          },
+          {
+            "id": "r2-s1",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              },
+              {
+                "parameter": "stories",
+                "operator": "lte",
+                "value": 1
+              }
+            ],
+            "value": 5950,
+            "unit": "m2"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "أقصى مساحة إجمالية مسموحة (At) لهذا الإشغال بإنشاء II-B هي {computed_value} م2 (جدول 506.2، SBC 201). المساحة المُدخلة {gross_area_m2} م2."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "506.2",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 467,
+        "quote": "B | NS | ... | 2,140 | ... ; B | S1 | ... | 8,550 | ... ; R-2h | NSd | ... | 1,490 | ... ; R-2h | S1 | ... | 5,950 | ...",
+        "source_note": "Table spans printed pages 467-468 (page_index_0based 244-245)."
+      },
+      "notes": "تغطية جزئية جداً (4 صفوف من نحو 84 مطبوعة): B وR-2، إنشاء II-B فقط. القيم بين II-B وIII-B في هذا الجدول (خلافاً لجدولي 504.3/504.4) غير متطابقة، لذا لم تُدمَج. الجدول الكامل موثّق في code-tables-rebuild-20260823.sql بما فيه شذوذ مؤكَّد في صف I-4/Type I-B (S1 أصغر من SM)."
+    },
+    {
+      "id": "SBC201-508.4-table",
+      "code": "SBC201",
+      "section": "508.4",
+      "title_ar": "الفصل المطلوب بين الإشغالات المختلطة بالساعات (جدول 508.4)",
+      "title_en": "Required fire-resistance separation between mixed occupancies (Table 508.4)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "adjacent_occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "adjacent_occupancy_group",
+          "sprinklered"
+        ],
+        "compare": {
+          "parameter": "separation_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "ae-r-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E"
+                ]
+              },
+              {
+                "parameter": "adjacent_occupancy_group",
+                "operator": "in",
+                "value": [
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "ae-r-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E"
+                ]
+              },
+              {
+                "parameter": "adjacent_occupancy_group",
+                "operator": "in",
+                "value": [
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ae-i134-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E"
+                ]
+              },
+              {
+                "parameter": "adjacent_occupancy_group",
+                "operator": "in",
+                "value": [
+                  "I-1",
+                  "I-3",
+                  "I-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "ae-i134-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E"
+                ]
+              },
+              {
+                "parameter": "adjacent_occupancy_group",
+                "operator": "in",
+                "value": [
+                  "I-1",
+                  "I-3",
+                  "I-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "h1-any",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-1"
+              },
+              {
+                "parameter": "adjacent_occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E",
+                  "B",
+                  "M",
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              }
+            ],
+            "value": "NP",
+            "notes": "Printed \"NP\" for every column against Group H-1 except H-1 itself (which is \"N\" - no separation requirement, i.e. not a mixed-occupancy case). H-1 cannot be separated into the same building as these occupancies at all."
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "الفصل المطلوب بالساعات بين إشغال {occupancy_group} والإشغال المجاور {adjacent_occupancy_group} هو {computed_value} (جدول 508.4، SBC 201). قيمة الفصل الفعلية المُدخلة {separation_hours} ساعة."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "508.4",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 469,
+        "quote": "A, E | N | N | 1 | 2 | 2 | NP | 1 | 2 | N | 1 | 1 | 2 | NP | NP | 3 | 4 | 2 | 3 | 2 | NP"
+      },
+      "notes": "تغطية جزئية (5 صفوف من 100 خانة مطبوعة عبر 10x20). production كان يحمل جدولاً بعنوان مختلف تماماً تحت الرقم 508.4 ('Nonseparated Occupancies') قبل إعادة البناء بتاريخ 2026-08-23 - انظر القسم 6.2 من code-tables-rebuild-20260823.md؛ هذه القاعدة تستعمل الجدول المطبوع فعلياً (REQUIRED SEPARATION OF OCCUPANCIES)."
+    },
+    {
+      "id": "SBC201-509.1-furnace-room",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة المرجل/الفرن (أكثر من 117 كيلوواط) — فصل ساعة واحدة أو رشاشات",
+      "title_en": "Furnace room over 117 kW input — 1-hour separation or sprinkler alternative",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "furnace_room_gt_117kW"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "room_separation_hours",
+        "comparator": "gte",
+        "value": 1,
+        "unit": "hours"
+      },
+      "outputs": {
+        "explanation_ar": "غرفة الفرن/المرجل التي تتجاوز معداتها 117 كيلوواط تتطلب فصلاً بمقاومة حريق ساعة واحدة على الأقل (جدول 509.1)، أو الاستعاضة عنه بتركيب نظام رشاشات تلقائي في الغرفة (انظر الاستثناء)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Furnace room where any piece of equipment is over 117 kW per hour input | 1 hour or provide automatic sprinkler system"
+      },
+      "exceptions": [
+        {
+          "id": "sprinkler-alternative",
+          "conditions": [
+            {
+              "parameter": "incidental_room_sprinklered",
+              "operator": "eq",
+              "value": true
+            }
+          ],
+          "effect": "waive",
+          "note_ar": "بديل مقبول وفق حاشية (أ) من الجدول 509.1: تركيب نظام رشاشات تلقائي داخل الغرفة نفسها يُغني عن ساعة الفصل.",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 509.1",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 470,
+            "quote": "a. Where an automatic fire-extinguishing system is provided, it need only be provided in the incidental use room or area."
+          }
+        }
+      ]
+    },
+    {
+      "id": "SBC201-509.1-refrigerant-machinery-room",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة آلات التبريد — فصل ساعة واحدة أو رشاشات",
+      "title_en": "Refrigerant machinery room — 1-hour separation or sprinkler alternative",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "refrigerant_machinery_room"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "room_separation_hours",
+        "comparator": "gte",
+        "value": 1,
+        "unit": "hours"
+      },
+      "outputs": {
+        "explanation_ar": "غرفة آلات التبريد تتطلب فصلاً بمقاومة حريق ساعة واحدة على الأقل (جدول 509.1)، أو رشاشات تلقائية داخل الغرفة كبديل."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Refrigerant machinery rooms | 1 hour or provide automatic sprinkler system"
+      },
+      "exceptions": [
+        {
+          "id": "sprinkler-alternative",
+          "conditions": [
+            {
+              "parameter": "incidental_room_sprinklered",
+              "operator": "eq",
+              "value": true
+            }
+          ],
+          "effect": "waive",
+          "note_ar": "بديل مقبول وفق حاشية (أ) من الجدول 509.1: رشاشات تلقائية داخل الغرفة تُغني عن ساعة الفصل.",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 509.1",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 470,
+            "quote": "a. Where an automatic fire-extinguishing system is provided, it need only be provided in the incidental use room or area."
+          }
+        }
+      ]
+    },
+    {
+      "id": "SBC201-509.1-incinerator-room-rating",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة المحرقة — فصل ساعتين (إلزامي)",
+      "title_en": "Incinerator room — 2-hour separation (mandatory)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "incinerator_room"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "room_separation_hours",
+        "comparator": "gte",
+        "value": 2,
+        "unit": "hours"
+      },
+      "outputs": {
+        "explanation_ar": "غرفة المحرقة تتطلب فصلاً بمقاومة حريق ساعتين على الأقل (جدول 509.1)، إضافةً إلى نظام رشاشات تلقائي إلزامي (لا بديل هنا خلافاً لغرف أخرى في الجدول نفسه)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Incinerator rooms | 2 hours and provide automatic sprinkler system"
+      },
+      "notes": "لا يوجد استثناء/بديل هنا: الجدول يستعمل 'AND' لا 'OR' - كلا الاشتراطين إلزامي، لذا قُسِّم إلى قاعدتين مستقلتين (هذه + SBC201-509.1-incinerator-room-sprinkler)."
+    },
+    {
+      "id": "SBC201-509.1-incinerator-room-sprinkler",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة المحرقة — رشاشات تلقائية (إلزامي)",
+      "title_en": "Incinerator room — automatic sprinkler system (mandatory)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "incinerator_room"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "incidental_room_sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "غرفة المحرقة تتطلب نظام رشاشات تلقائي إلزامياً (جدول 509.1)، إضافة إلى فصل الساعتين (انظر SBC201-509.1-incinerator-room-rating)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Incinerator rooms | 2 hours and provide automatic sprinkler system"
+      }
+    },
+    {
+      "id": "SBC201-509.1-paint-shop",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "ورشة الدهان (خارج مجموعة F) — ساعتان، أو ساعة واحدة مع رشاشات",
+      "title_en": "Paint shop (not Group F) — 2 hours, or 1 hour with sprinklers",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "paint_shop_non_group_f"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "room_separation_hours",
+        "comparator": "gte",
+        "value": 2,
+        "unit": "hours"
+      },
+      "outputs": {
+        "explanation_ar": "ورشة الدهان (غير المصنّفة ضمن مجموعة H، في إشغال غير F) تتطلب فصلاً بساعتين، أو ساعة واحدة مع رشاشات تلقائية في الغرفة (انظر الاستثناء)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Paint shops, not classified as Group H, located in occupancies other than Group F | 2 hours; or 1 hour and provide automatic sprinkler system"
+      },
+      "exceptions": [
+        {
+          "id": "sprinkler-reduces-to-1hr",
+          "conditions": [
+            {
+              "parameter": "incidental_room_sprinklered",
+              "operator": "eq",
+              "value": true
+            },
+            {
+              "parameter": "room_separation_hours",
+              "operator": "gte",
+              "value": 1
+            }
+          ],
+          "effect": "waive",
+          "note_ar": "مع رشاشات تلقائية في الغرفة، يكفي فصل ساعة واحدة بدلاً من ساعتين (جدول 509.1).",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 509.1",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 470,
+            "quote": "Paint shops, not classified as Group H, located in occupancies other than Group F | 2 hours; or 1 hour and provide automatic sprinkler system"
+          }
+        }
+      ]
+    },
+    {
+      "id": "SBC201-509.1-laundry-room",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة غسيل تتجاوز 9 م2 — ساعة واحدة أو رشاشات",
+      "title_en": "Laundry room over 9 m2 — 1 hour or sprinkler alternative",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "laundry_room_gt_9m2"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "threshold",
+        "parameter": "room_separation_hours",
+        "comparator": "gte",
+        "value": 1,
+        "unit": "hours"
+      },
+      "outputs": {
+        "explanation_ar": "غرفة الغسيل التي تتجاوز مساحتها 9 م2 تتطلب فصل ساعة واحدة، أو رشاشات تلقائية في الغرفة كبديل (جدول 509.1)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Laundry rooms over 9 m2 | 1 hour or provide automatic sprinkler system"
+      },
+      "exceptions": [
+        {
+          "id": "sprinkler-alternative",
+          "conditions": [
+            {
+              "parameter": "incidental_room_sprinklered",
+              "operator": "eq",
+              "value": true
+            }
+          ],
+          "effect": "waive",
+          "note_ar": "بديل مقبول: رشاشات تلقائية داخل غرفة الغسيل تُغني عن ساعة الفصل.",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 509.1",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 470,
+            "quote": "Laundry rooms over 9 m2 | 1 hour or provide automatic sprinkler system"
+          }
+        }
+      ]
+    },
+    {
+      "id": "SBC201-509.1-hydrogen-fuel-gas-room",
+      "code": "SBC201",
+      "section": "Table 509.1",
+      "title_ar": "غرفة غاز وقود الهيدروجين (غير مصنّفة H) — الفصل حسب مجموعة الإشغال",
+      "title_en": "Hydrogen fuel gas room (not classified Group H) — separation by occupancy group",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "incidental_room_type",
+            "operator": "eq",
+            "value": "hydrogen_fuel_gas_room"
+          },
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group"
+        ],
+        "compare": {
+          "parameter": "room_separation_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "bfhmsu",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "B",
+                  "F-1",
+                  "F-2",
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-4",
+                  "H-5",
+                  "M",
+                  "S-1",
+                  "S-2",
+                  "U"
+                ]
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "aeir",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "E",
+                  "I-1",
+                  "I-2",
+                  "I-3",
+                  "I-4",
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "غرفة غاز وقود الهيدروجين (غير المصنّفة ضمن مجموعة H) تتطلب فصلاً بـ{computed_value} ساعة حسب مجموعة الإشغال المضيفة (جدول 509.1)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 509.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 470,
+        "quote": "Hydrogen fuel gas rooms, not classified as Group H | 1 hour in Group B, F, H, M, S and U occupancies. 2 hours in Group A, E, I and R occupancies."
+      }
+    },
+    {
+      "id": "SBC201-601-primary-structural-frame",
+      "code": "SBC201",
+      "section": "Table 601",
+      "title_ar": "مقاومة الحريق المطلوبة للهيكل الإنشائي الرئيسي بالساعات (جدول 601)",
+      "title_en": "Required fire-resistance rating for the primary structural frame (Table 601)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "construction_type",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "element_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "ia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-A"
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "ib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iiia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iiib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "va",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "vb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة للهيكل الإنشائي الرئيسي لإنشاء النوع {construction_type} هي {computed_value} ساعة (جدول 601، SBC 201)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 601",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 505,
+        "quote": "Primary Structural framef (see Section 202) | 3a,b | 2a,b,c | 1b,c | 0c | 1b,c | 0 | 3a | 2a | 2a | HT | 1b,c | 0",
+        "source_note": "Re-verified glyph-by-glyph with a second PDF engine per the 2026-08-23 rebuild; fractional/HT cells for Type IV are excluded from this draft subset."
+      },
+      "notes": "تغطية 8 من 12 نوع إنشاء (استُثنيت أنواع IV-A/B/C/HT: خانتاها تحمل تخفيضات حاشية (أ) أو قيمة 'HT' غير رقمية لم يدعمها المحرك بعد)."
+    },
+    {
+      "id": "SBC201-601-bearing-walls-exterior",
+      "code": "SBC201",
+      "section": "Table 601",
+      "title_ar": "مقاومة الحريق المطلوبة للجدران الحاملة الخارجية بالساعات (جدول 601)",
+      "title_en": "Required fire-resistance rating for exterior bearing walls (Table 601)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "construction_type",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "element_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "ia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-A"
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "ib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iiia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-A"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iiib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iva",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-A"
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "ivb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ivc",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-C"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "va",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "vb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة للجدران الحاملة الخارجية لإنشاء النوع {construction_type} هي {computed_value} ساعة (جدول 601، SBC 201). ملاحظة: قد يحكم الجدول 705.5 قيمة أعلى حسب مسافة الفصل عن الحريق."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 601",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 505,
+        "quote": "Bearing walls Exterior e,f | 3 | 2 | 1 | 0 | 2 | 2 | 3 | 2 | 2 | 2 | 1 | 0"
+      },
+      "notes": "حاشية (هـ): لا تقل عن التصنيف المبني على مسافة الفصل عن الحريق (جدول 705.5) - القيمة الأعلى بين الجدولين هي الحاكمة عملياً."
+    },
+    {
+      "id": "SBC201-601-bearing-walls-interior",
+      "code": "SBC201",
+      "section": "Table 601",
+      "title_ar": "مقاومة الحريق المطلوبة للجدران الحاملة الداخلية بالساعات (جدول 601)",
+      "title_en": "Required fire-resistance rating for interior bearing walls (Table 601)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "construction_type",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "element_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "ia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-A"
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "ib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iiia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iiib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iva",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-A"
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "ivb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ivc",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-C"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "va",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "vb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة للجدران الحاملة الداخلية لإنشاء النوع {construction_type} هي {computed_value} ساعة (جدول 601، SBC 201)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 601",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 505,
+        "quote": "Bearing walls Interior | 3a | 2a | 1 | 0 | 1 | 0 | 3 | 2 | 2 | 1/HTg | 1 | 0"
+      },
+      "notes": "استُثني عمود IV-HT (قيمة مركّبة '1 ساعة أو خشب ثقيل' لا تُمثَّل كرقم واحد في هذا الإصدار الأولي)."
+    },
+    {
+      "id": "SBC201-601-floor-construction",
+      "code": "SBC201",
+      "section": "Table 601",
+      "title_ar": "مقاومة الحريق المطلوبة لعناصر الأرضية الإنشائية بالساعات (جدول 601) — القيمة الأشد تحفظاً",
+      "title_en": "Required fire-resistance rating for floor construction (Table 601) — conservative value",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "construction_type",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "element_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "ia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-A"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "I-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "iia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "II-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iiia",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "iiib",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "III-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "iva",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-A"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ivb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-B"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "ivc",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "IV-C"
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "va",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-A"
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "vb",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "eq",
+                "value": "V-B"
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة لعناصر الأرضية الإنشائية لإنشاء النوع {construction_type} هي {computed_value} ساعة (جدول 601، SBC 201؛ القيمة الأعلى بين طبعتين متعارضتين مطبوعتين - انظر الملاحظات)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 601",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 505,
+        "quote": "Floor construction (printed TWICE, conflicting): row1 '2|2|1|0|1|0|2|2|2|HT|1|0'; row2 '1 1/2b|1b,c|1b,c|0c|1b,c|0|1 1/2|1|1|HT|1b,c|0'",
+        "source_note": "Table 601 is printed once only (SBC 201 p.505); SBC 801 only cross-references it, so no second printing exists to resolve the duplicate row."
+      },
+      "notes": "تنبيه دقة مصدر: الصف 'Floor construction and associated secondary structural members' مطبوع مرتين في الجدول 601 (SBC 201 صفحة 505) بقيم متعارضة، ولا يوجد طبع ثانٍ في SBC 801 يحسم الخلاف (خلافاً لجداول أخرى في هذه المجموعة). القيم أدناه للأعمدة II-B/III-B/V-B هي القيمة نفسها في كلا الطبعين المتعارضين (صفر) فلا يتأثر أي مثال اختبار بها؛ لأعمدة I-A/I-B/II-A/III-A/V-A استُعملت القيمة الأعلى (الأشد تحفظاً) بين الطبعتين حتى تُحسم لدى جهة الاختصاص، تماماً كما أوصى تدقيق 2026-08-23."
+    },
+    {
+      "id": "SBC201-601-nonbearing-interior-partitions",
+      "code": "SBC201",
+      "section": "Table 601",
+      "title_ar": "مقاومة الحريق للجدران والقواطع الداخلية غير الحاملة (جدول 601)",
+      "title_en": "Fire-resistance rating for non-bearing interior walls and partitions (Table 601)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "construction_type",
+            "operator": "in",
+            "value": [
+              "I-A",
+              "I-B",
+              "II-A",
+              "II-B",
+              "III-A",
+              "III-B",
+              "IV-A",
+              "IV-B",
+              "IV-C",
+              "V-A",
+              "V-B"
+            ]
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "element_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "all-zero",
+            "match": [
+              {
+                "parameter": "construction_type",
+                "operator": "in",
+                "value": [
+                  "I-A",
+                  "I-B",
+                  "II-A",
+                  "II-B",
+                  "III-A",
+                  "III-B",
+                  "IV-A",
+                  "IV-B",
+                  "IV-C",
+                  "V-A",
+                  "V-B"
+                ]
+              }
+            ],
+            "value": 0,
+            "unit": "hours",
+            "notes": "Type IV-HT is excluded: the printed cell for that column is 'See Section 2304.11.2', not a hoursvalue."
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لا يوجد اشتراط مقاومة حريق مطبوع للجدران/القواطع الداخلية غير الحاملة لهذا النوع من الإنشاء (جدول 601، SBC 201) - قد تفرض أقسام أخرى من الكود تصنيفاً أعلى (حاشية د)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 601",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 505,
+        "quote": "Non-bearing walls and partitions Interiord | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | See Section 2304.11.2 | 0 | 0"
+      },
+      "notes": "حاشية (د): لا تقل عن التصنيف المطلوب في أقسام أخرى من الكود - هذه القاعدة تتحقق فقط من جدول 601 نفسه."
+    },
+    {
+      "id": "SBC201-705.5-exterior-wall-rating",
+      "code": "SBC201",
+      "section": "Table 705.5",
+      "title_ar": "مقاومة الحريق للجدران الخارجية حسب مسافة الفصل عن الحريق (جدول 705.5)",
+      "title_en": "Exterior wall fire-resistance rating by fire separation distance (Table 705.5)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "fire_separation_distance_m",
+            "operator": "exists"
+          },
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "fire_separation_distance_m",
+          "occupancy_group",
+          "construction_type"
+        ],
+        "compare": {
+          "parameter": "exterior_wall_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "lt1.5-h",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "lt",
+                "value": 1.5
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-4",
+                  "H-5"
+                ]
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "lt1.5-f1ms1",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "lt",
+                "value": 1.5
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "F-1",
+                  "M",
+                  "S-1"
+                ]
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "lt1.5-other",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "lt",
+                "value": 1.5
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "B",
+                  "F-2",
+                  "I-1",
+                  "I-2",
+                  "I-3",
+                  "I-4",
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4",
+                  "S-2",
+                  "U"
+                ]
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "15to3-ia-iva-h",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "between",
+                "value": [
+                  1.5,
+                  3
+                ]
+              },
+              {
+                "parameter": "construction_type",
+                "operator": "in",
+                "value": [
+                  "I-A",
+                  "IV-A"
+                ]
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-4",
+                  "H-5"
+                ]
+              }
+            ],
+            "value": 3,
+            "unit": "hours"
+          },
+          {
+            "id": "15to3-others-h",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "between",
+                "value": [
+                  1.5,
+                  3
+                ]
+              },
+              {
+                "parameter": "construction_type",
+                "operator": "in",
+                "value": [
+                  "I-B",
+                  "II-A",
+                  "II-B",
+                  "III-A",
+                  "III-B",
+                  "IV-B",
+                  "IV-C",
+                  "IV-HT",
+                  "V-A",
+                  "V-B"
+                ]
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-4",
+                  "H-5"
+                ]
+              }
+            ],
+            "value": 2,
+            "unit": "hours"
+          },
+          {
+            "id": "gte9-any",
+            "match": [
+              {
+                "parameter": "fire_separation_distance_m",
+                "operator": "gte",
+                "value": 9
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة للجدار الخارجي عند مسافة فصل {fire_separation_distance_m} م لهذا الإشغال ونوع الإنشاء هي {computed_value} ساعة (جدول 705.5، SBC 201)."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 705.5",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 657,
+        "quote": "X < 1.5 | All | 3 | 2 | 1  ;  X >= 9 | All | 0 | 0 | 0  (Group H | F-1,M,S-1 | A,B,E,F-2,I,R,S-2,U)"
+      },
+      "exceptions": [
+        {
+          "id": "group-u-private-garage",
+          "conditions": [
+            {
+              "parameter": "occupancy_group",
+              "operator": "eq",
+              "value": "U"
+            },
+            {
+              "parameter": "incidental_room_type",
+              "operator": "eq",
+              "value": "private_garage_or_carport"
+            },
+            {
+              "parameter": "fire_separation_distance_m",
+              "operator": "gte",
+              "value": 1.5
+            }
+          ],
+          "effect": "override",
+          "note_ar": "استثناء مبنى مرآب/سقيفة خاصة بالكامل ضمن مجموعة U: لا يُشترط تصنيف مقاومة حريق للجدار الخارجي عند مسافة فصل 1.5 م أو أكثر (حاشية h).",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 705.5",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 657,
+            "quote": "h. For a building containing only a Group U occupancy private garage or carport, the exterior wall shall not be required to have a fire-resistance rating where the fire separation distance is 1.5 meters or greater."
+          },
+          "override_verdict": "not_applicable"
+        },
+        {
+          "id": "r3-typeIIB-VB",
+          "conditions": [
+            {
+              "parameter": "occupancy_group",
+              "operator": "eq",
+              "value": "R-3"
+            },
+            {
+              "parameter": "construction_type",
+              "operator": "in",
+              "value": [
+                "II-B",
+                "V-B"
+              ]
+            },
+            {
+              "parameter": "fire_separation_distance_m",
+              "operator": "gte",
+              "value": 1.5
+            }
+          ],
+          "effect": "override",
+          "note_ar": "مبنى R-3 بإنشاء النوع II-B أو V-B: لا يُشترط تصنيف مقاومة حريق للجدار الخارجي عند مسافة فصل 1.5 م أو أكثر (حاشية i).",
+          "provenance": {
+            "code": "SBC201",
+            "section": "Table 705.5",
+            "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+            "extracted_at": "2026-09-03",
+            "page": 657,
+            "quote": "i. For a Group R-3 building of Type II-B or Type V-B construction, the exterior wall shall not be required to have a fire-resistance rating where the fire separation distance is 1.5 m or greater."
+          },
+          "override_verdict": "not_applicable"
+        }
+      ],
+      "notes": "تغطية 6 من 7 صفوف مطبوعة (استُبعد صف 3<=X<9 لعائلة A/B/E/F-2/I/R/S-2/U لتعقّد شرط 'Others' بالاستبعاد؛ موثّق في SQL الأصلي)."
+    },
+    {
+      "id": "SBC201-1004.5-business-occupant-load",
+      "code": "SBC201",
+      "section": "Table 1004.5",
+      "title_ar": "الحد الأدنى لعدد الشاغلين المصمَّم — مناطق الأعمال (عامل 14 م2/شخص)",
+      "title_en": "Minimum design occupant load — business areas (14 m2/person factor)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "space_function",
+            "operator": "eq",
+            "value": "business_area"
+          },
+          {
+            "parameter": "floor_area_m2",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "formula",
+        "expression": "floor_area_m2 / 14",
+        "compare": {
+          "parameter": "occupant_load",
+          "comparator": "gte"
+        },
+        "unit": "count"
+      },
+      "outputs": {
+        "explanation_ar": "بعامل حمل شاغلين 14 م2/شخص لمناطق الأعمال (جدول 1004.5)، أدنى عدد شاغلين مصمَّم لمساحة {floor_area_m2} م2 هو {computed_value} شخصاً. القيمة المصمَّمة المُدخلة {occupant_load}."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1004.5",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1185,
+        "quote": "Business areas | 14 gross"
+      }
+    },
+    {
+      "id": "SBC201-1004.5-mercantile-groundfloor-occupant-load",
+      "code": "SBC201",
+      "section": "Table 1004.5",
+      "title_ar": "الحد الأدنى لعدد الشاغلين المصمَّم — تجاري (طابق أرضي/قبو، عامل 2.8 م2/شخص)",
+      "title_en": "Minimum design occupant load — mercantile basement/grade floor (2.8 m2/person factor)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "space_function",
+            "operator": "eq",
+            "value": "mercantile_basement_or_grade_floor"
+          },
+          {
+            "parameter": "floor_area_m2",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "formula",
+        "expression": "floor_area_m2 / 2.8",
+        "compare": {
+          "parameter": "occupant_load",
+          "comparator": "gte"
+        },
+        "unit": "count"
+      },
+      "outputs": {
+        "explanation_ar": "بعامل حمل شاغلين 2.8 م2/شخص لمناطق القبو والطابق الأرضي التجارية (جدول 1004.5)، أدنى عدد شاغلين مصمَّم لمساحة {floor_area_m2} م2 هو {computed_value} شخصاً. القيمة المصمَّمة المُدخلة {occupant_load}."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1004.5",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1185,
+        "quote": "Mercantile ... Basement and grade floor areas | 2.8 gross"
+      }
+    },
+    {
+      "id": "SBC201-1006.2.1-common-path",
+      "code": "SBC201",
+      "section": "Table 1006.2.1",
+      "title_ar": "أقصى مسافة مسار مشترك للخروج قبل تعدد المخارج (جدول 1006.2.1)",
+      "title_en": "Maximum common path of egress travel distance before a second exit is required (Table 1006.2.1)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          },
+          {
+            "parameter": "occupant_load",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "sprinklered",
+          "occupant_load"
+        ],
+        "compare": {
+          "parameter": "common_path_m",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "m-u-ns-le30",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "M",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              },
+              {
+                "parameter": "occupant_load",
+                "operator": "lte",
+                "value": 30
+              }
+            ],
+            "value": 23,
+            "unit": "m",
+            "notes": "Printed row 'Ac, M, U' also lists Group A (footnote c: fixed-seating spaces) - see notes for the Group U duplicate-row ambiguity handled separately below."
+          },
+          {
+            "id": "u-ns-conservative",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "U"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 23,
+            "unit": "m",
+            "notes": "AMBIGUITY: Group U is printed in two rows with conflicting unsprinklered limits (23 m in row 'Ac,M,U', 30 m in row 'U'). Conservative value (23 m) used per the 2026-08-23 rebuild's resolution."
+          },
+          {
+            "id": "b-ns-le30",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              },
+              {
+                "parameter": "occupant_load",
+                "operator": "lte",
+                "value": 30
+              }
+            ],
+            "value": 30,
+            "unit": "m"
+          },
+          {
+            "id": "b-ns-gt30",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              },
+              {
+                "parameter": "occupant_load",
+                "operator": "gt",
+                "value": 30
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "b-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 30,
+            "unit": "m"
+          },
+          {
+            "id": "h123-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "h123-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 7.5,
+            "unit": "m"
+          },
+          {
+            "id": "r1-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "r1-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "r2-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 38,
+            "unit": "m"
+          },
+          {
+            "id": "r2-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "R-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "أقصى مسافة مسار مشترك للخروج قبل اشتراط تعدد مسارات الخروج لهذا الإشغال وحمل الشاغلين هي {computed_value} م (جدول 1006.2.1، SBC 201). المسافة الفعلية المُدخلة {common_path_m} م."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1006.2.1",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1186,
+        "quote": "Ac, M, U | 49 | 23 | 23 | 23a  ;  U | 49 | 30 | 23 | 23a  ;  H-1,H-2,H-3 | 3 | NP | NP | 7.5b  ;  R-2 | 20 | NP | NP | 38a"
+      },
+      "notes": "تنبيه دقة مصدر (مُلزَم من صاحب المهمة): مجموعة U مطبوعة مرتين بقيمتين متعارضتين لعمود بلا رشاشات (23 م ضمن صف 'Ac,M,U'، و30 م ضمن صف 'U' المنفرد). اعتُمدت القيمة الأشد تحفظاً (23 م) حتى تُحسم لدى جهة الاختصاص، طبقاً لتوصية تدقيق 2026-08-23 (SBC 201 صفحة 1186، مؤكَّد أيضاً في SBC 801 صفحة 835 التي لا تُدرج مجموعة U إطلاقاً في صفها الأول). تغطية جزئية (11 من 13 صفاً مطبوعاً)."
+    },
+    {
+      "id": "SBC201-1006.3.3-min-exits",
+      "code": "SBC201",
+      "section": "Table 1006.3.3",
+      "title_ar": "الحد الأدنى لعدد المخارج حسب حمل الشاغلين في الطابق (جدول 1006.3.3)",
+      "title_en": "Minimum number of exits by occupant load per story (Table 1006.3.3)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupant_load_per_story",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupant_load_per_story"
+        ],
+        "compare": {
+          "parameter": "exits_provided",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "1-500",
+            "match": [
+              {
+                "parameter": "occupant_load_per_story",
+                "operator": "between",
+                "value": [
+                  1,
+                  500
+                ]
+              }
+            ],
+            "value": 2,
+            "unit": "count"
+          },
+          {
+            "id": "501-1000",
+            "match": [
+              {
+                "parameter": "occupant_load_per_story",
+                "operator": "between",
+                "value": [
+                  501,
+                  1000
+                ]
+              }
+            ],
+            "value": 3,
+            "unit": "count"
+          },
+          {
+            "id": "gt1000",
+            "match": [
+              {
+                "parameter": "occupant_load_per_story",
+                "operator": "gt",
+                "value": 1000
+              }
+            ],
+            "value": 4,
+            "unit": "count"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لحمل شاغلين قدره {occupant_load_per_story} في الطابق، الحد الأدنى لعدد المخارج أو الوصول إلى المخارج هو {computed_value} (جدول 1006.3.3، SBC 201). عدد المخارج الفعلي المُوفَّر {exits_provided}."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1006.3.3",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1186,
+        "quote": "1-500 | 2  ;  501-1,000 | 3  ;  More than 1,000 | 4"
+      }
+    },
+    {
+      "id": "SBC201-1006.3.4-1-single-exit-r2-dwelling",
+      "code": "SBC201",
+      "section": "Table 1006.3.4(1)",
+      "title_ar": "طوابق بمخرج واحد — وحدات سكنية R-2 (جدول 1006.3.4(1))",
+      "title_en": "Stories with one exit — Group R-2 dwelling units (Table 1006.3.4(1))",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "eq",
+            "value": "R-2"
+          },
+          {
+            "parameter": "exits_provided",
+            "operator": "eq",
+            "value": 1
+          },
+          {
+            "parameter": "story_above_grade",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "story_above_grade"
+        ],
+        "compare": {
+          "parameter": "travel_distance_m",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "basement-to-3rd",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "between",
+                "value": [
+                  0,
+                  3
+                ]
+              }
+            ],
+            "value": 38,
+            "unit": "m",
+            "notes": "Also caps dwelling units per story at 4 (not yet a separate compare target in this draft) and requires sprinklers per footnote a."
+          },
+          {
+            "id": "4th-plus",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "gte",
+                "value": 4
+              }
+            ],
+            "value": "NP"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لمبنى R-2 بمخرج واحد فقط، الطابق {story_above_grade} فوق مستوى التصريف: أقصى مسافة انتقال للخروج {computed_value} م (جدول 1006.3.4(1))، بحد أقصى 4 وحدات سكنية لكل طابق. مسافة الانتقال الفعلية {travel_distance_m} م."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1006.3.4(1)",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1186,
+        "quote": "Basement, first, second or third story above grade plane | R-2a,b | 4 dwelling units | 38 meters  ;  Fourth story above grade plane and higher | NP"
+      }
+    },
+    {
+      "id": "SBC201-1006.3.4-2-single-exit-other-occupancies",
+      "code": "SBC201",
+      "section": "Table 1006.3.4(2)",
+      "title_ar": "طوابق بمخرج واحد — إشغالات أخرى غير R-2 السكنية (جدول 1006.3.4(2))",
+      "title_en": "Stories with one exit — occupancies other than R-2 dwelling units (Table 1006.3.4(2))",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "exits_provided",
+            "operator": "eq",
+            "value": 1
+          },
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "story_above_grade",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "story_above_grade",
+          "occupancy_group"
+        ],
+        "compare": {
+          "parameter": "travel_distance_m",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "first-abefmu",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "eq",
+                "value": 1
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "B",
+                  "E",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "U"
+                ]
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "first-h23",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "eq",
+                "value": 1
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-2",
+                  "H-3"
+                ]
+              }
+            ],
+            "value": 7.5,
+            "unit": "m"
+          },
+          {
+            "id": "first-h45irr2",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "eq",
+                "value": 1
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-4",
+                  "H-5",
+                  "I-1",
+                  "I-2",
+                  "I-3",
+                  "I-4",
+                  "R-1",
+                  "R-2"
+                ]
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "second-bfms",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "eq",
+                "value": 2
+              },
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "B",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "S-1",
+                  "S-2"
+                ]
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "third-plus",
+            "match": [
+              {
+                "parameter": "story_above_grade",
+                "operator": "gte",
+                "value": 3
+              }
+            ],
+            "value": "NP"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لمبنى بمخرج واحد فقط (غير R-2 السكنية)، الطابق {story_above_grade} فوق أو تحت مستوى التصريف: أقصى مسافة انتقال للخروج {computed_value} م (جدول 1006.3.4(2)). مسافة الانتقال الفعلية {travel_distance_m} م."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1006.3.4(2)",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1187,
+        "quote": "First story above or below grade plane | A,Bb,E,Fb,M,U | 49 | 23  ;  Third story above grade plane and higher | NP"
+      }
+    },
+    {
+      "id": "SBC201-1010.3.1-1-revolving-door-manual-speed",
+      "code": "SBC201",
+      "section": "Table 1010.3.1(1)",
+      "title_ar": "أقصى سرعة تشغيل للأبواب الدوارة اليدوية حسب القطر (جدول 1010.3.1(1))",
+      "title_en": "Maximum operating speed for manual revolving doors by diameter (Table 1010.3.1(1))",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "door_type",
+            "operator": "eq",
+            "value": "revolving_manual"
+          },
+          {
+            "parameter": "revolving_door_diameter_m",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "revolving_door_diameter_m"
+        ],
+        "compare": {
+          "parameter": "revolving_door_speed_rpm",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "1.8",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 1.8
+              }
+            ],
+            "value": 12,
+            "unit": "rpm"
+          },
+          {
+            "id": "2.1",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 2.1
+              }
+            ],
+            "value": 11,
+            "unit": "rpm"
+          },
+          {
+            "id": "2.4",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 2.4
+              }
+            ],
+            "value": 10,
+            "unit": "rpm"
+          },
+          {
+            "id": "2.7",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 2.7
+              }
+            ],
+            "value": 9,
+            "unit": "rpm"
+          },
+          {
+            "id": "3.0",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 3.0
+              }
+            ],
+            "value": 8,
+            "unit": "rpm"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لباب دوّار يدوي بقطر {revolving_door_diameter_m} م، أقصى سرعة تشغيل اسمية مسموحة {computed_value} دورة/دقيقة (جدول 1010.3.1(1)، SBC 201). السرعة المُدخلة {revolving_door_speed_rpm} دورة/دقيقة."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1010.3.1(1)",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1187,
+        "quote": "1.8 | 12  ;  2.1 | 11  ;  2.4 | 10  ;  2.7 | 9  ;  3 | 8  (revolving door diameter (m) -> maximum allowable RPM)"
+      },
+      "notes": "تغطية كاملة (5 من 5 صفوف مطبوعة لهذا الجدول تحديداً)."
+    },
+    {
+      "id": "SBC201-1010.3.1-2-revolving-door-power-speed",
+      "code": "SBC201",
+      "section": "Table 1010.3.1(2)",
+      "title_ar": "أقصى سرعة تشغيل للأبواب الدوارة الآلية حسب القطر (جدول 1010.3.1(2))",
+      "title_en": "Maximum operating speed for automatic/power-operated revolving doors by diameter (Table 1010.3.1(2))",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "door_type",
+            "operator": "eq",
+            "value": "revolving_power"
+          },
+          {
+            "parameter": "revolving_door_diameter_m",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "revolving_door_diameter_m"
+        ],
+        "compare": {
+          "parameter": "revolving_door_speed_rpm",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "2.4",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 2.4
+              }
+            ],
+            "value": 7.2,
+            "unit": "rpm"
+          },
+          {
+            "id": "3.0",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 3.0
+              }
+            ],
+            "value": 5.7,
+            "unit": "rpm"
+          },
+          {
+            "id": "3.7",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 3.7
+              }
+            ],
+            "value": 4.8,
+            "unit": "rpm"
+          },
+          {
+            "id": "4.9",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 4.9
+              }
+            ],
+            "value": 3.6,
+            "unit": "rpm"
+          },
+          {
+            "id": "6.1",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 6.1
+              }
+            ],
+            "value": 2.9,
+            "unit": "rpm"
+          },
+          {
+            "id": "7.3",
+            "match": [
+              {
+                "parameter": "revolving_door_diameter_m",
+                "operator": "eq",
+                "value": 7.3
+              }
+            ],
+            "value": 2.4,
+            "unit": "rpm"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "لباب دوّار آلي/بالقدرة بقطر {revolving_door_diameter_m} م، أقصى سرعة تشغيل اسمية مسموحة {computed_value} دورة/دقيقة (جدول 1010.3.1(2)، SBC 201). السرعة المُدخلة {revolving_door_speed_rpm} دورة/دقيقة."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1010.3.1(2)",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1187,
+        "quote": "2.4 | 7.2  ;  3 | 5.7  ;  3.7 | 4.8  ;  4.9 | 3.6  ;  6.1 | 2.9  ;  7.3 | 2.4  (of 12 printed diameters)"
+      },
+      "notes": "تغطية جزئية (6 من 12 صفاً مطبوعاً - أُخذت قيم متباعدة تمثيلياً؛ الجدول الكامل في نص هذه القاعدة الأصلي أعلاه."
+    },
+    {
+      "id": "SBC201-1017.2-exit-access-travel-distance",
+      "code": "SBC201",
+      "section": "Table 1017.2",
+      "title_ar": "أقصى مسافة انتقال للوصول إلى الخروج (جدول 1017.2)",
+      "title_en": "Maximum exit access travel distance (Table 1017.2)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "sprinklered"
+        ],
+        "compare": {
+          "parameter": "travel_distance_m",
+          "comparator": "lte"
+        },
+        "rows": [
+          {
+            "id": "aef1mrs1-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "F-1",
+                  "M",
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4",
+                  "S-1"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 60,
+            "unit": "m",
+            "notes": "Group I-1 is ALSO printed in this same row family but is handled conservatively by its own dedicated row below due to a printed contradiction."
+          },
+          {
+            "id": "aef1mrs1-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "F-1",
+                  "M",
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4",
+                  "S-1"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 75,
+            "unit": "m"
+          },
+          {
+            "id": "i1-conservative",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP",
+            "notes": "AMBIGUITY: Group I-1 is printed in two rows with conflicting unsprinklered limits (60 m in the combined A,E,F-1,I-1,M,R,S-1 row; 'Not permitted' in a standalone 'I-1' row). Conservative reading (Not permitted) used per the 2026-08-23 rebuild."
+          },
+          {
+            "id": "i1-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 75,
+            "unit": "m"
+          },
+          {
+            "id": "b-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 60,
+            "unit": "m"
+          },
+          {
+            "id": "b-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "B"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 90,
+            "unit": "m"
+          },
+          {
+            "id": "f2s2u-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "F-2",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 90,
+            "unit": "m"
+          },
+          {
+            "id": "f2s2u-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "F-2",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 120,
+            "unit": "m"
+          },
+          {
+            "id": "h-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3",
+                  "H-4",
+                  "H-5"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "h1-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-1"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 23,
+            "unit": "m"
+          },
+          {
+            "id": "h2-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 30,
+            "unit": "m"
+          },
+          {
+            "id": "h3-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-3"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 46,
+            "unit": "m"
+          },
+          {
+            "id": "h4-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-4"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 53,
+            "unit": "m"
+          },
+          {
+            "id": "h5-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "H-5"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 60,
+            "unit": "m"
+          },
+          {
+            "id": "i23-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "I-2",
+                  "I-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "i23-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "I-2",
+                  "I-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 60,
+            "unit": "m"
+          },
+          {
+            "id": "i4-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-4"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 46,
+            "unit": "m"
+          },
+          {
+            "id": "i4-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-4"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 60,
+            "unit": "m"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "أقصى مسافة انتقال للوصول إلى الخروج لهذا الإشغال هي {computed_value} م (جدول 1017.2، SBC 201). المسافة الفعلية المُدخلة {travel_distance_m} م."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1017.2",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1188,
+        "quote": "A, E, F-1, I-1, M, R, S-1 | 60e | 75b  ;  I-1 | Not permitted | 75b  ;  H-1 | Not Permitted | 23c"
+      },
+      "notes": "هذا هو الجدول محور 'إنذار سلامة جداول الكود' بتاريخ 2026-08-23 (انظر docs/audits/SAFETY-ALERT-code-tables-20260823.md): كانت نسخة production تحمل وحدات إمبراطورية وشروطاً معكوسة (كانت تمنح مسافة أكبر بلا رشاشات). القيم أعلاه مترية ومطابقة تماماً لِما هو مطبوع فعلياً، مُتحقَّق منها مرتين (تدقيق 2026-08-23 + إعادة استخراج مباشرة بواسطة هذا الوكيل عبر pdfplumber). تنبيه دقة مصدر لمجموعة I-1: مطبوعة مرتين بقيمتين متعارضتين لعمود بلا رشاشات - اعتُمدت القيمة الأشد تحفظاً (غير مسموح) حتى تُحسم لدى جهة الاختصاص."
+    },
+    {
+      "id": "SBC201-1020.2-corridor-fire-rating",
+      "code": "SBC201",
+      "section": "Table 1020.2",
+      "title_ar": "مقاومة الحريق المطلوبة للممرات بالساعات (جدول 1020.2)",
+      "title_en": "Required corridor fire-resistance rating (Table 1020.2)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "exists"
+          },
+          {
+            "parameter": "sprinklered",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "occupancy_group",
+          "sprinklered",
+          "corridor_occupant_load"
+        ],
+        "compare": {
+          "parameter": "corridor_rating_hours",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "h123-any",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "h123-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "H-1",
+                  "H-2",
+                  "H-3"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "abefmsu-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "B",
+                  "E",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "S-1",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              },
+              {
+                "parameter": "corridor_occupant_load",
+                "operator": "gt",
+                "value": 30
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "abefmsu-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "A-1",
+                  "A-2",
+                  "A-3",
+                  "A-4",
+                  "A-5",
+                  "B",
+                  "E",
+                  "F-1",
+                  "F-2",
+                  "M",
+                  "S-1",
+                  "S-2",
+                  "U"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              },
+              {
+                "parameter": "corridor_occupant_load",
+                "operator": "gt",
+                "value": 30
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "r-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "in",
+                "value": [
+                  "R-1",
+                  "R-2",
+                  "R-3",
+                  "R-4"
+                ]
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              },
+              {
+                "parameter": "corridor_occupant_load",
+                "operator": "gt",
+                "value": 10
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "i2-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": "NP"
+          },
+          {
+            "id": "i2-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-2"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          },
+          {
+            "id": "i4-ns",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-4"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": false
+              }
+            ],
+            "value": 1,
+            "unit": "hours"
+          },
+          {
+            "id": "i4-s",
+            "match": [
+              {
+                "parameter": "occupancy_group",
+                "operator": "eq",
+                "value": "I-4"
+              },
+              {
+                "parameter": "sprinklered",
+                "operator": "eq",
+                "value": true
+              }
+            ],
+            "value": 0,
+            "unit": "hours"
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "مقاومة الحريق المطلوبة للممر الخادم لهذا الإشغال بحمل شاغلين {corridor_occupant_load} هي {computed_value} ساعة (جدول 1020.2، SBC 201). التصنيف الفعلي المُدخل {corridor_rating_hours} ساعة."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1020.2",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1188,
+        "quote": "H-1,H-2,H-3 | All | Not Permitted | 1  ;  A,B,E,F,M,S,U | Greater than 30 | 1 | 0  ;  R | Greater than 10 | Not Permitted | 0.5/1d"
+      },
+      "notes": "حاشية (د) لمجموعة R تعطي قيمتين (0.5/1 ساعة) حسب نوع نظام الرشاش (13R/13D مقابل 13 الكامل) - غير مُدرجة كصف مستقل بعد لعدم توفر معامل نوع النظام في هذا الإصدار الأولي؛ صف R أعلاه يغطي فقط الحالة بلا رشاشات (NP)."
+    },
+    {
+      "id": "SBC201-1020.3-corridor-width",
+      "code": "SBC201",
+      "section": "Table 1020.2 (corridor width; recommended renumber 1020.3 per SBC 801 p.839)",
+      "title_ar": "أقصى ضيق ممر مسموح — العرض الأدنى بالمليمتر (جدول عرض الممر)",
+      "title_en": "Minimum corridor width in millimeters",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "corridor_width_mm",
+            "operator": "exists"
+          },
+          {
+            "parameter": "corridor_use_case",
+            "operator": "exists"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "table_lookup",
+        "keys": [
+          "corridor_use_case"
+        ],
+        "compare": {
+          "parameter": "corridor_width_mm",
+          "comparator": "gte"
+        },
+        "rows": [
+          {
+            "id": "default",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "eq",
+                "value": "default"
+              }
+            ],
+            "value": 1100,
+            "unit": "mm",
+            "notes": "Any facility/use not covered by a more specific row below. The caller must pass corridor_use_case=\"default\" explicitly - the engine never infers 'default' from a missing value (that would silently risk masking a stricter row; see ruleEngine.ts tri-state semantics)."
+          },
+          {
+            "id": "mep-access",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "eq",
+                "value": "mechanical_plumbing_electrical_access"
+              }
+            ],
+            "value": 600,
+            "unit": "mm"
+          },
+          {
+            "id": "ol-lt-50",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "eq",
+                "value": "occupant_load_lt_50"
+              }
+            ],
+            "value": 900,
+            "unit": "mm"
+          },
+          {
+            "id": "dwelling-unit",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "eq",
+                "value": "within_dwelling_unit"
+              }
+            ],
+            "value": 900,
+            "unit": "mm"
+          },
+          {
+            "id": "group-e-ol-ge-100",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "eq",
+                "value": "group_e_corridor_ol_ge_100"
+              }
+            ],
+            "value": 1800,
+            "unit": "mm"
+          },
+          {
+            "id": "ambulatory-stretcher",
+            "match": [
+              {
+                "parameter": "corridor_use_case",
+                "operator": "in",
+                "value": [
+                  "ambulatory_care_stretcher_traffic",
+                  "group_i2_bed_movement"
+                ]
+              }
+            ],
+            "value": 2400,
+            "unit": "mm",
+            "notes": "Printed as two separate rows (1800 mm for general ambulatory-care/stretcher corridors, 2400 mm specifically for Group I-2 bed-movement corridors); collapsed here to the stricter 2400 mm value - see rule notes."
+          }
+        ]
+      },
+      "outputs": {
+        "explanation_ar": "أدنى عرض ممر مسموح لحالة الاستخدام هذه هو {computed_value} مم (جدول عرض الممر الأدنى، SBC 201). العرض الفعلي المُدخل {corridor_width_mm} مم."
+      },
+      "provenance": {
+        "code": "SBC201",
+        "section": "Table 1020.2 (corridor width; recommended renumber 1020.3 per SBC 801 p.839)",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 1189,
+        "quote": "Any facilities not listed below | 1100  ;  With an occupant load of less than 50 | 900  ;  Within a dwelling unit | 900",
+        "source_note": "SBC 201 prints TWO different tables both captioned 'TABLE 1020.2' on consecutive pages (corridor fire-resistance rating at printed p.1188, corridor width at printed p.1189) - a collision confirmed against the PDF. SBC 801 p.839 disambiguates them as 1020.2 and 1020.3 respectively; this rule's section field follows that recommendation pending the owner's decision (see code-tables-rebuild-20260823.md section 6.1)."
+      },
+      "notes": "بسّطت هذه القاعدة صفَّي 'ممرات مرضى متنقلين بنقالات' (1800 مم) و'حركة الأسرّة في مجموعة I-2' (2400 مم) إلى صف واحد بالقيمة الأشد تحفظاً (2400 مم) لتبسيط المطابقة في هذا الإصدار الأولي؛ يجب فصلهما قبل الانتقال لحالة engineer_validated. القيمة 1100 مم (الافتراضية) تصحّح الخطأ الموثّق سابقاً في production (كان يحمل 914 مم - انظر SAFETY-ALERT-code-tables-20260823.md)."
+    },
+    {
+      "id": "SBC801-903.2.5-group-h-sprinkler-mandate",
+      "code": "SBC801",
+      "section": "903.2.5",
+      "title_ar": "اشتراط الرشاشات التلقائية — مجموعة H (كل إشغالات H الجديدة)",
+      "title_en": "Automatic sprinkler system mandate — Group H (all new Group H occupancies)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "in",
+            "value": [
+              "H-1",
+              "H-2",
+              "H-3",
+              "H-4",
+              "H-5"
+            ]
+          },
+          {
+            "parameter": "is_new_construction",
+            "operator": "eq",
+            "value": true
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "كل إشغالات المجموعة H الجديدة تتطلب حماية بنظام رشاشات تلقائي وفق القسم 903.2.5 (SBC 801)."
+      },
+      "provenance": {
+        "code": "SBC801",
+        "section": "903.2.5",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "New Group H occupancies are required to be protected by an automatic sprinkler system in accordance with Section 903.2.5 .",
+        "source_note": "Quoted verbatim from footnote c of the rebuilt SBC 201 Table 504.3/506.2 (printed page 464/467), which cross-references SBC 801 Section 903.2.5. The running text of Section 903.2.5 itself in SBC 801 has not yet been directly extracted for this draft - status stays draft until it is."
+      }
+    },
+    {
+      "id": "SBC801-903.2.6-group-i1-i3-sprinkler-mandate",
+      "code": "SBC801",
+      "section": "903.2.6",
+      "title_ar": "اشتراط الرشاشات التلقائية — مجموعتا I-1 وI-3 الجديدتان",
+      "title_en": "Automatic sprinkler system mandate — new Group I-1 and I-3",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "in",
+            "value": [
+              "I-1",
+              "I-3"
+            ]
+          },
+          {
+            "parameter": "is_new_construction",
+            "operator": "eq",
+            "value": true
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "إشغالات المجموعتين I-1 وI-3 الجديدتان تتطلبان حماية بنظام رشاشات تلقائي وفق القسم 903.2.6 (SBC 801). (لحالة I-1 Condition 1: انظر الاستثناء 1 من القسم 903.2.6.)"
+      },
+      "provenance": {
+        "code": "SBC801",
+        "section": "903.2.6",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "New Group I-1 and I-3 occupancies are required to be protected by an automatic sprinkler system in accordance with Section 903.2.6 . For new Group I-1 occupancies Condition 1, see Exception 1 of Section 903.2.6 .",
+        "source_note": "Quoted verbatim from footnote e of the rebuilt SBC 201 Table 504.3 (printed page 464). Section 903.2.6 running text not yet directly extracted - status stays draft."
+      }
+    },
+    {
+      "id": "SBC801-903.2.6-group-i2-sprinkler-mandate",
+      "code": "SBC801",
+      "section": "903.2.6",
+      "title_ar": "اشتراط الرشاشات التلقائية — مجموعة I-2 (جديدة وقائمة)",
+      "title_en": "Automatic sprinkler system mandate — Group I-2 (new and existing)",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "eq",
+            "value": "I-2"
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "إشغالات المجموعة I-2 الجديدة والقائمة تتطلب حماية بنظام رشاشات تلقائي وفق القسم 903.2.6 (SBC 801) والقسم 1103.5 من SBC 801."
+      },
+      "provenance": {
+        "code": "SBC801",
+        "section": "903.2.6",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "New and existing Group I-2 occupancies are required to be protected by an automatic sprinkler system in accordance with Section 903.2.6 and Section 1103.5 of SBC 801.",
+        "source_note": "Quoted verbatim from footnote f of the rebuilt SBC 201 Table 504.3 (printed page 464). Section 903.2.6/1103.5 running text not yet directly extracted - status stays draft."
+      }
+    },
+    {
+      "id": "SBC801-903.2.8-group-r-sprinkler-mandate",
+      "code": "SBC801",
+      "section": "903.2.8",
+      "title_ar": "اشتراط الرشاشات التلقائية — كل إشغالات المجموعة R الجديدة",
+      "title_en": "Automatic sprinkler system mandate — all new Group R occupancies",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "occupancy_group",
+            "operator": "in",
+            "value": [
+              "R-1",
+              "R-2",
+              "R-3",
+              "R-4"
+            ]
+          },
+          {
+            "parameter": "is_new_construction",
+            "operator": "eq",
+            "value": true
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "كل إشغالات المجموعة R الجديدة (R-1 حتى R-4) تتطلب حماية بنظام رشاشات تلقائي وفق القسم 903.2.8 (SBC 801)، بصرف النظر عن الارتفاع أو المساحة."
+      },
+      "provenance": {
+        "code": "SBC801",
+        "section": "903.2.8",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 464,
+        "quote": "New Group R occupancies are required to be protected by an automatic sprinkler system in accordance with Section 903.2.8 .",
+        "source_note": "Quoted verbatim from footnote h of the rebuilt SBC 201 Tables 504.3/504.4/506.2 (printed pages 464/465/467). Independently corroborated twice more by this agent's own pdfplumber pass over the SBC 801-CC-2024 commentary volume (raw/sbc801/...-601-800.pdf): printed page 677 states \"Since the current text requires all Group R structures to be sprinklered (see Section 903.2.8)\", and printed page 660 (Section 1006.2.2.6 commentary) references \"Group R-3 occupancies are permitted by Section 903.2.8 to be protected by an automatic sprinkler system\". A production model answer separately quoted SBC 801 903.2.8's own operative sentence (evals/results/2026-09-02-subset/results.json): \"An automatic sprinkler system installed in accordance with Section 903.3 shall be provided throughout all buildings with a Group R fire area.\" Three independent sources now agree; the section's own operative paragraph has still not been re-extracted by this agent with a first-hand page citation, so status stays draft."
+      },
+      "notes": "هذه القاعدة هي الاشتراط 'الرائد' لمجموعة R المطلوب صراحة في مهمة البناء. لاحظ أنها غير مشروطة بالارتفاع (خلافاً لـ SBC201-504.3-height-nonsprinklered-IIB-IIIB وSBC801-903.2.11.3-height-trigger، اللتين تتعاملان مع أثر الارتفاع)."
+    },
+    {
+      "id": "SBC801-903.2.11.3-height-trigger",
+      "code": "SBC801",
+      "section": "903.2.11.3",
+      "title_ar": "اشتراط الرشاشات التلقائية — ارتفاع 16.5 م أو أكثر عن مستوى وصول مركبات الدفاع المدني",
+      "title_en": "Automatic sprinkler system mandate — occupied floor 16.5 m or more above fire department vehicle access",
+      "status": "draft",
+      "applicability": {
+        "conditions": [
+          {
+            "parameter": "height_above_fd_access_m",
+            "operator": "gte",
+            "value": 16.5
+          }
+        ]
+      },
+      "requirement": {
+        "kind": "boolean",
+        "parameter": "sprinklered",
+        "equals": true
+      },
+      "outputs": {
+        "explanation_ar": "لمبنى بأعلى طابق مشغول على ارتفاع {height_above_fd_access_m} م أو أكثر عن أدنى مستوى لوصول مركبات الدفاع المدني، يشترط القسم 903.2.11.3 (SBC 801) نظام رشاشات تلقائي في كل المبنى، بصرف النظر عن الإشغال أو نوع الإنشاء."
+      },
+      "provenance": {
+        "code": "SBC801",
+        "section": "903.2.11.3",
+        "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
+        "extracted_at": "2026-09-03",
+        "page": 621,
+        "quote": "Commentary FIGURE 903.2.11.3 SPRINKLER REQUIREMENTS: OCCUPANTS 16.5 m OR GREATER FROM FIRE DEPARTMENT VEHICLE ACCESS",
+        "source_note": "This is this agent's own pdfplumber extraction from the SBC 801-CC-2024 commentary volume (raw/sbc801/...-601-800.pdf, page_index_0based=50, printed page 621) - a commentary FIGURE CAPTION confirming both the section number and the exact 16.5 m figure, independently corroborating the same 16.5 m value already found in the verified SBC 201 Table 504.3 (see SBC201-504.3-height-nonsprinklered-IIB-IIIB / SBC201-504.3-table). The operative paragraph text of Section 903.2.11.3 itself (with its measurement basis and any exceptions - e.g. open parking structures, low-hazard roof areas) has NOT yet been extracted by this agent - only the figure caption. Status stays draft until the full operative sentence is re-extracted with its own page citation; applicability is deliberately narrow (only the height test) pending that."
+      },
+      "notes": "هذا القسم يقيس الارتفاع من مستوى وصول مركبات الدفاع المدني (فرضية مختلفة عن جدول 504.3 الذي يقيس من مستوى التصريف)، لذا استُعمل معامل مستقل height_above_fd_access_m بدلاً من height_m المستعمل في قواعد 504.3. لم يُدرَج بعد أي استثناء (مثل مواقف السيارات المفتوحة) لعدم توفر نص القسم التشغيلي الكامل - مطلوب استخراج مباشر قبل الانتقال لحالة engineer_validated."
+    }
+  ]
+}

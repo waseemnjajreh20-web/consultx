@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://consultx.app/schema/rule-engine/sbc-fire-life-safety-v0.json",
+  "title": "ConsultX SBC Fire/Life-Safety Rule File (v0)",
+  "description": "Deterministic, provenance-carrying RASE (Requirement-Applicability-Selection-Exception) rules for numeric SBC fire-life-safety requirements. See docs/launch/rule-engine-notes.md for the lifecycle and integration plan. Every rule cites its exact code, section/table and (where known) printed page; numeric thresholds are never invented.",
+  "type": "object",
+  "required": ["schema_version", "code_family", "generated_at", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version tag of this schema/rule-file shape, e.g. 'consultx-rule-engine-v0'."
+    },
+    "code_family": {
+      "type": "string",
+      "description": "Human label for what this file covers, e.g. 'SBC fire/life-safety v0'."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO date the file was last (re)generated."
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "sbcCode": {
+      "type": "string",
+      "enum": ["SBC201", "SBC801", "SBC401", "SBC501"]
+    },
+    "ruleStatus": {
+      "type": "string",
+      "enum": ["draft", "engineer_validated", "live"],
+      "description": "Lifecycle stage. Only engineer_validated/live rules may reach the user-facing answer path (see notes)."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["complies", "violates", "not_applicable", "insufficient_data"]
+    },
+    "unit": {
+      "type": "string",
+      "enum": ["mm", "m", "m2", "hours", "rpm", "count", "ratio", ""],
+      "description": "Units are mm or m only for length/distance/height per the operating contract; other units are for non-length numeric outputs (fire-resistance hours, exit counts, door RPM)."
+    },
+    "comparisonOperator": {
+      "type": "string",
+      "enum": ["eq", "in", "gt", "gte", "lt", "lte", "between", "exists"]
+    },
+    "thresholdComparator": {
+      "type": "string",
+      "enum": ["eq", "ne", "lt", "lte", "gt", "gte"]
+    },
+    "conditionValue": {
+      "description": "Shape depends on operator: eq/gt/gte/lt/lte take a scalar; in takes an array; between takes a [min,max] pair; exists takes no value.",
+      "anyOf": [
+        { "type": "number" },
+        { "type": "string" },
+        { "type": "boolean" },
+        { "type": "array", "items": { "anyOf": [{ "type": "string" }, { "type": "number" }] }, "minItems": 1 },
+        { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        { "type": "null" }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "required": ["parameter", "operator"],
+      "additionalProperties": false,
+      "properties": {
+        "parameter": {
+          "type": "string",
+          "description": "Named building/query parameter, e.g. occupancy_group, stories, height_m, gross_area_m2, floor_area_m2, sprinklered, construction_type, occupant_load, story_of_discharge, or a rule-scoped extra such as corridor_width_mm."
+        },
+        "operator": { "$ref": "#/$defs/comparisonOperator" },
+        "value": { "$ref": "#/$defs/conditionValue" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "operator": { "const": "exists" } } },
+          "then": { "not": { "required": ["value"] } },
+          "else": { "required": ["value"] }
+        },
+        {
+          "if": { "properties": { "operator": { "const": "in" } } },
+          "then": { "properties": { "value": { "type": "array", "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "operator": { "const": "between" } } },
+          "then": { "properties": { "value": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } } } }
+        }
+      ]
+    },
+    "applicability": {
+      "type": "object",
+      "required": ["conditions"],
+      "additionalProperties": false,
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/condition" },
+          "description": "AND-combined. If any condition is definitively false, the rule is not_applicable. If any referenced parameter is missing (and no condition is definitively false), the verdict is insufficient_data."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["code", "section", "extracted_by", "extracted_at"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "$ref": "#/$defs/sbcCode" },
+        "section": { "type": "string", "description": "Section or table number as printed, e.g. '504.3', 'Table 601', '903.2.8'. Never the section-sign symbol - write \"Section\"/\"Table\"." },
+        "page": { "type": "integer", "minimum": 1, "description": "Printed page number in the source PDF, when known." },
+        "quote": { "type": "string", "maxLength": 300, "description": "Verbatim excerpt (<=300 chars) supporting this rule; omitted only when the rule is a documented interpretive expansion of a quoted row (see source_note)." },
+        "extracted_by": { "type": "string" },
+        "extracted_at": { "type": "string", "format": "date" },
+        "source_note": { "type": "string", "description": "Free text: cross-reference-only provenance, ambiguity pointer, or partial-table-coverage disclosure." }
+      }
+    },
+    "tableRow": {
+      "type": "object",
+      "required": ["id", "match", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "match": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 },
+        "value": {
+          "anyOf": [{ "type": "number" }, { "type": "string", "enum": ["NP"] }],
+          "description": "Numeric looked-up value, or the literal string 'NP' meaning the printed code marks this combination Not Permitted outright."
+        },
+        "unit": { "$ref": "#/$defs/unit" },
+        "notes": { "type": "string" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": { "kind": { "type": "string", "enum": ["threshold", "table_lookup", "boolean", "formula"] } },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "threshold" } } },
+          "then": {
+            "required": ["parameter", "comparator", "value", "unit"],
+            "properties": {
+              "kind": true,
+              "parameter": { "type": "string" },
+              "comparator": { "$ref": "#/$defs/thresholdComparator" },
+              "value": { "type": "number" },
+              "unit": { "$ref": "#/$defs/unit" }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "table_lookup" } } },
+          "then": {
+            "required": ["keys", "compare", "rows"],
+            "properties": {
+              "kind": true,
+              "keys": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "compare": {
+                "type": "object",
+                "required": ["parameter", "comparator"],
+                "additionalProperties": false,
+                "properties": { "parameter": { "type": "string" }, "comparator": { "$ref": "#/$defs/thresholdComparator" } }
+              },
+              "rows": { "type": "array", "items": { "$ref": "#/$defs/tableRow" }, "minItems": 1 },
+              "no_match_verdict": { "type": "string", "enum": ["not_applicable", "insufficient_data"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "boolean" } } },
+          "then": {
+            "required": ["parameter", "equals"],
+            "properties": { "kind": true, "parameter": { "type": "string" }, "equals": { "type": "boolean" } },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "formula" } } },
+          "then": {
+            "required": ["expression", "compare"],
+            "properties": {
+              "kind": true,
+              "expression": { "type": "string", "description": "Safe subset only: + - * / min() max() and bare parameter references. No eval()." },
+              "compare": {
+                "type": "object",
+                "required": ["parameter", "comparator"],
+                "additionalProperties": false,
+                "properties": { "parameter": { "type": "string" }, "comparator": { "$ref": "#/$defs/thresholdComparator" } }
+              },
+              "unit": { "$ref": "#/$defs/unit" }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "exception": {
+      "type": "object",
+      "required": ["id", "conditions", "effect", "note_ar", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 },
+        "effect": { "type": "string", "enum": ["override", "waive"] },
+        "override_verdict": { "$ref": "#/$defs/verdict" },
+        "note_ar": { "type": "string" },
+        "note_en": { "type": "string" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      },
+      "if": { "properties": { "effect": { "const": "override" } } },
+      "then": { "required": ["override_verdict"] }
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["explanation_ar"],
+      "additionalProperties": false,
+      "properties": {
+        "explanation_ar": { "type": "string", "description": "Arabic explanation template; {parameter} placeholders are filled from evaluation params/computed values." },
+        "explanation_en": { "type": "string" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engineer": { "type": "string" },
+        "validated_at": { "type": "string", "format": "date" },
+        "note": { "type": "string" }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "code", "section", "title_ar", "title_en", "status", "applicability", "requirement", "outputs", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z0-9]+-[A-Za-z0-9.()_-]+$" },
+        "code": { "$ref": "#/$defs/sbcCode" },
+        "section": { "type": "string" },
+        "title_ar": { "type": "string", "minLength": 1 },
+        "title_en": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/ruleStatus" },
+        "applicability": { "$ref": "#/$defs/applicability" },
+        "requirement": { "$ref": "#/$defs/requirement" },
+        "exceptions": { "type": "array", "items": { "$ref": "#/$defs/exception" } },
+        "outputs": { "$ref": "#/$defs/outputs" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "validation": { "$ref": "#/$defs/validation" },
+        "notes": { "type": "string", "description": "Free-text caveats: ambiguities in the printed code, partial-table coverage, interpretive expansions (e.g. bare occupancy-family letters expanded to SBC 201 subtypes)." }
+      },
+      "if": { "properties": { "status": { "not": { "const": "draft" } } } },
+      "then": { "required": ["validation"] }
+    }
+  }
+}
