@@ -14,6 +14,7 @@ import {
   contextCacheStats,
   DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
   ensureContextCache,
+  lookupContextCache,
   isContextCacheEnabled,
   type ContextCacheRef,
 } from "./geminiContextCache.ts";
@@ -95,7 +96,11 @@ import { createStreamScrubber } from "./externalClauseScrubber.ts";
 import { buildingProfileEnabled, fetchBuildingProfileBlock, isConversationId } from "./buildingProfileBlock.ts";
 import {
   fetchSBCContextHybrid,
+  HYBRID_FTS_WEIGHT_DEFAULT,
+  HYBRID_FTS_WEIGHT_ENV,
   HYBRID_RETRIEVAL_FLAG_ENV,
+  HYBRID_VECTOR_QUOTA_RATIO_DEFAULT,
+  HYBRID_VECTOR_QUOTA_RATIO_ENV,
   isHybridRetrievalEnabled,
 } from "./hybridRetrieval.ts";
 import {
@@ -1424,6 +1429,11 @@ class EmbeddingFailure extends Error {
 function retrievalFlagFingerprint(): string {
   return [
     HYBRID_RETRIEVAL_FLAG_ENV,
+    // The hybrid tuning knobs belong here for the same reason the flag does:
+    // rows fused under one weight/quota must never be served for a request
+    // running under another (added 2026-09-03 with the tuning itself).
+    HYBRID_FTS_WEIGHT_ENV,
+    HYBRID_VECTOR_QUOTA_RATIO_ENV,
     ADVISORY_GRAPH_FLAG_ENV,
     "ADVISORY_MULTI_QUERY_RETRIEVAL_ENABLED",
     "ADVISORY_BILINGUAL_EMBEDDING_ENABLED",
@@ -2447,13 +2457,32 @@ async function fetchSBCContextVector(
     //
     // ON, and match_sbc_hybrid returned rows: that ONE RPC already carries the
     // pgvector signal fused with FTS, so the plain match_sbc_documents call
-    // below is skipped rather than run twice. The similarity floor is skipped
-    // with it, deliberately: the floor exists because match_sbc_documents
-    // applies no threshold and its tail is measurably indistinguishable from
-    // random chunks, whereas RRF ranks by agreement between two independent
-    // channels and a lexically-exact chunk that sits below the vector floor is
-    // precisely the recall this feature is for. That trade is what
-    // docs/launch/hybrid-retrieval-notes.md Section 4 gates on live numbers.
+    // below is skipped rather than run twice.
+    //
+    // TUNING (2026-09-03, after the first gate FAILED — sections 52%->41%,
+    // chain pairs 75%->50%, the loss concentrated in multi-section questions).
+    // Equal-weight RRF let the FTS list interleave 1:1 with the vector list
+    // (an FTS rank-1 row scores 1/61, beating the vector rank-2 row's 1/62),
+    // so half of a 25-row context was lexical-only and the vector ranks that
+    // carry a question's secondary sections were pushed out. Three knobs now
+    // bound that, all applied SQL-side by
+    // docs/db/20260903b_hybrid_retrieval_tuning.sql:
+    //   - ftsWeight 0.5: recall of a lexically-exact chunk is kept, its
+    //     ability to outrank vector evidence is halved.
+    //   - vectorQuota 60% of matchCount: the top floored vector rows are
+    //     GUARANTEED to be in the result and ordered first, so hybrid can
+    //     never return less vector coverage than that fraction of the pure
+    //     vector path — the hard bound the gate needed.
+    //   - the SAME similarity floor the vector path applies below, on the
+    //     VECTOR leg only: an FTS-only hit is judged by its lexical evidence
+    //     (fusing two independent channels is the point), never floored on a
+    //     similarity it was not ranked by. If the floor empties the vector leg
+    //     entirely, fetchSBCContextHybrid declines (returns null) and the
+    //     decision falls through to the vector path's own below_floor
+    //     fallback rather than answering from lexical coincidence.
+    // Both ratios are read through resolveFloor — not because they are floors,
+    // but because it is this file's existing "finite number in [0,1] or the
+    // measured default" env reader, and both knobs are exactly that.
     //
     // fetchSBCContextHybrid is fail-open by contract: null means "keep the
     // path you were already going to use" (RPC not provisioned, RPC error, or
@@ -2461,15 +2490,35 @@ async function fetchSBCContextVector(
     // graphExpansionCount/fallbackReason stay null — graph expansion is not
     // composed on this path, and nothing fell back.
     if (isHybridRetrievalEnabled(Deno.env.get)) {
+      const hybridFtsWeight = resolveFloor(Deno.env.get, HYBRID_FTS_WEIGHT_ENV, HYBRID_FTS_WEIGHT_DEFAULT);
+      const hybridQuotaRatio = resolveFloor(Deno.env.get, HYBRID_VECTOR_QUOTA_RATIO_ENV, HYBRID_VECTOR_QUOTA_RATIO_DEFAULT);
       const hybrid = await fetchSBCContextHybrid(
-        query,
+        // The text that was EMBEDDED, not the raw user query — measured
+        // 2026-09-03: the SBC corpus is English (5,553 rows; an Arabic term
+        // like "مرشات" or "السلامة" matches ZERO rows through the tsv column,
+        // while "travel distance" matches 290 and the section number "1017.2"
+        // matches 41). embeddingSourceText carries the English search terms
+        // from query analysis and any derived section numbers, so it is the
+        // only form of the question the lexical leg can actually match. With
+        // the raw Arabic query the FTS leg returns nothing and the fusion
+        // silently degrades to pure vector — hybrid in name only.
+        embeddingSourceText,
         queryEmbedding,
         filterCode ? [filterCode] : null,
         matchCount,
         supabaseAdmin,
+        {
+          ftsWeight: hybridFtsWeight,
+          vectorQuota: Math.ceil(hybridQuotaRatio * matchCount),
+          minSimilarityRel: resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_REL_ENV, VECTOR_MIN_SIMILARITY_REL),
+          minSimilarityAbs: resolveFloor(Deno.env.get, VECTOR_MIN_SIMILARITY_ABS_ENV, VECTOR_MIN_SIMILARITY_ABS),
+        },
       );
       if (hybrid) {
-        console.log(`[Hybrid RAG] ${hybrid.docIds.length} fused chunks from ${hybrid.files.length} files`);
+        console.log(
+          `[Hybrid RAG] ${hybrid.docIds.length} fused chunks from ${hybrid.files.length} files ` +
+          `(fts_weight=${hybridFtsWeight}, vector_quota=${Math.ceil(hybridQuotaRatio * matchCount)}/${matchCount})`,
+        );
         return {
           context: hybrid.context,
           files: hybrid.files,
@@ -4743,29 +4792,37 @@ serve(async (req) => {
       // returns null on any problem, which is exactly the flag-off path.
       let cacheRef: ContextCacheRef | null = null;
       if (contextCacheOn) {
-        const before = contextCacheStats();
-        cacheRef = await ensureContextCache(
-          GEMINI_API_KEY,
-          model,
-          mode,
-          staticPromptPrefix,
-          Deno.env.get,
-          DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
-        );
-        const after = contextCacheStats();
-        // Derived from the module's own counters rather than guessed. Note
-        // "fallback" covers BOTH "the create failed" and "there was nothing
-        // to cache" (a vision request, whose staticPromptPrefix is "") — the
-        // prefix=0ch field below tells those apart when reading logs.
-        const outcome = after.hits > before.hits
-          ? "hit"
-          : after.creates > before.creates
-            ? "create"
-            : "fallback";
+        // v2 (2026-09-03), after the first gate FAILED — the create used to be
+        // awaited HERE, so every registry miss paid 0.4-2.7s of cachedContents
+        // POST on the critical path and the request that paid it still went
+        // out uncached. Now: a registry HIT (local, no network) is used; a
+        // MISS fires the create in the background for the NEXT request and
+        // this one proceeds exactly as it would with the flag off. The create
+        // is deliberately NOT awaited — the response stream stays open for
+        // seconds afterwards, which is ample for it to land, and if the
+        // isolate is torn down first the next request simply tries again.
+        // ensureContextCache dedupes concurrent creates per isolate, so
+        // firing it from several in-flight requests costs one object, not N.
+        cacheRef = await lookupContextCache(model, mode, staticPromptPrefix, Deno.env.get);
+        if (!cacheRef) {
+          void ensureContextCache(
+            GEMINI_API_KEY,
+            model,
+            mode,
+            staticPromptPrefix,
+            Deno.env.get,
+            DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
+          ).catch(() => {});
+        }
+        // The outcome is now a TIMED STAGE, not just a log line: the previous
+        // gate could not tell a hit from a create because function_logs lag by
+        // more than the measurement window, while X-Timing comes back on the
+        // response itself. cache_hit / cache_miss, never both.
         console.log(
-          `[ContextCache] mode=${mode} ${outcome} model=${model} prefix=${staticPromptPrefix.length}ch name=${cacheRef?.cachedContent ?? "none"}`,
+          `[ContextCache] mode=${mode} ${cacheRef ? "hit" : "miss->background create"} model=${model} ` +
+          `prefix=${staticPromptPrefix.length}ch name=${cacheRef?.cachedContent ?? "none"} stats=${JSON.stringify(contextCacheStats())}`,
         );
-        markStage("context_cache");
+        markStage(cacheRef ? "cache_hit" : "cache_miss");
       }
       // Primary is the latency-sensitive general mode (no retrieval context):
       // minimal thinking cuts many seconds off the first byte. Advisory and

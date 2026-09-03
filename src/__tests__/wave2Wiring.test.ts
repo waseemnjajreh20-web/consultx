@@ -97,12 +97,20 @@ describe("hybrid retrieval wiring (ADVISORY_HYBRID_RETRIEVAL_ENABLED)", () => {
     const callAt = VECTOR_FN_SRC.indexOf("await fetchSBCContextHybrid(");
     expect(guardAt).toBeGreaterThan(-1);
     expect(callAt).toBeGreaterThan(guardAt);
-    // The gap is the `const hybrid = ` binding and nothing else: no await, no
-    // log, no DB call can sit between the flag test and the guarded work.
+    // Nothing between the flag test and the guarded work may await, log, or
+    // touch the database. Since the 2026-09-03 tuning the gap also holds the
+    // two synchronous knob reads (resolveFloor — a pure env read, no I/O),
+    // so the assertion is on the SHAPE of what sits there: `const` bindings
+    // only, every one of them a resolveFloor call, ending in `const hybrid =`.
     const between = VECTOR_FN_SRC.slice(guardAt + guard.length, callAt);
     expect(between).not.toMatch(/\bawait\b/);
     expect(between).not.toMatch(/console\./);
-    expect(between.replace(/\s/g, "")).toBe("consthybrid=");
+    expect(between).not.toMatch(/\.rpc\(|supabaseAdmin/);
+    const statements = between.split(";").map((s) => s.trim()).filter(Boolean);
+    for (const statement of statements.slice(0, -1)) {
+      expect(statement).toMatch(/^const \w+ = resolveFloor\(Deno\.env\.get, /);
+    }
+    expect(statements[statements.length - 1].replace(/\s/g, "")).toBe("consthybrid=");
   });
 
   it("the guard sits AFTER the query embedding and BEFORE the match_sbc_documents call", () => {
@@ -117,10 +125,14 @@ describe("hybrid retrieval wiring (ADVISORY_HYBRID_RETRIEVAL_ENABLED)", () => {
     expect(rpcAt).toBeGreaterThan(guardAt);
   });
 
-  it("it is handed the SAME query, embedding, code filter and matchCount the vector path uses", () => {
+  it("it is handed the EMBEDDED text, the same embedding, code filter and matchCount the vector path uses", () => {
     const callAt = VECTOR_FN_SRC.indexOf("await fetchSBCContextHybrid(");
     const args = VECTOR_FN_SRC.slice(callAt, VECTOR_FN_SRC.indexOf(");", callAt));
-    expect(args).toContain("query,");
+    // embeddingSourceText, not `query`: the corpus is English, so the lexical
+    // leg can only match the English/section-number form of the question
+    // (measured 2026-09-03 — see the comment at the call site).
+    expect(args).toContain("embeddingSourceText,");
+    expect(args).not.toMatch(/^\s*query,\s*$/m);
     expect(args).toContain("queryEmbedding,");
     // codes is plural in hybridRetrieval.ts; today's single filterCode is
     // wrapped for parity, and null (not []) means "no filter".
@@ -314,7 +326,15 @@ describe("flag-OFF path: every new await is behind a flag guard", () => {
     const hybridLogAt = INDEX_SRC.indexOf("[Hybrid RAG]");
     const guardAt = INDEX_SRC.indexOf("if (isHybridRetrievalEnabled(Deno.env.get)) {");
     expect(hybridLogAt).toBeGreaterThan(guardAt);
-    expect(hybridLogAt - guardAt).toBeLessThan(700);
+    // Inside the guarded block: after the guard, and before the block's own
+    // closing brace (a character budget would only track how long the call's
+    // argument list happens to be — since the 2026-09-03 tuning it carries
+    // four options).
+    // (CRLF-tolerant: this repo checks out with CRLF on Windows.)
+    const closingBrace = /\r?\n {4}\}\r?\n/.exec(INDEX_SRC.slice(guardAt));
+    expect(closingBrace).not.toBeNull();
+    const guardBlockEnd = guardAt + closingBrace!.index;
+    expect(hybridLogAt).toBeLessThan(guardBlockEnd);
     // Nothing else new logs at all.
     expect(countOf(INDEX_SRC, "[Hybrid RAG]")).toBe(1);
     expect(INDEX_SRC).not.toContain("[Retrieval Cache]");

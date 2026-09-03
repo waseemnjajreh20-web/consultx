@@ -493,3 +493,71 @@ describe("fetchSBCContextHybrid — success path", () => {
     expect(bounded!.context).not.toContain("b".repeat(500));
   });
 });
+
+// ===========================================================================
+// Tuning knobs added 2026-09-03 after the first live gate FAILED
+// (docs/db/20260903b_hybrid_retrieval_tuning.sql). The SQL function keeps
+// its pre-tuning defaults; the CALLER opts in, so these tests pin both that
+// the knobs reach the RPC by their SQL names and that omitting them leaves
+// the call byte-identical to the untuned one.
+// ===========================================================================
+describe("fetchSBCContextHybrid — tuning knobs", () => {
+  const embedding = [0.1, 0.2, 0.3];
+
+  it("sends every knob under its exact SQL parameter name", async () => {
+    const client = fakeClient(() => ({ data: [row()], error: null }));
+    await fetchSBCContextHybrid("q", embedding, null, 25, client, {
+      ftsWeight: 0.5,
+      vectorQuota: 15,
+      minSimilarityRel: 0.85,
+      minSimilarityAbs: 0.7,
+    });
+    const args = client.calls[0].args;
+    expect(args.fts_weight).toBe(0.5);
+    expect(args.vector_quota).toBe(15);
+    expect(args.min_similarity_rel).toBe(0.85);
+    expect(args.min_similarity_abs).toBe(0.7);
+  });
+
+  it("omits every knob it was not given — the RPC's own defaults must not be shadowed", async () => {
+    const client = fakeClient(() => ({ data: [row()], error: null }));
+    await fetchSBCContextHybrid("q", embedding, null, 25, client);
+    expect(Object.keys(client.calls[0].args).sort()).toEqual(
+      ["filter_codes", "match_count", "query_embedding", "query_text"],
+    );
+  });
+
+  it("passes 0 and 0.0 through rather than treating them as absent", async () => {
+    const client = fakeClient(() => ({ data: [row()], error: null }));
+    await fetchSBCContextHybrid("q", embedding, null, 25, client, { ftsWeight: 0, vectorQuota: 0 });
+    expect(client.calls[0].args.fts_weight).toBe(0);
+    expect(client.calls[0].args.vector_quota).toBe(0);
+  });
+});
+
+describe("fetchSBCContextHybrid — vector support is required", () => {
+  const embedding = [0.1, 0.2, 0.3];
+
+  it("declines (null) when the floor cut the whole vector leg — every row is lexical-only", async () => {
+    const lexicalOnly = [
+      row({ id: 1, vector_rank: null, similarity: null }),
+      row({ id: 2, vector_rank: null, similarity: 0.61 }),
+    ];
+    const client = fakeClient(() => ({ data: lexicalOnly, error: null }));
+    await expect(fetchSBCContextHybrid("q", embedding, null, 25, client)).resolves.toBeNull();
+  });
+
+  it("accepts a result where at least one row carries vector support", async () => {
+    const mixed = [row({ id: 1, vector_rank: null }), row({ id: 2, vector_rank: 3 })];
+    const client = fakeClient(() => ({ data: mixed, error: null }));
+    const result = await fetchSBCContextHybrid("q", embedding, null, 25, client);
+    expect(result).not.toBeNull();
+    expect(result!.docIds).toEqual([1, 2]);
+  });
+
+  it("treats an undefined vector_rank the same as null (a driver that omits the key)", async () => {
+    const noKey = [{ ...row(), vector_rank: undefined } as unknown as HybridDocRow];
+    const client = fakeClient(() => ({ data: noKey, error: null }));
+    await expect(fetchSBCContextHybrid("q", embedding, null, 25, client)).resolves.toBeNull();
+  });
+});

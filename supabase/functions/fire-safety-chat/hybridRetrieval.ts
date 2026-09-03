@@ -93,6 +93,21 @@ export function isHybridRetrievalEnabled(env: EnvReader): boolean {
   return env(HYBRID_RETRIEVAL_FLAG_ENV) === "1";
 }
 
+// Tuning knobs added 2026-09-03 after the first live gate failed — see
+// docs/db/20260903b_hybrid_retrieval_tuning.sql for the measured mechanism.
+// The DEFAULTS here are the tuned values, not the SQL function's own
+// pre-tuning defaults (1.0 / 0): the caller passes them explicitly, so
+// turning the flag on gets the tuned behaviour, and the untuned behaviour is
+// still reachable by setting the env overrides to 1 and 0.
+
+export const HYBRID_FTS_WEIGHT_ENV = "SBC_HYBRID_FTS_WEIGHT";
+/** Halves a lexical-only row's ability to outrank vector evidence; recall unchanged. */
+export const HYBRID_FTS_WEIGHT_DEFAULT = 0.5;
+
+export const HYBRID_VECTOR_QUOTA_RATIO_ENV = "SBC_HYBRID_VECTOR_QUOTA_RATIO";
+/** Fraction of match_count guaranteed to the (floored) vector leg — 15 of 25 rows in advisory/analysis, 6 of 10 in primary. */
+export const HYBRID_VECTOR_QUOTA_RATIO_DEFAULT = 0.6;
+
 // ===========================================================================
 // SECTION 2 — sbcNormalizeAr: TS mirror of public.sbc_normalize_ar
 // ===========================================================================
@@ -352,6 +367,19 @@ export interface FetchHybridOptions {
   candidatePool?: number;
   /** Passed through to buildHybridContext. Default DEFAULT_HYBRID_CONTEXT_LIMIT. */
   contextLimit?: number;
+  /**
+   * Weight on the FTS leg of the fusion (docs/db/20260903b_hybrid_retrieval_tuning.sql).
+   * 1.0 is the RPC's own default and reproduces the equal-weight ranking whose
+   * gate failed on 2026-09-03; below 1.0 a lexical-only row must rank
+   * correspondingly higher in its own list to displace a vector row.
+   */
+  ftsWeight?: number;
+  /** Guaranteed number of (floored) vector rows in the result, ordered first. 0 = the RPC's default = pure fused ranking. */
+  vectorQuota?: number;
+  /** Relative similarity floor on the VECTOR leg — fraction of this query's best similarity. Omit for no floor. */
+  minSimilarityRel?: number;
+  /** Absolute similarity floor on the VECTOR leg. Omit for no floor. */
+  minSimilarityAbs?: number;
 }
 
 /**
@@ -422,6 +450,10 @@ export async function fetchSBCContextHybrid(
     };
     if (opts.rrfK !== undefined) args.rrf_k = opts.rrfK;
     if (opts.candidatePool !== undefined) args.candidate_pool = opts.candidatePool;
+    if (opts.ftsWeight !== undefined) args.fts_weight = opts.ftsWeight;
+    if (opts.vectorQuota !== undefined) args.vector_quota = opts.vectorQuota;
+    if (opts.minSimilarityRel !== undefined) args.min_similarity_rel = opts.minSimilarityRel;
+    if (opts.minSimilarityAbs !== undefined) args.min_similarity_abs = opts.minSimilarityAbs;
 
     const { data, error } = await client.rpc("match_sbc_hybrid", args);
 
@@ -441,6 +473,19 @@ export async function fetchSBCContextHybrid(
       // Mirrors fetchSBCContextVector's `!primaryMatches?.length` fallback
       // trigger (index.ts) — an empty result is always a fallback signal
       // here too, never an "empty success".
+      return null;
+    }
+
+    // Every row is lexical-only: with the vector-leg floor in play (SQL
+    // min_similarity_rel/_abs) that means the whole vector candidate list was
+    // measured to be noise for this query — the exact situation the non-hybrid
+    // path answers with keywordFallback("below_floor"). Declining here hands
+    // the decision back to the caller's own floor/fallback chain rather than
+    // building a life-safety context out of lexical coincidence alone.
+    if (!rows.some((r) => r.vector_rank !== null && r.vector_rank !== undefined)) {
+      console.warn(
+        `[Hybrid Retrieval] ${rows.length} rows, none with vector support (floor cut the whole vector leg) — caller keeps its current retrieval path`,
+      );
       return null;
     }
 
