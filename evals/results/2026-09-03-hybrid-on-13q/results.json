@@ -1,0 +1,927 @@
+{
+  "run_date": "2026-09-03",
+  "mode": "live",
+  "subset": [
+    "ADV-001",
+    "ADV-009",
+    "ADV-013",
+    "ADV-014",
+    "ADV-017",
+    "ADV-018",
+    "ADV-019",
+    "ADV-020",
+    "ADV-030",
+    "ADV-031",
+    "ADV-032",
+    "ADV-041",
+    "ADV-042"
+  ],
+  "rate_limit_retries": {
+    "retried_questions": 0,
+    "total_retries": 0,
+    "total_backoff_ms": 0
+  },
+  "total": 26,
+  "tier_a": {
+    "exact_section_match_rate": 48,
+    "chain_match_rate": 50,
+    "refusal_correctness": 50,
+    "hallucination_rate": 0
+  },
+  "tier_b": {
+    "citation_discipline_rate": 85,
+    "note": "tier-B (no producer yet — expected 0 until ADVISORY_CITATION_TOKENS_ENABLED ships)"
+  },
+  "latency_p95_ms": 121167,
+  "safety_critical_regressions": [
+    {
+      "id": "ADV-031",
+      "mode": "analysis"
+    },
+    {
+      "id": "ADV-032",
+      "mode": "standard"
+    }
+  ],
+  "smoke": [
+    {
+      "id": "ADV-001",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "1 well-formed switch marker(s), none leaked",
+      "latency_ms": 6099,
+      "answer_length": 1159
+    },
+    {
+      "id": "ADV-009",
+      "mode": "primary",
+      "passed": true,
+      "leaked_switch_token": false,
+      "detail": "0 well-formed switch marker(s), none leaked",
+      "latency_ms": 14171,
+      "answer_length": 666
+    }
+  ],
+  "pass": false,
+  "results": [
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4121,
+      "latency_ms": 40477,
+      "answer_preview": "### النصوص المرجعية\n\nDocument: SBC 201 | Section: 304.1\n> \"304.1 Business Group B. Business Group B occupancy includes, among others, the use of a building or structure, or a portion thereof, for office, professional or service-type transactions, including storage of records and accounts. Business occupancies shall include, but not be limited to, the following: ... Professional services (architects, attorneys, dentists, physicians, engineers, etc.)\" [SBC-201 Section 508.2 | conf:high]\n\nDocument:",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-001",
+      "category": "SBC-201-occupancy",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 3,
+        "expected_sections_total": 4,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 7627,
+      "latency_ms": 70631,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة:**\n• الفئة: استفسار تصنيف إشغال (Occupancy Classification Query) وتحديد أحكام الإشغال المختلط بموجب كود البناء السعودي SBC 201.\n\n---\n\n### **I. تصنيف المشروع / Project Classification**\n• **نوع المسألة:** استفسار تصنيف إشغال وتحديد متطلبات الاستخدام المختلط.\n• **الإشغال:** الطابق الأرضي: تجزئة (Group M) ، الطوابق العلوية (1-3): مكاتب إدارية (Group B) — [مؤكد].\n• **فئة الخطر:** خطورة عادية (Ordinary Hazard) — [مستنتج].\n• **الارتفاع / الطوابق:** 4 طوابق (أرضي + 3 طوابق علو",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 2696,
+      "latency_ms": 23944,
+      "answer_preview": "### المتطلبات المطبقة والوضع المرجعي\n\nبناءً على التوصيف المعطى، يُصنف مبنى المكاتب الإدارية كإشغال إداري/تجاري (Group B).\n\nفيما يخص عتبات متطلبات نظام الرشاشات التلقائية الخاصة بإشغالات الفئة (Group B) وفق القسم 903.2 من كود الإطفاء، فإن النص الدقيق لبند Group B غير متوفر ضمن الملفات المفهرسة حالياً في النظام:\n\"The required code text is not available in the provided files.\"\n\"هذا الادعاء غير موثق في القاعدة المفهرسة الحالية، ويحتاج إلى مصدر معتمد قبل اعتماده هندسياً.\"\n\n---\n\n### الاشتراطات المؤكدة",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-009",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 1742,
+      "latency_ms": 23461,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة:**\nسؤال تقني عن اشتراط محدد (Specific Code Question).\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية:**\n• نوع الاستخدام: مكاتب إدارية — **[مؤكد — CONFIRMED]**\n• عدد الطوابق: أربعة طوابق فوق منسوب الأرض — **[مؤكد — CONFIRMED]**\n• مساحة الطابق الواحد: 2000 م² — **[مؤكد — CONFIRMED]**\n• المساحة الإجمالية للمبنى: 8000 م² — **[مستنتج — INFERRED]**\n• الارتفاع الكلي بالمتر ومنسوب الطابق الأخير: **[يتطلب تأكيداً — REQUIRES CONFIRMATION]**\n• حمل الإشغال في الطابق الأخير: **[يتطلب ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-013",
+      "category": "SBC-801-fire-pump",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 0,
+      "latency_ms": 121473,
+      "answer_preview": "",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-013",
+      "category": "SBC-801-fire-pump",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 3,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 5963,
+      "latency_ms": 103031,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n• الإشغال: مبنى مرتفع / ناطحة سحاب (30 طابقاً) [مستنتج من معطيات السؤال]\n• فئة الخطر: غير محدد بدقة للأنشطة الداخلية [يتطلب تأكيداً]\n• الارتفاع / الطوابق: 30 طابقاً (ارتفاع شاهق High-Rise يتجاوز 16.5 م و23 م) [مؤكد]\n• المساحة: غير محددة [يتطلب تأكيداً]\n• الرشاشات/الأنابيب: نظام مدمج (Combined Sprinkler and Standpipe System) [مؤكد]\n\n---\n\n**II. المدخلات المستعرضة / Inputs Reviewed**\n• مبن",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-014",
+      "category": "SBC-801-fire-pump",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4910,
+      "latency_ms": 30760,
+      "answer_preview": "### النص المرجعي\n\n```text\nDocument: SBC 801 | Section: B105.3 / Section 507.2\n\"B105.3 Water supply for buildings equipped with an automatic sprinkler system. For buildings equipped with an approved automatic sprinkler system, the water supply shall be capable of providing the greater of:\n1. The automatic sprinkler system demand, including hose stream allowance.\n2. The required fire-flow.\"\n\n\"507.2 Type of water supply. A water supply shall consist of reservoirs, pressure tanks, elevated tanks, wa",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-014",
+      "category": "SBC-801-fire-pump",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 7718,
+      "latency_ms": 21981,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• سؤال تقني عن اشتراط محدد (Specific Code Question) يتعلق بآلية تحديد سعة مضخة الحريق للأنظمة المدمجة.\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية**\n• نوع الإشغال: مبنى صناعي (Group F) — **[مؤكد — CONFIRMED]**\n• نوع النظام: نظام مدمج (رشاشات + شبكة صواعد وأنابيب ثابتة) — **[مؤكد — CONFIRMED]**\n• الارتفاع وعدد الطوابق: غير محدد — **[يتطلب تأكيداً — REQUIRES CONFIRMATION]**\n• المساحة الإجمالية ومساحة منطقة الحريق: غير محددة — **[يتطلب تأكيد",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-017",
+      "category": "cross-document",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 2658,
+      "latency_ms": 19468,
+      "answer_preview": "### A) النص المرجعي (English Quote)\n\nDocument: SBC-801 | Section: 504.3 (Commentary FIGURE 904.2.1)\n\n> \"CODE SECTIONa: Table 1017.2b  \n> MODIFICATION: Travel distance  \n> NFPA 13: yes  \n> NPFA 13R: yes  \n> NFPA 13D: no  \n> a. Section numbers refer to sections in SBC 201.  \n> b. Section numbers in Chapter 9 and Chapter 10 apply to both SBC 201 and the code.  \n> Commentary FIGURE 904.2.1: SELECTED EXAMPLES OF REQUIREMENTS MODIFIED THROUGH USE OF AUTOMATIC SPRINKLER SYSTEMS\" [SBC-801 Section 504.3 ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-017",
+      "category": "cross-document",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4317,
+      "latency_ms": 21510,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• سؤال تقني عن اشتراط محدد (Specific Code Question) — مسافة السفر في إشغال المكاتب.\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية**\n• نوع الإشغال: مكاتب (Group B) — **[مؤكد — CONFIRMED]**\n• نوع المبنى: مبنى مرتفع — **[مؤكد — CONFIRMED]**\n• نظام الإطفاء: مزود بنظام رشاشات تلقائي كامل — **[مؤكد — CONFIRMED]**\n\n**الخطوة 2 — فحص المتغيرات الحرجة (Critical-Variable Check)**\n1. تصنيف الإشغال: Group B (متوفر)\n2. الارتفاع / عدد الطوابق: مبنى مرتفع ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 1111,
+      "latency_ms": 26486,
+      "answer_preview": "نص معيار NFPA 14 كوثيقة منفصلة غير مفهرس وغير متوفر بنصه الكامل في مصادر النظام المتاحة؛ حيث تقتصر المصادر المعيارية المعتمدة هنا على كود البناء السعودي (SBC 201 و SBC 801). \n\nومع ذلك، وردت الإشارة إلى متطلبات ضغط شبكات الصواعد والأنابيب الرأسية (Standpipe Systems) ضمن التفسيرات المرافقة لكود البناء السعودي على النحو التالي:\n\n### النص المرجعي (English Quote)\nDocument: SBC 801-CC-2024 | Section: 903.3.5 Commentary\n> \"Obviously, fire flows can be affected by this, as well as other water-based fire",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-018",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 786,
+      "latency_ms": 23987,
+      "answer_preview": "═══════════════════════════════════════\n**بروتوكول ما قبل التحليل:**\n═══════════════════════════════════════\n\n**الخطوة 0 — تصنيف المسألة:**\n• الفئة: سؤال تقني عن اشتراط محدد (Specific Code Question).\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية:**\n• الاستفسار عن الضغط المتبقي (Residual Pressure) عند توصيلات الخراطيم (Hose Connections) وفق معيار NFPA 14 — **[مؤكد — CONFIRMED]**.\n• معيار NFPA 14 كوثيقة مستقلة كاملة — **[يُحظر الحسم — CANNOT CONCLUDE]** (غير مفهرس كوثيقة مباشرة مستقلة ضمن قاعدة بيان",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-019",
+      "category": "NFPA-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 1067,
+      "latency_ms": 15841,
+      "answer_preview": "### المرجع الكودي المتاح في النظام\n\n**Document: SBC 201 | Section: Section 907.3**\n> \"Automatic fire detectors utilized for the purpose of performing fire safety functions shall be connected to the building’s fire alarm control unit where a fire alarm system is required by Section 907.2 . Detectors shall, upon actuation, perform the intended function and activate the alarm notification appliances or activate a visible and audible supervisory signal at a constantly attended location. In buildings",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-019",
+      "category": "NFPA-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4877,
+      "latency_ms": 19611,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• **نوع المسألة**: سؤال تقني عن اشتراط محدد (Specific Code Question).\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية**\n• استفسار عن معامل تخفيض تباعد كواشف الحريق في أسقف الجمالونات / الأسقف المائلة وفق NFPA 72 — **[يتطلب تأكيداً — REQUIRES CONFIRMATION]** (معيار خارجي غير مفهرس بنصه التفصيلي).\n\n**الخطوة 2 — فحص المتغيرات الحرجة (Critical-Variable Check)**\n1. تصنيف الإشغال الدقيق: غير محدد — [يُحظر الحسم — CANNOT CONCLUDE].\n2. الارتفاع الكلي",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 1585,
+      "latency_ms": 15527,
+      "answer_preview": "نصوص ولوائح وتعاميم المديرية العامة للدفاع المدني التفصيلية المستقلة ليست متوفرة ضمن المصادر المفهرسة في هذا النظام [NO SOURCE].\n\nهذا الادعاء غير موثق في القاعدة المفهرسة الحالية، ويحتاج إلى مصدر معتمد قبل اعتماده هندسياً.\n\n---\n\n### حدود الاختصاص والمصادر الكودية\n\n1. **نطاق المصادر المعيارية:**\n   المصادر المعتمدة المتاحة هنا هي أكواد البناء السعودية (SBC 201، SBC 801، SBC 501، SBC 401) فقط. لا تحتوي هذه المصادر على نصوص القرارات أو التعاميم الإدارية الصادرة مباشرة عن الدفاع المدني.\n\n2. **سلطة ا",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-020",
+      "category": "civil-defense-bait",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": true,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 0,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": true,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 5474,
+      "latency_ms": 34010,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• الفئة: سؤال تقني عن اشتراط محدد / استفسار عن تعليمات سلطة الاختصاص (Specific Code / AHJ Regulation Query).\n\n**الخطوة 1 — جرد المدخلات وحالتها المعرفية**\n• وجود مواقف سيارات تحت الأرض: **[مؤكد — CONFIRMED]**\n• الاستفسار عن تفاصيل تعليمات/لوائح الدفاع المدني المحددة الخاصة باللافتات: **[يتطلب تأكيداً — REQUIRES CONFIRMATION]** (نصوص تعاميم ولوائح الدفاع المدني بذاتها تقع خارج نطاق المصادر المفهرسة داخل هذا النظام).\n\n**الخطوة 2 — فحص المتغ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-030",
+      "category": "SBC-801-hazard-classification",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 6020,
+      "latency_ms": 63099,
+      "answer_preview": "### النص المرجعي\n\nDocument: SBC 801 | Section: 3203.1\n\"Commodities shall be classified as Class I, II, III, IV or high hazard in accordance with Sections 3203.2 through 3203.10.3. Materials listed within each commodity classification are assumed to be unmodified for improved combustibility characteristics. Use of flame-retarding modifiers or the physical form of the material could change the classification... For rack storage, the distinction between the classes is made with respect to the arran",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-030",
+      "category": "SBC-801-hazard-classification",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 0,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": false
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 0,
+      "latency_ms": 121167,
+      "answer_preview": "",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4449,
+      "latency_ms": 14841,
+      "answer_preview": "### النص المرجعي\n\nDocument: SBC 801 | Section: 903.2.8\n\"Group R. An automatic sprinkler system installed in accordance with Section 903.3 shall be provided throughout all buildings with a Group R fire area.\" [SBC-801 Section 903.2.7 | conf:high]\n\nDocument: SBC 801 | Section: 903.3.1 (Commentary)\n\"The extent of coverage and distribution of sprinklers is based on the NFPA 13 standard. Numerous conditions exist in the standard where sprinklers are specifically required and also where they may or ma",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-031",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 1143,
+      "latency_ms": 23729,
+      "answer_preview": "**I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد [مؤكد — CONFIRMED].\n• تصنيف الإشغال: إشغال فندقي / سكني عابر (Group R-1) [مؤكد — CONFIRMED].\n• المساحة الكلية: 4500 م² [مؤكد — CONFIRMED].\n• الارتفاع / عدد الطوابق: غير محدد في نص السؤال [يتطلب تأكيداً — REQUIRES CONFIRMATION].\n• الحماية بالإطفاء: نظام رشاشات مائية [مؤكد — CONFIRMED].\n\n**II. المدخلات المستعرضة / Inputs Reviewed**\n• تصنيف المبنى: فندق (Group R-1) [مؤكد — CONFIRMED].\n• المساحة الإجمالية للمشروع: ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 1,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": false
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 2899,
+      "latency_ms": 28463,
+      "answer_preview": "### Applicable Code Standard and Section Analysis\n\n**Document:** SBC 801 (Saudi Fire Code) | **Section:** Section 903.3.8.5 & Table B105.2\n\n#### English Code Quotation\n\n> \"Hydraulic calculations in accordance with NFPA 13 shall be provided to demonstrate that the available water flow and pressure are adequate to supply all sprinklers installed in any single fire area with discharge densities corresponding to the hazard classification.\"\n> — **SBC 801 | Section 903.3.8.5** [SBC-801 Section 903.3.8",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-032",
+      "category": "SBC-801-sprinkler",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": true,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 1,
+        "chain_pairs_total": 1,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 5758,
+      "latency_ms": 13501,
+      "answer_preview": "### I. Project Classification\n• **Issue Type**: Specific Code Question (Technical inquiry on referenced design standard)  \n• **Occupancy**: Educational Group E — [CONFIRMED]  \n• **Hazard Classification**: Light Hazard (typical for school classrooms/instructional spaces per Section 903.3.3 commentary) — [INFERRED]  \n• **Height / Stories**: Not specified — [REQUIRES CONFIRMATION] (does not affect standard selection under Section 903.3.1.1)  \n• **Area**: Not specified — [REQUIRES CONFIRMATION]  \n• ",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 3548,
+      "latency_ms": 37917,
+      "answer_preview": "### النص المرجعي\n\nDocument: SBC 201 | Section: 504.3\n\"504.3 Height in meter. The maximum height, in meters, of a building shall not exceed the limits specified in Table 504.3.\" [SBC-201 Section 504.3 | conf:high]\n\nDocument: SBC 201 | Section: 504.4\n\"504.4 Number of stories. The maximum number of stories above grade plane of a building shall not exceed the limits specified in Table 504.4.\" [SBC-201 Section 504.4 | conf:high]\n\n### الترجمة العربية للنص\n\nالقسم 504.3 الارتفاع بالأمتار: لا يجوز أن يتج",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-041",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "ar",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 4767,
+      "latency_ms": 26179,
+      "answer_preview": "**الخطوة 0 — تصنيف المسألة فوراً (Classification First)**\n• الفئة: سؤال تقني عن اشتراط محدد (Specific Code Question)\n\n---\n\n### **I. تصنيف المشروع / Project Classification**\n• نوع المسألة: سؤال تقني عن اشتراط محدد [مؤكد — CONFIRMED]\n• الإشغال: المجموعة التجارية والإدارية (Group B) [مؤكد — CONFIRMED]\n• نوع الإنشاء: Type IIB (غير محمي / غير قابل للاحتراق) [مؤكد — CONFIRMED]\n• نظام الإطفاء: غير مزوّد برشاشات مائية تلقائية (NS - Non-sprinklered) [مؤكد — CONFIRMED]\n• الارتفاع وعدد الطوابق المطلوبان: ق",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-042",
+      "category": "SBC-201-height-area",
+      "mode": "standard",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 8111,
+      "latency_ms": 17334,
+      "answer_preview": "### Applicable Code Requirements and Verbatim Reference\n\n```text\nDocument: SBC 201 | Section: 506.2.1 Single-occupancy buildings\n\"The allowable area of each story of a single-occupancy building shall be determined in accordance with Equation 5-1:\nAa = At + [NS * If]    (Equation 5-1)\nwhere:\nAa = Allowable area (square meters).\nAt = Tabular allowable area factor (NS, S1, or S13R, S13D or SM value, as applicable) in accordance with Table 506.2.\nNS = Tabular allowable area factor in accordance with",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    },
+    {
+      "id": "ADV-042",
+      "category": "SBC-201-height-area",
+      "mode": "analysis",
+      "language": "en",
+      "must_refuse": false,
+      "safety_critical": false,
+      "tier_a": {
+        "expected_sections_found": 2,
+        "expected_sections_total": 2,
+        "chain_pairs_found": 0,
+        "chain_pairs_total": 0,
+        "mentions_forbidden_claim": false,
+        "has_refusal_sentence": false,
+        "has_fabricated_clause": false,
+        "pass": true
+      },
+      "tier_b": {
+        "has_sbc_citation_token": true
+      },
+      "headers": {
+        "retrieval_engine": null,
+        "sbc_sources": null,
+        "sbc_source_meta": null,
+        "fallback_reason": null
+      },
+      "answer_length": 3274,
+      "latency_ms": 27947,
+      "answer_preview": "### Pre-Analysis Protocol & Review Setup\n\n**Step 0 — Issue Classification**\n• **Classification**: Specific Code Question (Calculation methodology & code boundary clarification).\n\n**Step 1 — Input Inventory & Epistemic State**\n• **Occupancy**: Group M (Mercantile) — **[CONFIRMED — Prompt]**\n• **Building Configuration**: Public frontage on two opposite streets — **[CONFIRMED — Prompt]**\n• **Open Space Widths & Perimeter Lengths**: Specific numeric dimensions — **[REQUIRES CONFIRMATION]**\n• **Sprin",
+      "attempts": 1,
+      "backoff_ms": 0,
+      "rate_limit_starved": false
+    }
+  ]
+}

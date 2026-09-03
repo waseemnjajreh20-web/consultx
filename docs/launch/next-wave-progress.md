@@ -138,3 +138,60 @@ X-Timing; C3 drawings stays at ADR; UI flag activation is an owner decision.
 **Owner queue (updated):** GitHub Actions `startup_failure` needs the run page read by the owner; ODA converter
 approval for C3 phase 1.5; engineer review of the 34 draft rules and the 243 golden candidates; ALERT_EMAIL for SLO
 alerts if not yet set; campaign / duplicate-row decisions from the previous session.
+
+## Correction — the 2026-09-03 hybrid gate measured nothing (same day, later)
+
+The "Quality gate for the hybrid flag" and the session-close table above record
+hybrid retrieval as FAILED on quality (sections 52%→41%, chains 75%→50%). That
+conclusion is **withdrawn**: `match_sbc_hybrid` raised a result-type error on
+every call and `fetchSBCContextHybrid` fails open by design, so both arms of
+that comparison were the plain vector path and the deltas were provider noise.
+Full evidence, including the corpus-language measurement that showed the
+lexical leg was being fed Arabic against an English corpus, is in
+`hybrid-retrieval-notes.md` ("2026-09-03 (b)"). Hybrid is now genuinely running
+(`engine=hybrid` on a live probe) with weighted RRF, a guaranteed vector quota
+and the similarity floor on the vector leg; the re-gate is in flight.
+
+**Two operating rules this produced:**
+
+1. A fail-open feature needs POSITIVE proof that it ran — a live `engine=`
+   value or a direct SQL call — before any gate reading it means anything. A
+   silent fallback and a working feature look identical from the outside.
+2. Never run a probe while a benchmark is in flight: `ttfb_probe.mjs` and
+   `profile_probe.mjs` rotate the smoke account's password and invalidate the
+   session the bench is holding. One re-gate run was discarded for this
+   (exact-section 11%, refusal 0%, p95 79.6s — all artefact).
+
+Context caching (D2) also got its wiring fixed rather than its verdict kept:
+the create is off the critical path and the hit/miss outcome now rides back on
+`X-Timing` so the next gate can actually tell them apart. See
+`context-cache-notes.md` ("v2"). Its flag stays `0` until that re-gate runs.
+
+## Hybrid retrieval — settled (2026-09-03, model-free gate)
+
+After fixing the three defects that made the earlier gates meaningless, the
+question was re-asked with an instrument that does not involve the model:
+`evals/retrieval/retrieval-gate.mjs` (40 questions, 87 expected sections, one
+shared embedding per question, deterministic section-membership scoring, ~1
+minute per run).
+
+**Result: hybrid retrieval buys nothing on this corpus — `ADVISORY_HYBRID_RETRIEVAL_ENABLED`
+stays `0`.** Every hybrid arm matches the vector baseline's 73.6% recall exactly
+once the similarity floor is out of the comparison; the lexical leg contributes
+7-18 supported rows across all 40 questions. The code and SQL stay behind the
+flag — a future corpus (SBC 401/501, or Arabic-language source text) may change
+the answer, and re-asking now costs one minute.
+
+**Open finding to act on next:** the production similarity floor costs 2 of 87
+expected sections and 2 of 40 complete section sets (73.6% -> 71.3%), dropping
+~5 of every 25 rows. Its noise-rejection benefit is real but its recall cost was
+never measured until now. Candidate change (needs the harness AND an
+answer-quality run): keep the floor as the *fallback* decision, stop using it to
+drop individual rows when the top match is strong. See `hybrid-retrieval-notes.md`.
+
+**New instrument, kept:** `gemini-diag` gained a token-gated `embed` action (the
+Gemini key never leaves the function; only the 768-dim vector does) so any local
+harness can reproduce the runtime's exact query embedding. It accepts either
+`PROBE_TASK_TOKEN` (shared with the synthetic-probe cron) or its own
+`GEMINI_DIAG_TOKEN`, which is rotatable with one CLI command without touching
+that cron schedule.

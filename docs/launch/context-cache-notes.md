@@ -366,3 +366,36 @@ Before any retry: (1) surface the outcome (`hit|create|reject`) in X-Timing
 so a probe can see it; (2) move `ensureContextCache` off the critical path
 (create in the background, use on the NEXT request); (3) re-test primary
 first, since its thinking-minimal path is the one the cache seems to defeat.
+
+## v2 — lookup on the request path, create in the background (2026-09-03)
+
+The gate above measured the right thing and the answer was "no", but the
+mechanism was in the WIRING, not in Gemini's cache: `ensureContextCache` was
+awaited on the critical path, so every registry miss paid a full
+`cachedContents` POST (0.4-2.7s, measured) **on the request that discovered the
+miss** — and that request then went out uncached anyway, because the cache it
+had just created was not part of the call already in flight. On a warm isolate
+serving varied modes, misses dominate.
+
+v2 splits the two halves:
+
+- `lookupContextCache(model, mode, prefix, env)` — registry only, no network
+  (the only async work is a local SHA-256). It decides THIS request.
+- a miss fires `ensureContextCache` **fire-and-forget** (`void ... .catch(...)`)
+  for the NEXT request. The response stream stays open for seconds afterwards,
+  which is ample for the create to land; if the isolate is torn down first the
+  next request simply tries again.
+- concurrent creates for the same key are deduped per isolate by an in-flight
+  map, so several fire-and-forget callers create ONE cached object, not N.
+
+The outcome is now a **timed stage** — `cache_hit` / `cache_miss` in `X-Timing`
+— not just a log line. That is the direct fix for what blocked the first gate's
+diagnosis: `function_logs` lag by more than the measurement window, so the
+probe could not tell a hit from a create; the header comes back on the response
+itself.
+
+**Re-gate procedure (unchanged otherwise):** flag on, probe each mode twice, and
+read `cache_hit=` / `cache_miss=` off X-Timing. Expect round 1 to be a miss in
+every mode and round 2 to be a hit; only if the hit rounds show a materially
+faster `gemini_connect` than the flag-off baseline does step 4 (the 13-question
+subset) run at all.

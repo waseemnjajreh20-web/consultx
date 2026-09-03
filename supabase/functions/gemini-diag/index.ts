@@ -291,16 +291,28 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
 
-  const expected = Deno.env.get("PROBE_TASK_TOKEN");
+  // Either secret opens this function. PROBE_TASK_TOKEN is the shared probe
+  // token (also embedded in the synthetic-probe cron statement, so it is not
+  // rotatable from here without touching that schedule); GEMINI_DIAG_TOKEN is
+  // this function's own, added 2026-09-03 so the orchestrator can drive the
+  // diagnostics from a shell without knowing or rotating the cron's token —
+  // the Management API's /secrets listing does not return usable plaintext.
+  // Both are compared in constant time and both fail closed when unset.
   const got = req.headers.get("x-probe-token") ?? "";
-  if (!expected || !timingSafeEqual(got, expected)) {
+  const accepted = ["PROBE_TASK_TOKEN", "GEMINI_DIAG_TOKEN"]
+    .map((name) => Deno.env.get(name))
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+  // No early exit on the first match: every candidate is compared, so the
+  // response time does not reveal which secret (if any) matched.
+  const authorized = accepted.reduce((ok, expected) => timingSafeEqual(got, expected) || ok, false);
+  if (accepted.length === 0 || !authorized) {
     return json({ error: "forbidden" }, 401);
   }
 
   const apiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
   if (!apiKey) return json({ error: "GOOGLE_GEMINI_API_KEY is not configured" }, 500);
 
-  let body: { action?: string; model?: string; words?: number } = {};
+  let body: { action?: string; model?: string; words?: number; text?: string } = {};
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -325,7 +337,46 @@ Deno.serve(async (req) => {
       return json({ action, result: await runCacheTest(apiKey, model, words) });
     }
 
-    return json({ error: "unknown action", supported: ["models", "cachetest"] }, 400);
+    if (action === "embed") {
+      // Returns the 768-dim query embedding for one text, produced by the
+      // EXACT call fire-safety-chat's computeQueryEmbedding makes
+      // (gemini-embedding-001, outputDimensionality 768, same body shape).
+      // Why this action exists: retrieval quality can only be gated
+      // honestly by comparing retrieval paths on the SAME embedding, and
+      // the model-in-the-loop benchmark cannot do that - its numbers are
+      // dominated by provider latency and answer variance (measured
+      // 2026-09-03: the same question ranged 3.5s to 50s, and two rows hit
+      // the 120s watchdog). A local harness embeds each benchmark question
+      // here, then calls match_sbc_documents and match_sbc_hybrid with that
+      // one vector and scores section recall directly - no model, no noise.
+      // The key still never leaves the function; only the vector does, and
+      // an embedding of a caller-supplied text reveals nothing about the
+      // key or the corpus.
+      const text = typeof body.text === "string" ? body.text : "";
+      if (!text.trim()) return json({ error: "embed requires a non-empty text" }, 400);
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: { role: "user", parts: [{ text: text.substring(0, 8000) }] },
+            outputDimensionality: 768,
+          }),
+        },
+      );
+      if (!resp.ok) {
+        return json({ action, status: resp.status, error: truncate(await resp.text().catch(() => "")) }, 502);
+      }
+      const data = await resp.json().catch(() => null) as { embedding?: { values?: number[] } } | null;
+      const values = data?.embedding?.values;
+      if (!Array.isArray(values) || values.length === 0) {
+        return json({ action, error: "response carried no embedding values" }, 502);
+      }
+      return json({ action, dimensions: values.length, embedding: values });
+    }
+
+    return json({ error: "unknown action", supported: ["models", "cachetest", "embed"] }, 400);
   } catch (e) {
     return json({ error: truncate(e instanceof Error ? e.message : String(e)) }, 500);
   }

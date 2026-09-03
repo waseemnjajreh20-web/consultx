@@ -1,0 +1,1410 @@
+{
+  "ran_at": "2026-09-03T10:08:37.891Z",
+  "match_count": 25,
+  "totals": {
+    "vector": {
+      "found": 64,
+      "total": 87,
+      "full": 24,
+      "rows": 1000,
+      "ftsRows": 0
+    },
+    "vector_floor": {
+      "found": 62,
+      "total": 87,
+      "full": 22,
+      "rows": 798,
+      "ftsRows": 0
+    },
+    "tuned": {
+      "found": 62,
+      "total": 87,
+      "full": 22,
+      "rows": 808,
+      "ftsRows": 17
+    },
+    "tuned_nofloor": {
+      "found": 64,
+      "total": 87,
+      "full": 24,
+      "rows": 1000,
+      "ftsRows": 7
+    },
+    "untuned": {
+      "found": 64,
+      "total": 87,
+      "full": 24,
+      "rows": 1000,
+      "ftsRows": 18
+    }
+  },
+  "perRow": [
+    {
+      "id": "ADV-001",
+      "refs": [
+        "302",
+        "304",
+        "508",
+        "508.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 3,
+          "of": 4,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 3,
+          "of": 4,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 3,
+          "of": 4,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 3,
+          "of": 4,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 3,
+          "of": 4,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-002",
+      "refs": [
+        "311.2",
+        "508.2"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-003",
+      "refs": [
+        "303",
+        "305",
+        "508.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 3,
+          "rows": 21
+        },
+        "tuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 21
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-004",
+      "refs": [
+        "1004.5",
+        "1006.3.3",
+        "1005.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 3,
+          "rows": 19
+        },
+        "tuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 19
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-005",
+      "refs": [
+        "1017.2"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 1,
+          "of": 1,
+          "rows": 19
+        },
+        "tuned": {
+          "found": 1,
+          "of": 1,
+          "rows": 19
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-006",
+      "refs": [
+        "1005.1",
+        "1020.2",
+        "1004.5"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 3,
+          "rows": 8
+        },
+        "tuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 8
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-007",
+      "refs": [
+        "504.3",
+        "504.4",
+        "503"
+      ],
+      "arms": {
+        "vector": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-008",
+      "refs": [
+        "506.2",
+        "504.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-009",
+      "refs": [
+        "903.2.11",
+        "903.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-010",
+      "refs": [
+        "903.2.1",
+        "903.2.1.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-011",
+      "refs": [
+        "905.3.1",
+        "905.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-012",
+      "refs": [
+        "905.3.1",
+        "905.4",
+        "905.5"
+      ],
+      "arms": {
+        "vector": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 3,
+          "of": 3,
+          "rows": 8
+        },
+        "tuned": {
+          "found": 3,
+          "of": 3,
+          "rows": 8
+        },
+        "tuned_nofloor": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 3,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-013",
+      "refs": [
+        "913.2",
+        "913.3",
+        "913.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 3,
+          "rows": 21
+        },
+        "tuned": {
+          "found": 0,
+          "of": 3,
+          "rows": 21
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-014",
+      "refs": [
+        "913.2.1",
+        "913.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-015",
+      "refs": [
+        "508.4",
+        "903.2.1",
+        "903.2.11"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-016",
+      "refs": [
+        "504.3",
+        "504.4",
+        "903.2.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 3,
+          "rows": 16
+        },
+        "tuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 16
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 3,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-017",
+      "refs": [
+        "1017.2",
+        "903.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 15
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 15
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-021",
+      "refs": [
+        "913.2",
+        "913.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 2,
+          "rows": 2
+        },
+        "tuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 2
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-022",
+      "refs": [
+        "904.7",
+        "904.7.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-023",
+      "refs": [
+        "904.9",
+        "904.9.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 2,
+          "rows": 12
+        },
+        "tuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 12
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-024",
+      "refs": [
+        "909.7",
+        "909.7.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-025",
+      "refs": [
+        "1009.6",
+        "1009.7"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 2,
+          "rows": 16
+        },
+        "tuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 16
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-026",
+      "refs": [
+        "716.2.6",
+        "1010.1.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 1,
+          "of": 2,
+          "rows": 16
+        },
+        "tuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-027",
+      "refs": [
+        "3206.2",
+        "3208.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-028",
+      "refs": [
+        "907.6",
+        "907.6.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 6
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 6
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-029",
+      "refs": [
+        "507.1",
+        "507.5.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 19
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 20
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-030",
+      "refs": [
+        "903.3.1.2",
+        "902.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 0,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-031",
+      "refs": [
+        "903.2.1",
+        "903.3.1.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-032",
+      "refs": [
+        "903.2.3",
+        "903.3.1.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 1,
+          "of": 2,
+          "rows": 18
+        },
+        "tuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 18
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-033",
+      "refs": [
+        "909.20.1",
+        "1010.1.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-034",
+      "refs": [
+        "909.20.5",
+        "1010.1.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-035",
+      "refs": [
+        "1006.2.1",
+        "1006.3.2"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-036",
+      "refs": [
+        "1006.2.1",
+        "1006.3.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-037",
+      "refs": [
+        "907.2.1",
+        "907.5.2"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-038",
+      "refs": [
+        "903.2.11.3",
+        "508.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-039",
+      "refs": [
+        "1004.5"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 1,
+          "rows": 2
+        },
+        "tuned": {
+          "found": 0,
+          "of": 1,
+          "rows": 2
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-040",
+      "refs": [
+        "1017.2",
+        "903.3.1.1"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-041",
+      "refs": [
+        "504.3",
+        "504.4"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-042",
+      "refs": [
+        "506.2",
+        "504.3"
+      ],
+      "arms": {
+        "vector": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 2,
+          "of": 2,
+          "rows": 20
+        },
+        "tuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 20
+        },
+        "tuned_nofloor": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 2,
+          "of": 2,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "ADV-043",
+      "refs": [
+        "1004.5"
+      ],
+      "arms": {
+        "vector": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "vector_floor": {
+          "found": 0,
+          "of": 1,
+          "rows": 10
+        },
+        "tuned": {
+          "found": 0,
+          "of": 1,
+          "rows": 10
+        },
+        "tuned_nofloor": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        },
+        "untuned": {
+          "found": 1,
+          "of": 1,
+          "rows": 25
+        }
+      }
+    }
+  ]
+}
