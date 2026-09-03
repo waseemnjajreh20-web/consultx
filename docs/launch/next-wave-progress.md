@@ -32,7 +32,7 @@ No agent deploys, writes to production, or runs git write commands.
 ## Quality gate for the hybrid flag (2026-09-03)
 - Baseline (hybrid OFF, 13-question subset, commit 2bf727f): sections 52% · chain pairs 75% · citation discipline 100% · p95 27.1s · refusal 50% · hallucination 40%.
 - Standing safety-critical regression ADV-031/032 (both modes): the answers append external clause numbers ("NFPA 13 … Section x") that the corpus does not hold — the tier-A fabricated-clause predicate. Two structural responses built this session: SOURCE_SCOPE rule 3 strengthened (name the external standard exactly as the SBC text does, never a clause number), and `fire-safety-chat/externalClauseScrubber.ts` — a streaming scrubber that reduces any absent-standard clause reference to the bare standard name before it reaches the client (7 tests; wiring into transformStream follows the D2 integrator's pass on index.ts).
-- Hybrid-ON run launched 02:05 UTC on the same subset; decision rule: sections ≥ 52%, no new safety-critical regression, hallucination not up.
+- Hybrid-ON run (02:05 UTC, same subset, evals/results/2026-09-03-subset): sections 41% · chains 50% · citation discipline 90% · p95 60.4s · hallucination 40% → **gate FAILED**; flag set back to 0 right after the run. Hypothesis for the next iteration: the hybrid leg skips the similarity floor and fuses 40+40 candidates into 25 rows, so lexical noise displaces vector top hits; tune rrf_k / candidate_pool and keep the floor on the vector leg, then re-gate.
 
 ## Integration order (orchestrator)
 1. Collect reports → review diffs per item (code-review pass on the hot-file edits from B1a and A2).
