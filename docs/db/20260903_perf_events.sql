@@ -192,6 +192,10 @@ end $$;
 -- not a new assumption, just documented here explicitly. Acceptable for a
 -- 15-minute-cadence health signal; a tighter fix would require pg_net to
 -- expose the request URL on the response row, which it does not.
+-- 2026-09-03: restricted to responses whose body carries the renewal job's
+-- "processed" counter. The keep-warm cron (every 5 minutes, unauthenticated
+-- POST → fast 401) shares the same pg_net log and would otherwise be read as
+-- a failing renewal cron and alert the owner hourly.
 create or replace function public.last_cron_status()
 returns integer
 language sql
@@ -199,7 +203,11 @@ stable
 security definer
 set search_path = public
 as $func$
-  select status_code from net._http_response order by created desc, id desc limit 1;
+  select status_code
+  from net._http_response
+  where content::text like '%"processed"%'
+  order by created desc, id desc
+  limit 1;
 $func$;
 
 comment on function public.last_cron_status() is
@@ -208,7 +216,9 @@ comment on function public.last_cron_status() is
   'coarse cron-health signal. SECURITY DEFINER so it can read net._http_response '
   '(not otherwise readable by the calling role); execute is service_role-only.';
 
-revoke all on function public.last_cron_status() from public;
+-- REVOKE FROM PUBLIC alone leaves Supabase's default anon/authenticated
+-- EXECUTE grants in place (pg_default_acl) — revoke them by name.
+revoke all on function public.last_cron_status() from public, anon, authenticated;
 grant execute on function public.last_cron_status() to service_role;
 
 
