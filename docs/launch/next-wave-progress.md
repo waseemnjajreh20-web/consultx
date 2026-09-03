@@ -29,6 +29,11 @@ No agent deploys, writes to production, or runs git write commands.
 - PROBE_TASK_TOKEN stored in function secrets + vault (probe_task_token); ALERT_EMAIL=waseem@consultx.app.
 - Wave-2 integrator (opus) running: hybrid + cache wiring in index.ts behind flags, plus a gemini-diag function to verify the context-cache API shape live.
 
+## Quality gate for the hybrid flag (2026-09-03)
+- Baseline (hybrid OFF, 13-question subset, commit 2bf727f): sections 52% · chain pairs 75% · citation discipline 100% · p95 27.1s · refusal 50% · hallucination 40%.
+- Standing safety-critical regression ADV-031/032 (both modes): the answers append external clause numbers ("NFPA 13 … Section x") that the corpus does not hold — the tier-A fabricated-clause predicate. Two structural responses built this session: SOURCE_SCOPE rule 3 strengthened (name the external standard exactly as the SBC text does, never a clause number), and `fire-safety-chat/externalClauseScrubber.ts` — a streaming scrubber that reduces any absent-standard clause reference to the bare standard name before it reaches the client (7 tests; wiring into transformStream follows the D2 integrator's pass on index.ts).
+- Hybrid-ON run launched 02:05 UTC on the same subset; decision rule: sections ≥ 52%, no new safety-critical regression, hallucination not up.
+
 ## Integration order (orchestrator)
 1. Collect reports → review diffs per item (code-review pass on the hot-file edits from B1a and A2).
 2. Gate: tsc 0 · vitest all green · deno check (fire-safety-chat, synthetic-probe) · build.
