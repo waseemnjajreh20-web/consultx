@@ -23,7 +23,12 @@ import {
   resetGeminiResilienceCache,
   resetBreakers,
   breakerSnapshot,
+  type GeminiCacheBinding,
 } from "../../supabase/functions/fire-safety-chat/geminiResilience.ts";
+import {
+  contextCacheStats,
+  resetContextCacheState,
+} from "../../supabase/functions/fire-safety-chat/geminiContextCache.ts";
 
 describe("buildModelChain", () => {
   it("prefers the requested model when available", () => {
@@ -190,6 +195,95 @@ describe("fetchGeminiStreamWithRetry", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result.response.status).toBe(401);
+  });
+});
+
+/**
+ * D2 (2026-09-03) — the optional context-cache binding.
+ *
+ * These tests are about THIS module's protocol only: what the extra parameter
+ * does to the request body, and the retry-once-without-cache branch. The
+ * index.ts wiring and the flag itself are covered in contextCacheWiring.test.ts.
+ * maxAttempts = 1 throughout, so a second fetch can only mean the fallback
+ * branch fired without consuming an attempt.
+ */
+describe("fetchGeminiStreamWithRetry — context-cache binding", () => {
+  const SYSTEM_INSTRUCTION = { parts: [{ text: "STATIC CONTRACT\n\nDYNAMIC CONTEXT" }] };
+  const CONTENTS = [{ role: "user", parts: [{ text: "q" }] }];
+  const BINDING: GeminiCacheBinding = {
+    ref: { cachedContent: "cachedContents/abc", staticPrefixText: "STATIC CONTRACT" },
+    mode: "standard",
+  };
+  const bodyOf = (mock: ReturnType<typeof vi.fn>, i: number) =>
+    JSON.parse(String((mock.mock.calls[i][1] as RequestInit).body));
+
+  beforeEach(() => {
+    resetBreakers();
+    resetContextCacheState();
+  });
+
+  it("sends cachedContent instead of systemInstruction when a binding is passed", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response("ok", { status: 200 }));
+    global.fetch = fetchMock;
+
+    await fetchGeminiStreamWithRetry("key", "gemini-3.7-flash", SYSTEM_INSTRUCTION, CONTENTS, 1, "default", BINDING);
+
+    const sent = bodyOf(fetchMock, 0);
+    expect(sent.cachedContent).toBe("cachedContents/abc");
+    // CONFIRMED live 2026-09-03: cachedContent + systemInstruction is a 400.
+    expect(sent.systemInstruction).toBeUndefined();
+    expect(sent.generationConfig).toEqual({ temperature: 0.7 });
+  });
+
+  it("a 400 naming cachedContent retries once uncached, in the same attempt", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(
+        new Response("CachedContent can not be used with GenerateContent request setting system_instruction", { status: 400 }),
+      )
+      .mockResolvedValueOnce(new Response("ok", { status: 200 }));
+    global.fetch = fetchMock;
+
+    const result = await fetchGeminiStreamWithRetry(
+      "key", "gemini-3.7-flash", SYSTEM_INSTRUCTION, CONTENTS, 1, "default", BINDING,
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.response.status).toBe(200);
+    expect(result.errorText).toBe("");
+    // The retry is the pre-D2 body: full systemInstruction, no cache field.
+    expect(String((fetchMock.mock.calls[1][1] as RequestInit).body)).toBe(
+      JSON.stringify({
+        systemInstruction: SYSTEM_INSTRUCTION,
+        contents: CONTENTS,
+        generationConfig: { temperature: 0.7 },
+      }),
+    );
+    expect(contextCacheStats().fallbacks).toBe(1);
+  });
+
+  it("does not fall back on a generic 400, and records no fallback", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response("Invalid value at 'contents[0].parts[0]'", { status: 400 }),
+    );
+    global.fetch = fetchMock;
+
+    const result = await fetchGeminiStreamWithRetry(
+      "key", "gemini-3.7-flash", SYSTEM_INSTRUCTION, CONTENTS, 1, "default", BINDING,
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.response.status).toBe(400);
+    expect(contextCacheStats().fallbacks).toBe(0);
+  });
+
+  it("with no binding the body carries no cache field at all", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response("ok", { status: 200 }));
+    global.fetch = fetchMock;
+
+    await fetchGeminiStreamWithRetry("key", "gemini-3.7-flash", SYSTEM_INSTRUCTION, CONTENTS, 1);
+
+    expect(String((fetchMock.mock.calls[0][1] as RequestInit).body)).not.toContain("cachedContent");
+    expect(contextCacheStats()).toEqual({ creates: 0, hits: 0, fallbacks: 0 });
   });
 });
 

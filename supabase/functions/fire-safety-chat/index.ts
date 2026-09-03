@@ -11,6 +11,13 @@ import {
   rollbackQuotaIfNeeded,
 } from "./geminiResilience.ts";
 import {
+  contextCacheStats,
+  DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
+  ensureContextCache,
+  isContextCacheEnabled,
+  type ContextCacheRef,
+} from "./geminiContextCache.ts";
+import {
   getNewCodeChapters,
   SBC201_INDEX,
   SBC401_INDEX,
@@ -84,6 +91,7 @@ import {
   parseRetrievedChunks,
   verifyCitations,
 } from "./citationVerifier.ts";
+import { createStreamScrubber } from "./externalClauseScrubber.ts";
 import {
   fetchSBCContextHybrid,
   HYBRID_RETRIEVAL_FLAG_ENV,
@@ -1265,6 +1273,16 @@ function bilingualEmbeddingEnabled(): boolean {
 // [DONE]. Ordering is load-bearing — the client stops reading at [DONE].
 function citationVerifierEnabled(): boolean {
   return (Deno.env.get("CITATION_VERIFIER_ENABLED") ?? "").trim() === "1";
+}
+
+// ── External-clause scrubber (./externalClauseScrubber.ts) ─────────────────
+// Structural enforcement of SOURCE_SCOPE rule 3: clause/table/page numbers
+// attached to standards the corpus does not hold (NFPA 13 Section 8.15.1)
+// are reduced to the bare standard name inside the stream, before the client
+// sees them. OFF by default; with the flag off transformStream forwards
+// every delta untouched, exactly as before.
+function externalClauseScrubEnabled(): boolean {
+  return (Deno.env.get("EXTERNAL_CLAUSE_SCRUB_ENABLED") ?? "").trim() === "1";
 }
 
 // ── Per-user durable memory (2026-09-01, flag USER_MEMORY_ENABLED) ──────────
@@ -3940,6 +3958,29 @@ serve(async (req) => {
     }
 
     let fullSystemPrompt: string;
+    // ── D2 context caching: the STATIC boundary inside fullSystemPrompt ──────
+    // The leading run of bytes that is deterministic for this (mode, language,
+    // enabledNewSourceCodes()) and therefore identical on every request until
+    // the owner edits a prompt or flips a source-code flag — i.e. the per-mode
+    // contract from ./promptContract.ts, plus CITATION_TOKEN_CONTRACT when
+    // that is appended directly after it. Everything after this point
+    // (retrieved SBC text, structured tables, machine facts, doc uploads,
+    // audience layer, format/standards preferences, the user-memory system
+    // message, the retry validation prompt) varies per request and is never
+    // cached.
+    //
+    // INVARIANT this whole feature rests on: staticPromptPrefix is always a
+    // LEADING SUBSTRING of the assembled fullSystemPrompt — geminiContextCache
+    // .buildRequestWithCache slices it off the front of the joined
+    // systemInstruction to recover the dynamic remainder. Every assignment
+    // below is written to preserve that.
+    //
+    // "" means "nothing cacheable for this request" (the vision pipeline,
+    // whose prompt is assembled by runVisionPipeline around the user's query):
+    // ensureContextCache() rejects an empty prefix and returns null, so vision
+    // requests are simply never cached. Assigning this variable adds ZERO
+    // bytes to fullSystemPrompt — it is only ever READ on the flag-on path.
+    let staticPromptPrefix = "";
     let usedFiles: string[] = [];
     let usedSourceMeta: SourcePageMeta[] = [];
     let finalMessages = [...messages];
@@ -4044,6 +4085,9 @@ serve(async (req) => {
       // could never have quoted one) and made the [SWITCH:...] markers single-
       // sourced with src/utils/chatRouting.ts.
       fullSystemPrompt = getPrimaryPrompt({ newSourceCodes: enabledNewSourceCodes() });
+      // D2 static boundary: primary's whole prompt IS the static contract at
+      // this point (nothing has been appended yet).
+      staticPromptPrefix = fullSystemPrompt;
       usedFiles = [];
       console.log("Primary mode: using lightweight prompt with escalation rules, no document loading");
     } else {
@@ -4408,6 +4452,10 @@ serve(async (req) => {
         : getStandardPrompt(language, { newSourceCodes: enabledNewSourceCodes() });
 
       fullSystemPrompt = basePrompt;
+      // D2 static boundary: the per-mode contract. Extended by
+      // CITATION_TOKEN_CONTRACT a few lines below, but ONLY when nothing
+      // per-request was appended in between (see there).
+      staticPromptPrefix = basePrompt;
 
       // P6: machine-extracted query facts, appended immediately AFTER the
       // base prompt (labelled block — see MACHINE_FACTS_LABEL) so it sits
@@ -4431,6 +4479,16 @@ serve(async (req) => {
       // behaviour change versus HEAD.
       if (citationTokensEnabled) {
         fullSystemPrompt += CITATION_TOKEN_CONTRACT;
+      }
+      // D2 static boundary, extension. CITATION_TOKEN_CONTRACT is a constant
+      // (deterministic for a given flag state), so it belongs to the cacheable
+      // prefix — but only when it landed DIRECTLY after basePrompt. When
+      // queryFacts inserted a per-request block between them, the prefix has
+      // to stop at basePrompt or it would no longer be a leading substring of
+      // fullSystemPrompt. This is a pure bookkeeping line: it appends nothing
+      // to what the model receives.
+      if (citationTokensEnabled && !queryFacts) {
+        staticPromptPrefix += CITATION_TOKEN_CONTRACT;
       }
 
       // sbcWarningMsg / the 503 decision are evaluated on the RAW retrieval
@@ -4646,14 +4704,56 @@ serve(async (req) => {
     let lastErrorText = "";
     let lastStatus = 0;
 
+    // ── D2 context caching (GEMINI_CONTEXT_CACHE_ENABLED, exact "1") ─────────
+    // Read ONCE here — the single flag check for this feature in index.ts.
+    // False (default, and for any value other than "1") means the loop below
+    // never awaits ensureContextCache, never marks the context_cache stage and
+    // passes null to fetchGeminiStreamWithRetry, whose cached branches are then
+    // all dead: the request body is the same object literal in the same
+    // property order as before this change. isContextCacheEnabled is imported
+    // rather than re-derived inline so the exact-"1" rule has one owner.
+    const contextCacheOn = isContextCacheEnabled(Deno.env.get);
+
     for (const model of modelChain) {
       geminiModel = model;
+      // The cache object is per (model, mode, static-prefix hash), so it is
+      // resolved inside the chain loop: falling back to the next model must
+      // not reuse the previous model's cache (Gemini binds a cachedContents
+      // object to one model). Fail-open — ensureContextCache never throws and
+      // returns null on any problem, which is exactly the flag-off path.
+      let cacheRef: ContextCacheRef | null = null;
+      if (contextCacheOn) {
+        const before = contextCacheStats();
+        cacheRef = await ensureContextCache(
+          GEMINI_API_KEY,
+          model,
+          mode,
+          staticPromptPrefix,
+          Deno.env.get,
+          DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
+        );
+        const after = contextCacheStats();
+        // Derived from the module's own counters rather than guessed. Note
+        // "fallback" covers BOTH "the create failed" and "there was nothing
+        // to cache" (a vision request, whose staticPromptPrefix is "") — the
+        // prefix=0ch field below tells those apart when reading logs.
+        const outcome = after.hits > before.hits
+          ? "hit"
+          : after.creates > before.creates
+            ? "create"
+            : "fallback";
+        console.log(
+          `[ContextCache] mode=${mode} ${outcome} model=${model} prefix=${staticPromptPrefix.length}ch name=${cacheRef?.cachedContent ?? "none"}`,
+        );
+        markStage("context_cache");
+      }
       // Primary is the latency-sensitive general mode (no retrieval context):
       // minimal thinking cuts many seconds off the first byte. Advisory and
       // analysis keep the model's default (reasoning-heavy) behaviour.
       const result = await fetchGeminiStreamWithRetry(
         GEMINI_API_KEY, model, systemInstruction, contents, 3,
         mode === "primary" ? "minimal" : "default",
+        cacheRef ? { ref: cacheRef, mode } : null,
       );
       if (result.response.ok) {
         response = result.response;
@@ -4712,6 +4812,24 @@ serve(async (req) => {
     // and [DONE] is NOT emitted from either site below — the post-pipe block
     // owns the tail so the citations event lands before it.
     let answerTextForVerifier = "";
+    // External-clause scrubber (flag EXTERNAL_CLAUSE_SCRUB_ENABLED). Null when
+    // off, so every delta below is forwarded exactly as before. When on, each
+    // delta passes through push() (which may hold back a short tail) and the
+    // tail is released before ANY [DONE] — the client stops reading at [DONE].
+    const clauseScrubber = externalClauseScrubEnabled() ? createStreamScrubber() : null;
+    const emitDelta = (controller: TransformStreamDefaultController<Uint8Array>, text: string) => {
+      if (!text) return;
+      if (citationVerifierOn) answerTextForVerifier += text;
+      const openAIChunk = JSON.stringify({ choices: [{ delta: { content: text } }] });
+      controller.enqueue(new TextEncoder().encode(`data: ${openAIChunk}\n\n`));
+    };
+    const releaseScrubberTail = (controller: TransformStreamDefaultController<Uint8Array>) => {
+      if (!clauseScrubber) return;
+      emitDelta(controller, clauseScrubber.flush());
+      if (clauseScrubber.scrubbed > 0) {
+        console.log(`[Scrub] mode=${mode} external_clause_refs_removed=${clauseScrubber.scrubbed}`);
+      }
+    };
     const transformStream = new TransformStream({
       transform(chunk, controller) {
         lineBuffer += new TextDecoder().decode(chunk);
@@ -4726,12 +4844,11 @@ serve(async (req) => {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
             if (content) {
-              if (citationVerifierOn) answerTextForVerifier += content;
-              const openAIChunk = JSON.stringify({ choices: [{ delta: { content } }] });
-              controller.enqueue(new TextEncoder().encode(`data: ${openAIChunk}\n\n`));
+              emitDelta(controller, clauseScrubber ? clauseScrubber.push(content) : content);
             }
             const finishReason = parsed.candidates?.[0]?.finishReason;
             if (finishReason === "STOP" && !citationVerifierOn) {
+              releaseScrubberTail(controller);
               controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
             }
           } catch { /* ignore parse errors */ }
@@ -4747,14 +4864,13 @@ serve(async (req) => {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
               if (content) {
-                if (citationVerifierOn) answerTextForVerifier += content;
-                controller.enqueue(new TextEncoder().encode(
-                  `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`
-                ));
+                emitDelta(controller, clauseScrubber ? clauseScrubber.push(content) : content);
               }
             } catch { /* ignore */ }
           }
         }
+        // The stream is over: whatever the scrubber still holds is final.
+        releaseScrubberTail(controller);
         if (!citationVerifierOn) {
           controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
         }

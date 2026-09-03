@@ -41,18 +41,32 @@
  * ---------------------------------------------------------------------------
  * API-SHAPE CERTAINTY (CLAUDE.md labelling discipline)
  * ---------------------------------------------------------------------------
- * No live Gemini API key was available while building this module (repo
- * rule: never call the Gemini API with a real key from a builder sub-agent).
- * Every claim about the exact `cachedContents` request/response shape below
- * is labelled inline. Nothing here has been exercised against the live API —
- * see docs/launch/context-cache-notes.md for the gating plan that verifies
- * these HYPOTHESIS items with the production probe before the flag ships on.
+ * This module was BUILT with no live key (repo rule: never call Gemini with a
+ * real key from a builder sub-agent), so every shape claim started as
+ * HYPOTHESIS. The orchestrator has since measured the endpoint from
+ * supabase/functions/gemini-diag (action `cachetest`, model
+ * gemini-3.7-flash, 2026-09-03) and the results are recorded inline below and
+ * in docs/launch/context-cache-notes.md ("live shape check"):
+ *   CONFIRMED  POST v1beta/cachedContents with {model, systemInstruction, ttl}
+ *              -> 200 {name, model, expireTime, usageMetadata}.
+ *   CONFIRMED  streamGenerateContent with `cachedContent` and NO
+ *              systemInstruction -> 200, streams.
+ *   CONFIRMED  streamGenerateContent with `cachedContent` AND a
+ *              systemInstruction -> 400 INVALID_ARGUMENT. This is exactly the
+ *              constraint buildRequestWithCache was written against.
+ *   CONFIRMED  DELETE cachedContents/<name> -> 200.
+ * Still UNKNOWN (never provoked live): the exact wording of the
+ * under-minimum-token create rejection — see looksLikeTooShortRejection.
  *
  * ---------------------------------------------------------------------------
- * UNWIRED
+ * WIRED (D2, 2026-09-03)
  * ---------------------------------------------------------------------------
- * This module is not imported by index.ts or geminiResilience.ts yet — see
- * this task's report for the exact wiring a follow-up change should make.
+ * index.ts resolves a ref per model in the chain (ensureContextCache, behind
+ * GEMINI_CONTEXT_CACHE_ENABLED) and hands it to
+ * geminiResilience.fetchGeminiStreamWithRetry, which calls
+ * buildRequestWithCache per attempt and owns the retry-once-without-cache
+ * protocol (shouldRetryWithoutCache + forgetContextCache +
+ * recordContextCacheFallback). Guards: src/__tests__/contextCacheWiring.test.ts.
  */
 
 // ===========================================================================
@@ -264,18 +278,16 @@ export async function ensureContextCache(
       skipUntil.delete(staleKey);
     }
 
-    // HYPOTHESIS (unverified live): POST v1beta/cachedContents accepts
-    // {model: "models/{id}", systemInstruction, ttl: "{n}s"} and returns
-    // {name: "cachedContents/...", expireTime?: RFC3339 string, ...}. `model`
-    // uses the same "models/" resource prefix fetchAvailableGeminiModels
-    // strips off when parsing ListModels — LIKELY correct by symmetry with
-    // that endpoint, not independently confirmed for cachedContents. `ttl`
-    // as a protobuf Duration string ("3600s") follows the same convention
-    // Google APIs use elsewhere for Duration fields — also unconfirmed here.
-    // systemInstruction (not `contents`) is used because the static contract
-    // IS a system instruction today (see convertToGeminiFormat in index.ts);
-    // this keeps the cached object's own semantics identical to how that
-    // text is used uncached.
+    // CONFIRMED live 2026-09-03 (gemini-diag {action:cachetest},
+    // gemini-3.7-flash, ~1,536-token systemInstruction, ttl "600s"): POST
+    // v1beta/cachedContents with exactly this body returns 200 and
+    // {name: "cachedContents/...", model: "models/...", expireTime,
+    // usageMetadata:{totalTokenCount}}. The "models/" resource prefix, the
+    // protobuf Duration ttl string and systemInstruction-as-the-cached-payload
+    // are all part of what that probe exercised. systemInstruction (not
+    // `contents`) is used because the static contract IS a system instruction
+    // today (see convertToGeminiFormat in index.ts); this keeps the cached
+    // object's own semantics identical to how that text is used uncached.
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/cachedContents?key=${apiKey}`,
       {
@@ -380,29 +392,30 @@ export function shouldRetryWithoutCache(status: number, errorText: string): bool
 // 7. REQUEST BODY RESHAPING
 // ===========================================================================
 //
-// FIELD LAYOUT DECISION (HYPOTHESIS, unverified live — see file header):
-// Gemini's documented context-caching contract freezes systemInstruction
-// (along with contents/tools, if any) INTO the cachedContent object at
-// create time; a generateContent/streamGenerateContent call that also sets
-// cachedContent is assumed NOT to accept a second, separate
-// systemInstruction on top of it (this mirrors how every Gemini caching
-// example structures the follow-up call: cachedContent + contents only).
-// Since layer 2/3 (retrieved context, user memory, the retry validation
-// prompt — see file header) still need to reach the model on every request,
-// and `contents` only accepts "user"/"model" roles (system-level text has no
-// role of its own outside systemInstruction), the dynamic remainder is
+// FIELD LAYOUT DECISION — CONFIRMED live 2026-09-03 (gemini-diag
+// {action:cachetest}, gemini-3.7-flash):
+//   streamGenerateContent + cachedContent + NO systemInstruction  -> 200,
+//   streamGenerateContent + cachedContent + a systemInstruction   -> 400
+//   INVALID_ARGUMENT, "CachedContent can not be used with GenerateContent
+//   request setting system_instruction, tools or tool_config."
+// So the cached object OWNS systemInstruction and a request referencing it
+// may not carry one — which is exactly the constraint this function was
+// written against. Since layer 2/3 (retrieved context, user memory, the retry
+// validation prompt — see file header) still need to reach the model on every
+// request, and `contents` only accepts "user"/"model" roles (system-level text
+// has no role of its own outside systemInstruction), the dynamic remainder is
 // prepended to `contents` as a leading synthetic user turn, immediately
 // acknowledged by a synthetic model turn. That acknowledgement turn is
-// deliberately cheap defensive plumbing: it costs a handful of tokens but
-// removes any dependency on whether the live API tolerates two consecutive
-// "user" turns before the real conversation, which was not verified either.
-// This preserves today's instruction semantics as closely as the assumed
-// constraint allows: the model still sees the dynamic instructions BEFORE
-// the user's real message, just carried on a different field.
+// deliberately cheap defensive plumbing (HYPOTHESIS, not probed): it costs a
+// handful of tokens but removes any dependency on whether the live API
+// tolerates two consecutive "user" turns before the real conversation. This
+// preserves today's instruction semantics as closely as the confirmed
+// constraint allows: the model still sees the dynamic instructions BEFORE the
+// user's real message, just carried on a different field.
 //
-// If live testing (see docs/launch/context-cache-notes.md's gating plan)
-// finds systemInstruction IS accepted alongside cachedContent, this is the
-// one function to change — every caller already goes through it.
+// This remains the ONE function to change if the layout is ever revisited —
+// every caller (today: geminiResilience.fetchGeminiStreamWithRetry) goes
+// through it.
 
 const DYNAMIC_CONTEXT_PREAMBLE =
   "[SYSTEM CONTEXT — apply the following silently; it is not a message from the user, and this turn should not be replied to directly]\n\n";

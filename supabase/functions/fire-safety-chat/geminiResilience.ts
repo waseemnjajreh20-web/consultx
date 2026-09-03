@@ -5,6 +5,13 @@
  * "undefined"`, never required at import time) so it can be unit-tested and
  * imported safely by the Edge Function.
  */
+import {
+  buildRequestWithCache,
+  forgetContextCache,
+  recordContextCacheFallback,
+  shouldRetryWithoutCache,
+  type ContextCacheRef,
+} from "./geminiContextCache.ts";
 
 export type AIErrorClass =
   | "CONSULTX_DAILY_LIMIT"
@@ -337,13 +344,29 @@ function recordBreakerSuccess(model: string): void {
   b.openedAt = null;
 }
 
+// ── Context-cache binding (D2, 2026-09-03) ──────────────────────────────────
+// What index.ts hands down when GEMINI_CONTEXT_CACHE_ENABLED is on AND
+// ensureContextCache() actually returned a reference. `mode` travels with the
+// ref only because forgetContextCache(model, mode) needs it — this module
+// never reads the mode for anything else.
+//
+// null / omitted (the default, and ALWAYS the case with the flag off) means
+// every line below that touches the cache is dead: the request body is built
+// from the same object literal, in the same property order, as before this
+// change, so JSON.stringify produces byte-identical bytes.
+export interface GeminiCacheBinding {
+  ref: ContextCacheRef;
+  mode: string;
+}
+
 export async function fetchGeminiStreamWithRetry(
   apiKey: string,
   model: string,
   systemInstruction: any,
   contents: any[],
   maxAttempts = 3,
-  thinkingEffort: ThinkingEffort = "default"
+  thinkingEffort: ThinkingEffort = "default",
+  cacheRef: GeminiCacheBinding | null = null
 ): Promise<GeminiAttemptResult> {
   if (isProviderBreakerEnabled()) {
     const blocked = breakerGate(model);
@@ -354,6 +377,9 @@ export async function fetchGeminiStreamWithRetry(
   let lastErrorText = "";
   let shapeIdx = 0;
   let storedShape = acceptedThinkingShape.get(model);
+  // Dropped to null (once) the first time a cachedContent-bearing attempt
+  // fails in a cache-shaped way — see the fallback branch below.
+  let activeCache: GeminiCacheBinding | null = cacheRef;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const thinkingConfig: Record<string, unknown> | null =
@@ -363,6 +389,17 @@ export async function fetchGeminiStreamWithRetry(
           ? storedShape
           : THINKING_CANDIDATES[shapeIdx] ?? null;
     const start = Date.now();
+    // Built exactly as it was before context caching existed — same three
+    // properties, same insertion order — so with activeCache null the
+    // JSON.stringify below is byte-for-byte what HEAD sent.
+    const baseBody = {
+      systemInstruction,
+      contents,
+      generationConfig: buildGenerationConfig(thinkingConfig),
+    };
+    const requestBody = activeCache
+      ? buildRequestWithCache(baseBody, activeCache.ref)
+      : baseBody;
     let resp: Response;
     try {
       resp = await fetch(
@@ -370,11 +407,7 @@ export async function fetchGeminiStreamWithRetry(
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction,
-            contents,
-            generationConfig: buildGenerationConfig(thinkingConfig),
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
     } catch (fetchErr) {
@@ -416,6 +449,29 @@ export async function fetchGeminiStreamWithRetry(
       } else {
         console.log(`[Gemini] ${model} rejected thinking shape ${shapeIdx}/${THINKING_CANDIDATES.length}, trying next`);
       }
+      attempt--;
+      continue;
+    }
+
+    // ── Context-cache fallback (D2): retry ONCE without the cache ────────────
+    // Only reachable when THIS attempt actually carried a cachedContent
+    // reference and the failure is cache-shaped (a 404 on the cache resource,
+    // or a 400 that names it) per shouldRetryWithoutCache. Anything else —
+    // 429, 401, 5xx, a plain bad-request 400 — would fail identically with or
+    // without the cache and falls through to the unchanged logic below.
+    //
+    // Like the thinking-shape branch above, this does NOT consume an attempt
+    // and records no breaker failure: the provider is not the thing that
+    // failed, our stale reference is. Dropping activeCache to null makes this
+    // branch unreachable for the rest of the call, so it can fire at most once.
+    if (activeCache && shouldRetryWithoutCache(resp.status, errorText)) {
+      const failedMode = activeCache.mode;
+      activeCache = null;
+      forgetContextCache(model, failedMode);
+      recordContextCacheFallback();
+      console.log(
+        `[ContextCache] mode=${failedMode} fallback model=${model} HTTP ${resp.status} — retrying this attempt without the cache`
+      );
       attempt--;
       continue;
     }
