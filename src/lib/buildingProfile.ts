@@ -499,3 +499,24 @@ export function suggestProfileFromText(text: string | null | undefined): Partial
 
   return result;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// C1c — chat request-body field
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Request-body field for the chat call. Returns {} unless the UI flag is on
+ * AND a conversation id exists, so the serialized body stays byte-identical
+ * to the pre-feature body in every other case (same discipline as
+ * audienceBodyField()). The server (fire-safety-chat, flag
+ * BUILDING_PROFILE_ENABLED) reads the profile itself, scoped to the
+ * authenticated user — the client never sends profile data.
+ */
+export function conversationBodyField(
+  conversationId: string | null | undefined,
+  enabled: boolean,
+): { conversation_id?: string } {
+  if (!enabled) return {};
+  const id = typeof conversationId === "string" ? conversationId.trim() : "";
+  return id ? { conversation_id: id } : {};
+}

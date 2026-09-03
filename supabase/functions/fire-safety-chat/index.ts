@@ -92,6 +92,7 @@ import {
   verifyCitations,
 } from "./citationVerifier.ts";
 import { createStreamScrubber } from "./externalClauseScrubber.ts";
+import { buildingProfileEnabled, fetchBuildingProfileBlock, isConversationId } from "./buildingProfileBlock.ts";
 import {
   fetchSBCContextHybrid,
   HYBRID_RETRIEVAL_FLAG_ENV,
@@ -3475,7 +3476,7 @@ serve(async (req) => {
 
     // Parse body first — mode is needed for per-mode trial limit checks
     const body = await req.json();
-    const { messages, retry, mode = "standard", image, images, documentTexts, pageManifests, output_format, preferred_standards, audience } = body;
+    const { messages, retry, mode = "standard", image, images, documentTexts, pageManifests, output_format, preferred_standards, audience, conversation_id } = body;
     language = body.language === "en" ? "en" : "ar";
     const resolvedImages: string[] = images ?? (image ? [image] : []);
     // documentTexts: [{name: string, content: string}] — CSV/TXT files extracted by frontend
@@ -3505,6 +3506,16 @@ serve(async (req) => {
     const userMemoryPromise: Promise<string> = userMemoryEnabled()
       ? fetchUserMemory(adminClient, userId)
           .then((v) => { markStage("memory"); return v; })
+          .catch(() => "")
+      : Promise.resolve("");
+
+    // Building profile (C1c, flag BUILDING_PROFILE_ENABLED). Same shape as the
+    // memory read: started before the gate, awaited after it. Scoped to the
+    // AUTHENTICATED user AND the conversation id the client sent — the client
+    // never sends profile data itself. Empty when off / no valid id / failed.
+    const buildingProfilePromise: Promise<string> = (buildingProfileEnabled() && isConversationId(conversation_id))
+      ? fetchBuildingProfileBlock(adminClient, conversation_id, userId, language)
+          .then((v) => { markStage("profile"); return v; })
           .catch(() => "")
       : Promise.resolve("");
 
@@ -3895,6 +3906,7 @@ serve(async (req) => {
     // Awaited here, started before the gate — the memory read cost overlaps
     // the entitlement round trips instead of stacking on top of them.
     const userMemoryContent = await userMemoryPromise;
+    const buildingProfileContent = await buildingProfilePromise;
 
     // ── Early stream (wave B, 2026-09-02) ───────────────────────────────────
     // The HTTP response is returned right after the access gate (<1s), and the
@@ -4661,6 +4673,14 @@ serve(async (req) => {
           `استخدم هذه المعلومات لتخصيص الإجابة (مخاطبة المستخدم باسمه، وربط الإجابة بمشاريعه عند الصلة). ` +
           `هذه معلومات خلفية عن المستخدم فقط — ليست مصدراً كودياً ولا تُستشهد بها.`,
       });
+    }
+    if (buildingProfileContent) {
+      // User-provided building facts (C1c). Its own system block, after the
+      // memory block and before the retry prompt: context for computing the
+      // answer and explicitly NOT a code source (the block header says so).
+      // Appended AFTER fullSystemPrompt, so the context-cache invariant
+      // (staticPromptPrefix is a leading substring) is untouched.
+      systemMessages.push({ role: "system", content: buildingProfileContent });
     }
     if (retry) {
       systemMessages.push({ role: "system", content: getValidationPrompt(mode, language) });

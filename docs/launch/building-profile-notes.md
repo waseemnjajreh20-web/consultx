@@ -87,3 +87,11 @@ async function fetchBuildingProfile(adminClient, conversationId, userId) {
 - تفعيل أي علم من الأعلام الثلاثة على أي بيئة — قرار مالك منفصل، بعد فحص الأوضاع الثلاثة (`primary`/`standard`/`analysis`) على بيئة معاينة.
 - مقابلة قائمة `occupancy_group` مع نص SBC 201 الرسمي (القسم 5 أعلاه) — ما زالت معلَّقة.
 - جدول `answer_feedback` نفسه (SQL) — مملوك لوكيل آخر هذه الموجة.
+
+## 7) تحديث — توصيل الخادم نُفِّذ (C1c, 2026-09-03)
+
+- **العميل:** `streamChat()` يستقبل `conversationId` ويضيفه للجسم كـ`conversation_id` عبر `conversationBodyField()` في `src/lib/buildingProfile.ts` — يرجع `{}` ما لم يكن `VITE_BUILDING_PROFILE_UI=1` ومعرّف المحادثة موجوداً، فيبقى الجسم مطابقاً بايتاً لما قبل الميزة (نفس انضباط `audienceBodyField`). المعرّف يُمرَّر من `handleSendWithRetry(convId)` لا من حالة React (الحالة تتأخر دورة عرض عند أول رسالة).
+- **الخادم:** `supabase/functions/fire-safety-chat/buildingProfileBlock.ts` خلف `BUILDING_PROFILE_ENABLED=1`: يقرأ صف `building_profiles` مقيداً بـ`user_id` المصادق **و**`conversation_id` (UUID صالح فقط، وإلا يُهمل)، يبدأ القراءة قبل بوابة الاستحقاق ويستقبلها بعدها (نمط ذاكرة الحساب نفسه)، ويحقن الكتلة كرسالة نظام مستقلة بعد كتلة الذاكرة وقبل موجّه إعادة المحاولة. الكتلة تعلن نفسها «ليست نصاً من الكود» بالعربية والإنجليزية ولا تمر بمسار الاستشهادات. فشل القراءة = لا كتلة (fail-soft). حدود طول للنصوص الحرة (الاسم 120 / الملاحظات 600).
+- **ثابت الكاش السياقي:** الكتلة تُلحق بعد `fullSystemPrompt` فلا تمس `staticPromptPrefix` (بادئة قيادية كما هي).
+- **الاختبارات:** `src/__tests__/buildingProfileWiring.test.ts` — وحدة المساعد (العلم، UUID، التصيير، تطابق حقل-بحقل مع `profileToPromptBlock`، قراءة مقيدة بالمعرّفين، fail-soft) + عقد التوصيل على مستوى المصدر للدالة والواجهة.
+- **الحالة:** `BUILDING_PROFILE_ENABLED` مطفأ حتى فحص الأوضاع الثلاثة بالعلم مفعّلاً (سجل النتيجة في next-wave-progress.md).

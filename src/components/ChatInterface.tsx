@@ -53,6 +53,7 @@ import { usePreferences } from "@/hooks/usePreferences";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { isFlagOn } from "@/lib/featureFlags";
 import BuildingProfileCard from "./BuildingProfileCard";
+import { conversationBodyField } from "@/lib/buildingProfile";
 import ComplianceReportButton from "./ComplianceReportButton";
 import AnswerFeedback from "./AnswerFeedback";
 const ReportArtifactDrawer = React.lazy(() => import("@/components/analytical-reports/ReportArtifactDrawer"));
@@ -671,7 +672,7 @@ function trimMessageHistory(
 async function streamChat({
   messages, retry = false, mode = "standard", language = "ar", images,
   documentTexts, pageManifests,
-  output_format, preferred_standards, audience,
+  output_format, preferred_standards, audience, conversationId,
   onDelta, onFirstChunk, onDone, onError, onSources, onSourceMeta, onThinkingStatus, onCitations, signal
 }: {
   messages: ChatMessage[]; retry?: boolean; mode?: ChatMode; language?: string; images?: string[];
@@ -680,6 +681,8 @@ async function streamChat({
   output_format?: string;
   preferred_standards?: string[];
   audience?: AudiencePref;
+  /** C1c: sent as conversation_id ONLY while BUILDING_PROFILE_UI is on — see conversationBodyField(). */
+  conversationId?: string | null;
   onDelta: (deltaText: string) => void;
   onFirstChunk?: () => void;
   onDone: (fullContent: string) => void;
@@ -715,7 +718,7 @@ async function streamChat({
     // audienceBodyField() is {} for the default ("engineer") and for any
     // absent/invalid value, so the serialized body stays byte-identical to
     // the pre-selector body unless a non-default audience is selected.
-    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards, ...audienceBodyField(audience) }),
+    body: JSON.stringify({ messages, retry, mode, language, images, documentTexts, pageManifests, output_format, preferred_standards, ...audienceBodyField(audience), ...conversationBodyField(conversationId, isFlagOn("BUILDING_PROFILE_UI")) }),
     signal,
   });
   if (!resp.ok) {
@@ -1307,6 +1310,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
         output_format: preferences.output_format,
         preferred_standards: preferences.preferred_standards,
         audience: currentAudience,
+        conversationId: convId,
         signal: controller.signal,
         onDelta: upsertAssistant,
         onThinkingStatus: (msg) => setDynamicThinkingMsg(msg),
