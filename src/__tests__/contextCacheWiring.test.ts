@@ -66,7 +66,7 @@ const countOf = (haystack: string, needle: string): number =>
  * merely present somewhere in a 5,000-line file. */
 const GUARDED_BLOCK = (() => {
   const start = INDEX_SRC.indexOf("if (contextCacheOn) {");
-  const endAnchor = 'markStage("context_cache");';
+  const endAnchor = 'markStage(cacheRef ? "cache_hit" : "cache_miss");';
   const end = INDEX_SRC.indexOf(endAnchor);
   expect(start).toBeGreaterThan(-1);
   expect(end).toBeGreaterThan(start);
@@ -109,52 +109,58 @@ describe("GEMINI_CONTEXT_CACHE_ENABLED", () => {
 // 2. index.ts — every new await is on the true side of that one guard
 // ===========================================================================
 describe("index.ts context-cache wiring", () => {
-  it("ensureContextCache has exactly ONE call site and it is inside the guard", () => {
-    expect(countOf(INDEX_SRC, "await ensureContextCache(")).toBe(1);
-    expect(countOf(GUARDED_BLOCK, "await ensureContextCache(")).toBe(1);
-  });
-
-  it("the guard adds exactly ONE await, and nothing awaits before it inside the guard", () => {
-    // The whole flag-off byte-identity claim for index.ts is this: with the
-    // flag off nothing in this block runs, and the block is the only place
-    // D2 added work to the first-byte path.
+  it("the cache LOOKUP is the only await on the request path; the create is fired, never awaited", () => {
+    // v2 (2026-09-03): awaiting the create was what failed the first gate —
+    // 0.4-2.7s of cachedContents POST on every miss, paid by a request that
+    // then went out uncached anyway. The lookup is registry-only (no network);
+    // the create runs in the background for the NEXT request.
+    expect(countOf(INDEX_SRC, "await lookupContextCache(")).toBe(1);
+    expect(countOf(GUARDED_BLOCK, "await lookupContextCache(")).toBe(1);
+    expect(countOf(INDEX_SRC, "await ensureContextCache(")).toBe(0);
+    expect(countOf(GUARDED_BLOCK, "void ensureContextCache(")).toBe(1);
+    // Exactly one await inside the guard, and it is the lookup.
     expect(countOf(GUARDED_BLOCK, "await ")).toBe(1);
     const guardHead = "if (contextCacheOn) {";
     const between = GUARDED_BLOCK.slice(
       guardHead.length,
-      GUARDED_BLOCK.indexOf("cacheRef = await ensureContextCache("),
+      GUARDED_BLOCK.indexOf("cacheRef = await lookupContextCache("),
     );
     expect(between).not.toMatch(/\bawait\b/);
-    expect(between.replace(/\s/g, "")).toBe("constbefore=contextCacheStats();");
+    expect(between.replace(/^\s*\/\/.*$/gm, "").replace(/\s/g, "")).toBe("");
+  });
+
+  it("the background create is guarded by the miss AND cannot reject unhandled", () => {
+    const missAt = GUARDED_BLOCK.indexOf("if (!cacheRef) {");
+    const createAt = GUARDED_BLOCK.indexOf("void ensureContextCache(");
+    expect(missAt).toBeGreaterThan(-1);
+    expect(createAt).toBeGreaterThan(missAt);
+    // An unhandled rejection in a fire-and-forget promise can take down the
+    // isolate; the create is fail-open by contract but the catch is belt.
+    expect(GUARDED_BLOCK).toContain(").catch(() => {});");
   });
 
   it("no context-cache helper is reachable outside the guard", () => {
-    // Both stats snapshots, the log line and the stage mark live in the block;
-    // the import statement is the only other mention of the helpers.
-    expect(countOf(INDEX_SRC, "contextCacheStats()")).toBe(2);
-    expect(countOf(GUARDED_BLOCK, "contextCacheStats()")).toBe(2);
+    expect(countOf(INDEX_SRC, "contextCacheStats()")).toBe(1);
+    expect(countOf(GUARDED_BLOCK, "contextCacheStats()")).toBe(1);
     expect(countOf(INDEX_SRC, "[ContextCache]")).toBe(1);
     expect(countOf(GUARDED_BLOCK, "[ContextCache]")).toBe(1);
-    expect(countOf(INDEX_SRC, 'markStage("context_cache")')).toBe(1);
-    expect(countOf(GUARDED_BLOCK, 'markStage("context_cache")')).toBe(1);
+    expect(countOf(INDEX_SRC, "markStage(cacheRef ?")).toBe(1);
+    expect(countOf(GUARDED_BLOCK, "markStage(cacheRef ?")).toBe(1);
   });
 
-  it("logs one line per resolution: mode + hit|create|fallback + model", () => {
-    expect(GUARDED_BLOCK).toContain("`[ContextCache] mode=${mode} ${outcome} model=${model}");
-    expect(GUARDED_BLOCK).toContain('? "hit"');
-    expect(GUARDED_BLOCK).toContain('? "create"');
-    expect(GUARDED_BLOCK).toContain(': "fallback"');
-    // The outcome is derived from the module's own counters, not guessed.
-    expect(GUARDED_BLOCK).toContain("after.hits > before.hits");
-    expect(GUARDED_BLOCK).toContain("after.creates > before.creates");
+  it("reports the outcome as a TIMED STAGE, so a probe can read it off X-Timing", () => {
+    // The first gate could not tell a hit from a create: function_logs lag by
+    // more than the measurement window. cache_hit / cache_miss ride back on
+    // the response header itself.
+    expect(GUARDED_BLOCK).toContain('markStage(cacheRef ? "cache_hit" : "cache_miss");');
+    expect(GUARDED_BLOCK).toContain('${cacheRef ? "hit" : "miss->background create"}');
   });
-
   it("resolves the cache per model INSIDE the chain loop, with the shared TTL constant", () => {
     // A cachedContents object is bound to one model, so a fallback to the next
     // model in buildModelChain must not inherit the previous model's cache.
     const loopAt = INDEX_SRC.indexOf("for (const model of modelChain) {");
     const declAt = INDEX_SRC.indexOf("let cacheRef: ContextCacheRef | null = null;");
-    const callAt = INDEX_SRC.indexOf("await ensureContextCache(");
+    const callAt = INDEX_SRC.indexOf("void ensureContextCache(");
     const chainEndAt = INDEX_SRC.indexOf("if (!response || !response.ok) {");
     expect(loopAt).toBeGreaterThan(-1);
     expect(declAt).toBeGreaterThan(loopAt);

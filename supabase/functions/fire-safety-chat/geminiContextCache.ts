@@ -152,6 +152,15 @@ interface CacheEntry {
 const cacheRegistry = new Map<string, CacheEntry>();
 const currentKeyForTarget = new Map<string, string>();
 const skipUntil = new Map<string, number>(); // full key -> epoch ms
+/**
+ * Creates currently in flight, by full key (2026-09-03). Since the caller
+ * now fires ensureContextCache WITHOUT awaiting it (see lookupContextCache
+ * below), several concurrent requests on one isolate would otherwise each
+ * POST their own cachedContents object for the same prefix — paying storage
+ * for N-1 objects nobody ever references again. Joining the in-flight promise
+ * makes the create exactly-once per isolate per key.
+ */
+const inFlightCreates = new Map<string, Promise<ContextCacheRef | null>>();
 
 const SKIP_TOO_SHORT_MS = 10 * 60 * 1000; // 10 minutes, per task spec
 
@@ -171,6 +180,7 @@ export function resetContextCacheState(): void {
   cacheRegistry.clear();
   currentKeyForTarget.clear();
   skipUntil.clear();
+  inFlightCreates.clear();
   stats = { creates: 0, hits: 0, fallbacks: 0 };
 }
 
@@ -239,6 +249,43 @@ function looksLikeTooShortRejection(status: number, errorText: string): boolean 
  * required (it is the flag gate — see "flag off" below) and `ttlSeconds` is
  * the one tunable most callers will leave at its default.
  */
+/**
+ * REGISTRY-ONLY lookup: returns a usable reference if this isolate already
+ * created one for (model, mode, prefix hash), otherwise null. Never touches
+ * the network — the only async part is the local SHA-256 of the prefix.
+ *
+ * WHY THIS EXISTS (2026-09-03, after the first D2 gate failed). The original
+ * wiring awaited ensureContextCache on the critical path, so EVERY request
+ * that missed the registry paid a full cachedContents POST — measured at
+ * 0.4-2.7s on production, on top of an unchanged model connect — and the
+ * first request for each (model, mode) could never win: it paid the create
+ * and then still sent the prompt uncached-in-effect. Splitting lookup from
+ * create means a miss costs nothing on the request that discovers it: the
+ * caller fires the create in the background and serves THIS request without a
+ * cache, so the earliest a request can be slowed is never, and the earliest it
+ * can be helped is the next one. See docs/launch/context-cache-notes.md.
+ */
+export async function lookupContextCache(
+  model: string,
+  mode: string,
+  staticPrefixText: string,
+  env: EnvReader,
+): Promise<ContextCacheRef | null> {
+  if (!isContextCacheEnabled(env)) return null;
+  if (!model || !mode || !staticPrefixText) return null;
+  try {
+    const fullKey = `${model}::${mode}::${await sha256Hex(staticPrefixText)}`;
+    const existing = cacheRegistry.get(fullKey);
+    if (existing && Date.now() < existing.expiresAt) {
+      stats.hits++;
+      return { cachedContent: existing.cacheName, staticPrefixText };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function ensureContextCache(
   apiKey: string,
   model: string,
@@ -254,6 +301,11 @@ export async function ensureContextCache(
     const hash = await sha256Hex(staticPrefixText);
     const targetKey = `${model}::${mode}`;
     const fullKey = `${targetKey}::${hash}`;
+
+    // Exactly-once per isolate per key: a concurrent caller joins the create
+    // already running instead of POSTing a second cachedContents object.
+    const pending = inFlightCreates.get(fullKey);
+    if (pending) return await pending;
 
     const skipAt = skipUntil.get(fullKey);
     if (skipAt !== undefined) {
@@ -277,6 +329,38 @@ export async function ensureContextCache(
       cacheRegistry.delete(staleKey);
       skipUntil.delete(staleKey);
     }
+
+    const create = createContextCache(apiKey, model, mode, staticPrefixText, ttlSeconds, fullKey, targetKey);
+    inFlightCreates.set(fullKey, create);
+    try {
+      return await create;
+    } finally {
+      inFlightCreates.delete(fullKey);
+    }
+  } catch (e) {
+    console.log(
+      `[GeminiContextCache] ensureContextCache error (fail-open, returning null): ${e instanceof Error ? e.message : String(e)}`,
+    );
+    return null;
+  }
+}
+
+/**
+ * The network half of ensureContextCache, split out (2026-09-03) only so the
+ * in-flight map can hold ONE promise per key. Behaviour is byte-for-byte what
+ * it was inline: same request body, same too-short skip window, same expiry
+ * preference, same fail-open null.
+ */
+async function createContextCache(
+  apiKey: string,
+  model: string,
+  mode: string,
+  staticPrefixText: string,
+  ttlSeconds: number,
+  fullKey: string,
+  targetKey: string,
+): Promise<ContextCacheRef | null> {
+  try {
 
     // CONFIRMED live 2026-09-03 (gemini-diag {action:cachetest},
     // gemini-3.7-flash, ~1,536-token systemInstruction, ttl "600s"): POST
@@ -334,7 +418,7 @@ export async function ensureContextCache(
     return { cachedContent: cacheName, staticPrefixText };
   } catch (e) {
     console.log(
-      `[GeminiContextCache] ensureContextCache error (fail-open, returning null): ${e instanceof Error ? e.message : String(e)}`,
+      `[GeminiContextCache] create error (fail-open, returning null): ${e instanceof Error ? e.message : String(e)}`,
     );
     return null;
   }
