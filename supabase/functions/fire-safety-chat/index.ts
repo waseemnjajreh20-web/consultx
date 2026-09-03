@@ -4805,14 +4805,23 @@ serve(async (req) => {
         // firing it from several in-flight requests costs one object, not N.
         cacheRef = await lookupContextCache(model, mode, staticPromptPrefix, Deno.env.get);
         if (!cacheRef) {
-          void ensureContextCache(
-            GEMINI_API_KEY,
-            model,
-            mode,
-            staticPromptPrefix,
-            Deno.env.get,
-            DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
-          ).catch(() => {});
+          // Through scheduleBackground (EdgeRuntime.waitUntil), NOT a bare
+          // floating promise: measured 2026-09-03, a fire-and-forget create
+          // never survived — two probe rounds seconds apart both reported
+          // cache_miss because the runtime tears down pending work when the
+          // response ends. This is the same mechanism the user-memory update
+          // uses, and the create is fail-open, so a torn-down isolate simply
+          // means the next request tries again.
+          scheduleBackground(
+            ensureContextCache(
+              GEMINI_API_KEY,
+              model,
+              mode,
+              staticPromptPrefix,
+              Deno.env.get,
+              DEFAULT_CONTEXT_CACHE_TTL_SECONDS,
+            ).catch(() => {}),
+          );
         }
         // The outcome is now a TIMED STAGE, not just a log line: the previous
         // gate could not tell a hit from a create because function_logs lag by

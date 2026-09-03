@@ -399,3 +399,44 @@ read `cache_hit=` / `cache_miss=` off X-Timing. Expect round 1 to be a miss in
 every mode and round 2 to be a hit; only if the hit rounds show a materially
 faster `gemini_connect` than the flag-off baseline does step 4 (the 13-question
 subset) run at all.
+
+## v2 measured — the design cannot pay off as built. Flag `0`. (2026-09-03)
+
+With v2 deployed and `GEMINI_CONTEXT_CACHE_ENABLED=1`, six probes across three
+modes gave a clean answer, and it is not the one v2 was hoping for.
+
+**What v2 fixed, confirmed:** the cache stage now costs **1-2 ms** on the
+request path (`models=+488ms, cache_miss=+489ms`), against 0.4-2.7s in v1. The
+critical-path cost is gone and the outcome is visible in `X-Timing`.
+
+**What v2 could not fix — two independent reasons, both measured:**
+
+1. **Primary mode is below Gemini's minimum cacheable size.** Its static prefix
+   is 2,310 characters, and the API answers
+   `Cached content is too small. total_token_count=819, min_total_token_count=1024`.
+   The mode with the tightest latency budget — the one this feature was for —
+   is not eligible at all.
+
+2. **The registry is per-isolate, and isolates are not sticky.** Every probe
+   round, seconds apart and region-pinned, logged
+   `stats={"creates":0,"hits":0,"fallbacks":0}` — a *fresh module state each
+   time*, i.e. a different isolate served each request. An in-memory registry
+   can only hit when the same isolate happens to see the same
+   (model, mode, prefix-hash) again, which at this traffic level is rare. Three
+   consecutive rounds all logged `cache_miss` and all fired their own create.
+
+Note this also explains v1's numbers without any theory about Gemini: v1 paid a
+create on nearly every request because nearly every request was a fresh
+isolate.
+
+**Flag is `0`.** The wiring stays — it is correct, cheap when off, and one
+change away from being useful.
+
+**The one change, if this is ever revisited:** move the registry into the
+database (a small `context_cache_registry` table keyed by
+`model::mode::prefix_hash` with the server's `expireTime`), so a cache created
+by ANY isolate is reusable by ALL of them. Only then does a hit rate exist to
+measure. Pair it with skipping `primary` outright — a mode that cannot meet the
+1,024-token floor should never attempt a create. Until both are done, this
+feature's expected value is negative: creates cost latency (in the background
+now, but still API calls and storage) and hits essentially never happen.

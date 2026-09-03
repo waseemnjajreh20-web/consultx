@@ -117,7 +117,12 @@ describe("index.ts context-cache wiring", () => {
     expect(countOf(INDEX_SRC, "await lookupContextCache(")).toBe(1);
     expect(countOf(GUARDED_BLOCK, "await lookupContextCache(")).toBe(1);
     expect(countOf(INDEX_SRC, "await ensureContextCache(")).toBe(0);
-    expect(countOf(GUARDED_BLOCK, "void ensureContextCache(")).toBe(1);
+    expect(countOf(GUARDED_BLOCK, "scheduleBackground(")).toBe(1);
+    expect(countOf(GUARDED_BLOCK, "ensureContextCache(")).toBe(1);
+    // Not a bare floating promise: the runtime tears pending work down when
+    // the response ends, which is why two probe rounds seconds apart both
+    // reported cache_miss before this changed (measured 2026-09-03).
+    expect(GUARDED_BLOCK).not.toContain("void ensureContextCache(");
     // Exactly one await inside the guard, and it is the lookup.
     expect(countOf(GUARDED_BLOCK, "await ")).toBe(1);
     const guardHead = "if (contextCacheOn) {";
@@ -131,12 +136,12 @@ describe("index.ts context-cache wiring", () => {
 
   it("the background create is guarded by the miss AND cannot reject unhandled", () => {
     const missAt = GUARDED_BLOCK.indexOf("if (!cacheRef) {");
-    const createAt = GUARDED_BLOCK.indexOf("void ensureContextCache(");
+    const createAt = GUARDED_BLOCK.indexOf("scheduleBackground(");
     expect(missAt).toBeGreaterThan(-1);
     expect(createAt).toBeGreaterThan(missAt);
     // An unhandled rejection in a fire-and-forget promise can take down the
     // isolate; the create is fail-open by contract but the catch is belt.
-    expect(GUARDED_BLOCK).toContain(").catch(() => {});");
+    expect(GUARDED_BLOCK).toContain(").catch(() => {})");
   });
 
   it("no context-cache helper is reachable outside the guard", () => {
@@ -160,7 +165,7 @@ describe("index.ts context-cache wiring", () => {
     // model in buildModelChain must not inherit the previous model's cache.
     const loopAt = INDEX_SRC.indexOf("for (const model of modelChain) {");
     const declAt = INDEX_SRC.indexOf("let cacheRef: ContextCacheRef | null = null;");
-    const callAt = INDEX_SRC.indexOf("void ensureContextCache(");
+    const callAt = INDEX_SRC.indexOf("scheduleBackground(", declAt);
     const chainEndAt = INDEX_SRC.indexOf("if (!response || !response.ok) {");
     expect(loopAt).toBeGreaterThan(-1);
     expect(declAt).toBeGreaterThan(loopAt);
