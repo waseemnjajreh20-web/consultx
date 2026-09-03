@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "preview": "vite preview",
-    "bench:dry": "npx deno run --allow-read --allow-write --allow-env evals/run_advisory_benchmark.ts"
+    "bench:dry": "npx deno run --allow-read --allow-write --allow-env evals/run_advisory_benchmark.ts",
+    "rules:audit": "node evals/rules/verify-rules.mjs",
+    "retrieval:gate": "node evals/retrieval/retrieval-gate.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

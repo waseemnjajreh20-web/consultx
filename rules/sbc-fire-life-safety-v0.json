@@ -2934,7 +2934,7 @@
               {
                 "parameter": "revolving_door_diameter_m",
                 "operator": "eq",
-                "value": 3.0
+                "value": 3
               }
             ],
             "value": 8,
@@ -3003,7 +3003,7 @@
               {
                 "parameter": "revolving_door_diameter_m",
                 "operator": "eq",
-                "value": 3.0
+                "value": 3
               }
             ],
             "value": 5.7,
@@ -3723,7 +3723,7 @@
     {
       "id": "SBC201-1020.3-corridor-width",
       "code": "SBC201",
-      "section": "Table 1020.2 (corridor width; recommended renumber 1020.3 per SBC 801 p.839)",
+      "section": "Table 1020.3",
       "title_ar": "أقصى ضيق ممر مسموح — العرض الأدنى بالمليمتر (جدول عرض الممر)",
       "title_en": "Minimum corridor width in millimeters",
       "status": "draft",
@@ -3833,12 +3833,12 @@
       },
       "provenance": {
         "code": "SBC201",
-        "section": "Table 1020.2 (corridor width; recommended renumber 1020.3 per SBC 801 p.839)",
+        "section": "Table 1020.3",
         "extracted_by": "consultx-rule-engine-agent (draft build) - pdfplumber transcription cross-checked against docs/audits/code-tables-rebuild-20260823.sql",
         "extracted_at": "2026-09-03",
         "page": 1189,
         "quote": "Any facilities not listed below | 1100  ;  With an occupant load of less than 50 | 900  ;  Within a dwelling unit | 900",
-        "source_note": "SBC 201 prints TWO different tables both captioned 'TABLE 1020.2' on consecutive pages (corridor fire-resistance rating at printed p.1188, corridor width at printed p.1189) - a collision confirmed against the PDF. SBC 801 p.839 disambiguates them as 1020.2 and 1020.3 respectively; this rule's section field follows that recommendation pending the owner's decision (see code-tables-rebuild-20260823.md section 6.1)."
+        "source_note": "SBC 201 prints TWO different tables both captioned 'TABLE 1020.2' on consecutive pages (corridor fire-resistance rating at printed p.1188, corridor width at printed p.1189) - a collision confirmed against the PDF. SBC 801 p.839 disambiguates them as 1020.2 and 1020.3 respectively; this rule's section field follows that recommendation pending the owner's decision (see code-tables-rebuild-20260823.md section 6.1). CONFIRMED against the production corpus 2026-09-03 (evals/rules/verify-rules.mjs): SBC 201 commentary chunk 481 reads \"The exception addresses an item in Table 1020.3 that requires a 2.4 m corridor in Group I-2 facilities\" - the platform's own source text numbers the corridor-WIDTH table 1020.3, so the section field now carries that number plainly instead of a sentence."
       },
       "notes": "بسّطت هذه القاعدة صفَّي 'ممرات مرضى متنقلين بنقالات' (1800 مم) و'حركة الأسرّة في مجموعة I-2' (2400 مم) إلى صف واحد بالقيمة الأشد تحفظاً (2400 مم) لتبسيط المطابقة في هذا الإصدار الأولي؛ يجب فصلهما قبل الانتقال لحالة engineer_validated. القيمة 1100 مم (الافتراضية) تصحّح الخطأ الموثّق سابقاً في production (كان يحمل 914 مم - انظر SAFETY-ALERT-code-tables-20260823.md)."
     },
