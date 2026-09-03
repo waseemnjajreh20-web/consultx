@@ -339,3 +339,30 @@ here.
 6. **Full 43-question benchmark** before the flag is considered permanent for
    a mode, not before it is first enabled. The subset in step 4 is the gate;
    the full run is the record.
+
+## Gating result — 2026-09-03 (orchestrator, production, ~3 minutes flag-on)
+
+Steps 2–3 of the plan above were executed: `GEMINI_CONTEXT_CACHE_ENABLED=1`,
+then `ttfb_probe.mjs` across the three modes, two rounds each (region-pinned,
+warm isolate — keep-warm cron running). X-Timing deltas per request:
+
+| mode | context_cache stage r1 / r2 | gemini_connect after it r1 / r2 | flag-OFF same day (warm) |
+|---|---|---|---|
+| primary | 0.60s / 0.38s | 17.9s / 17.5s | connect ~2.5–3s (first text 3.5–4.2s; one 17.8s outlier) |
+| standard | 2.32s / 2.56s | 6.8s / 10.4s | first text 13.5–16.2s (noisy provider day) |
+| analysis | 2.39s / 2.67s | 12.5s / 9.4s | first text 11.3–22.2s (noisy provider day) |
+
+Verdict: **no mode improved, primary regressed** (17.5–17.9s to first byte
+with the cache vs ~3s without). The stage itself sits on the critical path
+and costs 0.4–2.7s on EVERY request, including round 2, which the design
+expected to be a local hit — so either each request re-created the cache
+(per-isolate map + concurrent isolates, or a key mismatch) or the lookup is
+far slower than assumed. The `[ContextCache]` outcome lines could not be
+retrieved from analytics within 25 minutes (empty result, known lag), so
+hit-vs-create per round is NOT VERIFIED. Flag set back to `0` after six
+requests. Step 4 (13-question subset) was NOT run — step 3's stop rule.
+
+Before any retry: (1) surface the outcome (`hit|create|reject`) in X-Timing
+so a probe can see it; (2) move `ensureContextCache` off the critical path
+(create in the background, use on the NEXT request); (3) re-test primary
+first, since its thinking-minimal path is the one the cache seems to defeat.

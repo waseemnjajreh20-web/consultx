@@ -102,3 +102,39 @@ Guards: `src/__tests__/wave2Wiring.test.ts` (27 source-contract tests). Verifica
 - Apply SQL files in docs/db/ dated 20260903 (order above) — or confirm the orchestrator may apply DDL via the Management API.
 - Provide ALERT_EMAIL for SLO alerts; confirm PROBE_TASK_TOKEN creation (orchestrator generates, never printed).
 - Keep-warm cron (pending from the previous session).
+
+## Session close — 2026-09-03 (orchestrator, after the usage-limit resume)
+
+**Shipped to production this session** (all commits pushed on `recovery/stabilization-2026-08-23`):
+
+- `fire-safety-chat`: D2 context-cache wiring (flag back to `0` after its gate, see below), the external-clause
+  scrubber (`EXTERNAL_CLAUSE_SCRUB_ENABLED=1` live), and C1c server-side building-profile injection
+  (`BUILDING_PROFILE_ENABLED=1` live; inert for users while `VITE_BUILDING_PROFILE_UI` is off because the client
+  only then sends `conversation_id`).
+- `perf-beacon` (D3 RUM) deployed; `/admin/health` real-user section; frontend deployed (aliased www.consultx.app).
+- `answer_feedback` table + 4 RLS policies applied through the Management API (HTTP 201); `/admin/feedback` route;
+  golden-set tooling (243 candidates, engineer review pending).
+- B2-1 rule engine committed: JSON-Schema rule format, evaluator (`insufficient_data` on any missing input),
+  34 rules all `status: draft`, 72 tests. Nothing leaves draft without engineer review (see the B2-1 report items:
+  provenance re-check, three printed-table ambiguities, 903.2.x primary-text re-extraction, CONSTRUCTION_TYPES 9 vs 12).
+
+**Gates and measurements**
+
+| Gate | Result |
+|---|---|
+| D2 Gemini context cache | **FAIL — flag `0`.** 3 modes x 2 rounds: the `context_cache` stage costs 0.4–2.7s on every request (round 2 included) and no mode's model connect improved; primary regressed to 17.5–17.9s vs ~3s. Step 4 not run. Details + retry conditions in `context-cache-notes.md`. |
+| C1c building profile (server) | **PASS on all three modes** (`profile` stage in X-Timing; answers echoed the profile facts 5/5, 4/5, 4/5 via `profile_probe.mjs`, rows created and deleted for the smoke account). Owner isolation on `building_profiles` proven in production inside an always-rolled-back transaction: A sees 1 / B sees 0 / spoofed insert rejected 42501 / cross-user update+delete 0 rows; nothing left behind. |
+| Scrubber vs ADV-031/032 | The benchmark failure was a **detector false positive**, not model fabrication: SBC 801 Section 903.3.1.1 is the section that names NFPA 13, so every correct answer juxtaposes them. Proven by dumping full answers and scanning them with the real scorer. `hasFabricatedStandardClause` now has three guards (attribution connector on the reversed order; a number the answer itself attributes to SBC is never an NFPA clause; 3+-digit leading component = code-style section, IBC/IFC excluded). 66 scorer tests. Final subset run: hallucination 0% (was 100%), all four advisory rows `fabricated=no`; the one remaining tier-A miss is 1/2 expected sections on a single row (answer variance). The runner now writes `answers.jsonl` next to each report. |
+| Provider latency (same day) | Noisy: primary warm first text 3.5–4.2s with 17–19s outliers; standard/analysis first text 11–22s; one analysis stream truncated at 724 chars after 50s (provider side). Monitoring cron + RUM are the instruments for this from here. |
+
+**Production flag state:** `ADVISORY_HYBRID_RETRIEVAL_ENABLED=0` (gate failed), `GEMINI_CONTEXT_CACHE_ENABLED=0`
+(gate failed), `EXTERNAL_CLAUSE_SCRUB_ENABLED=1`, `BUILDING_PROFILE_ENABLED=1`, retrieval cache / breaker /
+citation verifier / user memory `1`; every `VITE_*` UI flag off.
+
+**Remaining for the wave:** hybrid tuning (keep the similarity floor on the vector leg, rrf_k / candidate pool) before
+any re-gate; context cache only after moving `ensureContextCache` off the critical path and surfacing hit/create in
+X-Timing; C3 drawings stays at ADR; UI flag activation is an owner decision.
+
+**Owner queue (updated):** GitHub Actions `startup_failure` needs the run page read by the owner; ODA converter
+approval for C3 phase 1.5; engineer review of the 34 draft rules and the 243 golden candidates; ALERT_EMAIL for SLO
+alerts if not yet set; campaign / duplicate-row decisions from the previous session.
