@@ -39,14 +39,49 @@ interface CronStatusValue {
   checked_at: string;
 }
 
+// RUM (source='rum') rows — written by supabase/functions/perf-beacon, one
+// per real user chat answer or page load (mode='page'). region/extra only
+// exist on this feed; extra.uid is the first 12 hex chars of sha256(user
+// id) (never a raw id — see perf-beacon/validate.ts), extra.ua is a coarse
+// browser-family label ("Chrome", "Safari", ...).
+interface RumPerfEventRow {
+  ts: string;
+  mode: string;
+  ok: boolean;
+  first_status_ms: number | null;
+  first_text_ms: number | null;
+  done_ms: number | null;
+  chars: number;
+  engine: string | null;
+  region: string | null;
+  error_code: string | null;
+  extra: { uid?: string; ua?: string } | null;
+}
+
 const MODES = ["primary", "standard", "analysis"] as const;
 const MODE_LABELS: Record<string, string> = {
   primary: "الرئيسي",
   standard: "الاستشاري",
   analysis: "التحليلي",
 };
+// RUM also carries mode='page' (whole-page-load vitals — see
+// src/lib/perfBeacon.ts's reportPageVitals), which synthetic-probe never
+// produces, so the RUM section iterates this superset instead of MODES.
+const RUM_MODES = [...MODES, "page"] as const;
+const RUM_MODE_LABELS: Record<string, string> = { ...MODE_LABELS, page: "تحميل الصفحة" };
 
 function toStatsRow(r: PerfEventRow): PerfEventRowForStats {
+  return {
+    first_status_ms: r.first_status_ms,
+    first_text_ms: r.first_text_ms,
+    done_ms: r.done_ms,
+    chars: r.chars,
+    ok: r.ok,
+    error_code: r.error_code,
+  };
+}
+
+function toRumStatsRow(r: RumPerfEventRow): PerfEventRowForStats {
   return {
     first_status_ms: r.first_status_ms,
     first_text_ms: r.first_text_ms,
@@ -73,6 +108,7 @@ export default function AdminHealth() {
   const isAdmin = isAdminEmail(user?.email);
 
   const [rows, setRows] = useState<PerfEventRow[]>([]);
+  const [rumRows, setRumRows] = useState<RumPerfEventRow[]>([]);
   const [cronStatus, setCronStatus] = useState<CronStatusValue | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +124,7 @@ export default function AdminHealth() {
     setError(null);
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const [eventsRes, cronRes] = await Promise.all([
+      const [eventsRes, cronRes, rumRes] = await Promise.all([
         db
           .from("perf_events")
           .select("ts, mode, ok, first_status_ms, first_text_ms, done_ms, chars, sources_count, engine, error_code")
@@ -97,12 +133,23 @@ export default function AdminHealth() {
           .order("ts", { ascending: false })
           .limit(500),
         db.from("probe_state").select("value").eq("key", "cron_status").maybeSingle(),
+        // RUM feed — same 24h window and 500-row cap as the synthetic query
+        // above; region/extra only exist on this feed (see RumPerfEventRow).
+        db
+          .from("perf_events")
+          .select("ts, mode, ok, first_status_ms, first_text_ms, done_ms, chars, engine, region, error_code, extra")
+          .eq("source", "rum")
+          .gte("ts", since)
+          .order("ts", { ascending: false })
+          .limit(500),
       ]);
       if (eventsRes.error) throw new Error(eventsRes.error.message);
       setRows((eventsRes.data ?? []) as PerfEventRow[]);
       if (!cronRes.error && cronRes.data?.value) {
         setCronStatus(cronRes.data.value as CronStatusValue);
       }
+      if (rumRes.error) throw new Error(rumRes.error.message);
+      setRumRows((rumRes.data ?? []) as RumPerfEventRow[]);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "تعذّر تحميل بيانات المراقبة";
       // A missing table (SQL not applied yet) surfaces as a PostgREST "relation
@@ -139,6 +186,16 @@ export default function AdminHealth() {
   const last20 = rows.slice(0, 20);
   const cronKnown = cronStatus?.status_code != null;
   const cronOk = cronStatus?.status_code === 200;
+
+  // ── RUM (source='rum', written by perf-beacon) derived stats ──
+  const rumOverall = aggregateStats(rumRows.map(toRumStatsRow));
+  const rumPerMode: Record<string, AggregatedStats> = {};
+  for (const mode of RUM_MODES) rumPerMode[mode] = aggregateStats(rumRows.filter((r) => r.mode === mode).map(toRumStatsRow));
+  const distinctRumUsers = new Set(rumRows.map((r) => r.extra?.uid).filter((v): v is string => !!v)).size;
+  const slowestRum20 = [...rumRows]
+    .filter((r) => r.done_ms !== null)
+    .sort((a, b) => (b.done_ms ?? 0) - (a.done_ms ?? 0))
+    .slice(0, 20);
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -309,6 +366,100 @@ export default function AdminHealth() {
                 </table>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* ===== RUM — المستخدمون الحقيقيون (source='rum', written by perf-beacon) ===== */}
+        <Card className="bg-card/80 backdrop-blur-xl border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">المستخدمون الحقيقيون — آخر 24 ساعة</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* ── summary ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="rounded-lg border border-border/40 p-4">
+                <p className="text-2xl font-bold">{rumOverall.count}</p>
+                <p className="text-xs text-muted-foreground mt-1">إجمالي أحداث المستخدمين</p>
+              </div>
+              <div className="rounded-lg border border-border/40 p-4">
+                <p className="text-2xl font-bold">{distinctRumUsers}</p>
+                <p className="text-xs text-muted-foreground mt-1">مستخدمون مختلفون (معرّف مموّه)</p>
+              </div>
+              <div className="rounded-lg border border-border/40 p-4">
+                <p className={`text-2xl font-bold ${rumOverall.okRate !== null && rumOverall.okRate < 0.99 ? "text-destructive" : "text-primary"}`}>
+                  {rumOverall.okRate !== null ? `${(rumOverall.okRate * 100).toFixed(1)}%` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">نسبة النجاح</p>
+              </div>
+            </div>
+
+            {/* ── per-mode p50/p95 ── */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-muted-foreground border-b border-border/40">
+                    <th className="text-start py-2 px-2 font-medium">الوضع</th>
+                    <th className="text-start py-2 px-2 font-medium">عدد</th>
+                    <th className="text-start py-2 px-2 font-medium">أول نص (p50/p95)</th>
+                    <th className="text-start py-2 px-2 font-medium">الاكتمال (p50/p95)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {RUM_MODES.map((mode) => {
+                    const s = rumPerMode[mode];
+                    return (
+                      <tr key={mode} className="border-b border-border/20">
+                        <td className="py-2 px-2 font-medium">{RUM_MODE_LABELS[mode] ?? mode}</td>
+                        <td className="py-2 px-2 text-muted-foreground">{s.count}</td>
+                        <td className="py-2 px-2 font-mono text-xs">
+                          {fmtMs(s.p50FirstTextMs)} / {fmtMs(s.p95FirstTextMs)}
+                        </td>
+                        <td className="py-2 px-2 font-mono text-xs">
+                          {fmtMs(s.p50DoneMs)} / {fmtMs(s.p95DoneMs)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── 20 slowest answers ── */}
+            <div>
+              <p className="text-sm font-medium mb-2">أبطأ 20 إجابة</p>
+              {slowestRum20.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  لا توجد بيانات مستخدمين حقيقيين بعد — راجع docs/launch/rum-notes.md لتفعيل الإرسال من الواجهة.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-muted-foreground border-b border-border/40">
+                        <th className="text-start py-2 px-2 font-medium">الوضع</th>
+                        <th className="text-start py-2 px-2 font-medium">أول نص</th>
+                        <th className="text-start py-2 px-2 font-medium">الاكتمال</th>
+                        <th className="text-start py-2 px-2 font-medium">المحرك</th>
+                        <th className="text-start py-2 px-2 font-medium">المنطقة</th>
+                        <th className="text-start py-2 px-2 font-medium">المتصفح</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {slowestRum20.map((r, i) => (
+                        <tr key={`${r.ts}-${i}`} className="border-b border-border/20">
+                          <td className="py-2 px-2">{RUM_MODE_LABELS[r.mode] ?? r.mode}</td>
+                          <td className="py-2 px-2">{fmtMs(r.first_text_ms)}</td>
+                          <td className="py-2 px-2">{fmtMs(r.done_ms)}</td>
+                          <td className="py-2 px-2 text-muted-foreground">{r.engine ?? "—"}</td>
+                          <td className="py-2 px-2 text-muted-foreground">{r.region ?? "—"}</td>
+                          <td className="py-2 px-2 text-muted-foreground">{r.extra?.ua ?? "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

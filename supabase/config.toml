@@ -111,3 +111,10 @@ verify_jwt = false
 # from a shell, not by pg_cron, so it carries no user session to verify.
 [functions.gemini-diag]
 verify_jwt = false
+
+# perf-beacon verifies the caller's own JWT itself (auth.getUser, same
+# pattern as delete-account) — from the Authorization header, or from a
+# body.access_token field for requests sent via navigator.sendBeacon, which
+# cannot set custom request headers at all. See perf-beacon/index.ts's header.
+[functions.perf-beacon]
+verify_jwt = false
