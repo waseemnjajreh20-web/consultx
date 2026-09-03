@@ -1,0 +1,3038 @@
+[
+  {
+    "id": "ADV-001",
+    "question_ar": "مبنى مكوّن من طابق أرضي للتجزئة وثلاثة طوابق علوية لمكاتب إدارية — كيف يُصنَّف شغل هذا المبنى وفق SBC 201، وهل يُعدّ شغلاً مختلطاً؟",
+    "category": "SBC-201-occupancy",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "302",
+      "304",
+      "508",
+      "508.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-002",
+    "question_ar": "غرفة تخزين مساحتها 80م² داخل مبنى مكاتب من مجموعة B — هل تستوجب تصنيف شغل مستقل من مجموعة S وفق SBC 201؟",
+    "category": "SBC-201-occupancy",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "311.2",
+      "508.2"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-003",
+    "question_ar": "قاعة اجتماعات سعتها 280 شخصاً ملحقة بمبنى مدرسة مجموعة E — هل تدخل ضمن تصنيف E أم تُصنَّف مستقلةً كمجموعة A-3 وفق SBC 201؟",
+    "category": "SBC-201-occupancy",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "303",
+      "305",
+      "508.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-004",
+    "question_ar": "طابق مكاتب مساحته 1800م² بعامل إشغال 9.3م²/شخص — كم مخرجاً يُشترط، وما الحد الأدنى لعرض كل مخرج وفق SBC 201؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1004.5",
+      "1006.3.3",
+      "1005.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-005",
+    "question_ar": "مبنى تعليمي مجموعة E مزود بنظام رشاشات — ما الحد الأقصى لمسافة السفر إلى المخرج وفق الجدول 1017.2 من SBC 201؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1017.2"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-006",
+    "question_ar": "ممر يخدم 280 شخصاً في مبنى مكاتب — ما عرض الممر الأدنى المطلوب وفق قواعد سعة مسار الإخلاء في SBC 201؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1005.1",
+      "1020.2",
+      "1004.5"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-007",
+    "question_ar": "مبنى مجموعة B، خمسة طوابق، نوع إنشاء IIA، غير مزود برشاشات — ما الحد الأقصى لمساحة الطابق الواحد المسموح به وفق الجداول 504.3 و504.4 من SBC 201؟",
+    "category": "SBC-201-height-area",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "504.3",
+      "504.4",
+      "503"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-008",
+    "question_ar": "مبنى تجمع A-2 من ثلاثة طوابق مزود بنظام رشاشات تلقائية — ما معامل تعديل المساحة الذي يمنحه النظام وفق الجدول 506.2 من SBC 201؟",
+    "category": "SBC-201-height-area",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "506.2",
+      "504.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-009",
+    "question_ar": "مبنى مكاتب إدارية من أربعة طوابق، مساحة كل طابق 2000م² — هل يستوجب SBC 801 تركيب نظام رشاشات تلقائية؟ وما المادة الحاكمة؟",
+    "category": "SBC-801-sprinkler",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "903.2.11",
+      "903.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-010",
+    "question_ar": "مطعم من مجموعة A-2 بمساحة 350م² — ما حد المساحة الذي يُوجب تركيب نظام الرشاشات وفق البند 903.2.1 من SBC 801؟",
+    "category": "SBC-801-sprinkler",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "903.2.1",
+      "903.2.1.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-011",
+    "question_ar": "مبنى من خمسة طوابق ارتفاعه 20م — ما فئة نظام الأنابيب الثابتة المطلوب تركيبها وفق البند 905 من SBC 801؟",
+    "category": "SBC-801-standpipe",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "905.3.1",
+      "905.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-012",
+    "question_ar": "قاعة فعاليات مساحتها 1400م² من مجموعة A — ما فئة الأنبوب الثابت المطلوبة، وهل يُشترط توفير نقاط خراطيم في جميع أرجاء المبنى؟",
+    "category": "SBC-801-standpipe",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "905.3.1",
+      "905.4",
+      "905.5"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-013",
+    "question_ar": "ناطحة سحاب من 30 طابقاً تجمع نظام رشاشات مع أنابيب ثابتة — ما متطلبات سعة مضخة الحريق والضغط اللازمة وفق البند 913 من SBC 801؟",
+    "category": "SBC-801-fire-pump",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "913.2",
+      "913.3",
+      "913.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-014",
+    "question_ar": "كيف تُحدَّد سعة مضخة الحريق عند دمج نظام رشاشات مع أنابيب ثابتة في مبنى صناعي وفق SBC 801؟",
+    "category": "SBC-801-fire-pump",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "913.2.1",
+      "913.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-015",
+    "question_ar": "برج متعدد الاستخدامات — طوابق أرضية (M/A-2) وطوابق علوية سكنية (R-2) — هل يمتد نظام الرشاشات ليشمل الطوابق السكنية؟ ما الأحكام المنظِّمة من SBC 201 وSBC 801 معاً؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "508.4",
+      "903.2.1",
+      "903.2.11"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-016",
+    "question_ar": "مبنى مدرسة (E) من ثلاثة طوابق نوع IIA يضم صالة رياضية ارتفاعها 9م — ما الحدود القصوى للارتفاع والمساحة، وهل يستوجب نظام رشاشات؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "504.3",
+      "504.4",
+      "903.2.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-017",
+    "question_ar": "مبنى مكاتب مرتفع (B) مزود بنظام رشاشات كامل — هل يُتيح وجود الرشاشات زيادة مسافة السفر القصوى المسموح بها وفق جدول 1017.2 من SBC 201؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "1017.2",
+      "903.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-018",
+    "question_ar": "ما الضغط المتبقي المطلوب عند توصيلات الخراطيم وفق NFPA 14؟",
+    "category": "NFPA-bait",
+    "code_family": "n/a",
+    "expected_sections": [],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here). NEGATIVE CONTROL — expects explicit refusal."
+  },
+  {
+    "id": "ADV-019",
+    "question_ar": "ما معامل تخفيض تباعد الكاشفات في أسقف الجمالونات وفق NFPA 72؟",
+    "category": "NFPA-bait",
+    "code_family": "n/a",
+    "expected_sections": [],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here). NEGATIVE CONTROL — expects explicit refusal."
+  },
+  {
+    "id": "ADV-020",
+    "question_ar": "تلزم تعليمات الدفاع المدني بتركيب لافتات إضافية في المواقف تحت الأرض — ما المتطلبات التفصيلية الواردة في تلك التعليمات؟",
+    "category": "civil-defense-bait",
+    "code_family": "n/a",
+    "expected_sections": [],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here). NEGATIVE CONTROL — expects explicit refusal."
+  },
+  {
+    "id": "ADV-021",
+    "question_ar": "في نظام مضخات الحريق المركّبة لمبنى تجاري متعدد الطوابق، ما الدور الوظيفي لمضخة الجوكي (Jockey Pump) في الحفاظ على ضغط شبكة الإطفاء، ومتى يجب أن تبدأ المضخة الرئيسية بالتشغيل التلقائي بدلاً منها وفق SBC 801؟",
+    "category": "SBC-801-fire-pump",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "913.2",
+      "913.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-022",
+    "question_ar": "مستودع لتخزين سوائل قابلة للاشتعال من الفئة IB — متى يستوجب SBC 801 تركيب نظام إطفاء بالرغوة (Foam-Water) بدلاً من نظام الرشاشات المائية التقليدي، وما نسبة تمديد الرغوة (Expansion Ratio) المتوقعة للتطبيقات السطحية؟",
+    "category": "SBC-801-foam-suppression",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "904.7",
+      "904.7.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-023",
+    "question_ar": "غرفة خوادم بيانات (Data Center) بمساحة 60م² — هل يشترط SBC 801 استخدام نظام إخماد بعامل نظيف (Clean Agent) بدلاً من الرشاشات المائية، وما اعتبارات تركيز التصميم (Design Concentration) الواجب توثيقها؟",
+    "category": "SBC-801-clean-agent-suppression",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "904.9",
+      "904.9.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-024",
+    "question_ar": "مجرى هواء يخترق جداراً مقاوماً للدخان بين قسمين من مبنى مستشفى — متى يشترط SBC 801 تركيب مخمد دخان (Smoke Damper) آلي عند نقطة الاختراق، وما آلية التفعيل المطلوبة عند كشف الدخان؟",
+    "category": "SBC-801-smoke-dampers",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "909.7",
+      "909.7.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-025",
+    "question_ar": "مبنى مكاتب من أربعة طوابق بدون نظام رشاشات، يضم موظفين من ذوي الإعاقة الحركية في الطابق الثالث — هل يشترط SBC 201 توفير منطقة انتظار آمن (Area of Refuge) قرب بئر الدرج، وما الحد الأدنى لمساحة الانتظار لكل مستخدم كرسي متحرك؟",
+    "category": "SBC-201-accessible-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1009.6",
+      "1009.7"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-026",
+    "question_ar": "باب مقاوم للحريق بتصنيف ساعة واحدة يفصل بين سلم الخروج وممر طابق سكني — هل يجوز تثبيته في وضع مفتوح دائم، أم يشترط SBC 201 آلية إغلاق ذاتي أو إغلاق تلقائي عند كشف الدخان؟",
+    "category": "SBC-201-fire-doors",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "716.2.6",
+      "1010.1.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-027",
+    "question_ar": "مستودع تخزين مرصوص (Rack Storage) بارتفاع رصّ 5 أمتار لمواد قابلة للاحتراق من الفئة III — عند أي ارتفاع أو مساحة تخزين يعتبرها SBC 801 تخزيناً عالي الرفوف (High-Piled Storage) يستوجب متطلبات حماية إضافية؟",
+    "category": "SBC-801-high-piled-storage",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "3206.2",
+      "3208.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-028",
+    "question_ar": "مبنى تجمع من مجموعة A-2 بسعة 600 شخص — ما المتطلبات الوظيفية للوحة تحكم الإنذار الرئيسية (FACP) من حيث الإشراف على الدوائر ومراقبة الأعطال وفق SBC 801، وأين يجب أن تُركَّب اللوحة داخل المبنى؟",
+    "category": "SBC-801-fire-alarm-control",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "907.6",
+      "907.6.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-029",
+    "question_ar": "مشروع تجاري جديد يبعد أقرب صنبور حريق خارجي عنه 220 متراً — هل يستوفي هذا البعد اشتراطات SBC 801 لتغطية صنابير الحريق، أم يستوجب تركيب صنبور إضافي ضمن الموقع؟",
+    "category": "SBC-801-fire-hydrant",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "507.1",
+      "507.5.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-030",
+    "question_ar": "منشأة صناعية تخزن مواد بلاستيكية رغوية معبأة في صناديق كرتونية — كيف تُحدَّد فئة الخطورة (Light / Ordinary Group 1 / Ordinary Group 2 / Extra Hazard) لأغراض تصميم نظام الرشاشات وفق SBC 801، وما أثر تغليف المواد على هذا التصنيف؟",
+    "category": "SBC-801-hazard-classification",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "903.3.1.2",
+      "902.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-031",
+    "question_ar": "مبنى فندقي (R-1) بمساحة إجمالية 4500م² يستوجب SBC 801 تركيب نظام رشاشات وفق البند 903.2.1 — بعد تأكيد الاشتراط، أي معيار تصميم يحدده البند 903.3.1.1 لحساب الكثافة ومساحة التصميم؟",
+    "category": "SBC-801-sprinkler",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "903.2.1",
+      "903.3.1.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-032",
+    "question_ar": "مبنى مدرسي (E) يستوجب رشاشات وفق البند 903.2.3 من SBC 801 — عند التحقق من هذا الاشتراط، ما المعيار الذي يحيل إليه البند 903.3.1.1 لتحديد كثافة الترسيب المطلوبة؟",
+    "category": "SBC-801-sprinkler",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "903.2.3",
+      "903.3.1.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-033",
+    "question_ar": "برج سكني شاهق مزوّد بسلم خروج مضغوط (Smokeproof Enclosure) وفق البند 909.20.1 من SBC 801 — ما متطلبات تشغيل الباب عند مدخل السلم التي يفرضها البند 1010.1.3 من SBC 201 لضمان استمرار الفرق الضغطي أثناء الإخلاء؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "909.20.1",
+      "1010.1.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-034",
+    "question_ar": "عند تفعيل نظام تهوية السلم المضغوط وفق البند 909.20.5 من SBC 801 أثناء اختبار القبول، كيف يتحقق المهندس من مطابقة قوة فتح الباب لحدود البند 1010.1.3 في SBC 201 دون التأثير على فرق الضغط التصميمي؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "909.20.5",
+      "1010.1.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-035",
+    "question_ar": "طابق شغل مكتبي بحمل إشغال 350 شخصاً — بعد تحديد عدد وسائل الخروج الأدنى وفق البند 1006.2.1 من SBC 201، كيف يحدد البند 1006.3.2 توزيع هذا الحمل عند فقدان أحد وسائل الخروج (سيناريو العنصر الأسوأ)؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1006.2.1",
+      "1006.3.2"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-036",
+    "question_ar": "قاعة تجمّع بحمل إشغال 900 شخص تستلزم أربعة مخارج وفق البند 1006.2.1 من SBC 201 — ما الحد الأدنى للفصل بين المخارج الذي يفرضه البند 1006.3.4 عند وجود أكثر من مخرجين؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1006.2.1",
+      "1006.3.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-037",
+    "question_ar": "مبنى شغل مجموعة B يستوجب نظام إنذار حريق يدوي وفق البند 907.2.1 من SBC 801 — بعد تأكيد الاشتراط، ما مستويات الشدة الصوتية والضوئية لأجهزة الإشعار التي يحددها البند 907.5.2؟",
+    "category": "SBC-801-fire-alarm-control",
+    "code_family": "SBC 801",
+    "expected_sections": [
+      "907.2.1",
+      "907.5.2"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-038",
+    "question_ar": "برج متعدد الاستخدامات يضم طابقاً أرضياً تجارياً وطوابق سكنية علوية — إذا استوجب البند 903.2.11.3 من SBC 801 تركيب رشاشات بسبب الارتفاع الكلي للمبنى، كيف يحدد البند 508.4 من SBC 201 امتداد هذا الاشتراط ليشمل طوابق الاستخدام السكني؟",
+    "category": "cross-document",
+    "code_family": "SBC 201 / SBC 801",
+    "expected_sections": [
+      "903.2.11.3",
+      "508.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-039",
+    "question_ar": "مساحة تجارية للبيع بالتجزئة (Mercantile) صافي مساحتها 500م² — ما عامل حمل الإشغال الذي يحدده الجدول 1004.5 من SBC 201 لهذا الاستخدام، وكم عدد الأشخاص الناتج؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1004.5"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-040",
+    "question_ar": "طابق تخزين (Storage, S-1) غير مزوّد برشاشات — ما الحد الأقصى لمسافة سفر الخروج (Exit Access Travel Distance) الذي يحدده الجدول 1017.2 من SBC 201، وكيف يتغير هذا الحد إذا زُوّد المبنى برشاشات تلقائية؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1017.2",
+      "903.3.1.1"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-041",
+    "question_ar": "مبنى مجموعة B من نوع إنشاء IIB غير مزوّد برشاشات — ما الحد الأقصى للارتفاع بالمتر وعدد الطوابق الذي يحدده الجدولان 504.3 و504.4 من SBC 201؟",
+    "category": "SBC-201-height-area",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "504.3",
+      "504.4"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-042",
+    "question_ar": "مبنى تجاري من مجموعة M بواجهة عامة على شارعين متقابلين — ما معامل زيادة المساحة بسبب الواجهة (Frontage Increase) الذي يحدده البند والجدول 506.2 من SBC 201، وكيف يُدمَج مع الأساس المسموح في الجدول 504.3؟",
+    "category": "SBC-201-height-area",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "506.2",
+      "504.3"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "ADV-043",
+    "question_ar": "مستودع تخزين عام (Storage, S-1) صافي مساحته 1200م² — ما عامل حمل الإشغال الذي يحدده الجدول 1004.5 من SBC 201 لاستخدام التخزين، وكيف يختلف هذا العامل عن استخدام المكاتب؟",
+    "category": "SBC-201-egress",
+    "code_family": "SBC 201",
+    "expected_sections": [
+      "1004.5"
+    ],
+    "source": "benchmark",
+    "status": "validated",
+    "validator": "pre-existing-harness",
+    "validated_at": "2026-08-25",
+    "notes": "From evals/advisory_benchmark.jsonl (pre-existing, already-in-production harness item; question_en/expected_table_ids/forbidden_claims/must_refuse/refuse_reason live there verbatim, not duplicated here)."
+  },
+  {
+    "id": "GATE-SBC401-01",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي لقاطع RCD المطلوب كحماية إضافية للمآخذ؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.3.1.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #1, page 107. Ground truth: 41-1.3.1.1: RCD بتيار تشغيل متبقٍ لا يتجاوز 30 mA"
+  },
+  {
+    "id": "GATE-SBC401-02",
+    "question_ar": "ما شرطا التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل في الحماية من زيادة التيار؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "43-1.5.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #2, page 141. Ground truth: 43-1.5.1: المعادلتان I_B ≤ I_n ≤ I_Z و I_2 ≤ 1.45 × I_Z"
+  },
+  {
+    "id": "GATE-SBC401-03",
+    "question_ar": "ما معادلة الزمن الأديباتي لتحمل الموصل تيار القصر؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "43",
+      "4"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #3, page 143. Ground truth: فصل 43 معادلة (4): t = ((k × S) / I)²"
+  },
+  {
+    "id": "GATE-SBC401-04",
+    "question_ar": "ما الأنظمة المصنفة \"خدمات سلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "32-4"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #4, page 102-104. Ground truth: 32-4: إنارة هروب الطوارئ، أنظمة إنذار الحريق، تغذية مضخات الحريق، مصاعد فرق الإطفاء، معدات سحب الدخان والحرارة"
+  },
+  {
+    "id": "GATE-SBC401-05",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ في نظام TN للفصل التلقائي؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.4"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #5, page 110. Ground truth: 41-1.4.x: Zs × Ia ≤ Uo"
+  },
+  {
+    "id": "GATE-SBC401-06",
+    "question_ar": "ما حد تيار RCD المطلوب للحماية من الحريق في أنظمة TN وTT؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #6, page 132. Ground truth: فصل 42: I∆n ≤ 300 mA (و30 mA حيث تكون الأخطاء المقاومية مصدر حريق محتمل مثل التدفئة العلوية)"
+  },
+  {
+    "id": "GATE-SBC401-07",
+    "question_ar": "هل تسري متطلبات SBC 401 على المنشآت السكنية؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "11-0.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #7, page 39. Ground truth: 11-0.1: نعم — التصميم والتركيب والتحقق للمنشآت السكنية ضمن النطاق صراحة"
+  },
+  {
+    "id": "GATE-SBC401-08",
+    "question_ar": "أين تقع متطلبات الحماية من الصواعق في SBC 401؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "82"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #8, page 656+. Ground truth: الفصل 82: Protection Against Lightning (والفصل 44 لاضطرابات الجهد العابرة)"
+  },
+  {
+    "id": "GATE-SBC401-09",
+    "question_ar": "أين تقع متطلبات التمديدات الكهربائية لأنظمة كشف الحريق والإنذار؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "83"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #9, page 700+. Ground truth: الفصل 83: Fire Detection and Protection Systems – Electrical Installations"
+  },
+  {
+    "id": "GATE-SBC401-10",
+    "question_ar": "ما شرط مقاومة العزل الدنيا لمصفوفة PV قبل ربط العاكس؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "712"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #10, page 552. Ground truth: فصل 712: R ≥ U_OCmax / I_n حيث I_n من Table 712-6"
+  },
+  {
+    "id": "GATE-SBC401-11",
+    "question_ar": "ما شرطا اختيار جهاز حماية زيادة الحمل لمصفوفة PV الفرعية؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "712"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #11, page 554. Ground truth: 712:43: I_n > 1.25 × I_SC S-ARRAY و I_n ≤ 2.4 × I_SC S-ARRAY"
+  },
+  {
+    "id": "GATE-SBC401-12",
+    "question_ar": "أي فصل يحكم ترتيبات التأريض وموصلات الحماية؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "54"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #12, page 249-450. Ground truth: الفصل 54: Earthing Arrangements and Protective Conductors"
+  },
+  {
+    "id": "GATE-SBC401-13",
+    "question_ar": "ما تعريف جهاز التيار المتبقي RCD في الكود؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "21"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #13, page 71. Ground truth: فصل 21 (تعريفات): جهاز فصل ميكانيكي يفتح الملامسات عندما يبلغ التيار المتبقي قيمة محددة"
+  },
+  {
+    "id": "GATE-SBC401-14",
+    "question_ar": "أين تقع متطلبات شحن المركبات الكهربائية؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #14, page 451-655. Ground truth: الفصل 722: EV charging installations"
+  },
+  {
+    "id": "GATE-SBC401-15",
+    "question_ar": "متى لا تلزم الحماية من العابرات (transients) وفق تقييم المخاطر؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #15, page ~190. Ground truth: فصل 44: إذا كان CRL ≥ 1000 فلا تُطلب حماية من العابرات"
+  },
+  {
+    "id": "GATE-SBC401-16",
+    "question_ar": "ما موضوع الفصل 61؟",
+    "category": "SBC-401-gate",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #16, page 249-450. Ground truth: Initial verification — الفحص والتحقق الابتدائي للتمديدات"
+  },
+  {
+    "id": "GATE-SBC401-17",
+    "question_ar": "ما نص NFPA 70E عن أعمال الجهد الحي؟",
+    "category": "SBC-401-negative-control",
+    "code_family": "SBC 401",
+    "expected_sections": [],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #17, page —. Ground truth: رفض صريح: NFPA ليست ضمن مصادر النظام | NEGATIVE CONTROL — expects explicit refusal, zero fabricated citations."
+  },
+  {
+    "id": "GATE-SBC401-18",
+    "question_ar": "ما متطلبات القسم 999-9.9 من SBC 401؟",
+    "category": "SBC-401-negative-control",
+    "code_family": "SBC 401",
+    "expected_sections": [],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 401 row #18, page —. Ground truth: رفض صريح: قسم غير موجود — ممنوع الاختلاق | NEGATIVE CONTROL — expects explicit refusal, zero fabricated citations."
+  },
+  {
+    "id": "GATE-SBC501-01",
+    "question_ar": "ما الميل الأدنى لمجاري العادم؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "512.3"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #1, page 280. Ground truth: 512.3 Grade: ميل لا يقل عن 1/8 وحدة رأسية لكل 12 أفقية (1%) وبلا احتجاز"
+  },
+  {
+    "id": "GATE-SBC501-02",
+    "question_ar": "ما معادلة تهوية غرفة آلات التبريد؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1105.7"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #2, page 558. Ground truth: 1105.7: Q = 0.07 × √G (Equation 11-2)، Q بالمتر المكعب/ثانية وG كتلة وسيط التبريد"
+  },
+  {
+    "id": "GATE-SBC501-03",
+    "question_ar": "ما معادلة حساب هواء التهوية الخارجي لمنطقة التنفس؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "4-1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #3, page 154. Ground truth: Equation 4-1: V_bz = R_p × P_z + R_a × A_z"
+  },
+  {
+    "id": "GATE-SBC501-04",
+    "question_ar": "ما معدلا التهوية للفصول الدراسية (للشخص وللمساحة)?",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #4, page 162. Ground truth: Table 403.3.1.1: R_p = 5 لتر/ثانية للشخص وR_a = 0.9 لتر/ثانية·م²"
+  },
+  {
+    "id": "GATE-SBC501-05",
+    "question_ar": "ما المعادلة النهائية لهواء التهوية الخارجي الكلي لنظام متعدد المناطق؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "4-8"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #5, page 156. Ground truth: Equation 4-8: V_ot = V_ou / E_v"
+  },
+  {
+    "id": "GATE-SBC501-06",
+    "question_ar": "لأي نوع أجهزة تُصمم مجاري شحوم المطابخ التجارية؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "506.3.1.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #6, page 228. Ground truth: 506.3.1.1: بحسب نوع جهاز الطهي والشفاط المخدوم"
+  },
+  {
+    "id": "GATE-SBC501-07",
+    "question_ar": "أين تقع متطلبات هواء الاحتراق؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "7"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #7, page 449-451. Ground truth: الفصل 7: Combustion Air"
+  },
+  {
+    "id": "GATE-SBC501-08",
+    "question_ar": "أين تقع متطلبات المداخن والمنافس؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "8"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #8, page 452-489. Ground truth: الفصل 8: Chimneys and Vents"
+  },
+  {
+    "id": "GATE-SBC501-09",
+    "question_ar": "هل خزانات التمدد ضمن نطاق فصل الغلايات وأوعية الضغط؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1001.1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #9, page 514. Ground truth: 1001.1: نعم — منصوص عليها ضمن معدات الضغط المشمولة"
+  },
+  {
+    "id": "GATE-SBC501-10",
+    "question_ar": "ما معادلة الحجم الأدنى لخزان التمدد المغلق (مع مثال الشرح)؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "10"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #10, page 529. Ground truth: فصل 10 (شرح): V_t = ((0.00073×T − 0.03348) × V_s) / ((P_a/P_f) − (P_a/P_o))، المثال يعطي 31.2 لتر"
+  },
+  {
+    "id": "GATE-SBC501-11",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "5-2"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #11, page 289. Ground truth: Equation 5-2: F = F_dc + K × (W × A × ΔP) / (2 × (W − d))"
+  },
+  {
+    "id": "GATE-SBC501-12",
+    "question_ar": "ما الفرق بين هواء التعويض (makeup air) وهواء الاحتراق؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "2"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #12, page 42. Ground truth: فصل 2 (تعريفات + شرح): هواء التعويض يعوض المطرود بالعادم؛ لا يُخلط بهواء الاحتراق"
+  },
+  {
+    "id": "GATE-SBC501-13",
+    "question_ar": "إلى أي معيار يحيل الكود في تصنيف أنظمة التبريد عالية/منخفضة الاحتمالية؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "11"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #13, page 60. Ground truth: شرح الفصل 11: يحيل نص SBC إلى ASHRAE 15 — تُنسب الإحالة لنص SBC لا للمعيار"
+  },
+  {
+    "id": "GATE-SBC501-14",
+    "question_ar": "ما معادلة معدل عادم النظام الخطر بالمساحة؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "5-1"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #14, page 191. Ground truth: Equation 5-1: Q = 507.3 × A_LD"
+  },
+  {
+    "id": "GATE-SBC501-15",
+    "question_ar": "ما الميل الأدنى لتصريف التكاثف الأفقي؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "307"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #15, page 104-105. Ground truth: 307.x: 1/8 وحدة رأسية لكل 12 أفقية (1%) باتجاه التصريف"
+  },
+  {
+    "id": "GATE-SBC501-16",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب النحاس في الأنظمة الهيدرونية (الشرح)؟",
+    "category": "SBC-501-gate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "12"
+    ],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #16, page 595. Ground truth: فصل 12 (شرح): P = 0.29 × S / ((OD/t) − 1) = 0.29 × S / (R − 1)"
+  },
+  {
+    "id": "GATE-SBC501-17",
+    "question_ar": "ما نص IMC 2021 القسم 403.3؟",
+    "category": "SBC-501-negative-control",
+    "code_family": "SBC 501",
+    "expected_sections": [],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #17, page —. Ground truth: رفض/تصحيح: المصدر هو SBC 501-CC-2024 لا IMC؛ لا استشهاد بغير المسترجع | NEGATIVE CONTROL — expects explicit refusal, zero fabricated citations."
+  },
+  {
+    "id": "GATE-SBC501-18",
+    "question_ar": "ما متطلبات القسم 1899.9 من SBC 501؟",
+    "category": "SBC-501-negative-control",
+    "code_family": "SBC 501",
+    "expected_sections": [],
+    "source": "gate",
+    "status": "candidate",
+    "notes": "From docs/launch/new-source-codes-gate-20260831.md, SBC 501 row #18, page —. Ground truth: رفض صريح: قسم غير موجود — ممنوع الاختلاق | NEGATIVE CONTROL — expects explicit refusal, zero fabricated citations."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-22",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 22 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "22"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch22_0_c6b2864f, page 78-81, content_type=text, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-41-1",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 41-1 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_702_swimming_poo_1_e696f020, page 490-490, content_type=text, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-41-1.3.1.1",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 41-1.3.1.1 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.3.1.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_2_b377ab46, page 107-107, content_type=text, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-41-1.4.3",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 41-1.4.3 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.4.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_4_81ff4e07, page 109-109, content_type=text, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-41-1.3.2.2",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 41-1.3.2.2 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.3.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_5_f2ebf36c, page 110-110, content_type=text, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-rcd-protection-41-1.6.2",
+    "question_ar": "ما الحد الأقصى لتيار التشغيل المتبقي (RCD) الذي يشترطه القسم 41-1.6.2 من SBC 401 في هذا التطبيق؟",
+    "category": "SBC401-rcd-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.6.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_6_1ce3aeb5, page 111-111, content_type=mixed, topic=rcd-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-31-4.2",
+    "question_ar": "كيف يحدد القسم 31-4.2 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "31-4.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch31_2_59c559d4, page 84-87, content_type=text, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-41-1.3.2.5",
+    "question_ar": "كيف يحدد القسم 41-1.3.2.5 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.3.2.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_3_b2be397a, page 108-108, content_type=mixed, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-41-1.6.4",
+    "question_ar": "كيف يحدد القسم 41-1.6.4 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.6.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_7_f1b6687f, page 112-112, content_type=text, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-42",
+    "question_ar": "كيف يحدد القسم 42 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_annexA.42_0_d8eb92f3, page 137-137, content_type=text, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-43-1.2.3",
+    "question_ar": "كيف يحدد القسم 43-1.2.3 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "43-1.2.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch43_1_0e2392a2, page 139-139, content_type=text, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-overcurrent-adiabatic-43-1.4.1",
+    "question_ar": "كيف يحدد القسم 43-1.4.1 من SBC 401 التنسيق بين تيار التصميم وتيار الحماية وسعة الموصل، أو معادلة التحمل الأديباتي لتيار القصر؟",
+    "category": "SBC401-overcurrent-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "43-1.4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch43_2_7067344e, page 140-140, content_type=text, topic=overcurrent-adiabatic. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-12-1.4",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 12-1.4 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "12-1.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch12_0_b0b93cac, page 41-41, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-12-2.7",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 12-2.7 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "12-2.7"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch12_2_b7e30963, page 43-43, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-32-4",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 32-4 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "32-4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch32_0_5a33a0c1, page 102-104, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-42-1.3",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 42-1.3 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-1.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_0_209467ef, page 128-128, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-51-1",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 51-1 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "51-1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_2_2e418337, page 130-130, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-life-safety-backup-power-44-3.5",
+    "question_ar": "ما أنظمة السلامة التي يشملها القسم 44-3.5 من SBC 401 ضمن \"خدمات السلامة\" التي تتطلب مصدر تغذية احتياطياً؟",
+    "category": "SBC401-life-safety-power",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-3.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_4_03a44a17, page 159-159, content_type=text, topic=life-safety-backup-power. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-12-2.2",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 12-2.2 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "12-2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch12_1_673b2f29, page 42-42, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-41-0.3.6",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 41-0.3.6 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-0.3.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_1_d593690c, page 106-106, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-41-1.7.3",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 41-1.7.3 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.7.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_8_0001c827, page 113-113, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-41",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 41 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_annexC.41_1_3ac0e6a4, page 126-126, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-42-2.3.11",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 42-2.3.11 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-2.3.11"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_4_779a69a5, page 132-132, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fault-loop-disconnection-43-1.2.1",
+    "question_ar": "ما شرط ممانعة حلقة الخطأ وزمن الفصل التلقائي المطلوب الذي يحدده القسم 43-1.2.1 من SBC 401؟",
+    "category": "SBC401-fault-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "43-1.2.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch43_0_db9cf07c, page 138-139, content_type=text, topic=fault-loop-disconnection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-11-0.6",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 11-0.6 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "11-0.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch11_0_22f93445, page 39-40, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-44-3.1",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 44-3.1 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-3.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_3_bd957ec5, page 158-158, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-44-3.6.1",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 44-3.6.1 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-3.6.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_5_76475704, page 160-160, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-44-4.1",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 44-4.1 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_6_356a2662, page 161-161, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-44-4.4.3.2",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 44-4.4.3.2 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-4.4.3.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_8_7e9f8707, page 163-163, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-lightning-protection-44-4.5.3.4",
+    "question_ar": "ما متطلبات الحماية من الصواعق التي يوردها القسم 44-4.5.3.4 من SBC 401؟",
+    "category": "SBC401-lightning-protection",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-4.5.3.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_11_5c73468e, page 166-166, content_type=text, topic=lightning-protection. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-21",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 21 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "21"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch21_7_503ee4b8, page 55-55, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-31-2.2",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 31-2.2 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "31-2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch31_0_97dd8dee, page 82-82, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-31-2.2.2",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 31-2.2.2 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "31-2.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch31_1_dbcb3830, page 83-83, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-31",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 31 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "31"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch31_4_2a92a995, page 94-100, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-41-2.2.1.2",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 41-2.2.1.2 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-2.2.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_9_1ef7cb9e, page 114-114, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-earthing-41-2.2.2.5",
+    "question_ar": "ما متطلبات ترتيبات التأريض وموصلات الحماية الواردة في القسم 41-2.2.2.5 من SBC 401؟",
+    "category": "SBC401-earthing",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-2.2.2.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch41_10_528e3d96, page 115-115, content_type=text, topic=earthing. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-12-4.3",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 12-4.3 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "12-4.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch12_4_88b80120, page 45-47, content_type=text, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-44-2.2",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 44-2.2 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_1_0351e03a, page 156-156, content_type=mixed, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-44-4.4.2",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 44-4.4.2 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-4.4.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_7_56d966ba, page 162-162, content_type=text, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-44-4.4.10",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 44-4.4.10 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "44-4.4.10"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch44_19_09305fc9, page 185-191, content_type=text, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-53-1.2.3.2",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 53-1.2.3.2 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-1.2.3.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_1_a3b7af1c, page 307-307, content_type=text, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-transient-overvoltage-53-4.4.1",
+    "question_ar": "متى تلزم الحماية من الاضطرابات الجهدية العابرة (Transients) وفق القسم 53-4.4.1 من SBC 401؟",
+    "category": "SBC401-transient-overvoltage",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-4.4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_12_a9a52daa, page 318-318, content_type=text, topic=transient-overvoltage. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-55-1.2.2",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 55-1.2.2 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "55-1.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch55_0_1c84b868, page 386-386, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-71",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 71 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "71"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_annexD.71_0_89665d19, page 587-589, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-712-4",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 712-4 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "712-4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_712_solar_photov_0_961ea717, page 549-549, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-712_41-4.101",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 712:41-4.101 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "712:41-4.101"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_712_solar_photov_2_f134c30b, page 551-551, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-41-1.6.3.1",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 41-1.6.3.1 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.6.3.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_712_solar_photov_3_e9eea2e8, page 552-552, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-pv-solar-712_43-3.1.101.2",
+    "question_ar": "ما متطلبات مقاومة العزل أو حماية زيادة الحمل لمصفوفة الطاقة الشمسية (PV) الواردة في القسم 712:43-3.1.101.2 من SBC 401؟",
+    "category": "SBC401-pv-solar",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "712:43-3.1.101.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_712_solar_photov_4_855ccab0, page 553-553, content_type=text, topic=pv-solar. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-717-6",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 717-6 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "717-6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_717_mobile_or_tr_0_072d7021, page 601-601, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-722-14",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 722-14 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722-14"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_722_chargers_for_2_aec58fdb, page 639-639, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-722-13",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 722-13 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722-13"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_722_chargers_for_3_5bb69e25, page 640-640, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-722_41-0.3.1.6",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 722:41-0.3.1.6 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722:41-0.3.1.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_722_chargers_for_4_ccd9fddc, page 641-641, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-722_51-2.2.103",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 722:51-2.2.103 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722:51-2.2.103"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_722_chargers_for_5_eee182c7, page 642-642, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-ev-charging-722_53-1.3.101",
+    "question_ar": "ما متطلبات تركيب شحن المركبات الكهربائية (EV) الواردة في القسم 722:53-1.3.101 من SBC 401؟",
+    "category": "SBC401-ev-charging",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "722:53-1.3.101"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_722_chargers_for_6_c2dd2b25, page 643-643, content_type=text, topic=ev-charging. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-56-0.10.4",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 56-0.10.4 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "56-0.10.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch56_5_23e84ee9, page 417-417, content_type=text, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-710_56-0.9.101",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 710:56-0.9.101 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "710:56-0.9.101"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_710_medical_loca_9_d241bc7b, page 539-539, content_type=text, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-711_52-1.101",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 711:52-1.101 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "711:52-1.101"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_711_exhibitions__1_4112809d, page 546-546, content_type=text, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-718_55-9.101.4",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 718:55-9.101.4 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "718:55-9.101.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_718_communal_fac_1_a04d0174, page 614-615, content_type=mixed, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-82-5.3",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 82-5.3 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "82-5.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch82_3_187ab1a3, page 700-700, content_type=text, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-fire-alarm-electrical-82-6.4.2",
+    "question_ar": "ما متطلبات التمديدات الكهربائية لأنظمة كشف وإنذار الحريق الواردة في القسم 82-6.4.2 من SBC 401؟",
+    "category": "SBC401-fire-alarm-electrical",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "82-6.4.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch82_6_fd3bc277, page 703-705, content_type=mixed, topic=fire-alarm-electrical. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-56-0.9.9",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 56-0.9.9 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "56-0.9.9"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch56_4_b2a36604, page 416-416, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-704_53-6.2.2",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 704:53-6.2.2 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "704:53-6.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_704_construction_1_5e011baf, page 505-506, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-710_41-5.2.102",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 710:41-5.2.102 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "710:41-5.2.102"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_710_medical_loca_10_bdc9ce4c, page 540-542, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-711_41-4.4.5",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 711:41-4.4.5 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "711:41-4.4.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_711_exhibitions__0_9f08e1af, page 545-545, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-740_52-1.11",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 740:52-1.11 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "740:52-1.11"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_chapter_740_temporary_el_1_2be8f9a7, page 665-665, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-emergency-lighting-01-1",
+    "question_ar": "ما متطلبات تغذية إنارة الطوارئ أو إنارة الهروب التي يحددها القسم 01-1 من SBC 401؟",
+    "category": "SBC401-emergency-lighting",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "01-1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_referenced_standards_5_09d9606d, page 771-772, content_type=text, topic=emergency-lighting. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-42-2.1.1",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 42-2.1.1 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-2.1.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_1_8da1d782, page 129-129, content_type=text, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-42-2.3.4",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 42-2.3.4 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-2.3.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_3_54cc9ae9, page 131-131, content_type=text, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-42-2.5.1",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 42-2.5.1 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-2.5.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_5_294e9168, page 133-133, content_type=text, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-42-4.3",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 42-4.3 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "42-4.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch42_6_ada6f773, page 134-136, content_type=mixed, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-52-2.6.1",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 52-2.6.1 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "52-2.6.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch52_2_93a01375, page 236-236, content_type=text, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-thermal-effects-52-2.8.7",
+    "question_ar": "ما متطلبات الحماية من الآثار الحرارية (كدرجة الحماية IP أو السطوح الساخنة) الواردة في القسم 52-2.8.7 من SBC 401؟",
+    "category": "SBC401-thermal-effects",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "52-2.8.7"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch52_3_a680b021, page 237-237, content_type=text, topic=thermal-effects. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-53-2.2.3.3",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 53-2.2.3.3 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-2.2.3.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_6_2f389298, page 312-312, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-53-3.1.2.2",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 53-3.1.2.2 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-3.1.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_7_ea820701, page 313-313, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-53-7.1.2",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 53-7.1.2 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-7.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_23_b9e3e481, page 329-329, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-53-7.4",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 53-7.4 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-7.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch53_24_30c8f0ae, page 330-331, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-55-7.3.5.3",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 55-7.3.5.3 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "55-7.3.5.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch55_9_c5dd5286, page 395-395, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-insulation-resistance-61-4.3.3",
+    "question_ar": "ما متطلبات مقاومة العزل أو أجهزة مراقبة العزل الواردة في القسم 61-4.3.3 من SBC 401؟",
+    "category": "SBC401-insulation-resistance",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61-4.3.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_1_d80f9777, page 442-442, content_type=text, topic=insulation-resistance. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-61-4.2.3",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 61-4.2.3 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61-4.2.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_0_1d4788fc, page 441-441, content_type=text, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-61-4.3.7.1",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 61-4.3.7.1 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61-4.3.7.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_3_0ae34626, page 444-444, content_type=text, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-41-1.5.3",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 41-1.5.3 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "41-1.5.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_4_2bf91c9c, page 445-445, content_type=text, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-61-5.1.2",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 61-5.1.2 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61-5.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_6_83dd9feb, page 447-447, content_type=text, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-61-5.3.6",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 61-5.3.6 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "61-5.3.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_ch61_7_47df3bb6, page 448-450, content_type=mixed, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC401-initial-verification-53-6.4.2",
+    "question_ar": "ما إجراءات التحقق الابتدائي (Initial Verification) التي يشترطها القسم 53-6.4.2 من SBC 401؟",
+    "category": "SBC401-initial-verification",
+    "code_family": "SBC 401",
+    "expected_sections": [
+      "53-6.4.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 401 2024 - The Saudi Electrical Code chunk SBC 401 2024 - The Saudi Electrical Code_annexD.61_0_30bb421a, page 460-460, content_type=text, topic=initial-verification. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-exhaust-grade-506.3.7.1",
+    "question_ar": "ما الميل الأدنى المطلوب لمجرى العادم أو خط التصريف وفق القسم 506.3.7.1 من SBC 501؟",
+    "category": "SBC501-exhaust-grade",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "506.3.7.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_50_2a0c51e4, page 233-233, content_type=commentary, topic=exhaust-grade. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-exhaust-grade-506.4.1",
+    "question_ar": "ما الميل الأدنى المطلوب لمجرى العادم أو خط التصريف وفق القسم 506.4.1 من SBC 501؟",
+    "category": "SBC501-exhaust-grade",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "506.4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_58_e6c4bf85, page 241-241, content_type=commentary, topic=exhaust-grade. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-exhaust-grade-512.3",
+    "question_ar": "ما الميل الأدنى المطلوب لمجرى العادم أو خط التصريف وفق القسم 512.3 من SBC 501؟",
+    "category": "SBC501-exhaust-grade",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "512.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_97_f7b4f7e6, page 280-280, content_type=commentary, topic=exhaust-grade. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-exhaust-grade-513.1",
+    "question_ar": "ما الميل الأدنى المطلوب لمجرى العادم أو خط التصريف وفق القسم 513.1 من SBC 501؟",
+    "category": "SBC501-exhaust-grade",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_98_6cd50450, page 281-281, content_type=commentary, topic=exhaust-grade. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-exhaust-grade-603.8.3",
+    "question_ar": "ما الميل الأدنى المطلوب لمجرى العادم أو خط التصريف وفق القسم 603.8.3 من SBC 501؟",
+    "category": "SBC501-exhaust-grade",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "603.8.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch6_18_4ce9b9af, page 376-376, content_type=commentary, topic=exhaust-grade. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.2",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.2 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_7_05bbb042, page 146-146, content_type=commentary, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.3",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.3 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_10_5bf6e5d5, page 149-149, content_type=mixed, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.3.1.1",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.3.1.1 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_11_ee465155, page 150-150, content_type=mixed, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.3.1.1.1",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.3.1.1.1 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.1.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_14_654e6025, page 153-153, content_type=commentary, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.3.1.1.2",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.3.1.1.2 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_15_bdbe9368, page 154-155, content_type=mixed, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-ventilation-rate-equation-403.3.1.3",
+    "question_ar": "كيف تُحسب كمية هواء التهوية الخارجي لمنطقة التنفس وفق المعادلة الواردة في القسم 403.3.1.3 من SBC 501؟",
+    "category": "SBC501-ventilation-rate",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_22_3edfd562, page 161-161, content_type=mixed, topic=ventilation-rate-equation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-classroom-ventilation-403.3.1.4",
+    "question_ar": "ما معدلات التهوية المطلوبة للفصول الدراسية (للشخص وللمساحة) وفق القسم 403.3.1.4 من SBC 501؟",
+    "category": "SBC501-classroom-ventilation",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.1.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_23_fcb2cf39, page 162-162, content_type=commentary, topic=classroom-ventilation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-classroom-ventilation-1103.2",
+    "question_ar": "ما معدلات التهوية المطلوبة للفصول الدراسية (للشخص وللمساحة) وفق القسم 1103.2 من SBC 501؟",
+    "category": "SBC501-classroom-ventilation",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1103.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_6_69ad3736, page 548-548, content_type=commentary, topic=classroom-ventilation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-multizone-ventilation-4",
+    "question_ar": "كيف يُحسب هواء التهوية الخارجي الكلي لنظام متعدد المناطق وفق القسم 4 من SBC 501؟",
+    "category": "SBC501-multizone-ventilation",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_9_fce0b536, page 148-148, content_type=text, topic=multizone-ventilation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-multizone-ventilation-606.2.1",
+    "question_ar": "كيف يُحسب هواء التهوية الخارجي الكلي لنظام متعدد المناطق وفق القسم 606.2.1 من SBC 501؟",
+    "category": "SBC501-multizone-ventilation",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "606.2.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch6_28_f1b99e5e, page 386-386, content_type=commentary, topic=multizone-ventilation. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-301.8.1",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 301.8.1 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "301.8.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_1_8e6b08bc, page 81-81, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-501.1",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 501.1 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "501.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_0_a84261cc, page 183-183, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-501.3",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 501.3 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "501.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_1_f35c2743, page 184-184, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-502.1.2",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 502.1.2 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_6_dd438058, page 189-189, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-505.3",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 505.3 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "505.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_42_eb63f82b, page 225-225, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-grease-duct-505.5",
+    "question_ar": "ما متطلبات تصميم مجاري شحوم المطابخ التجارية الواردة في القسم 505.5 من SBC 501؟",
+    "category": "SBC501-grease-duct",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "505.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_43_27427608, page 226-226, content_type=commentary, topic=grease-duct. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-301.12",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 301.12 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "301.12"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_4_669f871f, page 84-84, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-302.1",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 302.1 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "302.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_6_f21d9d39, page 86-86, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-303.3",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 303.3 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "303.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_9_f3ff7bf5, page 89-89, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-303.6",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 303.6 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "303.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_10_f300f90f, page 90-90, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-307.2",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 307.2 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "307.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_24_35b36eae, page 104-104, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-combustion-air-401.2",
+    "question_ar": "ما متطلبات هواء الاحتراق الواردة في القسم 401.2 من SBC 501؟",
+    "category": "SBC501-combustion-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "401.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_1_956893e5, page 140-140, content_type=commentary, topic=combustion-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-304.2",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 304.2 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "304.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_12_086af548, page 92-92, content_type=commentary, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-304.9",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 304.9 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "304.9"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_17_6958d25f, page 97-97, content_type=commentary, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-308.4.2.3",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 308.4.2.3 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "308.4.2.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_31_1a2cd789, page 111-111, content_type=mixed, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-401.6",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 401.6 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "401.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_4_5ad2c113, page 143-143, content_type=mixed, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-504.4",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 504.4 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "504.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_33_6fb17c8a, page 216-216, content_type=commentary, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-chimneys-vents-506.3.1.1",
+    "question_ar": "ما متطلبات المداخن أو المنافس الواردة في القسم 506.3.1.1 من SBC 501؟",
+    "category": "SBC501-chimneys-vents",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "506.3.1.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_45_8df78496, page 228-228, content_type=commentary, topic=chimneys-vents. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-304.1",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 304.1 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "304.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_11_f4bfae93, page 91-91, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-511.1.2",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 511.1.2 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "511.1.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_95_12af5c05, page 278-278, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-601.2",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 601.2 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "601.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch6_0_caf4b3a1, page 358-358, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-601.5",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 601.5 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "601.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch6_3_8cef3711, page 361-361, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-803.9",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 803.9 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "803.9"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch8_11_6bfdf6f3, page 463-463, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-boilers-pressure-vessels-1001.1",
+    "question_ar": "ما المتطلبات المتعلقة بالغلايات أو أوعية الضغط الواردة في القسم 1001.1 من SBC 501؟",
+    "category": "SBC501-boilers-pressure-vessels",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1001.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch10_0_f0102d6b, page 514-514, content_type=commentary, topic=boilers-pressure-vessels. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-1009.2",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 1009.2 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1009.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch10_14_08dc48aa, page 528-528, content_type=commentary, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-1009.3",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 1009.3 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1009.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch10_15_6aa82e27, page 529-529, content_type=mixed, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-1010.2",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 1010.2 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1010.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch10_16_a8b697ee, page 530-530, content_type=commentary, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-1205.2",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 1205.2 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1205.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch12_14_5ff8f1d7, page 607-607, content_type=commentary, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-1210.8.8",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 1210.8.8 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1210.8.8"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch12_22_a37dec52, page 615-615, content_type=commentary, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-expansion-tank-237.13",
+    "question_ar": "كيف يُحسب الحجم الأدنى لخزان التمدد المغلق وفق القسم 237.13 من SBC 501؟",
+    "category": "SBC501-expansion-tank",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "237.13"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_tables_and_figures_of_ch_0_b721bcdd, page 618-627, content_type=mixed, topic=expansion-tank. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-501.3.1",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 501.3.1 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "501.3.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_3_7a8db4be, page 186-186, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-513.2",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 513.2 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_99_10b19df9, page 282-282, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-513.4",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 513.4 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_100_a57a70f4, page 283-283, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-513.4.4",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 513.4.4 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.4.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_101_030e3852, page 284-284, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-513.5",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 513.5 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_102_58ba8b21, page 285-285, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-smoke-control-door-force-513.5.3",
+    "question_ar": "ما معادلة قوة فتح الباب في أنظمة التحكم بالدخان الواردة في القسم 513.5.3 من SBC 501؟",
+    "category": "SBC501-smoke-control",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "513.5.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_103_cc560c63, page 286-286, content_type=commentary, topic=smoke-control-door-force. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-403.1",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 403.1 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_6_7b88130e, page 145-145, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-403.3.2.2",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 403.3.2.2 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "403.3.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch4_26_10383d93, page 165-165, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-501.4",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 501.4 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "501.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_5_792afc1d, page 188-188, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-502.7.3.2",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 502.7.3.2 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.7.3.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_10_28243680, page 193-193, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-502.7.3.3",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 502.7.3.3 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.7.3.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_11_4e98c7bb, page 194-194, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-makeup-air-502.9.2",
+    "question_ar": "ما الفرق بين هواء التعويض (Makeup Air) ومتطلباته مقارنة بهواء الاحتراق وفق القسم 502.9.2 من SBC 501؟",
+    "category": "SBC501-makeup-air",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.9.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_16_ed7e422b, page 199-199, content_type=commentary, topic=makeup-air. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-refrigeration-machinery-room-1104.4.2",
+    "question_ar": "ما متطلبات تهوية غرفة آلات التبريد الواردة في القسم 1104.4.2 من SBC 501؟",
+    "category": "SBC501-refrigeration-room",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1104.4.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_11_2138a34e, page 553-553, content_type=commentary, topic=refrigeration-machinery-room. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-refrigeration-machinery-room-1105.6",
+    "question_ar": "ما متطلبات تهوية غرفة آلات التبريد الواردة في القسم 1105.6 من SBC 501؟",
+    "category": "SBC501-refrigeration-room",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1105.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_14_a6549a6e, page 556-556, content_type=commentary, topic=refrigeration-machinery-room. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-refrigeration-machinery-room-1105.6.3.1",
+    "question_ar": "ما متطلبات تهوية غرفة آلات التبريد الواردة في القسم 1105.6.3.1 من SBC 501؟",
+    "category": "SBC501-refrigeration-room",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1105.6.3.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_15_3276e342, page 557-557, content_type=commentary, topic=refrigeration-machinery-room. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-refrigeration-machinery-room-1106.4.1",
+    "question_ar": "ما متطلبات تهوية غرفة آلات التبريد الواردة في القسم 1106.4.1 من SBC 501؟",
+    "category": "SBC501-refrigeration-room",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1106.4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_18_8bd2486e, page 560-560, content_type=commentary, topic=refrigeration-machinery-room. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-refrigeration-machinery-room-1107.5",
+    "question_ar": "ما متطلبات تهوية غرفة آلات التبريد الواردة في القسم 1107.5 من SBC 501؟",
+    "category": "SBC501-refrigeration-room",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1107.5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch11_20_29d01d2d, page 562-562, content_type=commentary, topic=refrigeration-machinery-room. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-5",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 5 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "5"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_85_294c0f8b, page 268-268, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-502.6",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 502.6 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_7_c1fee778, page 190-190, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-502.6.2",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 502.6.2 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.6.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_8_86a80d66, page 191-191, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-502.7.1",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 502.7.1 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "502.7.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_9_67fc9999, page 192-192, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-503.3",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 503.3 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "503.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_30_759565ab, page 213-213, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hazardous-exhaust-510.2",
+    "question_ar": "ما معدل العادم المطلوب للأنظمة الخطرة بحسب مساحة المنطقة وفق القسم 510.2 من SBC 501؟",
+    "category": "SBC501-hazardous-exhaust",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "510.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_84_31ae1a36, page 267-267, content_type=commentary, topic=hazardous-exhaust. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-307.2.2",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 307.2.2 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "307.2.2"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_25_b1bc6501, page 105-105, content_type=mixed, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-307.2.3",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 307.2.3 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "307.2.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_26_319715db, page 106-106, content_type=commentary, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-307.2.4.1",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 307.2.4.1 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "307.2.4.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_27_86d92c03, page 107-107, content_type=commentary, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-308.1",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 308.1 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "308.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_28_dba90b96, page 108-108, content_type=commentary, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-1006.6",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 1006.6 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1006.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch10_8_0c96f085, page 522-522, content_type=commentary, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-condensate-drain-1206.6",
+    "question_ar": "ما الميل الأدنى المطلوب لتصريف مياه التكاثف (Condensate) وفق القسم 1206.6 من SBC 501؟",
+    "category": "SBC501-condensate-drain",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1206.6"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch12_15_a4e4656e, page 608-608, content_type=commentary, topic=condensate-drain. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-305.4",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 305.4 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "305.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch3_19_4ba4df86, page 99-99, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-504.9.3",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 504.9.3 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "504.9.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch5_36_913ded4d, page 219-219, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-905.1",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 905.1 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "905.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch9_5_fab23457, page 495-495, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-907.1",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 907.1 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "907.1"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch9_6_0bdf9c63, page 496-496, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-1201.3",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 1201.3 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1201.3"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch12_0_c8f84d19, page 593-593, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  },
+  {
+    "id": "GEN-SBC501-hydronic-piping-stress-1202.4",
+    "question_ar": "ما معادلة إجهاد التصميم لأنابيب الأنظمة الهيدرونية الواردة في القسم 1202.4 من SBC 501؟",
+    "category": "SBC501-hydronic-piping",
+    "code_family": "SBC 501",
+    "expected_sections": [
+      "1202.4"
+    ],
+    "source": "generated",
+    "status": "candidate",
+    "notes": "Generated from SBC 501 2024 - The Saudi Mechanical Code chunk SBC 501 2024 - The Saudi Mechanical Code_ch12_1_ce2622fc, page 594-594, content_type=commentary, topic=hydronic-piping-stress. Not reviewed -- verify the section actually answers the question before promoting."
+  }
+]
