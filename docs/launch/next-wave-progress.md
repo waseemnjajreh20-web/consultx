@@ -34,6 +34,11 @@ No agent deploys, writes to production, or runs git write commands.
 - Standing safety-critical regression ADV-031/032 (both modes): the answers append external clause numbers ("NFPA 13 … Section x") that the corpus does not hold — the tier-A fabricated-clause predicate. Two structural responses built this session: SOURCE_SCOPE rule 3 strengthened (name the external standard exactly as the SBC text does, never a clause number), and `fire-safety-chat/externalClauseScrubber.ts` — a streaming scrubber that reduces any absent-standard clause reference to the bare standard name before it reaches the client (7 tests; wiring into transformStream follows the D2 integrator's pass on index.ts).
 - Hybrid-ON run (02:05 UTC, same subset, evals/results/2026-09-03-subset): sections 41% · chains 50% · citation discipline 90% · p95 60.4s · hallucination 40% → **gate FAILED**; flag set back to 0 right after the run. Hypothesis for the next iteration: the hybrid leg skips the similarity floor and fuses 40+40 candidates into 25 rows, so lexical noise displaces vector top hits; tune rrf_k / candidate_pool and keep the floor on the vector leg, then re-gate.
 
+## Wave 3 (2026-09-03, relaunched after a usage-limit interruption)
+- C3-1 done (53beaaf): 15 real DWG files, zero DXF/IFC, ODA converter absent → spike ran on a synthetic sample; verdict no-go as-is; phase 1.5 = owner-approved ODA install + 3 real drawings. Async Python worker recommended (Cloud Run Jobs / VPS).
+- In flight: D2 (context-cache wiring), C1b (profile card / report / feedback UI), B3 (answer_feedback SQL + review queue + 200-candidate golden set), D3 (RUM beacon + AdminHealth RUM), B2-1 (rule schema + 30 draft rules + evaluator).
+- Monitoring after bring-up cleanup: 11 perf_events rows, breach counters reset except first_text_ms_primary=3 (real: primary first text 19-25s at the 02:00 UTC window — provider-side gemini_connect 17-24s; keep-warm confirmed firing every 5 min). The owner may have received 1-2 alert emails from the bring-up period; the next hourly runs recover the counters.
+
 ## Integration order (orchestrator)
 1. Collect reports → review diffs per item (code-review pass on the hot-file edits from B1a and A2).
 2. Gate: tsc 0 · vitest all green · deno check (fire-safety-chat, synthetic-probe) · build.
