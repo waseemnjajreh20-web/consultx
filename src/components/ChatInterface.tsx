@@ -35,6 +35,7 @@ import consultxIcon from "@/assets/consultx-platform-logo.png";
 import ChatMarkdownRenderer, { type CitationStatusItem } from "./ChatMarkdownRenderer";
 import { SignedChatImage, ConversationFilesModal } from "./SignedChatImage";
 import { FN_REGION_HEADER } from "@/lib/functionRegion";
+import { reportChatTiming } from "@/lib/perfBeacon";
 import AnalysisResultCard, { isVisionAnalysisResponse, isComplianceTextResponse } from "./AnalysisResultCard";
 import ConversationsList from "./ConversationsList";
 import BottomNav from "./BottomNav";
@@ -50,6 +51,10 @@ import { resolveSourceMeta, resolveAllSources, resolveSourcesWithMeta, resolveSe
 import { expectedDocCode, isFamilyMatch, findSameFamilySource, availableFamilies } from "@/utils/citationRouting";
 import { usePreferences } from "@/hooks/usePreferences";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { isFlagOn } from "@/lib/featureFlags";
+import BuildingProfileCard from "./BuildingProfileCard";
+import ComplianceReportButton from "./ComplianceReportButton";
+import AnswerFeedback from "./AnswerFeedback";
 const ReportArtifactDrawer = React.lazy(() => import("@/components/analytical-reports/ReportArtifactDrawer"));
 
 interface Message {
@@ -1292,6 +1297,8 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
       });
     };
     let currentSources: string[] = [];
+    // RUM (D3): wall-clock from send to done/error, reported fire-and-forget.
+    const rumStartedAt = Date.now();
     try {
       await streamChat({
         messages: chatMessages, retry: isRetry, mode: currentMode, language: currentLanguage, images: imageBase64s,
@@ -1330,6 +1337,7 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
             handleSendWithRetry(chatMessages, `${assistantId}-retry-${currentRetryCount + 1}`, true, currentRetryCount + 1, currentMode, convId, currentLanguage, imageBase64s, docTexts, pageManifests, currentAudience);
           } else {
             stopLoading();
+            void reportChatTiming({ mode: currentMode, doneMs: Date.now() - rumStartedAt, chars: fullContent.length, ok: validation.valid });
             if (convId) saveMessage(convId, "assistant", fullContent, currentSources);
             setChatItems(prev => prev.map(item =>
               ("type" in item) ? item : ((item.id === assistantId || item.id.startsWith(assistantId))
@@ -1391,6 +1399,9 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
           }
           setLocalMessagesUsed(prev => Math.max(0, prev - 1));
           stopLoading();
+          // Only genuine backend/network failures reach here (the gates above are
+          // business logic or user cancels, not performance events).
+          void reportChatTiming({ mode: currentMode, doneMs: Date.now() - rumStartedAt, ok: false, errorCode: String(error).slice(0, 64) });
           toast({ title: currentLanguage === "en" ? "Error" : "خطأ", description: error, variant: "destructive" });
         }
       });
@@ -1712,6 +1723,16 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
               </div>
             )}
           </div>
+
+          {/* C1b — building profile summary chip, flag-gated, only with a conversation open */}
+          {isFlagOn("BUILDING_PROFILE_UI") && conversationId && (
+            <BuildingProfileCard
+              conversationId={conversationId}
+              userId={user?.id ?? null}
+              language={language}
+              recentUserMessages={messages.filter((m) => m.role === "user").slice(-12).map((m) => m.content)}
+            />
+          )}
 
           <div className="flex items-center gap-2">
             {/* Launch trial days remaining pill */}
@@ -2209,6 +2230,28 @@ const ChatInterface = ({ onBack, onSourceStateChange, historyTriggerRef }: ChatI
                           }
                           language={language}
                         />
+                        {/* C1b — compliance report + answer feedback, each independently flag-gated */}
+                        {(isFlagOn("COMPLIANCE_REPORT_UI") || isFlagOn("ANSWER_FEEDBACK_UI")) && (
+                          <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                            {isFlagOn("COMPLIANCE_REPORT_UI") && (
+                              <ComplianceReportButton
+                                conversationId={conversationId}
+                                userId={user?.id ?? null}
+                                messages={messages}
+                                engineerName={displayName}
+                                language={language}
+                              />
+                            )}
+                            {isFlagOn("ANSWER_FEEDBACK_UI") && (
+                              <AnswerFeedback
+                                conversationId={conversationId}
+                                messageId={message.dbId ?? message.id}
+                                mode={msgMode}
+                                language={language}
+                              />
+                            )}
+                          </div>
+                        )}
                         {/* AI disclaimer — shown under every assistant answer */}
                         <p className="text-xs text-muted-foreground mt-2">
                           {language === "ar"

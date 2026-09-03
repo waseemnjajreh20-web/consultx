@@ -66,3 +66,24 @@ async function fetchBuildingProfile(adminClient, conversationId, userId) {
 - **`hazard_class` نص حر بلا CHECK:** لا يوجد تصنيف معياري ثابت طُلب في التكليف؛ اختراع قائمة هنا كان سيُعد ادّعاء مصدر لا يملكه النظام — تُرك للإدخال اليدوي عمداً.
 - **لا استخلاص تلقائي لـ`hazard_class` أو `name`:** نفس المبدأ — الاستخلاص من نص حر لهذين الحقلين خطر كاذب-إيجابي أعلى من قيمته.
 - **RLS:** الوصفة الأمنية (قسم 4 من ملف SQL) لم تُشغَّل بعد ضد الإنتاج (الجدول غير موجود بعد) — إلزامية قبل أي `BUILDING_PROFILE_ENABLED=1`.
+
+## 6) تحديث — UI wiring done (C1b, 2026-09-03)
+
+خطة القسم 2 أعلاه نُفِّذت فعلياً في هذه الجلسة (لم تعد "وصف فقط"). لم يُلمس أي من: محلل البث، رندر الرسائل القائم، أو أي ملف تحت `supabase/functions/**`.
+
+- `src/lib/featureFlags.ts` (جديد): `isFlagOn(name)` يقرأ `import.meta.env["VITE_" + name] === "1"`. الأعلام الثلاثة: `BUILDING_PROFILE_UI`, `COMPLIANCE_REPORT_UI`, `ANSWER_FEEDBACK_UI` — كلها مطفأة افتراضياً (بلا env، الواجهة مطابقة بايتاً لما قبل هذه الموجة).
+- `src/components/BuildingProfileCard.tsx` (جديد): بطاقة مضغوطة في رأس المحادثة خلف `BUILDING_PROFILE_UI`، تظهر فقط عند فتح محادثة (`conversationId` غير فارغ). تعرض `profileCompleteness()` (نسبة + الحقول الناقصة)، وتفتح حوار تعديل كامل (كل الحقول، قوائم `OCCUPANCY_GROUPS`/`CONSTRUCTION_TYPES` كمصدر وحيد للحقيقة). زر "اقتراح من المحادثة" يستدعي `suggestProfileFromText()` على آخر 12 رسالة مستخدم ويعرض كل حقل مقترح في لوحة مراجعة مع زر "تطبيق" مستقل لكل حقل (+ "تطبيق الكل") — لا تطبيق تلقائي أو صامت أبداً؛ حقل له قيمة مؤكدة يُعرض بجانبه تحذير "سيستبدل". الحفظ عبر `validateBuildingProfile()` ثم upsert على مستوى التطبيق (انظر الملاحظة أدناه).
+- `src/components/ComplianceReportButton.tsx` (جديد): زر خلف `COMPLIANCE_REPORT_UI`، يظهر بجانب `UtilityBar` تحت كل رسالة مساعد لكنه يبني تقرير المحادثة **كاملة** (كل زوج سؤال/جواب حتى تلك اللحظة، مع استشهاداته وحالات التحقق إن وُجدت) عبر `buildComplianceReportHtml`/`buildComplianceReportFilename` الجاهزتين مسبقاً — بنفس نمط `handlePdf` تماماً (Blob + `URL.createObjectURL` + `window.open`). فرق تنفيذي واحد: `buildComplianceReportHtml` لا تُضمّن سكربت طباعة ذاتي كما يفعل `handlePdf`، فالطباعة تُطلَق من جهة النافذة الفاتحة (`win.onload = () => win.print()`) بدل تضمينها داخل HTML الناتج. بيانات المبنى تُقرأ طازجة من `building_profiles` عند كل ضغطة (لا تعتمد على حالة البطاقة في الرأس).
+- `src/components/AnswerFeedback.tsx` (جديد): 👍/👎 + حقل نصي صغير "استشهاد خاطئ" خلف `ANSWER_FEEDBACK_UI` تحت كل إجابة. يكتب إلى `public.answer_feedback` (**جدول لم يُنشأ بعد** — وكيل آخر يملك SQL الخاص به في هذه الموجة). كل كتابة "فشل ناعم" بتصميم: أي خطأ (جدول مفقود، RLS، شبكة) يعرض توست عربياً واحداً ولا يُرجع الواجهة للخلف ولا يعطّل المحادثة أبداً.
+- `src/__tests__/buildingProfileCard.test.ts` (جديد): 18 اختباراً (كلها ناجحة) للدوال النقية المُصدَّرة من `BuildingProfileCard.tsx` (`fieldLabel`, `formatSuggestedValue`, `hasConflict`, `buildProfileSummary`) — بلا رندر React وبلا Supabase (انظر ملاحظة الاستيراد الكسول أدناه).
+- `src/components/ChatInterface.tsx` — تعديل جراحي: 4 أسطر استيراد + تركيب `BuildingProfileCard` في الرأس (بجانب منتقي الوضع) + تركيب `ComplianceReportButton`/`AnswerFeedback` بجانب `UtilityBar`، كل إضافة خلف علمها المستقل.
+
+**ملاحظة تصميم — لماذا لا `.upsert()` خام:** لا يوجد قيد تفرّد (`UNIQUE`) على `(user_id, conversation_id)` في `building_profiles.sql` — فقط فهرس عادي (`idx_building_profiles_user_conversation`). لذلك `.upsert(..., {onConflict: "user_id,conversation_id"})` كان سيفشل (لا قيد مطابق) أو يتصرف بشكل غير متوقع. البديل المطبَّق: قراءة الصف عند الفتح (حفظ `id` إن وُجد) ثم إما `.update()` بذلك المعرّف أو `.insert()` صف جديد — upsert على مستوى التطبيق، مبني على الحالة المحمَّلة فعلاً لا على قيد قاعدة بيانات غير موجود.
+
+**ملاحظة استيراد كسول (مهمة لأي تعديل مستقبلي على BuildingProfileCard.tsx):** عميل Supabase يُستورَد داخل المعالِجات غير المتزامنة (`await import("@/integrations/supabase/client")`) لا في أعلى الملف. السبب: وحدة العميل تقرأ `localStorage` عند الإنشاء، وهذا غير معرَّف تحت إعداد Vitest لهذا المستودع (`environment: "node"`) — استيراد علوي كان سيُسقط ملف الاختبار بخطأ `ReferenceError` قبل أي تأكيد. تحقَّقتُ من هذا تجريبياً (اختبار مؤقت حُذف بعد التأكيد) قبل اختيار هذا التصميم.
+
+**لم يُنفَّذ بعد (يبقى كما هو موصوف في القسم 3 أعلاه، خارج نطاق هذه الجلسة):**
+- توصيل الخادم (`BUILDING_PROFILE_ENABLED` داخل `fire-safety-chat/index.ts`) — ممنوع لمس `supabase/functions/**` في هذه الموجة.
+- تفعيل أي علم من الأعلام الثلاثة على أي بيئة — قرار مالك منفصل، بعد فحص الأوضاع الثلاثة (`primary`/`standard`/`analysis`) على بيئة معاينة.
+- مقابلة قائمة `occupancy_group` مع نص SBC 201 الرسمي (القسم 5 أعلاه) — ما زالت معلَّقة.
+- جدول `answer_feedback` نفسه (SQL) — مملوك لوكيل آخر هذه الموجة.
