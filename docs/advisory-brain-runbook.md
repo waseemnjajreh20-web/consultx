@@ -362,3 +362,29 @@ instruments exist.
 **Reading this table is part of any change to this stack.** A flag at `0` with
 "gate failed" next to it is a settled question — re-open it only with a new
 measurement, not a new intuition.
+
+### 6.1 Second capacity path (added 2026-09-04)
+
+| variable | prod | what it does |
+|---|---|---|
+| `GOOGLE_GEMINI_API_KEY_FALLBACK` | **unset** | A key on a DIFFERENT Google project. When the whole model chain fails for a reason a different project could serve (project block, auth, rate limit, provider 5xx), the chain is retried once on this key. Absent or a duplicate of the primary = today's behaviour exactly. |
+
+**Why it exists:** the 2026-09-03 outage — one project answering 403
+PERMISSION_DENIED to every model and to embeddings — stopped the platform for
+fourteen hours. No amount of model fallback helps there; the chain varies the
+model, the block is on the project.
+
+**To arm it (owner, one command):**
+
+```bash
+npx supabase secrets set "GOOGLE_GEMINI_API_KEY_FALLBACK=<key from another Google project>" --project-ref hrnltxmwoaphgejckutk
+```
+
+Nothing else changes: no deploy, no flag. Verify with a three-mode probe; the
+function logs `backup key served <model> — primary project is degraded`
+whenever it engages, so an engaged backup is never silent.
+
+**What it does NOT cover:** embeddings still use the primary key only, so with
+the primary blocked, vector retrieval falls back to the keyword path (which is
+the designed degradation, and is why that path exists). Routing embeddings to
+the backup key is the obvious next step if this ever engages for real.
