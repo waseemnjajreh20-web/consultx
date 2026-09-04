@@ -73,10 +73,13 @@ describe("index.ts wiring", () => {
     expect(INDEX_SRC).toContain('"THINKING_EFFORT_ANALYSIS"');
     expect(INDEX_SRC).toContain('"THINKING_EFFORT_STANDARD"');
     expect(INDEX_SRC).toContain('mode === "primary" ? "minimal" : "default",');
-    // Exactly ONE call site — the streaming request. The non-streaming helper
-    // (fetchGeminiNonStreamingWithRetry, used by the vision pipeline) is
+    // Read ONCE per request into thinkingEffortForMode, which both the
+    // primary chain and the backup-key retry use — so the two can never ask
+    // the same question at two different thinking levels. The non-streaming
+    // helper (fetchGeminiNonStreamingWithRetry, the vision pipeline) is
     // deliberately untouched, so its request shape is unaffected by any level.
     expect(INDEX_SRC.split("resolveThinkingEffort(").length - 1).toBe(1);
-    expect(INDEX_SRC).toContain("import");
+    expect(INDEX_SRC).toContain("const thinkingEffortForMode = resolveThinkingEffort(");
+    expect(INDEX_SRC.split("thinkingEffortForMode").length - 1).toBeGreaterThanOrEqual(3);
   });
 });

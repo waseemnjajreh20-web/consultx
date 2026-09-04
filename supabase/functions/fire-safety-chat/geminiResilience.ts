@@ -245,6 +245,50 @@ export function classifyGeminiChainFailure(
   return best;
 }
 
+// ── Second capacity path (2026-09-04, after the project-block outage) ───────
+// The 2026-09-03 incident stopped the platform for fourteen hours because one
+// Google project answered 403 PERMISSION_DENIED to every model AND to
+// embeddings. Nothing in the model chain helps there: the chain varies the
+// MODEL, and the block is on the PROJECT. The smallest thing that would have
+// made that outage survivable is a key on a different project.
+//
+// GOOGLE_GEMINI_API_KEY_FALLBACK is exactly that. It is not a flag: absent
+// means today's behaviour, present means one retry of the whole chain on the
+// second key when — and only when — the first key failed for a reason a
+// different project could plausibly fix.
+
+export const FALLBACK_KEY_ENV = "GOOGLE_GEMINI_API_KEY_FALLBACK";
+
+/**
+ * Classes a second project could plausibly serve: an account-level block, an
+ * auth failure, a rate limit (per-project quota), a provider 5xx. NOT a
+ * request error — a malformed request fails identically everywhere, and
+ * retrying it on the backup key would just burn the backup's quota on a
+ * request that cannot succeed.
+ */
+export function isCapacityClassFailure(c: AIErrorClass): boolean {
+  return (
+    c === "GEMINI_PROJECT_BLOCKED" ||
+    c === "GEMINI_AUTH_ERROR" ||
+    c === "GEMINI_RATE_LIMIT" ||
+    c === "GEMINI_PROVIDER_ERROR"
+  );
+}
+
+/**
+ * The backup key, when it is set, non-empty, and actually different from the
+ * primary — a copy of the same key would double the latency of every outage
+ * while changing nothing.
+ */
+export function resolveFallbackKey(
+  env: (key: string) => string | undefined,
+  primaryKey: string,
+): string | null {
+  const raw = (env(FALLBACK_KEY_ENV) ?? "").trim();
+  if (!raw || raw === primaryKey.trim()) return null;
+  return raw;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

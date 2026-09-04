@@ -4,6 +4,8 @@ import {
   buildModelChain,
   classifyGeminiChainFailure,
   classifyGeminiError,
+  isCapacityClassFailure,
+  resolveFallbackKey,
   clearQuotaIncrement,
   fetchAvailableGeminiModels,
   fetchGeminiNonStreamingWithRetry,
@@ -4819,6 +4821,18 @@ serve(async (req) => {
     let lastErrorText = "";
     let lastStatus = 0;
     const chainFailures: Array<{ status: number; errorText: string }> = [];
+    // One owner for the mode -> level mapping, read once per request and used
+    // by BOTH the primary chain and the backup-key retry, so the two can never
+    // drift into asking the same question at two different thinking levels.
+    const thinkingEffortForMode = resolveThinkingEffort(
+      Deno.env.get,
+      mode === "primary"
+        ? "THINKING_EFFORT_PRIMARY"
+        : mode === "analysis"
+          ? "THINKING_EFFORT_ANALYSIS"
+          : "THINKING_EFFORT_STANDARD",
+      mode === "primary" ? "minimal" : "default",
+    );
 
     // ── D2 context caching (GEMINI_CONTEXT_CACHE_ENABLED, exact "1") ─────────
     // Read ONCE here — the single flag check for this feature in index.ts.
@@ -4891,15 +4905,7 @@ serve(async (req) => {
         // Defaults reproduce today's behaviour exactly — primary minimal,
         // standard/analysis model-default — so an unset or mistyped variable
         // changes nothing. Measurement: gemini_connect in X-Timing per mode.
-        resolveThinkingEffort(
-          Deno.env.get,
-          mode === "primary"
-            ? "THINKING_EFFORT_PRIMARY"
-            : mode === "analysis"
-              ? "THINKING_EFFORT_ANALYSIS"
-              : "THINKING_EFFORT_STANDARD",
-          mode === "primary" ? "minimal" : "default",
-        ),
+        thinkingEffortForMode,
         cacheRef ? { ref: cacheRef, mode } : null,
       );
       if (result.response.ok) {
@@ -4915,6 +4921,44 @@ serve(async (req) => {
       // limit) hit every model. Measured during the 2026-09-03 outage.
       chainFailures.push({ status: result.response.status, errorText: result.errorText });
       console.error(`[Gemini] ${model} failed: ${result.response.status} | ${result.errorText.slice(0, 300)}`);
+    }
+
+    // ── Second capacity path (2026-09-04) ───────────────────────────────────
+    // The whole model chain failed. If it failed for a reason a DIFFERENT
+    // Google project could plausibly serve — an account block, an auth
+    // failure, a per-project rate limit, a provider 5xx — and a backup key is
+    // configured, run the chain once more on that key. This is the smallest
+    // change that would have made the 2026-09-03 outage survivable: fourteen
+    // hours of total stop, caused by one project answering 403 to every model
+    // and to embeddings, which no amount of model fallback can route around.
+    //
+    // Absent backup key = today's behaviour exactly (resolveFallbackKey
+    // returns null, and this block is skipped). A request-shaped failure is
+    // never retried on the backup: a malformed request fails identically
+    // everywhere and would only burn the backup's quota.
+    if ((!response || !response.ok) && chainFailures.length > 0) {
+      const firstPass = classifyGeminiChainFailure(chainFailures);
+      const backupKey = resolveFallbackKey(Deno.env.get, GEMINI_API_KEY);
+      if (backupKey && isCapacityClassFailure(firstPass.classification)) {
+        console.warn(
+          `[Gemini] primary key exhausted (${firstPass.classification}) — retrying the chain on the backup key`,
+        );
+        for (const model of modelChain) {
+          geminiModel = model;
+          const result = await fetchGeminiStreamWithRetry(
+            backupKey, model, systemInstruction, contents, 2,
+            thinkingEffortForMode,
+            null, // never a cached-content ref: the cache object belongs to the primary project
+          );
+          if (result.response.ok) {
+            response = result.response;
+            console.warn(`[Gemini] backup key served ${model} — primary project is degraded`);
+            break;
+          }
+          chainFailures.push({ status: result.response.status, errorText: result.errorText });
+          console.error(`[Gemini] backup ${model} failed: ${result.response.status} | ${result.errorText.slice(0, 200)}`);
+        }
+      }
     }
 
     if (!response || !response.ok) {
