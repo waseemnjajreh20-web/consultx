@@ -435,6 +435,8 @@ export interface BreachState {
   count: number;
   shouldAlert: boolean;
   shouldRecover: boolean;
+  /** True when this alert is a still-down reminder rather than the first notice. */
+  isReminder: boolean;
 }
 
 /**
@@ -443,20 +445,39 @@ export interface BreachState {
  * probe_state before the call; the returned `count` is what the caller
  * writes back.
  *
- * `shouldAlert` fires exactly once per incident — the run where the counter
- * reaches `threshold` — never again on subsequent still-breached runs, so a
- * target stuck in breach for hours does not re-page every 15 minutes.
+ * `shouldAlert` fires when the counter reaches `threshold`, and then again
+ * every `repeatEvery` runs while the breach persists — NOT on every run, so a
+ * stuck target does not re-page every 15 minutes, and not once and then
+ * silence either.
+ *
+ * The reminder cadence exists because of the 2026-09-03 provider outage: the
+ * platform could not answer a single question for fourteen hours, and the
+ * monitoring — working exactly as designed — sent ONE email at minute 30 and
+ * then nothing. One email at the start of a multi-hour, total outage is
+ * indistinguishable, in an inbox, from one email about a slow afternoon.
+ * At the 15-minute probe cadence the default of 24 is a reminder every six
+ * hours, carrying how long it has been down.
  * `shouldRecover` fires exactly once, on the first non-breached run after an
  * alert was actually sent (previousCount >= threshold) — a target that only
  * ever reached 1 consecutive breach recovers silently, matching that no
  * alert was ever sent for it either.
  */
-export function nextBreachState(previousCount: number, breachedNow: boolean, threshold = 2): BreachState {
+export const BREACH_REMINDER_EVERY = 24;
+
+export function nextBreachState(
+  previousCount: number,
+  breachedNow: boolean,
+  threshold = 2,
+  repeatEvery = BREACH_REMINDER_EVERY,
+): BreachState {
   if (breachedNow) {
     const count = previousCount + 1;
-    return { count, shouldAlert: count === threshold, shouldRecover: false };
+    const first = count === threshold;
+    const reminder =
+      repeatEvery > 0 && count > threshold && (count - threshold) % repeatEvery === 0;
+    return { count, shouldAlert: first || reminder, shouldRecover: false, isReminder: !first && reminder };
   }
-  return { count: 0, shouldAlert: false, shouldRecover: previousCount >= threshold };
+  return { count: 0, shouldAlert: false, shouldRecover: previousCount >= threshold, isReminder: false };
 }
 
 // ============================================================
@@ -518,6 +539,20 @@ export interface TargetAlertInfo {
   observed: number;
   /** ISO timestamp of the run where the breach was confirmed (the 2nd consecutive breach). */
   sinceIso: string;
+  /** Consecutive breached runs so far — turned into a duration in the email. */
+  consecutiveRuns?: number;
+  /** True when this is a still-down reminder rather than the first notice. */
+  isReminder?: boolean;
+}
+
+/** Consecutive 15-minute probe runs, rendered as a human duration. */
+export function breachDurationAr(consecutiveRuns: number | undefined, minutesPerRun = 15): string | null {
+  if (!consecutiveRuns || consecutiveRuns < 2) return null;
+  const minutes = consecutiveRuns * minutesPerRun;
+  if (minutes < 60) return `${minutes} دقيقة`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `${hours} ساعة` : `${hours} ساعة و${rest} دقيقة`;
 }
 
 function impactSentence(metric: string): string {
@@ -531,13 +566,16 @@ export function buildTargetBreachEmail(info: TargetAlertInfo): { subject: string
   const metricLabel = METRIC_LABELS_AR[target.metric] ?? target.metric;
   const modeLabel = MODE_LABELS_AR[target.mode] ?? target.mode;
   const since = new Date(sinceIso).toLocaleString("ar-SA", { timeZone: "Asia/Riyadh" });
-  const subject = `[ConsultX] تنبيه أداء: ${metricLabel} — ${modeLabel}`;
+  const duration = breachDurationAr(info.consecutiveRuns);
+  const subject = info.isReminder
+    ? `[ConsultX] ما زال متجاوزاً${duration ? " منذ " + duration : ""}: ${metricLabel} — ${modeLabel}`
+    : `[ConsultX] تنبيه أداء: ${metricLabel} — ${modeLabel}`;
   const body = `
   <table style="width:100%;border-collapse:collapse;font-size:14px;color:#374151">
     <tr><td style="padding:6px 0;color:#6b7280;width:150px">الوضع</td><td style="padding:6px 0">${modeLabel}</td></tr>
     <tr><td style="padding:6px 0;color:#6b7280">القيمة المرصودة</td><td style="padding:6px 0">${formatObserved(target.metric, observed)}</td></tr>
     <tr><td style="padding:6px 0;color:#6b7280">الحد المسموح</td><td style="padding:6px 0">${formatComparator(target.comparator)} ${formatObserved(target.metric, target.threshold)}</td></tr>
-    <tr><td style="padding:6px 0;color:#6b7280">مستمر منذ</td><td style="padding:6px 0">${since}</td></tr>
+    <tr><td style="padding:6px 0;color:#6b7280">مستمر منذ</td><td style="padding:6px 0">${since}${duration ? ` (${duration})` : ""}</td></tr>
   </table>
   <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb">
   <p style="color:#374151;font-size:14px;line-height:1.7;margin:0">${impactSentence(target.metric)}</p>`;

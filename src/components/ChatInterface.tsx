@@ -731,6 +731,17 @@ async function streamChat({
       return;
     }
 
+    // An account-level block by the provider (2026-09-03 incident) also
+    // arrives as 503, but "try again in a moment" is false there: no retry
+    // clears it. Handled before the busy branch so the honest message wins
+    // even if the backend body ever arrives without one.
+    if (errorCode === "GEMINI_PROJECT_BLOCKED") {
+      onError(backendMessage || (language === "en"
+        ? "The AI provider has suspended access for this platform's account. The team has been alerted."
+        : "أوقف مزوّد الذكاء الاصطناعي الوصول لحساب المنصة مؤقتاً. تم إبلاغ الفريق."));
+      return;
+    }
+
     if (errorCode === "GEMINI_RATE_LIMIT" || errorCode === "GEMINI_PROVIDER_ERROR" || resp.status === 503) {
       onError(backendMessage || (language === "en"
         ? "Service temporarily busy, please try again in a moment."

@@ -133,19 +133,22 @@ async function processBreach(
   db: Db,
   stateKey: string,
   breachedNow: boolean,
-  buildEmail: (isBreach: boolean) => { subject: string; html: string } | null,
+  buildEmail: (isBreach: boolean, ctx: { consecutiveRuns: number; isReminder: boolean }) => { subject: string; html: string } | null,
   alertFn: (subject: string, html: string) => Promise<void>,
 ): Promise<void> {
   const state = await getProbeState(db, stateKey);
   const previousCount = state && typeof (state as { count?: unknown }).count === "number" ? (state as { count: number }).count : 0;
-  const { count, shouldAlert, shouldRecover } = nextBreachState(previousCount, breachedNow, BREACH_THRESHOLD);
+  const { count, shouldAlert, shouldRecover, isReminder } = nextBreachState(previousCount, breachedNow, BREACH_THRESHOLD);
   await setProbeState(db, stateKey, { count });
 
   if (shouldAlert) {
-    const email = buildEmail(true);
+    // A reminder, not a new incident, when the breach has simply persisted —
+    // the 2026-09-03 outage ran fourteen hours on a single first-notice email.
+    console.log(`[synthetic-probe] ${stateKey}: ${isReminder ? "still breached" : "breach confirmed"} (run ${count})`);
+    const email = buildEmail(true, { consecutiveRuns: count, isReminder });
     if (email) await alertFn(email.subject, email.html);
   } else if (shouldRecover) {
-    const email = buildEmail(false);
+    const email = buildEmail(false, { consecutiveRuns: 0, isReminder: false });
     if (email) await alertFn(email.subject, email.html);
   }
 }
@@ -282,9 +285,15 @@ async function evaluateSlosAndAlert(
       db,
       `breach:${target.key}`,
       breached,
-      (isBreach) =>
+      (isBreach, ctx) =>
         isBreach
-          ? buildTargetBreachEmail({ target, observed: observed as number, sinceIso: new Date().toISOString() })
+          ? buildTargetBreachEmail({
+              target,
+              observed: observed as number,
+              sinceIso: new Date().toISOString(),
+              consecutiveRuns: ctx.consecutiveRuns,
+              isReminder: ctx.isReminder,
+            })
           : buildTargetRecoveryEmail({ target }),
       alert,
     );
