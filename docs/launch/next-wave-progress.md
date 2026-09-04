@@ -259,3 +259,42 @@ D1 caches live, D2 context caching rejected (needs a database-backed registry),
 D2 thinking budgets rejected at every level that is faster than default. The
 remaining latency in the heavy modes is the model's own reasoning time, and
 this repo has no lever left for it that does not cost citation accuracy.
+
+## Incident — Gemini project blocked (2026-09-03 12:0x UTC, still open 14h later)
+
+Google answers `403 PERMISSION_DENIED — "Your project has been denied access.
+Please contact support."` on **every model and on embeddings**, while
+`ListModels` still returns 41 models. The key is valid; the block is at the
+project/account level and has no fix in code. **Owner action:** billing, policy
+notices, then Google support.
+
+**Diagnostic trap worth remembering:** it surfaced while probing a new feature
+(in-database keyword retrieval), so it looked like that change. Turning the flag
+off did not fix it — that, plus the function logs, settled it in a minute.
+Turn it off, then verify, before attributing an outage to your own change.
+
+**Two real defects the outage exposed, both fixed:**
+
+1. **Failure classification read only the LAST model in the chain.** The chain
+   ends on old models that answer 404 "no longer available to new users", so a
+   block that hit every model was reported as `GEMINI_REQUEST_ERROR` and shown
+   to users as a generic "service error". Now `classifyGeminiChainFailure`
+   classifies the whole chain by how much each failure explains, and
+   `GEMINI_PROJECT_BLOCKED` tells the user plainly that it is not their question
+   and does not promise that retrying will help.
+
+2. **The monitoring sent one email and then went quiet for fourteen hours.**
+   Working as designed — `shouldAlert` fired only on the run that reached the
+   threshold. Now a still-down reminder every 24 runs (six hours at the
+   15-minute cadence), with the duration in the subject. Also found: the probe
+   cron was running **hourly**, not every 15 minutes as A1 specifies — corrected
+   with `cron.alter_job`.
+
+**What it says about capacity:** there is no second provider path. A2's Vertex
+AI item stops being a nice-to-have — with it, this would have been an announced
+degradation instead of a total stop. It needs the owner to enable Vertex and
+create a service account.
+
+**Blocked by the outage (not by the work):** live verification of the in-database
+keyword path (`SBC_KEYWORD_FTS_ENABLED`, measured at 33ms in SQL but never yet
+serving a real answer) and of the floor-mode switch. Both stay at `0`.
