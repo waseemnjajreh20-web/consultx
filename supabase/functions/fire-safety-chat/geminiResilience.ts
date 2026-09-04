@@ -15,6 +15,7 @@ import {
 
 export type AIErrorClass =
   | "CONSULTX_DAILY_LIMIT"
+  | "GEMINI_PROJECT_BLOCKED"
   | "GEMINI_RATE_LIMIT"
   | "GEMINI_AUTH_ERROR"
   | "GEMINI_REQUEST_ERROR"
@@ -155,6 +156,28 @@ export function classifyGeminiError(status: number, errorBody: string): Classifi
     };
   }
 
+  // Project-level denial, distinct from a bad key (2026-09-03 incident): the
+  // key is valid and ListModels still answers, but generateContent AND
+  // embedContent return 403 PERMISSION_DENIED "Your project has been denied
+  // access. Please contact support." Nothing the user or a retry can fix, and
+  // nothing about THEIR request is wrong — so the message says so plainly
+  // instead of the generic "service error", which is what made this outage
+  // look like a code defect for the first several minutes of diagnosis.
+  if (
+    status === 403 &&
+    (bodyLower.includes("denied access") || bodyLower.includes("permission_denied"))
+  ) {
+    return {
+      classification: "GEMINI_PROJECT_BLOCKED",
+      status: 503,
+      userMessage:
+        "The AI provider has suspended access for this platform's account. This is not a problem with your question — the team has been alerted and is restoring service.",
+      userMessageAr:
+        "أوقف مزوّد الذكاء الاصطناعي الوصول لحساب المنصة مؤقتاً. المشكلة ليست في سؤالك — تم إبلاغ الفريق والعمل جارٍ على استعادة الخدمة.",
+      logSafe: "Gemini project access denied (HTTP 403 PERMISSION_DENIED) — owner action: billing/policy on the API project",
+    };
+  }
+
   if (status === 401 || status === 403 || bodyLower.includes("api key not valid")) {
     return {
       classification: "GEMINI_AUTH_ERROR",
@@ -183,6 +206,43 @@ export function classifyGeminiError(status: number, errorBody: string): Classifi
     userMessageAr: "حدث خطأ في الخدمة",
     logSafe: `Gemini request error (HTTP ${status})`,
   };
+}
+
+/**
+ * Classify a WHOLE exhausted model chain, not just its last attempt.
+ *
+ * Why: buildModelChain ends on the oldest fallbacks, and those answer 404
+ * "no longer available to new users" for a key on a new project. So when the
+ * real cause hits every model — an account block, a rate limit — the LAST
+ * error is a 404 about a model nobody cares about, and the user (and the
+ * on-call reader of the logs) is told "service error". Measured during the
+ * 2026-09-03 outage: every model returned 403 PERMISSION_DENIED, the reported
+ * class was GEMINI_REQUEST_ERROR, and that mismatch cost real diagnosis time.
+ *
+ * Precedence is by how much the failure explains: an account block explains
+ * everything after it; a rate limit explains a burst; a 5xx explains a bad
+ * minute; a missing model explains only itself. Ties keep the earliest
+ * attempt, which is the model the request actually wanted.
+ */
+export function classifyGeminiChainFailure(
+  attempts: Array<{ status: number; errorText: string }>,
+): ClassifiedAIError {
+  if (attempts.length === 0) return classifyGeminiError(0, "");
+  const rank = (c: AIErrorClass): number => {
+    switch (c) {
+      case "GEMINI_PROJECT_BLOCKED": return 5;
+      case "GEMINI_RATE_LIMIT": return 4;
+      case "GEMINI_AUTH_ERROR": return 3;
+      case "GEMINI_PROVIDER_ERROR": return 2;
+      default: return 1;
+    }
+  };
+  let best = classifyGeminiError(attempts[0].status, attempts[0].errorText);
+  for (const a of attempts.slice(1)) {
+    const c = classifyGeminiError(a.status, a.errorText);
+    if (rank(c.classification) > rank(best.classification)) best = c;
+  }
+  return best;
 }
 
 function sleep(ms: number): Promise<void> {

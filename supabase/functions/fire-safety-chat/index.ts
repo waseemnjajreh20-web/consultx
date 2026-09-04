@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   buildModelChain,
+  classifyGeminiChainFailure,
   classifyGeminiError,
   clearQuotaIncrement,
   fetchAvailableGeminiModels,
@@ -4817,6 +4818,7 @@ serve(async (req) => {
     let response: Response | null = null;
     let lastErrorText = "";
     let lastStatus = 0;
+    const chainFailures: Array<{ status: number; errorText: string }> = [];
 
     // ── D2 context caching (GEMINI_CONTEXT_CACHE_ENABLED, exact "1") ─────────
     // Read ONCE here — the single flag check for this feature in index.ts.
@@ -4906,13 +4908,22 @@ serve(async (req) => {
       }
       lastErrorText = result.errorText;
       lastStatus = result.response.status;
+      // Every failure is kept, not just the last one: the chain ends on the
+      // oldest fallback models, which answer 404 "no longer available" for a
+      // key on a new project, so classifying by the LAST error reports a
+      // missing-model problem when the real cause (an account block, a rate
+      // limit) hit every model. Measured during the 2026-09-03 outage.
+      chainFailures.push({ status: result.response.status, errorText: result.errorText });
       console.error(`[Gemini] ${model} failed: ${result.response.status} | ${result.errorText.slice(0, 300)}`);
     }
 
     if (!response || !response.ok) {
       await rollbackQuotaIfNeeded(adminClient);
-      const classified = classifyGeminiError(lastStatus, lastErrorText);
-      console.error(`[Gemini] All models exhausted | ${classified.logSafe}`);
+      const classified = classifyGeminiChainFailure(chainFailures);
+      console.error(
+        `[Gemini] All models exhausted (${chainFailures.length} attempts: ` +
+        `${chainFailures.map((f) => f.status).join(", ")}) | ${classified.logSafe}`,
+      );
       const userMessage = language === "en" ? classified.userMessage : classified.userMessageAr;
       await failStream({
         error: userMessage,
