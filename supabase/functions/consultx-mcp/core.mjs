@@ -99,7 +99,7 @@ export function createProtocol(handler=callTool,tools=TOOLS,{stateless=false}={}
     if(req.method==='initialize'){
       if(!stateless&&state!=='new')return error(id,-32600,'Already initialized');
       if(typeof req.params?.protocolVersion!=='string')return error(id,-32602,'Protocol version required');
-      state='negotiated';return result(id,{protocolVersion:VERSIONS.includes(req.params.protocolVersion)?req.params.protocolVersion:VERSIONS[0],capabilities:{tools:{}},serverInfo:{name:'consultx-mcp',version:'0.1.0'}});
+      state='negotiated';return result(id,{protocolVersion:VERSIONS.includes(req.params.protocolVersion)?req.params.protocolVersion:VERSIONS[0],capabilities:{tools:{}},serverInfo:{name:'consultx-mcp',version:'0.2.0'}});
     }
     if(!stateless&&state!=='ready')return error(id,-32002,'Server not initialized');
     if(req.method==='tools/list')return result(id,{tools});
