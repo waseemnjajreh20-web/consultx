@@ -1,0 +1,33 @@
+name: ConsultX MCP checks
+on:
+  push:
+    branches:
+      - main
+      - 'feature/consultx-mcp-bridge'
+    paths:
+      - 'services/mcp-server/**'
+      - '.github/workflows/consultx-mcp.yml'
+  pull_request:
+    paths:
+      - 'services/mcp-server/**'
+      - '.github/workflows/consultx-mcp.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: MCP local protocol and mocked backend tests
+        working-directory: services/mcp-server
+        run: npm test
