@@ -3,7 +3,7 @@ $node = Get-Command node.exe -ErrorAction Stop
 if ([int]((& $node.Source --version).TrimStart('v').Split('.')[0]) -lt 20) { throw 'Node.js 20+ required.' }
 $target = Join-Path $env:LOCALAPPDATA 'ConsultX\MCP'
 New-Item -ItemType Directory -Force -Path $target | Out-Null
-foreach ($file in @('server.mjs','Run.ps1','package.json')) {
+foreach ($file in @('server.mjs','core.mjs','gateway.mjs','client.mjs','http.mjs','edge.mjs','workflow.mjs','connections.example.json','Run.ps1','Configure-DDC.ps1','Configure-DDC.cmd','package.json')) {
     $source = Join-Path $PSScriptRoot $file
     if ($source -ne (Join-Path $target $file)) { Copy-Item -LiteralPath $source -Destination $target -Force }
 }
