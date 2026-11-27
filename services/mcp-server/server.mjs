@@ -91,7 +91,7 @@ export async function callTool(name,args,{config=loadConfig,fetcher=fetch}={}){
 }
 const result=(id,result)=>({jsonrpc:'2.0',id,result});
 const error=(id,code,message)=>({jsonrpc:'2.0',id,error:{code,message}});
-export function createProtocol(handler=callTool){
+export function createProtocol(handler=callTool,tools=TOOLS){
   let state='new';
   return async function processMessage(req){
     if(!req||Array.isArray(req)||req.jsonrpc!=='2.0'||typeof req.method!=='string')return error(null,-32600,'Invalid Request');
@@ -106,18 +106,17 @@ export function createProtocol(handler=callTool){
       state='negotiated';return result(id,{protocolVersion:VERSIONS.includes(req.params.protocolVersion)?req.params.protocolVersion:VERSIONS[0],capabilities:{tools:{}},serverInfo:{name:'consultx-mcp',version:'0.1.0'}});
     }
     if(state!=='ready')return error(id,-32002,'Server not initialized');
-    if(req.method==='tools/list')return result(id,{tools:TOOLS});
+    if(req.method==='tools/list')return result(id,{tools});
     if(req.method==='tools/call'){
       if(typeof req.params?.name!=='string')return error(id,-32602,'Tool name required');
-      if(!TOOLS.some(t=>t.name===req.params.name))return error(id,-32602,'Unknown tool');
+      if(!tools.some(t=>t.name===req.params.name))return error(id,-32602,'Unknown tool');
       try{const data=await handler(req.params.name,req.params.arguments??{});return result(id,{content:[{type:'text',text:JSON.stringify(data)}]});}
       catch(e){return result(id,{isError:true,content:[{type:'text',text:e instanceof Error?e.message:'Tool execution failed.'}]});}
     }
     return error(id,-32601,'Method not found');
   };
 }
-async function main(){
-  const processMessage=createProtocol();
+export async function runStdio(processMessage=createProtocol()){
   const lines=createInterface({input:process.stdin,crlfDelay:Infinity,terminal:false});
   for await(const line of lines){if(!line.trim())continue;let response;
     if(Buffer.byteLength(line)>MAX_LINE)response=error(null,-32600,'Request too large');
@@ -125,4 +124,4 @@ async function main(){
     if(response)process.stdout.write(`${JSON.stringify(response)}\n`);
   }
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(()=>{console.error('ConsultX MCP terminated.');process.exitCode=1;});
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)runStdio().catch(()=>{console.error('ConsultX MCP terminated.');process.exitCode=1;});
