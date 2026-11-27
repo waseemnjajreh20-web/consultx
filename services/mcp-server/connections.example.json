@@ -1,0 +1,12 @@
+{
+  "connections": [
+    {
+      "id": "openconstructiondesign",
+      "url": "http://127.0.0.1:47621/mcp",
+      "tokenEnv": "CONSULTX_CONNECTION_DDC_TOKEN",
+      "enabled": false,
+      "allowPreview": false,
+      "tools": ["get_context", "query_elements", "run_checks"]
+    }
+  ]
+}

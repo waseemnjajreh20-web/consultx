@@ -1,0 +1,42 @@
+name: ConsultX MCP checks
+on:
+  push:
+    branches:
+      - main
+      - 'feature/consultx-mcp-bridge'
+    paths:
+      - 'services/mcp-server/**'
+      - 'supabase/functions/consultx-mcp/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/consultx-mcp.yml'
+  pull_request:
+    paths:
+      - 'services/mcp-server/**'
+      - 'supabase/functions/consultx-mcp/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/consultx-mcp.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify shared Edge Function source
+        run: |
+          cmp services/mcp-server/core.mjs supabase/functions/consultx-mcp/core.mjs
+          cmp services/mcp-server/edge.mjs supabase/functions/consultx-mcp/edge.mjs
+      - name: MCP local protocol, mock backend and synthetic workflow tests
+        working-directory: services/mcp-server
+        run: npm test

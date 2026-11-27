@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHttp} from '../http.mjs';
+test('HTTP handshake, token isolation, tools, deletion and rejection',async t=>{
+ const env={CONSULTX_SUPABASE_URL:'https://test.supabase.co',CONSULTX_SUPABASE_KEY:'public-test'};
+ const server=createHttp({env,fetcher:async(u,o)=>{if(u.endsWith('/auth/v1/user'))return new Response('{}',{status:o.headers.Authorization==='Bearer invalid'?401:200});return new Response('data: {"choices":[{"delta":{"content":"ok"}}]}\n\ndata: [DONE]\n\n',{headers:{'Content-Type':'text/event-stream'}});}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
+ const url='http://127.0.0.1:'+server.address().port+'/mcp';
+ const req=(method,params={},headers={},id=1)=>fetch(url,{method:'POST',headers:{Authorization:'Bearer user-a','Content-Type':'application/json',Accept:'application/json, text/event-stream',...headers},body:JSON.stringify({jsonrpc:'2.0',method,params,...(id===null?{}:{id})})});
+ assert.equal((await req('initialize',{}, {Authorization:'Bearer invalid'})).status,401);
+ assert.equal((await req('initialize',{}, {Origin:'https://evil.test'})).status,403);
+ const init=await req('initialize',{protocolVersion:'2025-06-18'});assert.equal(init.status,200);const session=init.headers.get('mcp-session-id');assert.ok(session);assert.equal((await init.json()).result.protocolVersion,'2025-06-18');
+ const headers={'Mcp-Session-Id':session,'MCP-Protocol-Version':'2025-06-18'};
+ assert.equal((await req('tools/list',{}, {...headers,Authorization:'Bearer user-b'})).status,404);
+ assert.equal((await req('tools/list',{}, {'Mcp-Session-Id':session})).status,400);
+ assert.equal((await req('notifications/initialized',{},headers,null)).status,202);
+ assert.equal((await (await req('tools/list',{},headers)).json()).result.tools.length,3);
+ const call=await (await req('tools/call',{name:'consultx_consult',arguments:{question:'test'}},headers)).json();assert.equal(JSON.parse(call.result.content[0].text).answer,'ok');
+ assert.equal((await fetch(url,{method:'DELETE',headers:{...headers,Authorization:'Bearer user-a'}})).status,204);
+ assert.equal((await req('tools/list',{},headers)).status,404);
+});

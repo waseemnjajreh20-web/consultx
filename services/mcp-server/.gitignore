@@ -1,0 +1,10 @@
+.env
+.env.*
+profile.json
+profile.json.tmp
+mcp-client-config.json
+node_modules/
+*.log
+connections.local.json
+ddc-token.dpapi
+*.tmp

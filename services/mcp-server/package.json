@@ -1,0 +1,1 @@
+{"name":"consultx-mcp-bridge","version":"0.2.0","private":true,"type":"module","engines":{"node":">=20"},"scripts":{"start":"node gateway.mjs","start:core":"node server.mjs","start:http":"node http.mjs","connections":"node client.mjs","test":"node --test"}}
