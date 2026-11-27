@@ -6,10 +6,14 @@ on:
       - 'feature/consultx-mcp-bridge'
     paths:
       - 'services/mcp-server/**'
+      - 'supabase/functions/consultx-mcp/**'
+      - 'supabase/config.toml'
       - '.github/workflows/consultx-mcp.yml'
   pull_request:
     paths:
       - 'services/mcp-server/**'
+      - 'supabase/functions/consultx-mcp/**'
+      - 'supabase/config.toml'
       - '.github/workflows/consultx-mcp.yml'
   workflow_dispatch:
 permissions:
@@ -17,8 +21,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
+      fail-fast: false
       matrix:
         node: [20, 22]
     steps:
@@ -28,6 +33,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: MCP local protocol and mocked backend tests
+      - name: Verify shared Edge Function source
+        run: |
+          cmp services/mcp-server/core.mjs supabase/functions/consultx-mcp/core.mjs
+          cmp services/mcp-server/edge.mjs supabase/functions/consultx-mcp/edge.mjs
+      - name: MCP local protocol, mock backend and synthetic workflow tests
         working-directory: services/mcp-server
         run: npm test
