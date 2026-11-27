@@ -33,7 +33,7 @@ export function createHttp({env=process.env,fetcher=fetch,allowedHosts=['localho
    if(msg.method==='initialize'){
     if(id||!Object.hasOwn(msg,'id'))return error(res,400,'Invalid initialization');
     if(sessions.size>=MAX_SESSIONS)return error(res,503,'Session capacity reached');
-    const protocol=createProtocol((name,args)=>callTool(name,args,context));const result=await protocol(msg);
+    const protocol=createProtocol(async(name,args)=>{const data=await callTool(name,args,context);return name==='consultx_connection_status'?{...data,transport:'http'}:data;});const result=await protocol(msg);
     if(!result?.result)return respond(res,200,result);
     const sessionId=randomUUID();sessions.set(sessionId,{protocol,owner:hash(token),time:now,version:result.result.protocolVersion,busy:false});
     return respond(res,200,result,{'Mcp-Session-Id':sessionId});
