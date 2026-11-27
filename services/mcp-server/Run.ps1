@@ -35,7 +35,15 @@ try {
     [Console]::Error.WriteLine('ConsultX MCP session setup failed. Rerun Setup.ps1 if your login expired.')
     exit 1
 } finally { if ($locked) { $mutex.ReleaseMutex() }; $mutex.Dispose() }
-try { & node.exe (Join-Path $PSScriptRoot 'server.mjs'); $exitCode=$LASTEXITCODE } finally {
-    Remove-Item Env:CONSULTX_SUPABASE_KEY,Env:CONSULTX_ACCESS_TOKEN,Env:CONSULTX_SUPABASE_URL -ErrorAction SilentlyContinue
+$connectionFile = Join-Path $PSScriptRoot 'connections.local.json'
+$ddcTokenFile = Join-Path $PSScriptRoot 'ddc-token.dpapi'
+try {
+    if ((Test-Path -LiteralPath $connectionFile) -and (Test-Path -LiteralPath $ddcTokenFile)) {
+        $env:CONSULTX_CONNECTIONS_FILE = $connectionFile
+        $env:CONSULTX_CONNECTION_DDC_TOKEN = Unprotect (Get-Content -LiteralPath $ddcTokenFile -Raw)
+    }
+    & node.exe (Join-Path $PSScriptRoot 'gateway.mjs'); $exitCode=$LASTEXITCODE
+} finally {
+    Remove-Item Env:CONSULTX_SUPABASE_KEY,Env:CONSULTX_ACCESS_TOKEN,Env:CONSULTX_SUPABASE_URL,Env:CONSULTX_CONNECTIONS_FILE,Env:CONSULTX_CONNECTION_DDC_TOKEN -ErrorAction SilentlyContinue
 }
 exit $exitCode
