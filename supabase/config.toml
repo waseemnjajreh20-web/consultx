@@ -41,3 +41,8 @@ verify_jwt = false
 
 [functions.get-public-case-tracking]
 verify_jwt = false
+
+# Auth is validated per request against Supabase Auth in the function.
+# Do not deploy until live auth and RLS review are complete.
+[functions.consultx-mcp]
+verify_jwt = false
