@@ -1,3 +1,4 @@
+import {assessSourceAudit,assessReleaseAudit} from './cad-release-gate.mjs';
 import {createHash} from 'node:crypto';
 // The orchestrator trusts only operator-installed adapters, never instructions or
 // approval flags embedded in project documents, agent output or MCP responses.
@@ -16,7 +17,14 @@ export async function runEngineeringJob(job,adapters,{maxAttempts=3}={}){
  if(!plain(job)||!populated(job.id)||!sha(job.inputHash)||!Array.isArray(job.sources)||!job.sources.length||job.sources.some(s=>!plain(s)||!populated(s.id)||!sha(s.sha256)))throw Error('Job requires an ID, input SHA-256 and pinned source hashes');
  if(!Number.isInteger(maxAttempts)||maxAttempts<1||maxAttempts>5)throw Error('Invalid attempt limit');
  if(required.some(s=>typeof adapters?.[s]!=='function'))throw Error('Missing trusted engineering adapter');
- const snapshot=clone(job),events=[];let stage='extract';
+ const snapshot=clone(job),events=[];
+ // Trusted verifier reads original project files; no document or caller-provided PASS flags.
+ if(typeof adapters.verifySourceAudit!=='function')return block('SOURCE_PREFLIGHT_ADAPTER_MISSING','preflight',events);
+ let trustedAudit;
+ try{trustedAudit=checked(await adapters.verifySourceAudit(clone(snapshot)),'source audit');}catch{return block('SOURCE_PREFLIGHT_FAILED','preflight',events);}
+ const gate=assessSourceAudit(trustedAudit,snapshot);
+ if(!gate.ok)return block(gate.code,'preflight',events);
+ let stage='extract';
  const record=(stage,value,attempt)=>{events.push({stage,attempt,sha256:digest(value)});return value;};
  try{
   const facts=record(stage,checked(await adapters.extract(clone(snapshot)),'extraction'),0);
@@ -49,6 +57,12 @@ export async function runEngineeringJob(job,adapters,{maxAttempts=3}={}){
    if(review.status!=='APPROVED'||review.reviewHash!==reviewHash||!populated(review.reviewerId))return {status:'AWAITING_ENGINEER_REVIEW',stage,reviewHash,events,finalDelivery:false};
    stage='export';const output=record(stage,checked(await adapters.export(clone({job:snapshot,design,preview,check,review,reviewHash})),'export'),attempt);
    if(output.status!=='EXPORTED'||output.reviewHash!==reviewHash||output.modelHash!==preview.modelHash||!Array.isArray(output.artifacts)||!output.artifacts.length||output.artifacts.some(a=>!plain(a)||!populated(a.name)||!sha(a.sha256)))return block('EXPORT_NOT_VERIFIED',stage,events);
+   // Staged export is NOT a delivery until a separate trusted CAD/visual/review gate passes.
+   if(typeof adapters.verifyReleaseAudit!=='function')return block('RELEASE_AUDIT_ADAPTER_MISSING','release',events);
+   let release;
+   try{release=checked(await adapters.verifyReleaseAudit(clone({job:snapshot,preview,review,reviewHash,output})),'release audit');}catch{return block('RELEASE_AUDIT_FAILED','release',events);}
+   const releaseGate=assessReleaseAudit(release,snapshot,preview,reviewHash,output);
+   if(!releaseGate.ok)return block(releaseGate.code,'release',events);
    return {status:'DELIVERED_BY_CONFIGURED_ADAPTERS',stage,reviewHash,events,artifacts:output.artifacts,finalDelivery:true};
   }
   return block('ATTEMPT_LIMIT',stage,events);
